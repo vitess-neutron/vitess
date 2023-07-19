@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
   _eModule = MCN_MON2_DIV;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
+  PrintModuleName(_eModule, "1.4a");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
@@ -286,6 +286,7 @@ void  OwnInit(int argc, char *argv[])
 /*******************************************************/
 void UpdateMon(long iBnch)
 {
+  int    iBinY=0, jBinZ=0;            // matrix indices
   double f_norm  = 1.0;               // ratio of total to processed bunches after treating current bunch
   FILE*  fMonitor= NULL;              // pointer to output file
 
@@ -294,12 +295,24 @@ void UpdateMon(long iBnch)
 
   if (fMonitor)
   {
+    // normalize according number of bunches simulated
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;
 
+    // calculate standard deviation
+    for (iBinY = 0; iBinY < nBinsY; iBinY++) 
+    { for (jBinZ = 0; jBinZ < nBinsZ; jBinZ++) 
+      {
+        if (nTrajYZ[iBinY][jBinZ] > 0) 
+          IntYZError[iBinY][jBinZ] = IntYZ[iBinY][jBinZ] / sqrt(nTrajYZ[iBinY][jBinZ]);
+        else 
+          IntYZError[iBinY][jBinZ] = 0.0;
+      }
+    }
+
     // writes header and data
-    WriteHeader2DB(fMonitor, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,  
-                   nBinsY, "y-divergence/deg", nBinsZ, "z-divergence/deg");
+    WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,  
+                   nBinsY, "div_y [deg]", nBinsZ, "div_z [deg]");
 
     WriteOutput2DB(fMonitor, eFormat, bProbactiv,  
                    nBinsY, BinPosY,   nBinsZ, BinPosZ,  f_norm, 

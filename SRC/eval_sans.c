@@ -7,6 +7,7 @@
 /* 1.1  Nov 2013  K. Lieutenant  flight path correction                                      */
 /* 1.2  Mar 2020  K. Lieutenant  tidy up, new central visualization parameters               */
 /* 1.3  Dec 2021  K. Lieutenant  separation of S(Q) and I(Q)                                 */
+/* 1.4  Jun 2023  K. Lieutenant  header + update                                                        */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -18,6 +19,7 @@
 #include "general.h"
 #include "matrix.h"
 #include "softabort.h"
+#include "mon2_header.h"
 
 
 /************************************/
@@ -57,16 +59,27 @@ short  bLogBinning=FALSE,      //      [-]   flag: TRUE : binning increases expo
        bAllFiles  =FALSE,      //      [-]   flag: TRUE : S(Q) and reference file available   
        bSofQ      =FALSE,      //      [-]   flag: TRUE : S(Q) can be written
        bDeadSpot  =FALSE;      //      [-]   flag: TRUE : deadspot exists 
-FILE  *pIntFile   = NULL,      //      [-]   name of the file containing the intensity spectrum
-      *pSofQFile  = NULL,      //      [-]   name of the file containing the S(Q) spectrum
+long   nBunches   = 1,         //      [-]   number of bunches started
+       nTrjTot    = 0,         //      [-]   total number of trajectories within binning
+       nTrj  [BINS+1];        //      [-]   number of trajectories contributing to count rate in a bin 
+double IntTot  =0.0,           //     [n/s]  total intensity within bin range     
+       BinSize =1.0,           //    [1/Ang] width of a channel
+       BinLmts[BINS+1],        //    [1/Ang] limits of the bins                    
+       IntBin[BINS+1],         //     [n/s]  count rate of a bin                   
+       QRef   [BINS+1],        //    [1/Ang] centers of the Q bins in the ref. file
+       IntRef [BINS+1];        //     [n/s]  count rate of the reference file      
+
+FILE  *pSofQFile  = NULL,      //      [-]   name of the file containing the S(Q) spectrum
       *pRefFile   = NULL;      //      [-]   name of the file containing the reference (=isotropic scattering) spectrum
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit    (int argc, char *argv[]);            // Reads input parameters and sets global variables
 short ReadRefSpec(double* pRefBin, double* pRefVal);  // function to read reference spectrum 
+void  OwnInit    (int argc, char *argv[]);            // Reads input parameters and sets global variables
+void  InitArrays ();                                  // Allocates memory and initializes evaluation arrays 
+void  UpdateMon  (long iBnch);                        // Updates evaluation output file 
 
 
 /******************************/
@@ -75,20 +88,11 @@ short ReadRefSpec(double* pRefBin, double* pRefVal);  // function to read refere
 int main(int argc, char *argv[])
 {
   short  bWrite  =FALSE;     /* criterion: write data point to output  */
-
   int    ibin =0,            /* index for the bins                     */
          nSpec=0;            /* number of calculated S-values          */
-
-  long  i=0,                 /* trajectory index */
-        nTraj[BINS+1];        /* number of trajectories contributing to count rate */
-
-  double IntTot  =0.0,       /* total intensity with in bin range      */
-         BinWidth=1.0,       /* bin width for q linear scale in Q      */
-         BinLmts[BINS+1],    /* limits of the bins                     */
-         IntSmpl[BINS+1],    /* count rate of a bin                    */
-         QRef   [BINS+1],    /* centers of the Q bins in the ref. file */
-         IntRef [BINS+1],    /* count rate of the reference file       */
-         time    =0.0,       /* TOF                                    */
+  long   i=0,                /* trajectory index */
+         iBnch=0;            /* current bunch    */
+  double time    =0.0,       /* TOF                                    */
          lambda  =0.0,       /* wavelngth of the neutron               */
          TwoTheta=0.0,       /* scattering angle theta = 2 theta_bragg */
          Phi     =0.0,       /* scattering direction phi               */
@@ -97,22 +101,24 @@ int main(int argc, char *argv[])
          prob    =0.0,       /* weight of the trajectory               */
          Flightpath=0.0,     // real length of neutron flight path [cm] 
          DetPath =0.0,       // path length from sample to position of detection
+         sigma   =0.0,       // standard deviation of the intensity in the bin
          Qcntr;              // Q value calculated from the limits of the bin
-
 
   // reading of input data and initilisation
   // ---------------------------------------
   _eModule=MCN_EVAL1_SANS;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
+  nBunches = ReadNumBnch();
+
   memset(BinLmts, 0, (BINS+1)*sizeof(double));
-  memset(IntSmpl, 0, (BINS+1)*sizeof(double));
+  memset(IntBin,  0, (BINS+1)*sizeof(double));
   memset(QRef,    0, (BINS+1)*sizeof(double));
   memset(IntRef,  0, (BINS+1)*sizeof(double));
 
@@ -124,32 +130,7 @@ int main(int argc, char *argv[])
   }
 
   /* Construction of the Bins */
-  /* logarithmic */
-  if (bLogBinning)
-  {	
-    BinLmts[0] = Qmin;
-    IntSmpl[0] = 0.0;
-    nTraj  [0] = 0;
-
-    for(ibin = 1; BinLmts[ibin-1] < Qmax; ibin++)
-    {
-      BinLmts[ibin] = BinLmts[ibin-1] * (1.0 + LogProz/100.);
-      IntSmpl[ibin] = 0.0;
-      nTraj  [ibin] = 0;
-    }
-    nBins = ibin-1;
-  }
-  /* linear */
-  else
-  {	BinWidth = (Qmax - Qmin) / (double)nBins;
-		
-    for(ibin=0; ibin <= nBins; ibin++)
-    {
-      BinLmts[ibin] = Qmin + BinWidth*ibin;
-      IntSmpl[ibin] = 0.0;
-      nTraj  [ibin] = 0;
-    }
-  }
+  InitArrays();
 
 	/* Processing of the Neutrons */
 	DECLARE_ABORT
@@ -164,6 +145,8 @@ int main(int argc, char *argv[])
 
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
+        iBnch++;
+        UpdateMon(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
@@ -207,9 +190,10 @@ int main(int argc, char *argv[])
         for(ibin = 0; ibin<nBins; ibin++)
         {	if (BinLmts[ibin] <= Q && Q < BinLmts[ibin+1])
           {
-            nTraj  [ibin]++;
-            IntSmpl[ibin] = IntSmpl[ibin] + prob;
-            IntTot = IntTot + prob;
+            nTrj  [ibin]++;
+            nTrjTot++;
+            IntBin[ibin] += prob;
+            IntTot       += prob;
             break;
           }
         }
@@ -221,43 +205,39 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
   my_exit:
   /* Output of Results */
-  fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", IntTot);
+  fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n\n", IntTot);
 
-  /* writes spectra */
+  // writes evaluation output
+  UpdateMon(nBunches);  
 
-  for(ibin = 0; ibin < nBins; ibin++)
-  {	
-    if (bLogBinning)
-      Qcntr = sqrt(BinLmts[ibin]*BinLmts[ibin+1]);
-    else
-      Qcntr = 0.5*(BinLmts[ibin]+BinLmts[ibin+1]);
+  // writes S(Q) file if Q values agree and both values ar non-zero
+  if (bSofQ)
+  {
+    WriteHeader1DB(pSofQFile, TRUE, "S(Q)", ANY_COLOR, nBunches, nBunches, nBins, IntTot, nTrjTot, "Q", "1/Ang");
 
-    // writes intensity file
-    fprintf(pIntFile, "%12g %12g %7ld\n", Qcntr, IntSmpl[ibin], nTraj[ibin]);
+    for(ibin = 0; ibin < nBins; ibin++)
+    {	
+      if (bLogBinning)
+        Qcntr = sqrt(BinLmts[ibin]*BinLmts[ibin+1]);
+      else
+        Qcntr = 0.5*(BinLmts[ibin]+BinLmts[ibin+1]);
 
-    // writes S(Q) file if Q values agree and both values ar non-zero
-    if (bSofQ)
-    {
-      bWrite = (IntSmpl[ibin] > 0.0 && IntRef[ibin] > 0.0);
+      bWrite = (IntBin[ibin] > 0.0 && IntRef[ibin] > 0.0);
 
-      if (RoundP(Qcntr,6)==RoundP(QRef[ibin],6))
+      if (bWrite && RoundP(Qcntr,6)==RoundP(QRef[ibin],6))
       { 
         nSpec++;
-        if (bWrite)
-        {
-          Svalue = ProbScat * IntSmpl[ibin] / IntRef[ibin];
-          fprintf(pSofQFile, "%12g %12g %7ld\n", Qcntr, Svalue, nTraj[ibin]);
-        }
+        Svalue = ProbScat * IntBin[ibin] / IntRef[ibin];
+        if (nTrj[ibin] > 0) 
+          sigma = Svalue * sqrt(1.0/(double)nTrj[ibin]);
+        fprintf(pSofQFile, "%10.4f  %12.5e %12.5e  %7ld\n", Qcntr, Svalue, sigma, nTrj[ibin]);
       }
     }
+    if (nSpec==0)
+      Warning("no agreement in binning between reference and current spectrum - no S(Q) file generated");
   }
-  if (nSpec==0)
-    Warning("no agreement in binning between reference and current spectrum - no S(Q) file generated");
   
   // Cleanup
-  fprintf(LogFilePtr,"\n");
-
-  if (pIntFile !=NULL) fclose(pIntFile );
   if (pSofQFile!=NULL) fclose(pSofQFile);
   if (pRefFile !=NULL) fclose(pRefFile );
 
@@ -265,7 +245,6 @@ int main(int argc, char *argv[])
 
   return 0;
 }
-
 
 
 /**********************************************************/
@@ -399,7 +378,7 @@ void OwnInit(int argc, char *argv[])
 		Error("lower bound value must not be zero for logarithmic binning"); 
 
   // open intensity file whenever possible, open also reference ans SofQ file if all files are given.
-  if      (pIntFileName==NULL && pSofQFileName==NULL)
+  /* if      (pIntFileName==NULL && pSofQFileName==NULL)
   { Error("No file given for the intensity spectrum");
   }
   else if (pIntFileName!=NULL && pSofQFileName==NULL)
@@ -419,6 +398,93 @@ void OwnInit(int argc, char *argv[])
       Warning("S(Q) or reference file could not be opened. S(Q) file cannot be generated");
     else
       bAllFiles=TRUE;
+  }*/
+  if (pIntFileName==NULL)
+    Error("No file given for the intensity spectrum");
+
+  if (pIntFileName!=NULL && pSofQFileName!=NULL &&  pRefFileName!=NULL)
+    bAllFiles=TRUE;
+
+  if (pRefFileName!=NULL)
+    pRefFile  = OpenInputFile (pRefFileName,  FALSE, "r");
+  if (pSofQFileName!=NULL)
+    pSofQFile = OpenOutputFile(pSofQFileName, FALSE, "w"); 
+}
+
+
+/********************************************************/
+/** Allocates memory and initializes evaluation arrays **/
+/********************************************************/
+void InitArrays()
+{
+  long iBin;     // index of channel
+
+  /* Construction of the Bins */
+  /* logarithmic */
+  if (bLogBinning)
+  {	
+    BinLmts[0] = Qmin;
+    IntBin[0] = 0.0;
+    nTrj  [0] = 0;
+
+    for(iBin = 1; BinLmts[iBin-1] < Qmax; iBin++)
+    {
+      BinLmts[iBin] = BinLmts[iBin-1] * (1.0 + LogProz/100.);
+      IntBin[iBin] = 0.0;
+      nTrj  [iBin] = 0;
+    }
+    nBins = iBin-1;
+  }
+  /* linear */
+  else
+  {	BinSize = (Qmax - Qmin) / (double)nBins;
+		
+    for(iBin=0; iBin <= nBins; iBin++)
+    {
+      BinLmts[iBin] = Qmin + BinSize*iBin;
+      IntBin [iBin] = 0.0;
+      nTrj  [iBin] = 0;
+    }
   }
 }
 
+
+/*******************************************************/
+/**  Updates evaluation output file                   **/
+/*******************************************************/
+void UpdateMon(long iBnch)
+{
+  long   iBin=0;                 // index of bins in x-axix and for main monitor
+  double BinCtr=0.0,             // center of the current bin 
+         sigma=0.0,              // standard deviation of the intensity in the bin
+         f_norm =1.0;            // ratio of total to processed bunches after treating current bunch
+  FILE*  pIntFile=NULL;             // pointer to output file
+
+  pIntFile = OpenOutputFile(pIntFileName, TRUE, "wt");
+
+  /* Spectrum */
+  if (pIntFile != NULL)
+  {
+    WriteHeader1DB(pIntFile, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, "Q", "1/Ang");
+
+    if (iBnch > 0 && nBunches > 1)
+      f_norm = (double) nBunches / (double) iBnch;
+
+    for(iBin = 0; iBin < nBins; iBin++)
+    {	
+      /* if (fabs(BinInt[iBin]) < 1E-40) BinInt[iBin] = 0.0; */
+      if (bLogBinning)
+        BinCtr = sqrt(BinLmts[iBin]*BinLmts[iBin+1]);
+      else
+        BinCtr = (BinLmts[iBin]+BinLmts[iBin+1])/2.0;
+
+      if (nTrj[iBin] > 0) 
+        sigma = IntBin[iBin] * sqrt(1.0/(double)nTrj[iBin]);
+      else
+        sigma = 0.0;
+
+      fprintf(pIntFile,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*IntBin[iBin], f_norm*sigma, nTrj[iBin]);
+    }
+    fclose(pIntFile);
+  }
+}

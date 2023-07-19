@@ -139,9 +139,12 @@ int main(int argc, char *argv[])
 			  {	
   			  Output = InputNeutrons[i];
           Output.Probability *= CollimProb;
+          WriteIAP(&Output, VT_PASSED);
 			  }
 			  else 
-			  {	continue;
+			  {	
+          WriteIAP(&InputNeutrons[i], VT_ABSORBED);
+          continue;
 			  }
 
 			  WriteNeutron(&Output);

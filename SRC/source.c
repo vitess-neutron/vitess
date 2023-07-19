@@ -105,13 +105,14 @@ Source    stSrc;                // EP    -S             [-]   enum: type of sour
                                 // EP    -p    1.0     [ms]   proton pulse length 
                                 // EP C  -L    0.1     [MW]   average source power
 EssModVsn iDataVsn=NO_VERSION;  // E     -v BUTTERFLY1_2016   version of the data base (MEZEI_2001  ZANINI_2012  SCHOENFELDT_2013  VARHEIGHT_2013  BUTTERFLY2_2015  BUTTERFLY1_2016)
-char*     sModFileName=NULL;    // EPIC  -a                   name of the file containing moderator parameter
+char*     sModFileName=NULL;    // EPICS -a                   name of the file containing moderator parameter
 char*     pBeamline=NULL;       // E I   -B             [-]   name of the beamline 
 double    Declination = 0.0;    // EP C  -i    0.0     [deg]  declination between moderator surface normal and propagation window 
 
 // simulation parameters
 long      nBunches  =1,         // EPICS -l    10       [-]   number of bunches 
           nNeutBnch =0;         // EPICS -n    1.0e6    [-]   number of neutron trajectories (events) per bunch
+char*     pSimName=NULL;        // EPICS -I             [-]   name or ID of the simulation given by the user (only for indexing)
 
 TrajParam stTraj  [NUM_MOD];    // EPICS -m -M [1,5]   [Ang]  min. and max. of the wavelength range 
                                 // EP C  -t -T [0,2]   [ms]   min. and max. of the time frame to start neutrons
@@ -271,7 +272,10 @@ int main(int argc, char *argv[])
   //  Normalisation of all moderators and writing to log file
   // ---------------------------------------------------------
   /* simulation parameters and source characteristics */
-  fprintf(LogFilePtr, "\n> Simulation of ");
+  if (pSimName != NULL)
+    fprintf(LogFilePtr, "\n> Simulation %s of ", pSimName);
+  else
+    fprintf(LogFilePtr, "\n> Simulation of ");
   if (stSrc.eSrcType == CWS)
   {  
     fprintf(LogFilePtr, "constant wave source %s <\n\n", stSrc.pSrcName);
@@ -1011,8 +1015,8 @@ void SrcInit(int argc, char **argv)
       if (isalpha(argv[i][1]))  
       { 
         arg=&argv[i][2];  
-                           // used: a A b B c   d D      f F     h   i       k K l L m M n N     p P     r R s S t T     v V w W   X y Y z                  
-        switch(argv[i][1]) // free:           C      e E     g G   H   I j J                 o O     q Q             u U         x         Z                              
+                           // used: a A b B c   d D      f F     h   i I     k K l L m M n N     p P     r R s S t T     v V w W   X y Y z                  
+        switch(argv[i][1]) // free:           C      e E     g G   H     j J                 o O     q Q             u U         x         Z                              
         {
           /* Simulation */
           case 'l':
@@ -1020,6 +1024,9 @@ void SrcInit(int argc, char **argv)
             break;
           case 'n':
             nNeutBnch = (long) atof(arg);
+            break;
+          case 'I':
+            pSimName  = arg;
             break;
 
           /* neutron parameters */

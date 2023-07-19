@@ -10,24 +10,24 @@
 extern "C" {
 #endif
 
-void WriteHeader1D (FILE* fMonitor, const char *sType, short bWeight, int nBinsX,         // Writes header for 1D monitor file
+void WriteHeader1D (FILE* fMonitor, const char *sType, short bWeight, int nBinsX,                      // Writes header for 1D monitor file
                     const char* sPar, const char* sUnit);   
-void WriteHeader1DB(FILE* fMonitor, const char *sType,                                    // Writes header for 1D monitor file incl. number of proc. bunches
+void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sType,                                    // Writes header for 1D monitor file incl. number of proc. bunches
                     short iCol, long iBnch, long nBnch, int nBinsX, 
                     double IntMon, long nTrjMon, 
                     const char* sPar, const char* sUnit);   
-void WriteHeader2D (FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight, // Writes header for 2D monitor file
+void WriteHeader2D (FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight,              // Writes header for 2D monitor file
                     int nBinsX, const char* sAxisTitleX, 
                     int nBinsY, const char* sAxisTitleY); 
-void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight, // Writes header for 2D monitor file incl. number of proc. bunches  
+void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sType, short bWeight, // Writes header for 2D monitor file incl. number of proc. bunches  
                     long iBnch, long nBnch, double IntMon, long nTrjMon, 
                     int nBinsX, const char* sAxisTitleX, 
                     int nBinsY, const char* sAxisTitleY); 
-int  WriteOutput2D (FILE* fMonitor, VtFormat2D eFormat, short bWeight,                           // Writes 2D spectrum to monitor file
+int  WriteOutput2D (FILE* fMonitor, VtFormat2D eFormat, short bWeight,                                 // Writes 2D spectrum to monitor file
                     int nBinsX, double* BinPosX, 
                     int nBinsY, double* BinPosY, 
                     double** IntXY, double** IntXYError, long** nTrajXY);  
-int  WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,                           // Writes 2D spectrum to monitor file
+int  WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,                                 // Writes 2D spectrum to monitor file
                     int nBinsX, double* BinPosX, 
                     int nBinsY, double* BinPosY, double fNorm,
                     double** IntXY, double** IntXYError, long** nTrajXY);  

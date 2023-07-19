@@ -187,12 +187,12 @@ int main(int argc, char **argv)
           CopyVector(InputNeutrons[i].Position, Pos);
           CopyVector(InputNeutrons[i].Vector, Dir);
 
-          /* scattering position and TOF untill scattering */	
-          SubVector(Pos2v, Pos1v);					/*maximal path vector*/ 
+          /* scattering position and TOF until scattering */	
+          SubVector(Pos2v, Pos1v);					          // Pos2v: vector from entry to exit of the path through the sample 
           MaxPathLength = LengthVector(Pos2v); 
-          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));	 /*random path vector untill scattering */
+          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));	// Pos2v now vector from entry into sample to point of scattering
           PathLength = LengthVector(Pos2v);
-          AddVector(Pos1v, Pos2v);	
+          AddVector(Pos1v, Pos2v);	                  // Pos1v now vector to point of scattering
 					
           TOF += (Pos1v[0] - Pos[0])/ fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
@@ -203,6 +203,17 @@ int main(int argc, char **argv)
           {  
             /* attenuation untill scattering normalized to maximal path and probability */
             Prob *= exp( - PathLength * AbsorptionC * WL );
+
+            /* point of scattering for trajectory visualization */
+            if (bVisTraj==TRUE)
+            {
+              Neutron ScatNeut;
+              CopyNeutron(&InputNeutrons[i], &ScatNeut);
+              CopyVector (Pos1v, ScatNeut.Position);
+              ScatNeut.Probability=Prob;
+
+              WriteWWP(&ScatNeut, VT_SCATTERED);
+            }
 				
             // Take into account the number of hkl-entries in the look-up file
             // for correct normalisation.

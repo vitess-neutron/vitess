@@ -172,6 +172,10 @@ proc show2Dfile {fname} {
   gets $f ins
 
   # skip header
+  set is_xyz [regexp {Format: xyz} $ins]
+  if [regexp {^# 1D} $ins] {gets $f ins}
+  if [regexp {^# 2D} $ins] {gets $f ins}
+  if [regexp {^#Monitor} $ins] {gets $f ins}
   if [regexp {^# Monitor} $ins] {gets $f ins}
   if [regexp {^# x-axis} $ins] {gets $f ins}
   if [regexp {^# y-axis} $ins] {gets $f ins}
@@ -182,7 +186,7 @@ proc show2Dfile {fname} {
   if [regexp {^# Data} $ins] {gets $f ins}
   
   set ll [eval list $ins]
-  if [string compare "#x y z" "$ll"] {
+  if {!$is_xyz &&  [string compare "#x y z" "$ll"]} {
     set xl $ll;	# first line and first column are tic values
     while {[gets $f ins] > 0} {
       incr rows

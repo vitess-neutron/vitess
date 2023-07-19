@@ -109,20 +109,27 @@ int main(int argc, char *argv[])
       { 
         /* checks entrance position    */
         if (fabs(InputNeutrons[i].Position[1]) > 0.5*WndWidth || fabs(InputNeutrons[i].Position[2]) > 0.5*WndHeight )
+        { WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
           goto GetNewNeutron;
+        }
 
         Velocity = V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
   
         /* checks if neutron hits the area covered by the selector blades in the front */
         Dist = sqrt(sq(InputNeutrons[i].Position[1] - AxlePosY) + sq(InputNeutrons[i].Position[2] - AxlePosZ));
         if (Dist < RadiusI)
+        { WriteIAP(&InputNeutrons[i], VT_OUTSIDE);
           goto GetNewNeutron; // CountMessageID(SELECT_NO_BLADES, InputNeutrons[i].ID);
+        }
          
         if (Dist > RadiusO)
         { if (bPassOutside==TRUE)
-            CountMessageID(SELECT_OUTSIDE, InputNeutrons[i].ID);
+          { CountMessageID(SELECT_OUTSIDE, InputNeutrons[i].ID);
+          }
           else
+          { WriteIAP(&InputNeutrons[i], VT_OUTSIDE);
             goto GetNewNeutron;
+          }
         }
 
         /* calculation of the angle: z-axis; center velsel.; neutron position */
@@ -133,8 +140,13 @@ int main(int argc, char *argv[])
   
         /* Determine entrance channel */
         bChanIn = DetChannel(&kChanIn, NeutAngIn, RotAngIn);
-        if (bChanIn==FALSE)
+        if (bChanIn==TRUE)
+        { WriteIAP(&InputNeutrons[i], VT_ENTERED);
+        }
+        else
+        { WriteIAP(&InputNeutrons[i], VT_ABSORBED);
           goto GetNewNeutron;
+        }
   
         /* time for passing the velsel. */
         ToF = Length/(Velocity*InputNeutrons[i].Vector[0]);
@@ -149,18 +161,25 @@ int main(int argc, char *argv[])
   
         /* checks exit position    */
         if (fabs(Output.Position[1]) > 0.5*WndWidth || fabs(Output.Position[2]) > 0.5*WndHeight )
+        { WriteIAP(&Output, VT_OUT_OF_WND);
           goto GetNewNeutron;
+        }
 
         /* checks if neutron hits the area covered by the selector blades on the backside */
         Dist = sqrt(sq(Output.Position[1] - AxlePosY) + sq(Output.Position[2] - AxlePosZ));
         if (Dist < RadiusI)
+        { WriteIAP(&Output, VT_OUTSIDE);
           goto GetNewNeutron; // CountMessageID(SELECT_NO_BLADES, Output.ID);
+        }
             
         if (Dist > RadiusO)
         { if (bPassOutside==TRUE)
-            CountMessageID(SELECT_OUTSIDE, Output.ID);
+          { CountMessageID(SELECT_OUTSIDE, Output.ID);
+          }
           else
-            goto GetNewNeutron;
+          { WriteIAP(&Output, VT_OUTSIDE);
+            goto GetNewNeutron; 
+          }
         }
 
         NeutAngOut = SelectorAngle(Output.Position[1], Output.Position[2]);
@@ -171,15 +190,20 @@ int main(int argc, char *argv[])
         /* Determine exit channel */
         bChanOut = DetChannel(&kChanOut, NeutAngOut, RotAngOut);
         if (bChanOut==FALSE)
+        { WriteIAP(&Output, VT_ABSORBED);
           goto GetNewNeutron;
+        }
   
         if (kChanIn == kChanOut) 
           goto Transmission;
+        else
+          WriteIAP(&Output, VT_ABSORBED);
 
       GetNewNeutron: 
         continue; /* case of neutron blocked by spacers or absorbed within a channel */
   
       Transmission:
+        WriteIAP(&Output, VT_PASSED);
         Output.Position[0]=0.0;
     
         WriteNeutron(&Output);

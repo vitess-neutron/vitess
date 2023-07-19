@@ -2,6 +2,7 @@
 #define MON2D_CPP
 
 #include "mon2D.h"
+#include "convert.h"
 
 
 /******************************/
@@ -426,8 +427,8 @@ double Mon2D::DetermineParameter(VtMonPar id, Neutron* pNeutr)
 /******************************/
 void Mon2D::WriteOut(long iBnch)
 {
-  char sParX[16]="", 
-       sParY[16]="";
+  char sParX[20]="", 
+       sParY[20]="";
   double fNorm  = 1.0;               // ratio of total to processed bunches after treating current bunch
 
   ParId2Text(sParX, xParam);
@@ -442,10 +443,16 @@ void Mon2D::WriteOut(long iBnch)
         { dataArrayPol  [iBinX][jBinY] = dataArray   [iBinX][jBinY] / dataArrayPolWeights[iBinX][jBinY];
           dataArrayError[iBinX][jBinY] = dataArrayPol[iBinX][jBinY] / sqrt(dataArrayCounts[iBinX][jBinY]);
         }
+        else
+        { dataArrayPol  [iBinX][jBinY] = 0.0;
+          dataArrayError[iBinX][jBinY] = 0.0;
+        }
       }
       else
       { if (dataArrayCounts[iBinX][jBinY] > 0) 
           dataArrayError[iBinX][jBinY] = dataArray[iBinX][jBinY] / sqrt(dataArrayCounts[iBinX][jBinY]);
+        else 
+          dataArrayError[iBinX][jBinY] = 0.0;
       }
     }
   }
@@ -457,13 +464,13 @@ void Mon2D::WriteOut(long iBnch)
       fNorm = (double) nBunches / (double) iBnch;
 
     if (analysePol) 
-    { WriteHeader2DB(fMonitor, format, "polarisation", bWeight, iBnch, nBunches, IntTot, nTrajTot,  nBinsX, sParX,  nBinsY, sParY);
-      WriteOutput2DB(fMonitor, format,                 bWeight,  nBinsX, BinPosX,  nBinsY, BinPosY,  fNorm,  
+    { WriteHeader2DB(fMonitor, FALSE, format, "polarisation", bWeight, iBnch, nBunches, IntTot, nTrajTot,  nBinsX, sParX,  nBinsY, sParY);
+      WriteOutput2DB(fMonitor,        format,                 bWeight,  nBinsX, BinPosX,  nBinsY, BinPosY,  fNorm,  
                      dataArrayPol, dataArrayError, dataArrayCounts);
     }
     else
-    { WriteHeader2DB(fMonitor, format, "Intensity",    bWeight, iBnch, nBunches, IntTot, nTrajTot,  nBinsX, sParX,  nBinsY, sParY);
-      WriteOutput2DB(fMonitor, format,                 bWeight,  nBinsX, BinPosX,  nBinsY, BinPosY,  fNorm,  
+    { WriteHeader2DB(fMonitor, FALSE, format, "Intensity",    bWeight, iBnch, nBunches, IntTot, nTrajTot,  nBinsX, sParX,  nBinsY, sParY);
+      WriteOutput2DB(fMonitor,        format,                 bWeight,  nBinsX, BinPosX,  nBinsY, BinPosY,  fNorm,  
                      dataArray, dataArrayError, dataArrayCounts);
     }
     fclose(fMonitor);
@@ -478,9 +485,10 @@ void Mon2D::WriteOut(long iBnch)
 /***********************************/
 void Mon2D::ParId2Text(char* sParName, const VtMonPar ePar)
 {
+  MonPar_ID2Txt(sParName, ePar);
   switch (ePar)
   { 
-    case NO_PAR   : strcpy(sParName, "no_par");        break;
+  /*case NO_PAR   : strcpy(sParName, "no_par");        break;
 	  case POS_X    : strcpy(sParName, "pos_x/cm");      break;
     case POS_Y    : strcpy(sParName, "pos_y/cm");      break;
 	  case POS_Z    : strcpy(sParName, "pos_z/cm");      break;
@@ -498,7 +506,21 @@ void Mon2D::ParId2Text(char* sParName, const VtMonPar ePar)
 	  case COL_VERT : strcpy(sParName, "col_vert");      break; 
 	  case COL_HOR  : strcpy(sParName, "col_hor");       break; 
 	  case COLOR    : strcpy(sParName, "color");         break; 
-    default: strcpy(sParName, "");
+    default: strcpy(sParName, ""); */
+	  case POS_X    : 
+    case POS_Y    : 
+    case POS_Z    : 
+	  case POS_R    : strcat(sParName, " [cm]");    break;
+    case DIV_Y    : 
+	  case DIV_Z    : 
+	  case POS_PHI  : 
+    case DIR_PHI  : 
+	  case DIR_THETA: strcat(sParName, " [deg]");   break;
+	  case LAMBDA   : strcat(sParName, " [Ang]");   break;
+	  case ENERGY   : strcat(sParName, " [µeV]");   break; 
+	  case TIME     : strcat(sParName, " [ms]");    break; 
+	  case K_Y      : 
+	  case K_Z      : strcat(sParName, " [1/Ang]"); break; 
   }
 }
 

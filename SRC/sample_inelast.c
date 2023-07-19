@@ -100,7 +100,7 @@ int main(int argc, char **argv)
              MaxPathLength=0.0, MaxPathLengthHol=0.0;
   VectorType Pos1f ={0.0,0.0,0.0}, Pos2f=  {0.0,0.0,0.0}, Pos3f={0.0,0.0,0.0}, Pos4f={0.0,0.0,0.0}, 
              Pos1v ={0.0,0.0,0.0}, Pos2v=  {0.0,0.0,0.0}, Pos3v={0.0,0.0,0.0}, Pos4v={0.0,0.0,0.0},   
-             propag={0.0,0.0,0.0}, propag1={0.0,0.0,0.0}, 
+             propag={0.0,0.0,0.0}, propag1={0.0,0.0,0.0},                              // propagation vectors e.g. from entry to point of scattering to calculate TOF
              Pos   ={0.0,0.0,0.0}, Dir=    {0.0,0.0,0.0}, Pos_final={0.0,0.0,0.0};
   Neutron	   Neutrons ;
 
@@ -229,12 +229,12 @@ int main(int argc, char **argv)
           CopyVector(InputNeutrons[i].Position, Pos) ;
           CopyVector(InputNeutrons[i].Vector, Dir) ;
 
-          /* scattering position and TOF untill scattering */	
-          SubVector(Pos2v, Pos1v) ;					/*maximal path vector*/ 
-          MaxPathLength = LengthVector(Pos2v) + MaxPathLengthHol ; 
-          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.)) ;	 /*random path vector in cylinder untill scattering */
-          PathLength = LengthVector(Pos2v) + PathLengthHol ;
-          AddVector(Pos1v, Pos2v) ;	
+          /* scattering position and TOF until scattering */	
+          SubVector(Pos2v, Pos1v);					                       // Pos2v: vector from entry to exit of the path through the sample 
+          MaxPathLength = LengthVector(Pos2v) + MaxPathLengthHol; 
+          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));	             // Pos2v now vector from entry into sample to point of scattering
+          PathLength = LengthVector(Pos2v) + PathLengthHol;
+          AddVector(Pos1v, Pos2v);	                               // Pos1v now vector to point of scattering
 		
           CopyVector(Pos1v, propag);
           SubVector(propag, Pos);
@@ -243,8 +243,19 @@ int main(int argc, char **argv)
           CopyVector(Pos1v, Pos) ;						/*scattering position */
 
           /* attenuation untill scattering normalized to maximal path */
-          Prob *= (double) exp( - PathLength * AbsorptionC * WL - PathLength * ScatteringC) ;
-          Prob *= MaxPathLength * ScatteringC ; 
+          Prob *= (double) exp(-PathLength * AbsorptionC * WL - PathLength * ScatteringC) ;
+          //Prob *= MaxPathLength * ScatteringC ; 
+
+          /* point of scattering for trajectory visualization */
+          if (bVisTraj==TRUE)
+          {
+            Neutron ScatNeut;
+            CopyNeutron(&InputNeutrons[i], &ScatNeut);
+            CopyVector (Pos1v, ScatNeut.Position);
+            ScatNeut.Probability=Prob;
+
+            WriteWWP(&ScatNeut, VT_SCATTERED);
+          }
 
           /* S(q,w) scattering: new neutron variables*/ 
           Prob *= WL ;
@@ -315,10 +326,10 @@ int main(int argc, char **argv)
           SubVector(Pos_final, Pos) ;
           PathLength = LengthVector(Pos_final) + PathLengthHol ;  
 
-          if (PathLengthHol != 0.) CopyVector(Pos4v, Pos2v);  /* for hollow cylinder option: set output position to where it crosses the outer cylinder if crossed  */
+          if (PathLengthHol != 0.) 
+            CopyVector(Pos4v, Pos2v);  /* for hollow cylinder option: set output position to where it crosses the outer cylinder if crossed  */
 	
-          /* Test: set output to scattering positions:  CopyVector(Pos, Pos2v); */
-          Prob *= (double) exp( - PathLength * AbsorptionC * WL - PathLength * ScatteringC);
+          Prob *= exp(-PathLength * AbsorptionC * WL - PathLength * ScatteringC);
 
           /* Output matters */
           CopyVector(Pos2v, propag);

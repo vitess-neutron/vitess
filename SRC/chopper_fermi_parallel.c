@@ -166,15 +166,27 @@ void processNeutron (int i, int thread_i)
     n[0] = 1.;
     n[1] = n[2] = 0.;
 
-    if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1) return;
+    if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1) 
+    { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] - diameter/2.0);
+      return;
+    }
 
     if (pos[2] >= height/2.   || pos[2] <= - height/2. ||
-        pos[1] >= diameter/2. || pos[1] <= - diameter/2.) return;
+        pos[1] >= diameter/2. || pos[1] <= - diameter/2.)
+    { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] - diameter/2.0);
+      return;
+    }
 
-    if (PlaneLineIntersect(Pos, Dir, n, diameter/2., pos) != 1) return;
+    if (PlaneLineIntersect(Pos, Dir, n, diameter/2., pos) != 1)
+    { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] - diameter/2.0);
+      return;
+    }
 
     if( pos[2] >= height/2.   || pos[2] <= - height/2. ||
-        pos[1] >= diameter/2. || pos[1]<= - diameter/2.) return;	
+        pos[1] >= diameter/2. || pos[1]<= - diameter/2.)	
+    { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] - diameter/2.0);
+      return;
+    }
 
     /* translates neutron variables for X'= - diameter/2.  */
 
@@ -197,17 +209,23 @@ void processNeutron (int i, int thread_i)
       if (phase0 > 0 && omega > 0) 
       {
         if (! inPhase(GatesNumber, phase0 - coef_pi*M_PI, WL, Dir, Pos))
+        { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0]);
           return;
+        }
       } 
       else if (phase0 < 0 && omega < 0) 
       {
         if (! inPhase(GatesNumber, phase0 + coef_pi*M_PI, WL, Dir, Pos))
+        { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0]);
           return;
+        }
       } 
       else
-      { return;
+      { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0]);
+        return;
       }
     }
+    WriteDIAP(&InputNeutrons[i], VT_PASSED, pos_chp[0]);
 
     /* Output matters */
     /* transmit coordinates which were not changed, the rest overwrite below */

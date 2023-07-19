@@ -4112,7 +4112,7 @@ The help system allows to search for keywords.
 helpItem VITESS-General {
 VITESS is a virtual instrumentation tool for neutron scattering at pulsed and
 continuous sources. Please have a look on our web-site
-www.helmholtz-berlin.de/vitess for more and updated information.
+https://www.fz-juelich.de/en/jcns/expertise/simulations for more and updated information.
 
 VITESS is supported by a graphical user interface (GUI) which generates and
 controls command lines according to the given input.

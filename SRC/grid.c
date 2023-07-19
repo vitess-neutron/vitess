@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
             key_abs = 1;            // absorbed
             for(j=1; j<=NumberOfHoles; j++) 
             {
-              if ((-0.5*winsize[j] < (NewPositionY-ywincenter[j]))&&   // here the radius means half of the side length of a square
+              if ((-0.5*winsize[j] < (NewPositionY-ywincenter[j]))&&   // here the size means half of the side length of a square
                   ( 0.5*winsize[j] > (NewPositionY-ywincenter[j]))&&
                   (-0.5*winsize[j] < (NewPositionZ-zwincenter[j]))&&
                   ( 0.5*winsize[j] > (NewPositionZ-zwincenter[j]))) 
@@ -222,19 +222,23 @@ int main(int argc, char *argv[])
             }
           }
         }
-	
+	      if (key_abs==TRUE)
+          WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+        else
+          WriteIAP(&InputNeutrons[i], VT_PASSED);
 				
         // Move neutron to end of grid element with gravity effect and calculate Time of Flight
         // ------------------------------------------------------------------------------------
+        Output = InputNeutrons[i];
         if (keygrav == 1)
         {
-          TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], EndpointCol);
+          TimeOF = NeutronPlaneIntersectionGrav(&Output, EndpointCol);
         }
         else
         {
-          TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], EndpointCol);
+          TimeOF = NeutronPlaneIntersection1(&Output, EndpointCol);
         }
-        InputNeutrons[i].Time += TimeOF;
+        Output.Time += TimeOF;
 
 
         // In case of absorption: Attenuation in the grid material
@@ -242,32 +246,35 @@ int main(int argc, char *argv[])
         if (key_abs == 1) 
         {
           if (eMaterialO == VT_WABS_IDEAL)
-          continue;
+            continue;
           /* Attenuation during pass through grid material */
-          N_Wavelength = InputNeutrons[i].Wavelength;    
+          N_Wavelength = Output.Wavelength;    
           mu = Interpolation(N_Wavelength, eMaterialO, WAVS, MUS, nValF);
           if (mu == -10000.0)
           {
-            CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+            CountMessageID(WNDO_L_RANGE_TOO_SMALL, Output.ID);
           }
           prob = exp(-mu*TimeOF*VelocityReal);	
-          InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
+          Output.Probability = Output.Probability*prob;
+          if (Output.Probability < wei_min) 
+            continue;
         }
 
         if (eKeyColorTrack == 1)
         {
           if ((current_hole != current_color)&&(current_color != 0.0))
           { 
-            CountMessageID(WND_CROSS_TALK, InputNeutrons[i].ID);
+            CountMessageID(WND_CROSS_TALK, Output.ID);
             k++;
             if (k < 20)
               fprintf(LogFilePtr,"WARNING: CROSSTALK OF TRAJECTORIES IS FOUND!  DistanceAbs:   %f    current_hole:   %d   current_color:   %d    I \n", DistanceAbs, current_hole, current_color);
           }
         }    
 	
-        InputNeutrons[i].Color = current_hole;	 
-        InputNeutrons[i].Position[0] = 0.0;
-        Output = InputNeutrons[i];
+        Output.Color = current_hole;
+        WriteIAP(&Output, VT_PASSED);
+
+        Output.Position[0] = 0.0;
         WriteNeutron(&Output);
       }
     }

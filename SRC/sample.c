@@ -276,8 +276,10 @@ void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
   OutNeut.Vector[1]= sin(ScTheta)*cos(ScPhi);
   OutNeut.Vector[2]= sin(ScTheta)*sin(ScPhi);
 
-  /* bring the direction to the original co-ordinate system */
+  /* bring the direction to the original co-ordinate system and write intersection point */
   RotBackVector(RotMatrixNeut, OutNeut.Vector);
+
+  WriteIAP(&OutNeut, VT_SCATTERED);
 
   /* ok the neutron is at SP and has its new Direction */
   /* find the intersections with the sample walls      */
@@ -304,7 +306,7 @@ void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
 
     /* write the Neutron to the output file   */
     WriteNeutron(&OutNeut);
-    WriteIAP(&OutNeut, VT_SCATTERED);
+    // WriteIAP(&OutNeut, VT_SCATTERED);
   } 
   else 
   { 

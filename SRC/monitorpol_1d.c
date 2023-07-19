@@ -9,6 +9,7 @@
 /* 1.3  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.4  Nov 2020  K. Lieutenant  preparation for transfer to version 4                      */
 /* 1.4a Nov 2020  K. Lieutenant  bug of too long module name fixed                          */
+/* 1.5  Jun 2023  K. Lieutenant  update after each bunch                                    */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -39,21 +40,30 @@ short  bProbactiv = TRUE,      // -p    [-]   flag: YES: Probability weight   NO
        bExclusive = FALSE,     // -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written  NO: all are written
        iColour    = ANY_COLOR; // -C    [-]   index: for bAllFiles=FALSE: excludes all neutrons with diff. Colour from monitoring , if iColour >= 0 
                                //                    for bAllFiles=TRUE : max. colour to which additional monitor files are generated             
-long   nbiny  = 1;             // -n    [-]   number of monitor channels
+long   nBins  = 1;             // -n    [-]   number of monitor channels
 double xMin   = 0.0,           // -m   [var]  lower bound value of the monitored range 
        xMax   = 0.0,           // -M   [var]  upper bound value of the monitored range
        analysis_dir[3]         // -a -b -c    components of the quantization direction in x-, y- and z-direction
            ={0.0,0.0,1.0};
 
 // Variables determined from input parameters
-FILE*  fMonitor   = NULL;
-double RotMatrixAnalysis[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
+char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},
+       sParN[MAX_KIND+1][11]={"", "lambda", "time", "div_y", "div_z", "pos_y", "pos_z", "energy", "div_rad"};
+long   nBunches = 1,           //      [-]   number of bunches started 
+       nTrjTot  = 0,           //      [-]   total number of trajectories within binning
+       nTrj  [10001];          //      [-]   number of trajectories per bin  
+double IntTot  =0.0,           //     [n/s]  total intensity within bin range     
+       PosT  [10001],          //            limits of the bins (minimal and maximal value)
+       IntBin[10001],          //            total intensity (=count rate) per bin 
+       IntPol[10001],          //            summed up polarization per bin (Sum(count_rate * spin))
+       RotMatrixAnalysis[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
 void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
+void  UpdateMon  (long iBnch);          // Updates evaluation output file 
 
 
 /******************************/
@@ -64,21 +74,13 @@ int main(int argc, char *argv[])
 {
   char   sCompName  [21]="",
          sModVsnName[MOD_NAME_LEN+8]="";
-  char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},
-         sParN[MAX_KIND+1][11]={"", "wavelength", "time", "hor-div", "vert-div", "hor-pos", "vert-pos", "energy", "div-yz"};
   short  bRegistered=FALSE;
-  int	   dy=0, 
-         nCounts[10001];      // number of trajectories per bin  
-  long	 i=0;
-  double PosT   [10001],      // limits of the bins (minimal and maximal value)
-         IntBin [10001],      // total intensity (=count rate) per bin 
-         IntPol [10001],      // summed up polarization per bin (Sum(count_rate * spin))
-         Pol     =0.0,        // polarization in a bin
-         PolError=0.0,        // standarad variation of the polarization in a bin
-         Divy    =0.0, 
+  int	   iBin=0; 
+  long	 iBnch=0,             // current bunch
+         i=0;
+  double Divy    =0.0, 
          Divz    =0.0,  
          prob    =0.0,
-         bintc   =0.0,
          binpol  =0.0;
   
   // reading of input data and initilisation
@@ -90,20 +92,22 @@ int main(int argc, char *argv[])
 
   // the following 4 commands replace the call of 'PrintModuleName' to extend the module name
   CompID2Name (sCompName, _eModule);
-  snprintf(sModuleName, MOD_NAME_LEN,   "%s_%s",      sCompName, sParN[ePar]);
-  snprintf(sModVsnName, MOD_NAME_LEN+7, "%s_%s 1.4a", sCompName, sParN[ePar]);
+  snprintf(sModuleName, MOD_NAME_LEN,   "%s_%s",     sCompName, sParN[ePar]);
+  snprintf(sModVsnName, MOD_NAME_LEN+7, "%s_%s 1.5", sCompName, sParN[ePar]);
   print_module_name(sModVsnName);
  
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
-  
+
+  nBunches = ReadNumBnch();
+
   // initializes arrays
-  for (dy=0; dy < nbiny+1; dy++)
+  for (iBin=0; iBin < nBins+1; iBin++)
   {
-    PosT[dy] = xMin + ((xMax-xMin)*dy/(double)nbiny);
-    IntPol   [dy]=0.0;
-    IntBin   [dy]=0.0;
-    nCounts[dy]=0;
+    PosT   [iBin] = xMin + ((xMax-xMin)*iBin/(double)nBins);
+    IntPol [iBin]=0.0;
+    IntBin [iBin]=0.0;
+    nTrj   [iBin]=0;
   }
 
   DECLARE_ABORT;
@@ -119,6 +123,8 @@ int main(int argc, char *argv[])
       // Only write out event if EOB line is found, otherwise process trajectory
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
+        iBnch++;
+        UpdateMon(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
@@ -143,28 +149,11 @@ int main(int argc, char *argv[])
 	      switch (ePar) 
         {
 	        case MON_LAMBDA:
-	          dy = (int) floor((double)nbiny*(InputNeutrons[i].Wavelength - xMin)/(xMax-xMin));
-	    
-	          if ((dy>=0)&&(dy<nbiny))
-	          {
-		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
-		          IntBin[dy] = IntBin[dy] + prob;
-		          binpol     = binpol + prob * InputNeutrons[i].Spin[0];
-		          bintc      = bintc + prob;
-		          bRegistered=1;
-	          }
+	          iBin = (int) floor((double)nBins*(InputNeutrons[i].Wavelength - xMin)/(xMax-xMin));
 	          break;
 	    
 	        case MON_TIME:
-	          dy = (int) floor(nbiny*(InputNeutrons[i].Time - xMin)/(xMax-xMin));	      
-	          if ((dy>=0)&&(dy<nbiny))
-	          {
-		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
-		          IntBin[dy] = IntBin[dy] + prob;
-		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		          bintc      = bintc + prob;
-		          bRegistered=1;
-	          }
+	          iBin = (int) floor(nBins*(InputNeutrons[i].Time - xMin)/(xMax-xMin));	      
 	          break;
 	    
 	        case MON_DIV_Y:
@@ -172,16 +161,7 @@ int main(int argc, char *argv[])
 	          Divy *= 180.0/M_PI;
 	          if ((InputNeutrons[i].Vector[1]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
 	            Divy=0.0;
-	    
-	          dy = (int)floor(nbiny*(Divy - xMin)/(xMax-xMin));	      
-	          if((dy>=0)&&(dy<nbiny))
-	          {
-		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
-		          IntBin[dy] = IntBin[dy] + prob;
-		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		          bintc      = bintc + prob;
-		          bRegistered=1;
-	          }
+	          iBin = (int)floor(nBins*(Divy - xMin)/(xMax-xMin));	      
 	          break;
 	    
 	        case MON_DIV_Z:
@@ -189,40 +169,15 @@ int main(int argc, char *argv[])
 	          Divz *= 180.0/M_PI;
 	          if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
 	            Divz=0.0;
-	    
-	          dy = (int)floor(nbiny*(Divz - xMin)/(xMax-xMin));
-	          if ((dy>=0)&&(dy<nbiny))
-	          {
-		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
-		          IntBin[dy] = IntBin[dy] + prob;
-		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		          bintc      = bintc + prob;
-		          bRegistered=1;
-	          }
+	          iBin = (int)floor(nBins*(Divz - xMin)/(xMax-xMin));
 		      break;
 
 	        case MON_Y:
-	          dy = (int)floor(nbiny*(InputNeutrons[i].Position[1] - xMin)/(xMax-xMin));	      
-	          if ((dy>=0)&&(dy<nbiny))
-	          {
-		          IntPol[dy]   = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
-		          IntBin[dy] = IntBin[dy] + prob;
-		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		          bintc      = bintc + prob;
-		          bRegistered=1;
-	          }
+	          iBin = (int)floor(nBins*(InputNeutrons[i].Position[1] - xMin)/(xMax-xMin));	      
 	          break;
 	    
 	        case MON_Z:
-	          dy = (int)floor(nbiny*(InputNeutrons[i].Position[2] - xMin)/(xMax-xMin));	      
-	          if ((dy>=0)&&(dy<nbiny))
-	          {
-		          IntPol[dy] = IntPol[dy] + prob * InputNeutrons[i].Spin[0];
-		          IntBin[dy] = IntBin[dy] + prob;
-		          binpol     = binpol + prob * InputNeutrons[i].Spin[0] ;
-		          bintc      = bintc + prob;
-		          bRegistered=1;
-	          }
+	          iBin = (int)floor(nBins*(InputNeutrons[i].Position[2] - xMin)/(xMax-xMin));	      
 	          break;
 
           default:
@@ -230,7 +185,15 @@ int main(int argc, char *argv[])
             exit(-1);
 	      }
 	  
-	      if((dy>=0)&&(dy<nbiny)) nCounts[dy]++;
+	      if (iBin >= 0 && iBin < nBins)
+        { nTrj[iBin]++;
+          nTrjTot++;
+		      IntPol[iBin] += prob * InputNeutrons[i].Spin[0];
+		      IntBin[iBin] += prob;
+		      binpol       += prob * InputNeutrons[i].Spin[0] ;
+		      IntTot       += prob;
+		      bRegistered = 1;
+        }
 
 	      /* calculate spin vector in the original direction */
 	      RotBackVector(RotMatrixAnalysis, InputNeutrons[i].Spin);
@@ -245,26 +208,15 @@ int main(int argc, char *argv[])
 // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
 // ----------------------------------------------------------------------------------------
 my_exit:
-  // writes and closes monitor file 
-  WriteHeader1D(fMonitor, "polarization", bProbactiv, nbiny, sParN[ePar], sUnit[ePar]);
-  for (dy = 0; dy<(nbiny); dy++)
-  {
-    if (IntBin[dy]!=0.0 && nCounts[dy] > 0) 
-    {
-	    Pol      = IntPol[dy]/IntBin[dy];
-	    PolError = Pol * sqrt(1./nCounts[dy]);
-      fprintf(fMonitor, "%10.4f  %12.5e %12.5e  %7d\n", (PosT[dy]+PosT[dy+1])/2.0, Pol, PolError, nCounts[dy]);
-    }
-  }
-
-  fclose(fMonitor);
-
-  fprintf(LogFilePtr, "Binning  : %ld bins from %10.5f to %10.5f %s\n", nbiny, xMin, xMax, sUnit[ePar]);
-  fprintf(LogFilePtr, "File     : %s\n", MonFileName);
-  if(bintc != 0.) 
-    fprintf(LogFilePtr,"average polarization: %3.5f \n", binpol/bintc);
+  // writes monitor output
+  UpdateMon(nBunches);  
 
   // writes to instrument and log file
+  fprintf(LogFilePtr, "Binning  : %ld bins from %10.5f to %10.5f %s\n", nBins, xMin, xMax, sUnit[ePar]);
+  fprintf(LogFilePtr, "File     : %s\n", MonFileName);
+  if(IntTot != 0.) 
+    fprintf(LogFilePtr,"average polarization: %3.5f \n", binpol/IntTot);
+
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
   return(0);
@@ -305,8 +257,8 @@ void  OwnInit(int argc, char *argv[])
 	        break;
 
 	      case 'n':
-	        nbiny = atol(&argv[i][2]);      /* number of bins */
-	        if (nbiny > 10000)
+	        nBins = atol(&argv[i][2]);      /* number of bins */
+	        if (nBins > 10000)
 	          Error("number of bins must be <= 10000");
           break;
         case 'C':
@@ -338,9 +290,6 @@ void  OwnInit(int argc, char *argv[])
   if (MonFileName==NULL)
   { Error("you must define a MonitorOutputFile"); 
   }
-  else
-  { fMonitor = OpenOutputFile(MonFileName, TRUE, "wt");
-  }
 
   if (bProbactiv != 1) 
     bProbactiv = 0;	
@@ -350,3 +299,47 @@ void  OwnInit(int argc, char *argv[])
 
   return;
 }
+
+
+/*******************************************************/
+/**  Updates main monitor output file                 **/
+/*******************************************************/
+void UpdateMon(long iBnch)
+{
+  double f_norm=1.0;             // ratio of total to processed bunches after treating current bunch
+  long   iBin=0;                 // index of bins in x-axix and for main monitor
+  double xBin=0.0,               // center of the current bin 
+         Pol     =0.0,        // polarization in a bin
+         PolError=0.0;        // standard variation of the polarization in a bin
+  FILE*  pFile=NULL;
+
+  // opens monitor file
+  pFile = OpenOutputFile(MonFileName, TRUE, "wt");
+
+  if (pFile != NULL)     
+  { 
+    WriteHeader1DB(pFile, FALSE, "polarization", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, sParN[ePar], sUnit[ePar]);
+
+    if (iBnch > 0 && nBunches > 1)
+      f_norm = (double) nBunches / (double) iBnch;
+
+    for (iBin = 0; iBin < nBins; iBin++)
+    {
+      xBin = (PosT[iBin]+PosT[iBin+1])/2.0;
+
+      if (IntBin[iBin]!=0.0 && nTrj[iBin] > 0) 
+      {
+	      Pol      = IntPol[iBin]/IntBin[iBin];
+	      PolError = Pol * sqrt(1./nTrj[iBin]);
+        fprintf(pFile, "%10.4f  %12.5e %12.5e  %7d\n", xBin, Pol, PolError, nTrj[iBin]);
+      }
+      else
+      { 
+        fprintf(pFile, "%10.4f   0.00000E+00  0.00000E+00        0\n",    xBin);
+      }
+    }
+
+    fclose(pFile);
+  }
+}
+

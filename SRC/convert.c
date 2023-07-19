@@ -537,7 +537,7 @@ void      SrcName_ID2Txt(char* sText, const VtSrcName eID)
     case ILL : strcpy(sText, "ILL" ); break;
     case HMI : strcpy(sText, "HMI" ); break;
     case FRM2: strcpy(sText, "FRM2"); break;
-    default  : strcpy(sText, "");
+    default  : strcpy(sText, "-");
   }
 }
 VtSrcName SrcName_Txt2ID(const char* sText)
@@ -1583,7 +1583,8 @@ VtMonPar  MonPar_Txt2ID(const char* sText)
   else if (strcmp(sText, "time"     )==0) eID=TIME     ;
   else if (strcmp(sText, "k_y"      )==0) eID=K_Y      ;
   else if (strcmp(sText, "k_z"      )==0) eID=K_Z      ;
-  else if (strcmp(sText, "pos_r"    )==0) eID=POS_R    ;
+  else if (strcmp(sText, "pos_r"    )==0 
+        || strcmp(sText, "r")        ==0) eID=POS_R    ;
   else if (strcmp(sText, "pos_phi"  )==0) eID=POS_PHI  ;
   else if (strcmp(sText, "dir_phi"  )==0) eID=DIR_PHI  ;
   else if (strcmp(sText, "dir_theta")==0) eID=DIR_THETA;

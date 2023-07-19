@@ -101,15 +101,15 @@ double *PosT=NULL,          // limits of bin (minimal and maximal value)
        *Int=NULL,           // intensity (=count rate) per bin 
        *Norm=NULL,          // normalisation value for each bin
        *SD=NULL;            // standard deviation per bin      
-long   *nBin=NULL;          // number of trajectories per bin  
+long   *nTrj=NULL;          // number of trajectories per bin  
 long    nTrjTot=0;          // total number of traj. within binning and eval. time
 double  IntTot=0.0;         // total count rate within binning and eval. time     
 double  IntMax =-1.0e10,    // maximal count rate found in one bin
         BinSize= 0.0;       // size of each bin          
 long    nBunches= 1;         // number of bunches started 
 static
-char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},                                     // unit and parameter name
-       sParN[MAX_KIND+1][11]={"", "wavelength", "time", "hor-div", "vert-div", "hor-pos", "vert-pos", "energy", "div-yz"}; // of the possible x-axis parameters
+char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},                        // unit and parameter name
+       sParN[MAX_KIND+1][11]={"", "lambda", "time", "div_y", "div_z", "pos_y", "pos_z", "energy", "div_rad"}; // of the possible x-axis parameters
 
 
 /******************************/
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
               if(iBin>=0 && iBin<nBins && time>=FiltTimeMin && time<=FiltTimeMax)
                 {
                   Int [iBin] += prob/nRot;
-                  nBin[iBin] += 1;
+                  nTrj[iBin] += 1;
                   IntTot     += prob/nRot;
                   nTrjTot    += 1;
                   bRegistered = 1;
@@ -277,14 +277,14 @@ int main(int argc, char *argv[])
         { if (iBin>=0 && iBin<nBins && time>=FiltTimeMin && time<=FiltTimeMax)
           {
             Int [iBin] += prob;
-            nBin[iBin] += 1;
+            nTrj[iBin] += 1;
             IntTot     += prob;
             nTrjTot    += 1;
             bRegistered = 1;
             if (nAddMons > 0 && iCol >= 0 && iCol < nAddMons)
             { 
               Int [iBin + (iCol+1)*(nBins+1)] += prob;
-              nBin[iBin + (iCol+1)*(nBins+1)] += 1;
+              nTrj[iBin + (iCol+1)*(nBins+1)] += 1;
             }
           }
 	      }
@@ -330,7 +330,7 @@ my_exit:
   if (Int !=NULL) free(Int);
   if (Norm!=NULL) free(Norm);
   if (SD  !=NULL) free(SD);
-  if (nBin!=NULL) free(nBin);
+  if (nTrj!=NULL) free(nTrj);
 #endif
 
   // writes to instrument and log file
@@ -485,7 +485,7 @@ void InitArrays()
   Norm = (double*) calloc(nBins+1, sizeof(double));
   Int  = (double*) calloc((nBins+1)*(nAddMons+1), sizeof(double));
   SD   = (double*) calloc((nBins+1)*(nAddMons+1), sizeof(double));
-  nBin = (long*)   calloc((nBins+1)*(nAddMons+1), sizeof(long));
+  nTrj = (long*)   calloc((nBins+1)*(nAddMons+1), sizeof(long));
 
   // initialisation of monitor arrays and setting of normalisation array
   BinSize = (MaxY-MinY)/(double)nBins;
@@ -497,7 +497,7 @@ void InitArrays()
     { 
       Int [iBin+jMon*(nBins+1)]=0.0;
       SD  [iBin+jMon*(nBins+1)]=0.0;
-      nBin[iBin+jMon*(nBins+1)]=0;
+      nTrj[iBin+jMon*(nBins+1)]=0;
     }
 
     if (eNormalize==NORM_BIN_SIZE)
@@ -590,7 +590,7 @@ void UpdateMon(int jMon, long iBnch)
 
   if (pFile != NULL)     
   { 
-    WriteHeader1DB(pFile, "intensity", iColor, iBnch, nBunches, nBins, IntTot, nTrjTot, sParN[ePar], sUnit[ePar]);
+    WriteHeader1DB(pFile, FALSE, "intensity", iColor, iBnch, nBunches, nBins, IntTot, nTrjTot, sParN[ePar], sUnit[ePar]);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;
@@ -601,15 +601,17 @@ void UpdateMon(int jMon, long iBnch)
       kBin = iBin + (jMon+1)*(nBins+1);
       xBin = (PosT[iBin]+PosT[iBin+1])/2.0;
 
-      if (nBin[kBin]!=0) 
-        SD [kBin] = Int[kBin]*sqrt(1./((double)nBin[kBin]/(double)nRot));
+      if (nTrj[kBin]!=0 && nRot!=0) 
+        SD[kBin] = Int[kBin]*sqrt(1./((double)nTrj[kBin]/(double)nRot));
+      else
+        SD[kBin] = 0.0;
 
       if (Norm[iBin]!=0)
       { 
         if (ePar==MON_DIV_YZ) 
-          fprintf(pFile, "%10.4f  %12.5e %12.5e  %10.2f\n", xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]/(double)nRot);
+          fprintf(pFile, "%10.4f  %12.5e %12.5e  %10.2f\n", xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nTrj[kBin]/(double)nRot);
         else
-          fprintf(pFile, "%10.4f  %12.5e %12.5e  %7ld\n",   xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nBin[kBin]);
+          fprintf(pFile, "%10.4f  %12.5e %12.5e  %7ld\n",   xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nTrj[kBin]);
       }
       else
       { 

@@ -248,8 +248,8 @@ proc helpToHtml {{args ""}} {
   puts $f {
     <p><hr><strong>
     <a href="#top">Back to start of page</a><p>
-    <a href="http://www.helmholtz-berlin.de/vitess/index.html">VITESS homepage</a><hr>
-    <address><a href="mailto:vitess@helmholtz-berlin.de">Email vitess@helmholtz-berlin.de</a></address>
+    <a href="https://www.fz-juelich.de/en/jcns/expertise/simulations">VITESS homepage</a><hr>
+    <address><a href="mailto:vitess@fz-juelich.de">Email vitess@fz-juelich.de</a></address>
     </strong>
   </body>
 </html>

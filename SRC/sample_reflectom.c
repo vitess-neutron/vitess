@@ -102,6 +102,7 @@ int main(int argc, char **argv)
   double     arg=0.0, ReflAnglHor=0.0, ReflAnglVert=0.0,
              RotMatrixRefl[3][3],
              pathlen=0.0,          // length of the path inside the sample
+             tof  =0.0, dist =0.0, // TOF and distance to point of reflection (for visualization)
              dist1=0.0, dist2=0.0; // distances to intersections points with the substrate
   long       i=0;                  // index of trajectories
   short      bHitSmpl=FALSE,       // flag: sample is hit
@@ -187,9 +188,8 @@ int main(int argc, char **argv)
         Neutrons.Vector[1] = Neutrons.Vector[1]/mod;
         Neutrons.Vector[2] = Neutrons.Vector[2]/mod;
 
-        // Save the neutron with primary direction and weight for transmission
-        if (bTreatAll == TRUE )
-          CopyNeutron(&Neutrons, &NeutronT);	  	  
+        // Save the neutron with primary direction and weight for transmission and visualization
+        CopyNeutron(&Neutrons, &NeutronT);	  	  
 	  
         ProbIn  = InputNeutrons[i].Probability ;
         ProbOut = 0.0;	      
@@ -200,9 +200,11 @@ int main(int argc, char **argv)
         if (bHitSmpl == TRUE) /* neutron hits the sample surface */
         {
           /* moment of arriving at the sample plane (x=0.0), new position */
-          Neutrons.Time += (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0] / V_FROM_LAMBDA(Neutrons.Wavelength)/**/ ;
+          dist = (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0];
+          tof  = dist / V_FROM_LAMBDA(Neutrons.Wavelength);
+          Neutrons.Time +=  tof;
           CopyVector(Neutrons.Vector, vPath) ;
-          MultiplyByScalar(vPath, (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0] ) ;
+          MultiplyByScalar(vPath, dist);
           AddVector  (Neutrons.Position, vPath) ; /* vPath = displacement vector */
 	  
           // Save the neutron with primary direction and weight for offspecular scattering
@@ -217,7 +219,7 @@ int main(int argc, char **argv)
               // Here, the incoherent scattering is treated
               if (doIncoherent) 
               {
-                Neutrons   = InputNeutrons[i];
+                Neutrons = InputNeutrons[i];
                 /* checks if neutron hits the surface of the sample and gives global variables in	the frame of sample */
                 CheckRefl(&Neutrons, 1) ;
 
@@ -887,6 +889,7 @@ short	FindISPs(VectorType ISP1, VectorType ISP2, Neutron* pNeutron, short bSubst
 
 }/* End FindISPs */
 
+
 /********************************************************************************************************/
 /* controls, if neutron is reflected, tranfers into sample frame (and returns intersection points)      */
 /********************************************************************************************************/
@@ -1318,6 +1321,9 @@ void ScatterIncoherent(Neutron* outputNeutron, double PathInSmpl)
   /* makes depth correction to get back to the old frame for Depth != 0 */
   RotBackVector(RotMatrixSmpl, Depth) ;
   AddVector(outputNeutron->Position, Depth) ;
+
+  /* writes point of scattering for trajectory visualization */
+  WriteIAP(outputNeutron, VT_SCATTERED);
     
   /* computes neutron variables in the output frame */
   SubVector(outputNeutron->Position, TranslOut) ;
@@ -1480,6 +1486,9 @@ void TransformBackToGlobalSystemAndWriteNeutron(Neutron* outputNeutron, short bR
   { RotBackVector(RotMatrixSmpl, Depth) ;
     AddVector(outputNeutron->Position, Depth) ;
   }
+
+  /* writes point of scattering for trajectory visualization */
+  WriteIAP(outputNeutron, VT_SCATTERED);
     
   /* computes neutron variables in the output frame */
   SubVector(outputNeutron->Position, TranslOut) ;
@@ -1492,13 +1501,16 @@ void TransformBackToGlobalSystemAndWriteNeutron(Neutron* outputNeutron, short bR
   return;   
 }
 
+
 /*************************************************************************************/
 /* Neutron parameters are transferred to the output frame and written to the stream  */
 /*************************************************************************************/
-
 void  Transf2OutputAndWriteNeutron(Neutron* outNeutron)
 {
   outNeutron->Probability = ProbOut;
+
+  /* writes point of scattering for trajectory visualization */
+  WriteIAP(outNeutron, VT_SCATTERED);
 
   /* computes neutron variables in the output frame */
   SubVector(outNeutron->Position, TranslOut) ;
@@ -1510,4 +1522,3 @@ void  Transf2OutputAndWriteNeutron(Neutron* outNeutron)
     
   return;   
 }
-

@@ -749,9 +749,13 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   }
 
   if (bVisInstr)
-  { Shift[0]= dShiftX;
-    Shift[1]= dShiftY;
-    Shift[2]= dShiftZ;
+  { 
+    if (bVisTraj)           // in the other case, the parameters were determined already
+    { Shift[0]= dShiftX;
+      Shift[1]= dShiftY;
+      Shift[2]= dShiftZ;
+      ReadInstrData(iModuleId, BegPosM, &BlnLen, &RotZ, &RotY, sInstrInfIn);
+    }
     WriteGeomData(BegPosM, LengthVector(Shift));
   }
 
@@ -1018,8 +1022,9 @@ void WriteNeutron(Neutron *OutNeutron)
   // some modules may produce unreasonable probabilities
   if (ISNAN(tx) || tx < 0) 
   {
-    OutNeutron->Probability = 0;
-  } else 
+    OutNeutron->Probability = 0.0;
+  } 
+  else 
   {
     dProbTotal[0] +=    tx;
     dProbQuad     += sq(tx);
@@ -1058,6 +1063,7 @@ void WriteEOB()
 /* 'WriteInstrData()' writes position of each component in a global co-ord system */
 /* 'ReadInstrData()'  reads these data                                            */
 /* 'WriteGeomData()   writes data to draw the instrument                          */
+/*  WriteIAP()        writes an intersection point to the traj. file if wanted    */
 /*  WriteWWP()        writes an intersection point to the trajectory file         */
 /* 'WriteSimData()'   writes data that other modules may need                     */
 /*                    (meas.time, wavelength, frequency)                          */
@@ -1134,6 +1140,32 @@ void WriteInstrData(VectorType Pos)
       fputs("EOP\n", pFile);
     fclose(pFile);
   }
+}
+
+void WriteDIAP(Neutron* pNeutron, VtReason eReason, double Dist)
+{ 
+  if (bVisTraj==TRUE)
+  {
+    Neutron ScatNeut;
+    VectorType vPath;
+    double     PathLen=0.0;
+
+    if (pNeutron->Vector[0] > 0.0)
+      PathLen = Dist/pNeutron->Vector[0];
+
+    CopyNeutron(pNeutron, &ScatNeut);
+    CopyVector(ScatNeut.Vector, vPath) ;
+    MultiplyByScalar(vPath, PathLen);
+    AddVector  (ScatNeut.Position, vPath) ; /* vPath = displacement vector */
+
+    WriteWWP(&ScatNeut, eReason);
+  }
+}
+
+void WriteIAP(Neutron *pNeutron, VtReason eReason)
+{
+  if (bVisTraj)
+    WriteWWP(pNeutron, eReason);
 }
 
 void WriteWWP(Neutron *pNeutron, VtReason eReason)

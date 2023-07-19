@@ -87,7 +87,7 @@ class Mon2D
   double** dataArrayPolWeights; // in case polarisation analysis is desired, here the spin weights are stored
   double** dataArrayError;
   double** dataArrayPol;        // this is the average polarisation in a bin
-  long**   dataArrayCounts;
+  long**   dataArrayCounts;     // number of trajectories per channel contributing to count rate
 
   // string weightTag[2];     // text: parameter
   // string formatTag[2];     // text: format

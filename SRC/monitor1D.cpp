@@ -76,12 +76,12 @@ int main(int argc, char *argv[])
   }
 
 my_exit:
-  // Stores the information in the output file, closes the file and releases memory.
+  // writes the information to the output file
   templateMonitor.WriteOut(templateMonitor.nBunches);
-  templateMonitor.FreeMemory();
 
-  // releases memmory and writes to instrument and log file
+  // writes to instrument and log file and releases memmory
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
+  templateMonitor.FreeMemory();
 
   return(0);
 }

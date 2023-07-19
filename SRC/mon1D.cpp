@@ -14,6 +14,7 @@ Mon1D::Mon1D()
   for (int i = 0; i < 3; i++) 
   {
     dataArray[i] = NULL;
+    dataArrayPol[i] = NULL;
     dataArrayError[i]  = NULL;
     dataArrayCounts[i] = NULL;
     dataArrayPolWeights[i] = NULL;
@@ -60,7 +61,7 @@ Mon1D::Mon1D()
   bWeight = 1;
   exclCounts = 0;
 
-  sParName[NO_PAR   ] = "no_par";   sParUnit[NO_PAR   ] = "-";
+  sParName[NO_PAR   ] = "no_par";   sParUnit[NO_PAR   ] = "";
   sParName[POS_X    ] = "pos_x";    sParUnit[POS_X    ] = "cm";
   sParName[POS_Y    ] = "pos_y";    sParUnit[POS_Y    ] = "cm";
   sParName[POS_Z    ] = "pos_z";    sParUnit[POS_Z    ] = "cm";
@@ -259,11 +260,13 @@ void Mon1D::OwnInit(int argc, char* argv[])
     {
       polAnalysisRotMatrix =  MathMatrix::RotMatrixXFromVector(polAnalysisVector);
       
+      dataArrayPol[ii]        = (double*) malloc(nBinsX[ii] * sizeof(double));
       dataArrayPolWeights[ii] = (double*) malloc(nBinsX[ii] * sizeof(double));
       
       for (int i = 0; i < nBinsX[ii]; i++) 
       {
-	      dataArrayPolWeights[ii][i]=0;
+        dataArrayPol       [ii][i]=0.0;
+	      dataArrayPolWeights[ii][i]=0.0;
       }
     }
   }
@@ -488,8 +491,13 @@ void Mon1D::WriteOut(long iBnch)
         IntTot[ii] += dataArrayPolWeights[ii][iBin];
         if (dataArrayCounts[ii][iBin] > 0 && dataArrayPolWeights[ii][iBin] > 0) 
         { 
-          dataArrayError[ii][iBin] = dataArray[ii][iBin] / dataArrayPolWeights[ii][iBin] / sqrt(dataArrayCounts[ii][iBin]);
+          dataArrayPol  [ii][iBin] = dataArray[ii][iBin] / dataArrayPolWeights[ii][iBin];
+          dataArrayError[ii][iBin] = dataArrayPol[ii][iBin] / sqrt(dataArrayCounts[ii][iBin]);
           nBinPol[ii]++;
+        }
+        else
+        { dataArrayPol  [ii][iBin] = 0.0;
+          dataArrayError[ii][iBin] = 0.0;
         }
       }
       else
@@ -510,20 +518,22 @@ void Mon1D::WriteOut(long iBnch)
     {
       if (iBnch > 0 && nBunches > 1)
         fNorm = (double) nBunches / (double) iBnch;
+      else
+        fNorm = 1.0;
 
       // For polarisation analysis, divide the value in each bin by the sum of spin weights
       if (analysePol) 
       { 
-        WriteHeader1DB(fMonitor[ii], "polarisation", ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
+        WriteHeader1DB(fMonitor[ii], FALSE, "polarisation", ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
         for (iBin = 0; iBin < nBinsX[ii]; iBin++) 
         { if (dataArrayCounts[ii][iBin] > 0 && dataArrayPolWeights[ii][iBin] > 0) 
             fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
-	                                                                 dataArray[ii][iBin]/dataArrayPolWeights[ii][iBin], dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
+	                                                                 dataArrayPol[ii][iBin], dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
         }
       }
       else
       { 
-        WriteHeader1DB(fMonitor[ii], "intensity",    ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
+        WriteHeader1DB(fMonitor[ii], FALSE, "intensity",    ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
         for (iBin = 0; iBin < nBinsX[ii]; iBin++) 
         { fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
 	                                                              fNorm * dataArray[ii][iBin], fNorm * dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
@@ -552,6 +562,7 @@ void Mon1D::FreeMemory()
     
     if (analysePol) 
     {
+      free (dataArrayPol[ii]);
       free (dataArrayPolWeights[ii]);
     }
   }

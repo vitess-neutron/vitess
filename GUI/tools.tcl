@@ -219,10 +219,10 @@ You can get help about every
 Alternativly, you can visit web pages at
 }
 
-  helpLink $w http://www.helmholtz-berlin.de/vitess t11
+  helpLink $w https://www.fz-juelich.de/en/jcns/expertise/simulations t11
   $w insert end {
 
-For further questions, please send an email to vitess@helmholtz-berlin.de
+For further questions, please send an email to vitess@fz-juelich.de
 
 }
 

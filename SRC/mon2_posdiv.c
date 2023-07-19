@@ -173,7 +173,18 @@ int main(int argc, char *argv[])
 // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
 // ----------------------------------------------------------------------------------------
 my_exit:
-  // writes and closes monitor file 
+    // calculate standard deviation
+    for (iPos = 0; iPos < nBinsPos; iPos++) 
+    { for (jDiv = 0; jDiv < nBinsDiv; jDiv++) 
+      {
+        if (nTrajYZ[iPos][jDiv] > 0) 
+          IntYZError[iPos][jDiv] = IntYZ[iPos][jDiv] / sqrt(nTrajYZ[iPos][jDiv]);
+        else 
+          IntYZError[iPos][jDiv] = 0.0;
+      }
+    }
+
+    // writes and closes monitor file 
   if (index_yz==Y_AXIS)
     WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nBinsPos, "y/cm", nBinsDiv, "y-divergence/deg");
   else if (index_yz == Z_AXIS) 

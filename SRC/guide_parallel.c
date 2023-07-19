@@ -961,14 +961,15 @@ void OwnInit   (int argc, char *argv[])
         if (j==0) 
         {
           fprintf(pFile,
-                  "# length [m]  width [cm]  height [cm]  angle [deg] \n"
-                  "#-----------------------------------------------------------------------------------------\n");
+                  "# length [m]  width [cm]  height [cm] \n"
+                  "#-------------------------------------\n");
         } else 
         {
           AreaY += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
           AreaZ += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
         }
-        fprintf(pFile, "%10.4f  %10.6f  %10.6f  %10.6f\n", pPieces[j].Xpce/100.0, 2.0*pPieces[j].Ypce, 2.0*pPieces[j].Zpce, Max(0.0, Min(beta_ges, beta*(j-0.5)*180.0/M_PI)));
+        //fprintf(pFile, "%10.4f  %10.6f  %10.6f  %10.6f\n", pPieces[j].Xpce/100.0, 2.0*pPieces[j].Ypce, 2.0*pPieces[j].Zpce, Max(0.0, Min(beta_ges, beta*(j-0.5)*180.0/M_PI)));
+        fprintf(pFile, "%10.4f  %10.6f  %10.6f\n", pPieces[j].Xpce/100.0, 2.0*pPieces[j].Ypce, 2.0*pPieces[j].Zpce);
       }
 
       allocRdata(&(pPieces[j].RData), nPlanes);

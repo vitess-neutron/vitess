@@ -21,6 +21,7 @@
 /******************************/
 /** Global Variables         **/
 /******************************/
+// Input parameters
 FILE  *refl_filelup=NULL;           //           pointer to file for spin up reflectivity  
 FILE  *refl_fileldo=NULL;           //           pointer to file for spin down reflectivity
 
@@ -41,17 +42,21 @@ double surfacerough=0.0;            // -q        maximal angle of the mirror wav
 double X_MIN=-100.0, X_MAX=100.0,   // -A -C     limits of the mirror x-direction
        Y_MIN=-100.0, Y_MAX=100.0,   // -D -E                          y-direction
        Z_MIN=-100.0, Z_MAX=100.0;   // -H -K                          z-direction
-double halfaxis[3]={1.0,1.0,1.0},   // -a -b -c  half axes of the ellipsoid
+double halfaxis[3]={100.0,1.0,1.0}, // -a -b -c  half axes of the ellipsoid
        RotAngl    = 0.0,            // -Q        angle of rotation of the mirror
        humidity   =55.0;            // -r        Humidity of the air, in % 
 
 VectorType PosMain ={0.0,0.0,0.0},  // -d -e -k  center position of the elliptic mirror
            TransOut={0.0,0.0,0.0};  // -s -t -w  position of the output frame
 
-double mu1, mu2,                    //           additional variable for air attenuation calculations
+// Variables determined from input parameters or trajectory data
+double Xmin=0.0, Xmax=0.0,          //           ranges relative to center
+       Ymin=0.0, Ymax=0.0,      
+       Zmin=0.0, Zmax=0.0,      
+       mu1, mu2,                    //           additional variable for air attenuation calculations
        rdatalup[1000],              //           reflectvitiy table for spin-up neutrons
        rdataldo[1000];              //           reflectvitiy table for spin-down neutrons
-double RotMatrixMirror[3][3];       //           Rotation matrix corresponding to axis and angle of mirror rotation
+double RotMatMirr[3][3];       //           Rotation matrix corresponding to axis and angle of mirror rotation
 MirrorSecond MyMirror;              //           mirror data obtained from input parameters
 
 #ifdef VT_GRAPH
@@ -60,11 +65,13 @@ MirrorSecond MyMirror;              //           mirror data obtained from input
 
 /******************************/
 /** Prototypes               **/
-/******************************/
-void  OwnInit(int argc, char *argv[]);      // reads input parameters and sets global parameters
-void  CalcAndWritePar();                    // calculates arrays from input parameters and writes to log file
-void  SetGeometry(char* sColor);            // fills the structure stGeometry for visualization   missing !!!
-
+/******************************/ 
+void  OwnInit(int argc, char *argv[]);          // reads input parameters and sets global parameters
+void  CalcAndWritePar();                        // calculates arrays from input parameters and writes to log file
+void  SetGeometry(char* sColor);                // fills the structure stGeometry for visualization   missing !!!
+void  CalcEdges(VectorType A, VectorType B, // calculates edges and center points of the mirror from the given ranges 
+                VectorType C, VectorType D,
+                VectorType Y, VectorType Z);
 
 /******************************/
 /**      MAIN Program        **/
@@ -87,7 +94,7 @@ int main(int argc, char *argv[])
   PrintModuleName(_eModule, "1.23");
 	OwnInit(argc, argv);
 
-  bVisInstalled = MISSING;    // needs to be done still
+  bVisInstalled = TRUE;    // needs to be done still
   if (bVisInstr) 
     bBlowUp = TRUE;
 
@@ -134,9 +141,9 @@ int main(int argc, char *argv[])
         /* Choose the behavior of neutrons between channels */
 
         /* Neutrons are travels WITHOUT crosstalk between channels */
-        TimeOF1 = PathThroughMirrorGravOrder2(&InputNeutrons[i], MyMirror, X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX, halfaxis, PosMain,
+        TimeOF1 = PathThroughMirrorGravOrder2(&InputNeutrons[i], MyMirror, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax, halfaxis, PosMain,
                                               wei_min, rdatalup, rdataldo, surfacerough, keygrav, keypol,
-                                              qspin, vistype, keyVisAll, keyreflect, &reflp, RotMatrixMirror, keyfluxair, mu1, mu2);
+                                              qspin, vistype, keyVisAll, keyreflect, &reflp, RotMatMirr, keyfluxair, mu1, mu2);
 
         if(TimeOF1 == -1.0)  continue;
 
@@ -202,6 +209,9 @@ int main(int argc, char *argv[])
       cpgclos();
     }
 #endif
+
+  /* write geometry file */
+  SetGeometry("magenta");
 
   /* Do the general cleanup */
   Cleanup(TransOut[0], TransOut[1], TransOut[2], 0.0, 0.0);
@@ -442,23 +452,20 @@ void  CalcAndWritePar()
 
   if (keyrotaxis == 0)
   {
-    FillRotMatrixYX(RotMatrixMirror, RotAngl, 0.0);
+    FillRotMatrixYX(RotMatMirr, RotAngl, 0.0);
   }
   if (keyrotaxis == 1)
   {
-    FillRotMatrixZY(RotMatrixMirror, RotAngl, 0.0);
+    FillRotMatrixZY(RotMatMirr, RotAngl, 0.0);
   }
   if (keyrotaxis == 2)
   {
-    FillRotMatrixZY(RotMatrixMirror, 0.0, RotAngl) ;
+    FillRotMatrixZY(RotMatMirr, 0.0, RotAngl) ;
   }
 
-  X_MIN = X_MIN - PosMain[0];
-  X_MAX = X_MAX - PosMain[0];
-  Y_MIN = Y_MIN - PosMain[1];
-  Y_MAX = Y_MAX - PosMain[1];
-  Z_MIN = Z_MIN - PosMain[2];
-  Z_MAX = Z_MAX - PosMain[2];
+  Xmin = X_MIN - PosMain[0];  Xmax = X_MAX - PosMain[0];
+  Ymin = Y_MIN - PosMain[1];  Ymax = Y_MAX - PosMain[1];
+  Zmin = Z_MIN - PosMain[2];  Zmax = Z_MAX - PosMain[2];
 
   if (halfaxis[0] == 0.0)
   {
@@ -573,6 +580,117 @@ void  CalcAndWritePar()
 /** Fills the structure stGeometry for visualization  **/
 /*******************************************************/
 void SetGeometry(char* sColor)
+{ 
+  /* As there is currently no possibiilty to visualize a radial slice of an ellipsid,
+     the visualization is approached by a cylinder slice              */
+
+  VectorType A={0,0,0}, B={0,0,0},   //        edges of the mirror
+             C={0,0,0}, D={0,0,0},
+             Y={0,0,0}, Z={0,0,0};   //        center of the mirror on connection A-B and on the surface (Z) 
+  double     alpha=0.0,              // [rad]  hor. deviation of the direction to the mirror center from y axis
+             beta=0.0,               // [rad]  vert. deviation of the direction to the mirror center from y axis
+             zeta=0.0,               // [rad]  half axis of the cylinder slice
+             x   =0.0,               // [ ]    cos(zeta)
+             l   =0.0,               // [cm]   length of the mirror (straight line)      
+             d   =0.0,               // [cm]   distance between straight line and mirror surface      
+             Rcyl=0.0,               // [cm]   radius of the cylinder
+             Hcyl=0.0;               // [cm]   height of the cylinder
+
+  // calculate points on the mirror defining the 4 edges 
+  CalcEdges(A, B, C, D, Y, Z);         
+
+  // determine height, radius and half opening zeta of the cylinder slice, and the axis orientation
+  // and the deviation from y axis
+  l = DistVector(A,B)/2.0;
+  d = DistVector(Y,Z);
+  x = l*l/(l*l+d*d) - sqrt(sq(l*l/(l*l+d*d)) - (l*l-d*d)/(l*l+d*d));
+  zeta = acos(x);
+  Rcyl = l/sin(zeta);
+  Hcyl = DistVector(A,C);
+   
+  alpha = asin(Z[0]/Rcyl);      // atan((A[1]-B[1])/(A[0]-B[0]));
+  beta  = asin(Z[2]/Rcyl);      // atan((A[2]-C[2])/(A[0]-C[0]));
+
+  sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+  stGeometry.pDescr  =  sVisDescrpt;
+  stGeometry.eModule = _eModule;
+
+  stGeometry.nCylSlices = 1; 
+  stGeometry.pCylSlice  = (VtCylSlice*) calloc(stGeometry.nCylSlices, sizeof(VtCylSlice));
+	      
+  stGeometry.pCylSlice[0].Radius     = BlowUp * Rcyl; 
+  stGeometry.pCylSlice[0].Width      = BlowUp * Rcyl*2.0*zeta;
+  stGeometry.pCylSlice[0].Height     = BlowUp * Hcyl;
+  stGeometry.pCylSlice[0].vCntr[0]   = PosMain[0]+Z[0]-Rcyl*sin(alpha);
+  stGeometry.pCylSlice[0].vCntr[1]   = PosMain[1]+Z[1]-Rcyl*cos(alpha);
+  stGeometry.pCylSlice[0].vCntr[2]   = PosMain[2]+Z[2]-Rcyl*sin(beta);
+  stGeometry.pCylSlice[0].vSymAxis[0]= 0.0;
+  stGeometry.pCylSlice[0].vSymAxis[1]= sin(beta);
+  stGeometry.pCylSlice[0].vSymAxis[2]= cos(beta);
+  stGeometry.pCylSlice[0].OpenAngle  = 2.0*Degrees(zeta);
+  stGeometry.pCylSlice[0].Phi        = 90.0 + Degrees(alpha);
+
+  RotBackVector(RotMatMirr, stGeometry.pCylSlice[0].vSymAxis);
+
+  return;
+}
+
+
+/***********************************************************/
+/** Calculates edges of the mirror from the given ranges  **/
+/***********************************************************/
+void CalcEdges(VectorType A, VectorType B, VectorType C, VectorType D, VectorType Y, VectorType Z)
 {
+  double Ry_fwd=0.0, Ry_bak=0.0,  // radii of the ellipse cut at x = Xmin and x = Xmax 
+         Rz_fwd=0.0, Rz_bak=0.0,
+         a = halfaxis[0],
+         b = halfaxis[1],
+         c = halfaxis[2]; 
+    
+  Ry_fwd = b * sqrt(1.0 - sq(Xmax/a));
+  Ry_bak = b * sqrt(1.0 - sq(Xmin/a));
+  Rz_fwd = c * sqrt(1.0 - sq(Xmax/a));
+  Rz_bak = c * sqrt(1.0 - sq(Xmin/a));
+
+  // front end 
+  A[0] = Xmax;                                                                              // cut ellipsoid at max. x-value
+  C[0] = Xmax;
+  if (Ymin > 0.0) {A[1] = Ymin;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
+                   C[1] = Ymin;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
+  if (Ymax < 0.0) {A[1] = Ymax;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if hor. range is complete on the right side, cut ellipsoid here and calculate z-positions 
+                   C[1] = Ymax;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
+  if (Zmin > 0.0) {A[1] = Ymin;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if vert range is complete on the upper side, cut ellipsoid here and calculate z-positions 
+                   C[1] = Ymin;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
+  if (Zmax < 0.0) {A[1] = Ymax;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
+                   C[1] = Ymax;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
+  else            {A[1] = 0.0;   A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));      // otherwise assume vertical cut in the middle
+                   C[1] = 0.0;   C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
+
+  // back end 
+  B[0] = Xmin;                                                                              // cut ellipsoid at min. x-value   
+  D[0] = Xmin;
+  if (Ymin > 0.0) {B[1] = Ymin;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
+                   D[1] = Ymin;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
+  if (Ymax < 0.0) {B[1] = Ymax;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if hor. range is complete on the right side, cut ellipsoid here and calculate z-positions 
+                   D[1] = Ymax;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
+  if (Zmin > 0.0) {B[1] = Ymin;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if vert range is complete on the upper side, cut ellipsoid here and calculate z-positions 
+                   D[1] = Ymin;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
+  if (Zmax < 0.0) {B[1] = Ymax;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
+                   D[1] = Ymax;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
+  else            {B[1] = 0.0;   B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));      // otherwise assume vertical cut in the middle
+                   D[1] = 0.0;   D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
+
+  // determine center on the ABCD plane (Y) and on the mirror surface
+  Y[0] = 0.25*(A[0] + B[0] + C[0] + D[0]);
+  Y[1] = 0.25*(A[1] + B[1] + C[1] + D[1]);
+  Y[2] = 0.25*(A[2] + B[2] + C[2] + D[2]);
+
+  Z[0] = Y[0];
+  Z[2] = Y[2];
+  if (Z[2] < 0.0)
+    Z[1] = -b * sqrt(1.0 - sq(Z[0]/a) - sq(Z[2]/c));
+  else
+    Z[1] =  b * sqrt(1.0 - sq(Z[0]/a) - sq(Z[2]/c));
+
   return;
 }

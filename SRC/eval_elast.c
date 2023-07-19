@@ -15,6 +15,7 @@
 /* 1.8  Apr 2013  K. Lieutenant  flight path correction                                      */
 /* 1.9  Mar 2020  K. Lieutenant  tidy up, new central visualization parameters               */
 /* 1.9a Oct 2021  K. Lieutenant  tidy up completed                                           */
+/* 1.10 Jun 2023  K. Lieutenant  header + update                                             */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -27,12 +28,15 @@
 #include "general.h"
 #include "matrix.h"
 #include "softabort.h"
+#include "mon2_header.h"
+
 
 /************************************/
 /** Definitions, structures, enums **/
 /************************************/
 #define BINS  10000
 #define NCENTER 200
+#define MAX_KIND  4
 
 
 /*********************************/
@@ -41,11 +45,11 @@
 // Input parameters
 VtEvalPar eKind=VT_NO_EVAL;      // -k  [-]  evaluation parameter: d-spacing, momentum transfer, scattering angle or wavelength difference 
 
-FILE  *fSpectra   = NULL,        // -o  [-]  output file containing the evaluated data
-      *fTotCounts = NULL,        // -O  [-]  optional: file containing integrated intensities (see Help|evaluation) 
-      *fInfoFile  = NULL;        // -I  [-]  optional: file controling the output of integrated intensities
+char  *EvalFileName= NULL;       // -o  [-]  output file containing the evaluated data
+FILE  *fTotCounts  = NULL,       // -O  [-]  optional: file containing integrated intensities (see Help|evaluation) 
+      *fInfoFile   = NULL;       // -I  [-]  optional: file controling the output of integrated intensities
 
-long   nbins      = 0;           // -n  [-]  number of bins 
+long   nBins      = 0;           // -n  [-]  number of bins 
 
 double MinX       = 0.0,         // -m [var] upper bound of d-spacing, q, theta or lambda range [Ang], [1/Ang], [deg]
        MaxX       = 0.0,         // -M [var] lower bound of d-spacing, q, theta or lambda range [Ang], [1/Ang], [deg]
@@ -68,14 +72,28 @@ double TotLength  = 0.0,         // -l [cm]  standard length of total neutron fl
 int    nColour    = ANY_COLOR;   // -C  [-]  colour necessary for the trajectory to be regarded, colour=-1(ANY_COLOR) means: all trajectories are regarded  
 
 // Variables determined from input parameters or trajectory data
+double BinSize=1.0,
+       BinPos[BINS+1],           //          limits of the channels  (min. and max. value)
+       IntBin[BINS+1],           //          count rates in the channels 
+       center[NCENTER], 
+       totcenter[NCENTER], 
+       range [NCENTER],
+       IntTot     = 0.0;         //          total intensity within binning
 short  bLogBinning=FALSE,        //          flag: TRUE : binning increases exponentially    FALSE: linear binning  
        bDeadSpot  =FALSE;        //          flag: TRUE : deadspot exists 
+long   nTrj [BINS+1],            //          number of trajectories per channel contributing to count rate
+       nTrjTot    = 0,           //          total number of trajectories within binning
+       nBunches   = 1;           //          number of bunches started
+char   sOption[25]="",           //          name of the x-axis parameter
+       sUnit[MAX_KIND+1][6]={"", "Ang", "1/Ang", "deg", "Ang"};   // unit of the x-axis parameter
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
 void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
+void InitArrays();                      // Allocates memory and initializes evaluation arrays 
+void UpdateMon(long iBnch);             // Updates evaluation output file 
 
 
 /******************************/
@@ -83,20 +101,13 @@ void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets globa
 /******************************/
 int main(int argc, char *argv[])
 {
-  char   sOption[25]="";
   short  bCounted   =FALSE;      // TRUE : neutron is counted, intensity added to channel and total intensity 
-  int    ibin=0;
-
-  long   i=0, j=0, k=0, 
-         bcnt [BINS+1],          /* number of trajectories contributing to count rate */
-         leftedge=0, rightedge=0;
-
-  double bintc    =0.0, 
-         binterval=1.0,
-         bpost [BINS+1],         /* limits of the bins                                */
-         bint  [BINS+1],         /* count rate of a bin                               */
-         center[NCENTER], totcenter[NCENTER], range[NCENTER],
-         time=0.0, lambda=0.0, 
+  long   i=0,
+         leftedge=0, rightedge=0,
+         iBin,
+         iBnch=0;                // current bunch 
+  int    j=0, k=0, l=0;
+  double time=0.0, lambda=0.0, 
          TwoTheta=0.0, TwoThetaDeg=0.0, Phi=0.0, 
          qValue  =0.0, dspacing=0.0, 
          prob    =0.0,
@@ -110,48 +121,15 @@ int main(int argc, char *argv[])
   _eModule=MCN_EVAL1_ELAST;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.9a");
+  PrintModuleName(_eModule, "1.10");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
+  InitArrays();
+  nBunches = ReadNumBnch();
   EvalPar_ID2Txt(sOption, eKind); 
-  fprintf(LogFilePtr, "Option: %s\n", sOption); 
-
-  // initializes arrays
-  memset(totcenter, 0,  NCENTER*sizeof(double));
-  memset(center,    0,  NCENTER*sizeof(double));
-  memset(range,     0,  NCENTER*sizeof(double));
-  memset(bpost,     0, (BINS+1)*sizeof(double));
-  memset(bint,      0, (BINS+1)*sizeof(double));
-  memset(bcnt,      0, (BINS+1)*sizeof(long));
-
-  /* Construction of the Bins */
-  /* logarithmic */
-  if (bLogBinning)
-  {	
-    bpost[0] = MinX;
-
-    for(ibin = 1; bpost[ibin-1] < MaxX; ibin++)
-    {
-      bpost[ibin] = bpost[ibin-1] * (1.0 + LogProz/100.);
-      bint [ibin] = 0.0;
-      bcnt [ibin] = 0;
-    }
-  nbins = ibin-1;
-  }
-  /* linear */
-  else
-  {	binterval = (MaxX - MinX) / (double)nbins;
-		
-    for(ibin = 0; ibin<=nbins; ibin++)
-    {
-      bpost[ibin] = MinX + binterval*ibin;
-      bint [ibin] = 0.0;
-      bcnt [ibin] = 0;
-    }
-  }
 
   DECLARE_ABORT
 
@@ -165,6 +143,8 @@ int main(int argc, char *argv[])
 
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
+        iBnch++;
+        UpdateMon(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
@@ -173,7 +153,7 @@ int main(int argc, char *argv[])
 
         /* Writing out all neutrons, if 'exclusive counts = no' is set */
         if (bExclCount==FALSE)		
-        WriteNeutron(&InputNeutrons[i]);
+          WriteNeutron(&InputNeutrons[i]);
 
         /* exclusion of traj. with wrong colour: (nColour=-1 means: all colours accepted) */
         if (nColour!=ANY_COLOR && nColour!=InputNeutrons[i].Color) continue;
@@ -223,12 +203,13 @@ int main(int argc, char *argv[])
         {
           case VT_EVAL_DSP: /* dspacing */
             dspacing = lambda / (2.0 * sin(TwoTheta/2.0));
-            for(ibin = 0; ibin<nbins; ibin++)
-            {	if (bpost[ibin] <= dspacing && dspacing < bpost[ibin+1])
+            for(iBin = 0; iBin < nBins; iBin++)
+            {	if (BinPos[iBin] <= dspacing && dspacing < BinPos[iBin+1])
               {
-                bcnt[ibin]++;
-                bint[ibin] = bint[ibin] + prob;
-                bintc = bintc + prob;
+                nTrjTot++;
+                nTrj[iBin]++;
+                IntBin[iBin] = IntBin[iBin] + prob;
+                IntTot = IntTot + prob;
                 bCounted=TRUE;
                 break;
               }
@@ -237,12 +218,13 @@ int main(int argc, char *argv[])
 
           case VT_EVAL_Q: /* q-range */
             qValue = (4.0*M_PI/lambda)*sin(TwoTheta/2.0);
-            for(ibin = 0; ibin<nbins; ibin++)
-            {	if (bpost[ibin] <= qValue && qValue < bpost[ibin+1])
+            for(iBin = 0; iBin < nBins; iBin++)
+            {	if (BinPos[iBin] <= qValue && qValue < BinPos[iBin+1])
               {
-                bcnt[ibin]++;
-                bint[ibin] = bint[ibin] + prob;
-                bintc = bintc + prob;
+                nTrjTot++;
+                nTrj[iBin]++;
+                IntBin[iBin] = IntBin[iBin] + prob;
+                IntTot = IntTot + prob;
                 bCounted=TRUE;
                 break;
               }
@@ -251,12 +233,13 @@ int main(int argc, char *argv[])
 
           case VT_EVAL_ANGLE:	/* scattering angle */
             TwoThetaDeg = TwoTheta*180.0/M_PI;
-            for(ibin = 0; ibin<nbins; ibin++)
-            {	if (bpost[ibin] <= TwoThetaDeg && TwoThetaDeg < bpost[ibin+1])
+            for(iBin = 0; iBin < nBins; iBin++)
+            {	if (BinPos[iBin] <= TwoThetaDeg && TwoThetaDeg < BinPos[iBin+1])
               {
-                bcnt[ibin]++;
-                bint[ibin] = bint[ibin] + prob;
-                bintc = bintc + prob;
+                nTrjTot++;
+                nTrj[iBin]++;
+                IntBin[iBin] = IntBin[iBin] + prob;
+                IntTot = IntTot + prob;
                 bCounted=TRUE;
                 break;
               }
@@ -265,12 +248,13 @@ int main(int argc, char *argv[])
 
           case VT_EVAL_LMBD: /* lambda-diff */
             DelLmbd = lambda - InputNeutrons[i].Wavelength;
-            for(ibin = 0; ibin<nbins; ibin++)
-            {	if (bpost[ibin] <= DelLmbd && DelLmbd < bpost[ibin+1])
+            for(iBin = 0; iBin < nBins; iBin++)
+            {	if (BinPos[iBin] <= DelLmbd && DelLmbd < BinPos[iBin+1])
               {
-                bcnt[ibin]++;
-                bint[ibin] = bint[ibin] + prob;
-                bintc = bintc + prob;
+                nTrjTot++;
+                nTrj[iBin]++;
+                IntBin[iBin] = IntBin[iBin] + prob;
+                IntTot = IntTot + prob;
                 bCounted=TRUE;
                 break;
               }
@@ -289,64 +273,49 @@ int main(int argc, char *argv[])
 // Finish: writes and closes evaluate files, writes to log and instrument file, frees memory
 // -----------------------------------------------------------------------------------------
  my_exit:
-  /* Output of Results */
-  fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc);
+  /* Output */
+  fprintf(LogFilePtr, "Option: %s\n", sOption); 
+  fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", IntTot);
 
-  /* Spectrum */
-  if (fSpectra != NULL)
-  {
-    double bmid;
+  // writes evaluation output
+  UpdateMon(nBunches);  
 
-    for(ibin = 0; ibin<(nbins); ibin++)
-    {	
-      /* if (fabs(bint[ibin]) < 1E-40)
-      bint[ibin] = 0.0; */
-      if (bLogBinning)
-      bmid = sqrt(bpost[ibin]*bpost[ibin+1]);
-      else
-      bmid = (bpost[ibin]+bpost[ibin+1])/2.0;
-      fprintf(fSpectra,"%12g %12g %7ld\n", bmid, bint[ibin], bcnt[ibin]);
-    }
-    fclose(fSpectra);
-  }
-
-  if (fTotCounts != NULL && binterval > 0)
+  if (fTotCounts != NULL && BinSize > 0)
   { 
     if (fInfoFile == NULL)
     {
       Error("you must define a spectra information file to obtain integrated counts");
     }
 
-    fprintf(LogFilePtr,"\n binintervalls = integration range for each selected point:");
+    fprintf(LogFilePtr,"\n bin intervalls = integration range for each selected point:");
 
-    i = 0;
+    l = 0;
     while(!feof(fInfoFile))
-    if (2 == fscanf(fInfoFile, "%lf %lf", &center[i], &range[i]))
-    i++;
-    else
-    break;
+      if (2 == fscanf(fInfoFile, "%lf %lf", &center[l], &range[l]))
+        l++;
+      else
+        break;
     fclose (fInfoFile);
 
-    for (j=0; j<i; j++)
+    for (j=0; j < l; j++)
     {
-      leftedge =  (long)floor( (center[j] - (range[j]/2.0) -MinX)/binterval );
-      rightedge = (long)floor( (center[j] + (range[j]/2.0) -MinX)/binterval);
+      leftedge =  (long)floor( (center[j] - (range[j]/2.0) -MinX)/BinSize );
+      rightedge = (long)floor( (center[j] + (range[j]/2.0) -MinX)/BinSize);
 	  				  
       fprintf(LogFilePtr,"\n [%ld, %ld]",leftedge, rightedge);
 				  
       for (k=leftedge; k<=rightedge; k++)
-        totcenter[j] += bint[k];
+        totcenter[j] += IntBin[k];
     }
 
     /* writeout */
-    for(j = 0; j<i; j++)
+    for(j=0; j < l; j++)
     { 
       if (fabs(totcenter[j]) < 1E-40) totcenter[j] = 0.0;
       fprintf(fTotCounts,"%7.7f\t%11.7E\n", center[j], totcenter[j]);
     }
     fclose(fTotCounts);
   }  /* end totcounts */
-
 
   /*Cleanup*/
   fprintf(LogFilePtr,"\n");
@@ -377,11 +346,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'o':                            /* output file containing spectrum */
-          fSpectra = OpenOutputFile(arg, FALSE, "w");
-          if (fSpectra ==NULL)
-          { fprintf(LogFilePtr,"\nERROR: File %s could not be opened for spectra output\n",arg);
-            exit(-1);
-          }
+          EvalFileName = arg;
           break;
         case 'O':                            /* optional: file containing integrated intensities */
           fTotCounts = OpenOutputFile(arg, FALSE, "w");
@@ -395,8 +360,8 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'n':
-          nbins = atol(arg);                 /* number of bins */
-          if (nbins > BINS)
+          nBins = atol(arg);                 /* number of bins */
+          if (nBins > BINS)
           { fprintf(LogFilePtr,"\nERROR: number of bins must be <= %d", BINS); exit(99);}
           break;
         case 'm':
@@ -473,3 +438,86 @@ void OwnInit(int argc, char *argv[])
     Error("lower bound value must not be zero for logarithmic binning"); 
 }
 
+
+/********************************************************/
+/** Allocates memory and initializes evaluation arrays **/
+/********************************************************/
+void InitArrays()
+{
+  long iBin;     // index of channel
+
+  // initializes arrays
+  memset(totcenter, 0,  NCENTER*sizeof(double));
+  memset(center,    0,  NCENTER*sizeof(double));
+  memset(range,     0,  NCENTER*sizeof(double));
+  memset(BinPos,    0, (BINS+1)*sizeof(double));
+  memset(IntBin,    0, (BINS+1)*sizeof(double));
+  memset(nTrj,      0, (BINS+1)*sizeof(long));
+
+  /* Construction of the Bins */
+  /* logarithmic */
+  if (bLogBinning)
+  {	
+    BinPos[0] = MinX;
+
+    for(iBin = 1; BinPos[iBin-1] < MaxX; iBin++)
+    {
+      BinPos[iBin] = BinPos[iBin-1] * (1.0 + LogProz/100.);
+      IntBin [iBin] = 0.0;
+      nTrj [iBin] = 0;
+    }
+  nBins = iBin-1;
+  }
+  /* linear */
+  else
+  {	BinSize = (MaxX - MinX) / (double)nBins;
+		
+    for(iBin = 0; iBin <= nBins; iBin++)
+    {
+      BinPos[iBin] = MinX + BinSize*iBin;
+      IntBin[iBin] = 0.0;
+      nTrj  [iBin] = 0;
+    }
+  }
+}
+
+
+/*******************************************************/
+/**  Updates evaluation output file                   **/
+/*******************************************************/
+void UpdateMon(long iBnch)
+{
+  long   iBin=0;                 // index of bins in x-axix and for main monitor
+  double BinCtr=0.0,             // center of the current bin 
+         sigma=0.0,              // standard deviation of the intensity in the bin
+         f_norm =1.0;            // ratio of total to processed bunches after treating current bunch
+  FILE*  pFile=NULL;             // pointer to output file
+
+  pFile = OpenOutputFile(EvalFileName, TRUE, "wt");
+
+  /* Spectrum */
+  if (pFile != NULL)
+  {
+    WriteHeader1DB(pFile, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, sOption, sUnit[eKind]);
+
+    if (iBnch > 0 && nBunches > 1)
+      f_norm = (double) nBunches / (double) iBnch;
+
+    for(iBin = 0; iBin < nBins; iBin++)
+    {	
+      /* if (fabs(IntBin[iBin]) < 1E-40) IntBin[iBin] = 0.0; */
+      if (bLogBinning)
+        BinCtr = sqrt(BinPos[iBin]*BinPos[iBin+1]);
+      else
+        BinCtr = (BinPos[iBin]+BinPos[iBin+1])/2.0;
+
+      if (nTrj[iBin] > 0) 
+        sigma = IntBin[iBin] * sqrt(1.0/(double)nTrj[iBin]);
+      else
+        sigma = 0.0;
+
+      fprintf(pFile,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*IntBin[iBin], f_norm*sigma, nTrj[iBin]);
+    }
+    fclose(pFile);
+  }
+}

@@ -703,7 +703,7 @@ proc showBeef {w} {
 
   # This is the place where main GUI elements are created.
   # Global setups like sizes and limits are set here.
-  set t "VITESS 3.5E"
+  set t "VITESS 3.5"
   set maxModule 100
   set DummyEntry "--inactive--"
 

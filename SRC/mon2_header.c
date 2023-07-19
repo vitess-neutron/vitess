@@ -40,19 +40,22 @@ void WriteHeader1D(FILE* fMonitor, const char *sType, short bWeight,
   return;
 }
 
-void WriteHeader1DB(FILE* fMonitor, const char *sType, short iCol, long iBnch, long nBnch, int nBinsX, 
+void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCol, long iBnch, long nBnch, int nBinsX, 
                     double IntMon, long nTrjMon, const char* sPar, const char* sUnit) 
 {
-  char sDate[11], sTime[9];
+  char sDate[11], sTime[9],
+       sOutType[12]="Monitor";
 
   OutputBufferFlush(0);
   GetActDate(sDate, DATE_STD);
   GetActTime(sTime);
+  if (bEval==TRUE)
+    strcpy(sOutType, "Evaluation");
 
-  fprintf(fMonitor, "# Monitor 1D %s:  %d bins: %s/%s\n", sType, nBinsX, sPar, sUnit);
+  fprintf(fMonitor, "# 1D %s %s\n# x-axis:%3d bins: %s [%s]\n", sOutType, sFctType, nBinsX, sPar, sUnit);
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
   fprintf(fMonitor, "# Total intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(iCol), NumNeutWritten - (double)NumEobWritten);
-  fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld \n", IntMon, nTrjMon);
+  fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld  (incl. filters and eval. time)\n", IntMon, nTrjMon);
   fprintf(fMonitor, "# Bunches: %ld of %ld written\n", iBnch, nBnch);
   fprintf(fMonitor, "# Data x        F(x)       DeltaF(x)    events\n");  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
 
@@ -64,7 +67,7 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
 {
   OutFmt2Txt(eFormat);  // fills static string 'sFormat'
 
-  fprintf(fMonitor,"# Monitor 2D %s, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sType,
+  fprintf(fMonitor,"#Monitor 2D %s, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sType,
           sFormat,
           bWeight==FALSE ? "(events)" : "(weight)",
           nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
@@ -76,12 +79,12 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
       break;
 
     case XYZ:
-      fputs("# Monitor x y z\n", fMonitor);
-      fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
+      // fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
+      fputs("#x  y  z\n", fMonitor);
       break;
 
     case XYZ_CMPT: 
-      fputs("# Monitor x y z\n", fMonitor);
+      fputs("#x  y  z\n", fMonitor);
       break;
   }
 
@@ -89,10 +92,11 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
 }
 
 
-void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight, long iBnch, long nBnch, double IntMon, long nTrjMon, 
+void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sFctType, short bWeight, long iBnch, long nBnch, double IntMon, long nTrjMon, 
                    int nBinsX, const char* sAxisTitleX, int nBinsY, const char* sAxisTitleY) 
 {
-  char sEvents[11]="", sDate[11], sTime[9];
+  char sEvents [11]="", sDate[11], sTime[9],
+       sOutType[12]="Monitor";
 
   OutputBufferFlush(0);
   GetActDate(sDate, DATE_STD);
@@ -100,11 +104,13 @@ void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short
   OutFmt2Txt(eFormat);  // fills static string 'sFormat'
   if (bWeight==FALSE)
     strcpy(sEvents," (events)");
+  if (bEval==TRUE)
+    strcpy(sOutType, "Evaluation");
 
-  fprintf(fMonitor, "# Monitor 2D %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
+  fprintf(fMonitor, "# 2D %s %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sOutType, sFctType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
   fprintf(fMonitor, "# Total Intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(-1), NumNeutWritten - (double)NumEobWritten);
-  fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld \n", IntMon, nTrjMon);
+  fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld  (incl. filters and eval. time)\n", IntMon, nTrjMon);
   fprintf(fMonitor, "# Bunches: %ld of %ld written\n", iBnch, nBnch);
 
   switch (eFormat)
@@ -114,15 +120,17 @@ void WriteHeader2DB(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short
       break;
 
     case MATR_CMPT:
-      fputs("# Data y   F(X,y)\n          ", fMonitor);
+      fputs("# Data y   F(x,y)\n          ", fMonitor);
       break;
 
     case XYZ:
-      fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
+      // fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
+      fputs("#x  y  z\n", fMonitor);
       break;
 
     case XYZ_CMPT: 
-      fputs("# Data x   y F(x,y) error  events\n", fMonitor);
+      // fputs("# Data x   y F(x,y) error  events\n", fMonitor);
+      fputs("#x  y  z\n", fMonitor);
       break;
   }
 
@@ -263,9 +271,9 @@ void OutFmt2Txt(VtFormat2D eFormat)
   switch (eFormat)
   {
     case MATRIX   : strcpy(sFormat, "matrix");         break;
-    case XYZ      : strcpy(sFormat, "x y z");          break;
+    case XYZ      : strcpy(sFormat, "xyz");            break;
     case MATR_CMPT: strcpy(sFormat, "matrix compact"); break;
-    case XYZ_CMPT : strcpy(sFormat, "x y z compact");  break;
+    case XYZ_CMPT : strcpy(sFormat, "xyz compact");    break;
     default       : Error("unknown value for 2D output format"); 
   }
   return;

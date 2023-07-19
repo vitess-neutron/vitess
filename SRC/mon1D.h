@@ -73,9 +73,10 @@ class Mon1D
 
   // arrays for data storage
   double* dataArray[3];              // here the monitor data is stored
+  double* dataArrayPol[3];           // polarisation 
   double* dataArrayPolWeights[3];    // in case polarisation analysis is desired, here the sum of all weights in a bin is stored
   double* dataArrayError[3];         // standard deviation of the monitor data
-  int*    dataArrayCounts[3];
+  int*    dataArrayCounts[3];        // number of trajectories per channel contributing to count rate
 
   // constructor and destructor
   Mon1D();

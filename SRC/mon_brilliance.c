@@ -78,12 +78,12 @@ double TotOmega  = 0.0,              // total solid angle
        TotArea   = 0.0,              // total surface area
        IntTot    = 0.0,              // total count rate within binning and eval. time
        BrillAveIn= 0.0;              // average brilliance of reference spectrum
-double *pPosT=NULL,                  // limits of bin (minimal and maximal value)
-       *pInt =NULL,                  // intensity (=count rate) per bin
-       *pNorm=NULL,                  // normalisation value for each bin
-       *pNormSD=NULL,                // standard deviation of normalisation value for each bin
-       *pSD=NULL;                    // standard deviation per bin 
-long   *pBinN=NULL;                  // number of trajectories per bin
+double *PosT=NULL,                   // limits of bin (minimal and maximal value)
+       *Int =NULL,                   // intensity (=count rate) per bin
+       *Norm=NULL,                   // normalisation value for each bin
+       *NormSD=NULL,                 // standard deviation of normalisation value for each bin
+       *SD=NULL;                     // standard deviation per bin 
+long   *nTrj=NULL;                   // number of trajectories per bin
 double DelLmbd =0.0,                 // width of wavelength band used to calculate the brilliance (transfer)
        DelTime =0.0,                 // space of time used to calculate the brilliance (transfer); only used for pulsed sources
        DelY    =0.0, DelZ   =0.0,    // spatial width and height used to calculate the brilliance (transfer)
@@ -93,8 +93,7 @@ double DelLmbd =0.0,                 // width of wavelength band used to calcula
        TransMax=0.0,                 // maximal brilliance transfer
        MinRange=0.0, MaxRange=0.0;   // min. and max. value of the variable parameter
 char   sUnit[MAX_PAR+1][ 4]={"", "Ang", "ms", "cm", "cm", "deg", "deg", "deg", "eV"},
-       sParN[MAX_PAR+1][22]={"", "wavelength", "time", "horizontal position", "vertical position",
-                                  "horizontal divergence", "vertical divergence", "radial divergence", "energy"};
+       sParN[MAX_PAR+1][22]={"", "lambda", "time", "pos_y", "pos_z", "div_y", "div_z", "div_rad", "energy"};
  
 
 /******************************/
@@ -131,12 +130,12 @@ int main(int argc, char *argv[])
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
-  pPosT   = (double*) calloc(nBins+1,sizeof(double));
-  pInt    = (double*) calloc(nBins+1,sizeof(double));
-  pSD     = (double*) calloc(nBins+1,sizeof(double));
-  pNorm   = (double*) calloc(nBins+1,sizeof(double));
-  pNormSD = (double*) calloc(nBins+1,sizeof(double));
-  pBinN   = (long*)   calloc(nBins+1,sizeof(long));
+  PosT   = (double*) calloc(nBins+1,sizeof(double));
+  Int    = (double*) calloc(nBins+1,sizeof(double));
+  SD     = (double*) calloc(nBins+1,sizeof(double));
+  Norm   = (double*) calloc(nBins+1,sizeof(double));
+  NormSD = (double*) calloc(nBins+1,sizeof(double));
+  nTrj   = (long*)   calloc(nBins+1,sizeof(long));
 
   Bins = (double)nBins;
   if (bLogBin)
@@ -148,28 +147,28 @@ int main(int argc, char *argv[])
   { // logarithmic
 	  if (bLogBin)
     { if (iBin==0)
-        pPosT[iBin] = MinRange;
+        PosT[iBin] = MinRange;
       else
-        pPosT[iBin] = pPosT[iBin-1] * FactLog;
+        PosT[iBin] = PosT[iBin-1] * FactLog;
     }
 	  else
-    { pPosT[iBin] = MinRange+(BinSize*iBin);  // linear
+    { PosT[iBin] = MinRange+(BinSize*iBin);  // linear
     }
-    pInt [iBin] = 0.0;
-    pSD  [iBin] = 0.0;
-    pBinN[iBin] = 0;
+    Int [iBin] = 0.0;
+    SD  [iBin] = 0.0;
+    nTrj[iBin] = 0;
   
     // for brilliance transfer read reference file and assign these values as normalization
     if (eBrlNorm==BRL_TRANSF)                       
     { ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1);
       StrgScanLF(sBuffer, MonData, 3, 0);
-      pNorm  [iBin] = MonData[1];           // brilliance is the second value in brilliance monitor
-	    pNormSD[iBin] = MonData[2];         // uncertainty is the third value in brilliance monitor
+      Norm  [iBin] = MonData[1];           // brilliance is the second value in brilliance monitor
+	    NormSD[iBin] = MonData[2];         // uncertainty is the third value in brilliance monitor
       BrillAveIn += MonData[1]/nBins;
     }
     else                                    // absolute brilliance
-    { pNorm[iBin]   = 1.0;
-	    pNormSD[iBin] = 0.0;
+    { Norm[iBin]   = 1.0;
+	    NormSD[iBin] = 0.0;
     }
   }
 
@@ -281,8 +280,8 @@ int main(int argc, char *argv[])
 
         if (iBin >= 0  &&  iBin < nBins) 
         {
-          pInt [iBin] += P;
-          pBinN[iBin] += 1;
+          Int [iBin] += P;
+          nTrj[iBin] += 1;
           IntTot      += P;
           nTrjTot     += 1;
           bRegistered = TRUE;
@@ -308,12 +307,12 @@ my_exit:
   // -------------------------------------------------------------------------
 
 #ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
-  if (pPosT!=NULL)   free(pPosT);
-  if (pInt !=NULL)   free(pInt);
-  if (pNorm!=NULL)   free(pNorm);
-  if (pNormSD!=NULL) free(pNormSD);
-  if (pSD  !=NULL)   free(pSD);
-  if (pBinN!=NULL)   free(pBinN);
+  if (PosT!=NULL)   free(PosT);
+  if (Int !=NULL)   free(Int);
+  if (Norm!=NULL)   free(Norm);
+  if (NormSD!=NULL) free(NormSD);
+  if (SD  !=NULL)   free(SD);
+  if (nTrj!=NULL)   free(nTrj);
 #endif
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -620,7 +619,7 @@ void UpdateMon(long iBnch)
 
   if (pFileMon!=NULL)
   {
-    WriteHeader1DB(pFileMon, "brilliance", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, sParN[eBrlPar], sUnit[eBrlPar]);
+    WriteHeader1DB(pFileMon, FALSE, "brilliance", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, sParN[eBrlPar], sUnit[eBrlPar]);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;
@@ -628,19 +627,19 @@ void UpdateMon(long iBnch)
     for (iBin=0; iBin < nBins; iBin++) 
     {
       switch(eBrlPar)
-      { case VT_LAMBDA  : DelLmbd = (pPosT[iBin+1] - pPosT[iBin]);              break;
-        case VT_TIME    : DelTime = (pPosT[iBin+1] - pPosT[iBin]) / 1000.0;     break; // ms -> s
-        case VT_POS_Y   : DelY    = (pPosT[iBin+1] - pPosT[iBin]);              break;
-        case VT_POS_Z   : DelZ    = (pPosT[iBin+1] - pPosT[iBin]);              break;
-        case VT_POS_R   : DelR    = (pPosT[iBin+1] - pPosT[iBin]);              break; 
-        case VT_DIV_HOR : DelDivY = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
-        case VT_DIV_VERT: DelDivZ = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
-        case VT_DIV_RAD : DelDivR = (pPosT[iBin+1] - pPosT[iBin]) * M_PI/180.0; break; // deg -> rad
-        case VT_ENERGY  : DelLmbd = E2DelLmbd(pPosT[iBin+1], pPosT[iBin]);      break; 
+      { case VT_LAMBDA  : DelLmbd = (PosT[iBin+1] - PosT[iBin]);              break;
+        case VT_TIME    : DelTime = (PosT[iBin+1] - PosT[iBin]) / 1000.0;     break; // ms -> s
+        case VT_POS_Y   : DelY    = (PosT[iBin+1] - PosT[iBin]);              break;
+        case VT_POS_Z   : DelZ    = (PosT[iBin+1] - PosT[iBin]);              break;
+        case VT_POS_R   : DelR    = (PosT[iBin+1] - PosT[iBin]);              break; 
+        case VT_DIV_HOR : DelDivY = (PosT[iBin+1] - PosT[iBin]) * M_PI/180.0; break; // deg -> rad
+        case VT_DIV_VERT: DelDivZ = (PosT[iBin+1] - PosT[iBin]) * M_PI/180.0; break; // deg -> rad
+        case VT_DIV_RAD : DelDivR = (PosT[iBin+1] - PosT[iBin]) * M_PI/180.0; break; // deg -> rad
+        case VT_ENERGY  : DelLmbd = E2DelLmbd(PosT[iBin+1], PosT[iBin]);      break; 
       }
 
       // center of the bin
-      ParCntr = RangeAvrg(pPosT[iBin], pPosT[iBin+1]);
+      ParCntr = RangeAvrg(PosT[iBin], PosT[iBin+1]);
 
       // calculate surface area, solid angle and brilliance for the bin
       if (eBrlPar==VT_POS_R)                                // binning in radial position
@@ -660,9 +659,9 @@ void UpdateMon(long iBnch)
       PhaseSpaceVol = DelLmbd * DelArea * DelOmega;
 
       if (bPulsedSrc==FALSE)
-        Brilliance = f_norm * pInt[iBin] / PhaseSpaceVol;
+        Brilliance = f_norm * Int[iBin] / PhaseSpaceVol;
       else
-        Brilliance = f_norm * pInt[iBin] / PhaseSpaceVol / Freq / DelTime;
+        Brilliance = f_norm * Int[iBin] / PhaseSpaceVol / Freq / DelTime;
 
       // normalisation to 1% in DelLambda/Lambda
       if (eBrlNorm==BRL_PCT)
@@ -670,7 +669,7 @@ void UpdateMon(long iBnch)
         if (eBrlPar==VT_LAMBDA)
           LmbdAve = ParCntr;
         else if (eBrlPar==VT_ENERGY)
-          LmbdAve = RangeAvrg(E2Lambda(pPosT[iBin]), E2Lambda(pPosT[iBin+1]));  // meV -> Ang
+          LmbdAve = RangeAvrg(E2Lambda(PosT[iBin]), E2Lambda(PosT[iBin+1]));  // meV -> Ang
         else 
           LmbdAve = RangeAvrg(MinLmbd, MaxLmbd);
 
@@ -683,29 +682,29 @@ void UpdateMon(long iBnch)
       // calculate transmission for brilliance transfer 
       // write transmission or brilliance to monitor file
       if (eBrlNorm==BRL_TRANSF)
-      { if (pNorm[iBin] > 0.0)
-		      Transmission = Brilliance / pNorm[iBin];
+      { if (Norm[iBin] > 0.0)
+		      Transmission = Brilliance / Norm[iBin];
 		    else
           Transmission = 1.0;
         TransMax = Max(TransMax, Transmission);
 
-        if(pBinN[iBin]!=0)
-          pSD[iBin] = Transmission * sqrt( 1/((double)pBinN[iBin]) + sq(pNormSD[iBin]/pNorm[iBin]) );
+        if(nTrj[iBin]!=0)
+          SD[iBin] = Transmission * sqrt( 1/((double)nTrj[iBin]) + sq(NormSD[iBin]/Norm[iBin]) );
         else
-          pSD[iBin] = 0.0;
+          SD[iBin] = 0.0;
 
         if (pFileMon != NULL) 
-          fprintf(pFileMon, "%10.4f  %12.5e %12.5e  %7ld\n", ParCntr, Transmission, pSD[iBin], pBinN[iBin]);
+          fprintf(pFileMon, "%10.4f  %12.5e %12.5e  %7ld\n", ParCntr, Transmission, SD[iBin], nTrj[iBin]);
       }
       else
       {
-        if(pBinN[iBin]!=0)
-          pSD[iBin] = Brilliance * sqrt( 1/((double)pBinN[iBin]) + sq(pNormSD[iBin]/pNorm[iBin]) );
+        if(nTrj[iBin]!=0)
+          SD[iBin] = Brilliance * sqrt( 1/((double)nTrj[iBin]) + sq(NormSD[iBin]/Norm[iBin]) );
         else
-          pSD[iBin] = 0.0;
+          SD[iBin] = 0.0;
 
         if (pFileMon != NULL) 
-          fprintf(pFileMon, "%10.4f  %12.5e %12.5e  %7ld\n", ParCntr, Brilliance, pSD[iBin], pBinN[iBin]);
+          fprintf(pFileMon, "%10.4f  %12.5e %12.5e  %7ld\n", ParCntr, Brilliance, SD[iBin], nTrj[iBin]);
       }
     }
 

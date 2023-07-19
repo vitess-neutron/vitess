@@ -11,6 +11,7 @@
 /* 1.5  Oct 2013  K. Lieutenant  Bose and transform. factor removed, color and ToF correction included  */
 /* 1.6  Mar 2020  K. Lieutenant  new central visualization parameters                                   */
 /* 1.6a Oct 2021  K. Lieutenant  tidying up finished                                                    */
+/* 1.7  Jun 2023  K. Lieutenant  header + update                                                        */
 /********************************************************************************************************/
 
 #include <stdio.h>
@@ -23,6 +24,7 @@
 #include "init.h"
 #include "matrix.h"
 #include "softabort.h"
+#include "mon2_header.h"
 
 
 /************************************/
@@ -35,34 +37,46 @@
 /** Global Variables            **/
 /*********************************/
 // Input parameters
-char	  	*FileNameTOF=NULL,            // -E  [-]  output file for the TOF spectrum
-          *FileNameEnergy=NULL;         // -G  [-]  output file for showing the energy transfer spectrum
-VtInstGeom eGeomOption=VT_NO_I_GEOM;    // -A  [-]  geometry option:   0: direct geometry   1: indirect geometry
-short      bTofCorr= TRUE,              // -t  [-]  criterion: correction to true flight path length from sample to detector:  0: no   1: yes
-           bBoseF  = FALSE,             // -D  [-]  criterion: divide by Bose factor  (not used in Vitess 3)  
-           iColor=ANY_COLOR;            // -f  [-]  neutron 'color' to evaluate  -1: all neutrons
-long       nBins=0;                     // -C  [-]  number of bins in TOF and energy spectrum
+char	  	*FileNameTOF=NULL,            // -E   [-]   output file for the TOF spectrum
+          *FileNameEnergy=NULL;         // -G   [-]   output file for showing the energy transfer spectrum
+VtInstGeom eGeomOption=VT_NO_I_GEOM;    // -A   [-]   geometry option:   0: direct geometry   1: indirect geometry
+short      bTofCorr= TRUE,              // -t   [-]   criterion: correction to true flight path length from sample to detector:  0: no   1: yes
+           bBoseF  = FALSE,             // -D   [-]   criterion: divide by Bose factor  (not used in Vitess 3)  
+           iColor=ANY_COLOR;            // -f   [-]   neutron 'color' to evaluate  -1: all neutrons
+long       nBins=0;                     // -C   [-]   number of bins in TOF and energy spectrum
           
-double     PrimaryFlightPath  =0.0,     // -a  [-]   Distance from moderator to sample.
-           SecondaryFlightPath=0.0,     // -b  [-]   Distance from sample to detector
-           LambdaRef =0.0,              // -c  [-]   reference wavelength 
-           TimeOffset=0.0,              // -d  [-]   average time of neutrons at start
-           MinE  = 0.0,                 // -m  [-]   minimal energy transfer to be monitored
-           MaxE  = 0.0,                 // -M  [-]   maximal energy transfer to be monitored
-           MinTOF=-1.0,                 // -e  [-]   minimal time of flight to be monitored
-           MaxTOF=-1.0,                 // -g  [-]   maximal time of flight to be monitored
-           SlopeBins  = 0.0,            // -h  [-]   
-           Temperature= 0.0,            // -i  [-]   temperature for Bose factor  (not used in Vitess 3)
-           AngleCntr  = 0.0,            // -j  [-}   horizontal angular range that is processed
-           AngleRange=180.0;            // -k  [-]     [AngleCntr - AngleRange, AngleCntr + AngleRange]
+double     PrimaryFlightPath  =0.0,     // -a  [cm]   Distance from moderator to sample.
+           SecondaryFlightPath=0.0,     // -b  [cm]   Distance from sample to detector
+           LambdaRef =0.0,              // -c  [Ang]  reference wavelength 
+           TimeOffset=0.0,              // -d  [ms]   average time of neutrons at start
+           MinE  = 0.0,                 // -m  [meV]  minimal energy transfer to be monitored
+           MaxE  = 0.0,                 // -M  [meV]  maximal energy transfer to be monitored
+           MinTOF=-1.0,                 // -e  [ms]   minimal time of flight to be monitored
+           MaxTOF=-1.0,                 // -g  [ms]   maximal time of flight to be monitored
+           SlopeBins  = 0.0,            // -h   [-]   
+           Temperature= 0.0,            // -i   [K]   temperature for Bose factor  (not used in Vitess 3)
+           AngleCntr  = 0.0,            // -j  [deg]  horizontal angular range that is processed
+           AngleRange=180.0;            // -k  [deg]  [AngleCntr - AngleRange, AngleCntr + AngleRange]
 
 // Variables determined from input parameters or trajectory data
-FILE  	  *FilePtrTOF=NULL,  
-          *FilePtrEnergy=NULL;
-double     EnergyRef, VelocityRef,      //     [-]   energy and velocity and corresponding to reference wavelength
-           TofRef,                      //     [-]   TOF for the reference part, i.e. primary flight path for direct geometry and secondary for indirect geometry
-           prob_t[BINS_BUFFER], prob_e[BINS_BUFFER]; 
-double     alpha, beta;
+long       nTrjTotT   = 0,              //      [-]   total number of trajectories within TOF binning
+           nTrjTotE   = 0,              //      [-]   total number of trajectories within energy binning
+           nBunches   = 1,              //      [-]   number of bunches started
+           nTrjT[BINS_BUFFER+1],        //      [-]   number of trajectories contributing to count rate in the TOF bins 
+           nTrjE[BINS_BUFFER+1];        //      [-]   number of trajectories contributing to count rate in the energy bins 
+double     EnergyRef  =0.0,             //     [meV]  energy and corresponding to reference wavelength
+           VelocityRef=0.0,             //    [cm/ms] energy and velocity and corresponding to reference wavelength
+           TofRef   =0.0,               //     [ms]   TOF for the reference part, i.e. primary flight path for direct geometry and secondary for indirect geometry
+           TotIntTOF=0.0,               //     [n/s]  total intensity within TOF binning 
+           TotIntE  =0.0,               //     [n/s]  total intensity within E binning
+           t[BINS_BUFFER+1],            //     [ms]   limits of the time channels  (min. and max. value) 
+           e[BINS_BUFFER+1],            //     [meV]  limits of the energy channels  (min. and max. value) 
+           prob_t[BINS_BUFFER+1],       //     [n/s]  count rates in the time channels 
+           prob_e[BINS_BUFFER+1];       //     [n/s]  count rates in the energy channels  
+double     alpha=0.0, beta=0.0;
+char       sPar [2][9]={"TOF", "energy"},//           name of the x-axis parameter
+           sUnit[2][6]={"ms", "meV"};    //           unit of the x-axis parameter
+
 
 
 /******************************/
@@ -71,7 +85,9 @@ double     alpha, beta;
 double TransformFactor(double DeltaE);    // Transform factor     
 double BoseFactor(double T, double w);    // Bose factor
 void   OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
+void   InitArrays();                      // Allocates memory and initializes evaluation arrays 
 void   OwnCleanup();                      // Closes files   
+void   UpdateMon(long iBnch);             // Updates evaluation output file 
 
 
 /******************************/
@@ -79,41 +95,26 @@ void   OwnCleanup();                      // Closes files
 /******************************/
 int main(int argc, char **argv)
 {
-  long   i=0, k=0, nperbint[BINS_BUFFER], nperbine[BINS_BUFFER];
-  double t[BINS_BUFFER], e[BINS_BUFFER],
-         PathToDetection=0.0,   // real pathlength fro sample to detector for individual trajectory
+  long   i=0, k=0, 
+         iBnch=0;                // current bunch 
+  double PathToDetection=0.0,   // real pathlength fro sample to detector for individual trajectory
          TofToDet=0.0,          // TOF til detector - TOF offset
          rotz=0.0, roty=0.0,    // hor. and vertical Euler angles to describe flight direction    [rad]
-         TotIntTof=0.0,         // total intensity within TOF and E binning resp.
-         DelE     =0.0,         // energy gain (DelE > 0) or loss
-         TotIntE  =0.0;
+         DelE     =0.0;         // energy gain (DelE > 0) or loss
 
   // reading of input data and initilisation
   // ---------------------------------------
   _eModule=MCN_EVAL1_INELAST;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.6a");
+  PrintModuleName(_eModule, "1.7");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
-  /* calculates TOF channel boundaries and init p_TOF*/
-  t[0] = MinTOF ; 
-  e[0] = MinE ;
-  prob_t[0]   = prob_e[0]   = 0.0; 
-  nperbint[0] = nperbine[0] = 0;
-
-  for(k=1; k<=nBins; k++)
-  {
-    t[k] = alpha *t[k-1] + beta ;
-    e[k] = e[k-1] + (MaxE - MinE) / nBins ;
-
-    prob_t[k]   = prob_e[k]   = 0.0; 
-    nperbint[k] = nperbine[k] = 0;
-  }
-
+  InitArrays();
+  nBunches = ReadNumBnch();
 
   DECLARE_ABORT;
 
@@ -127,6 +128,8 @@ int main(int argc, char **argv)
 	
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
+        iBnch++;
+        UpdateMon(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
@@ -161,13 +164,15 @@ int main(int argc, char **argv)
         {
           if( (TofToDet > t[k]) && (TofToDet <= t[k+1]) )
           { prob_t[k] += InputNeutrons[i].Probability; 
-            TotIntTof += InputNeutrons[i].Probability; 
-            nperbint[k] += 1 ;
+            TotIntTOF += InputNeutrons[i].Probability; 
+            nTrjT[k] += 1 ;
+            nTrjTotT++;
           }
           if( (DelE > e[k]) && (DelE <= e[k+1]) )
           { prob_e[k] += InputNeutrons[i].Probability; // * TransformFactor(DelE) / BoseFactor(Temperature, DelE) ; 
             TotIntE   += InputNeutrons[i].Probability; 
-            nperbine[k] += 1 ;
+            nTrjE[k] += 1 ;
+            nTrjTotE++;
           }
         }
 
@@ -182,18 +187,12 @@ int main(int argc, char **argv)
 
 // Finish: writes and closes evaluate file, writes to log and instrument file, frees memory
 // ----------------------------------------------------------------------------------------
- my_exit:
-  // write files
-  for(k=0; k<nBins; k++)
-  {
-    if (nperbint[k]==0) nperbint[k]=1; 
-    if (nperbine[k]==0) nperbine[k]=1; 
-		
-    if (FilePtrTOF    != NULL) fprintf(FilePtrTOF,    "%lf   %le   %le   %9ld\n", (t[k]+t[k+1])/2.0, prob_t[k], prob_t[k]/sqrt((double)nperbint[k]), nperbint[k]) ;
-    if (FilePtrEnergy != NULL) fprintf(FilePtrEnergy, "%lf   %le   %le   %9ld\n", (e[k]+e[k+1])/2.0, prob_e[k], prob_e[k]/sqrt((double)nperbine[k]), nperbine[k]) ;
-  }
+my_exit:
+  // Output
+  fprintf(LogFilePtr, "\ntotal intensity within TOF and E binning: %11.3e  %11.3e\n", TotIntTOF, TotIntE);
 
-  fprintf(LogFilePtr, "\ntotal intensity within TOF and E binning: %11.3e  %11.3e\n", TotIntTof, TotIntE);
+  // writes evaluation output
+  UpdateMon(nBunches);  
 	
   OwnCleanup();
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -238,7 +237,7 @@ double betha;
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
-  char   sInstGeom[21];
+  char   sInstGeom[21], sErrMsg[50];
   double TOF_total_e=0.0;   // total TOF without energy transfer
   int k;
 
@@ -258,6 +257,10 @@ void OwnInit(int argc, char *argv[])
 
       case 'C':
         sscanf(&argv[1][2], "%ld", &nBins) ;
+        if (nBins >= BINS_BUFFER)
+        { sprintf(sErrMsg, "Number of channels exceeds maximum value of %d", BINS_BUFFER);
+          Error(sErrMsg);
+        }
         break;
       case 'f':
         iColor = atoi(&argv[1][2]);
@@ -265,23 +268,10 @@ void OwnInit(int argc, char *argv[])
 
       case 'E':
         FileNameTOF = &argv[1][2];
-        FilePtrTOF  = OpenOutputFile(&argv[1][2], FALSE, "w");
-	      if (FilePtrTOF==NULL)
-	      {
-		      printf("\nTOF spectrum file could not be not opened\n");
-		      exit(0);
-	      }
-      break;
-
+        break;
       case 'G':
 	      FileNameEnergy = &argv[1][2];
-        FilePtrEnergy  = OpenOutputFile(&argv[1][2], FALSE, "w");
-	      if(FilePtrEnergy==NULL)
-	      {
-		      printf("\nenergy spectrum file not opened or created\n");
-		      exit(0);
-	      }
-      break;
+        break;
 
       case 'a':
         sscanf(&argv[1][2], "%lf", &PrimaryFlightPath) ;
@@ -335,6 +325,9 @@ void OwnInit(int argc, char *argv[])
 
   // checks
   // ------
+  if (FileNameEnergy==NULL || FileNameTOF==NULL)
+    Error("No output file given");
+
   if (eGeomOption!=VT_DIRECT_GEOM &&	eGeomOption!=VT_INVERT_GEOM)
   {
     fprintf(LogFilePtr,"ERROR: wrong geometry option!\n\n") ;
@@ -418,10 +411,10 @@ void OwnInit(int argc, char *argv[])
   InstGeom_ID2Txt(sInstGeom, eGeomOption);
   fprintf(LogFilePtr,"\noption %s\n", sInstGeom);
 
-  if(FilePtrTOF    != NULL) fprintf(LogFilePtr," TOF spectrum file   : '%s'\n", FileNameTOF) ;
-  if(FilePtrEnergy != NULL) fprintf(LogFilePtr," energy spectrum file: '%s'\n", FileNameEnergy) ;
+  if(FileNameTOF    != NULL) fprintf(LogFilePtr," TOF spectrum file   : '%s'\n", FileNameTOF) ;
+  if(FileNameEnergy != NULL) fprintf(LogFilePtr," energy spectrum file: '%s'\n", FileNameEnergy) ;
 
-  fprintf(LogFilePtr, " number of bins       : %4ld      \n", nBins);
+  fprintf(LogFilePtr, " number of bins       : %4ld     \n", nBins);
   fprintf(LogFilePtr, " primary flight path  : %9.4f m  \n secondary flight path: %9.4f m \n",           PrimaryFlightPath/100.0, SecondaryFlightPath/100.0);
   fprintf(LogFilePtr, " reference wavelength : %9.4f Ang\n time offset          : %9.4f ms\n",           LambdaRef, TimeOffset);
   fprintf(LogFilePtr, " gradient of timebins : %9.4f    \n angular range        : %9.4f +/-%9.4f deg\n", SlopeBins, AngleCntr, AngleRange);
@@ -451,14 +444,101 @@ void OwnInit(int argc, char *argv[])
 }/* End OwnInit */
 
 
+/********************************************************/
+/** Allocates memory and initializes evaluation arrays **/
+/********************************************************/
+void InitArrays()
+{
+  long k=0;     // index of channel
+
+  /* calculates TOF channel boundaries and init p_TOF*/
+  t[0] = MinTOF ; 
+  e[0] = MinE ;
+  prob_t[0] = prob_e[0] = 0.0; 
+  nTrjT[0]  = nTrjE[0] = 0;
+
+  for(k=1; k<=nBins; k++)
+  {
+    t[k] = alpha *t[k-1] + beta ;
+    e[k] = e[k-1] + (MaxE - MinE) / nBins ;
+
+    prob_t[k] = prob_e[k]   = 0.0; 
+    nTrjT[k]  = nTrjE[k] = 0;
+  }
+}
+
+
 /*******************************************************/
 /* closes files                                        */
 /*******************************************************/
 void OwnCleanup()
 {
-	if(FilePtrTOF != NULL)fclose(FilePtrTOF) ;
-
-	if(FilePtrEnergy != NULL)fclose(FilePtrEnergy) ;
-
+	return;
 }/* End OwnCleanup */
 
+
+/*******************************************************/
+/**  Updates evaluation output file                   **/
+/*******************************************************/
+void UpdateMon(long iBnch)
+{
+  long   iBin=0;                 // index of bins in x-axix and for main monitor
+  double BinCtr=0.0,             // center of the current bin 
+         sigma=0.0,              // standard deviation of the intensity in the bin
+         f_norm =1.0;            // ratio of total to processed bunches after treating current bunch
+  FILE	*pFileTOF=NULL,          // pointers to output files
+        *pFileEnergy=NULL;
+
+  // open files
+  if (FileNameTOF!=NULL)
+    pFileTOF = OpenOutputFile(FileNameTOF, FALSE, "wt");
+  if (FileNameEnergy!=NULL)
+    pFileEnergy = OpenOutputFile(FileNameEnergy, FALSE, "wt");
+
+  // write spectra 
+  if (pFileTOF != NULL)
+  {
+    WriteHeader1DB(pFileTOF, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntTOF, nTrjTotT, sPar[0], sUnit[0]);
+
+    if (iBnch > 0 && nBunches > 1)
+      f_norm = (double) nBunches / (double) iBnch;
+    else
+      f_norm =1.0;
+
+    for (iBin = 0; iBin < nBins; iBin++)
+    {	
+      BinCtr = (t[iBin]+t[iBin+1])/2.0;
+
+      if (nTrjT[iBin]==0) 
+        sigma = 0.0;
+      else
+        sigma = prob_t[iBin]/sqrt((double)nTrjT[iBin]); 
+
+      fprintf(pFileTOF,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*prob_t[iBin], f_norm*sigma, nTrjT[iBin]);
+    }
+    fclose(pFileTOF);
+  }
+
+  if (pFileEnergy != NULL)
+  {
+    WriteHeader1DB(pFileEnergy, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntE, nTrjTotE, sPar[1], sUnit[1]);
+
+    if (iBnch > 0 && nBunches > 1)
+      f_norm = (double) nBunches / (double) iBnch;
+    else
+      f_norm =1.0;
+
+    for (iBin = 0; iBin < nBins; iBin++)
+    {	
+      BinCtr = (e[iBin]+e[iBin+1])/2.0;
+
+      if (nTrjE[iBin]==0) 
+        sigma = 0.0;
+      else
+        sigma = prob_e[iBin]/sqrt((double)nTrjE[iBin]); 
+
+      fprintf(pFileEnergy,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*prob_e[iBin], f_norm*sigma, nTrjE[iBin]);
+    }
+    fclose(pFileEnergy);
+  }
+}

@@ -5,7 +5,7 @@
 
 #include "general.h"
 
-#define WriteIAP(a,b) {if(bVisTraj)WriteWWP(a,b);}
+// #define WriteIAP(a,b) {if(bVisTraj)WriteWWP(a,b);}
 
 // maximum number of helper threads
 #define MAXWORKER 32
@@ -72,6 +72,8 @@ void WriteNeutron     (Neutron* OutNeutron);
 void WriteEOB         ();
 void ChangeNeutronID  (Neutron* n);
 
+void  WriteDIAP       (Neutron* pNeutron, VtReason eReason, double Dist);
+void  WriteIAP        (Neutron* pNeutron, VtReason eReason);
 void  WriteWWP        (Neutron* pNeutron, VtReason eReason);
 void  WriteInstrData  (VectorType EndPos);
 long  ReadInstrData   (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY, const char* pInstrFile);
