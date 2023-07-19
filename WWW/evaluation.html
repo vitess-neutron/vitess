@@ -583,7 +583,7 @@
   <p>
     The module <b>eval_sans</b> delivers the function S(Q) or F(Q) of a SANS simulation. This has to be done in two steps:
     In a first run, an isotropic scatterer is used; then the simulation with the sample is started.
-    The use of the isotropic scatterer is necessary to eliminate influences of the intensity distribution from moderator und instrument.
+    The use of the isotropic scatterer is necessary to eliminate influences of the intensity distribution from moderator and instrument.
     This <i>reference file</i> from the run with the isotropic scatter can be generated as <i>S(Q) file</i> by the module <b>eval_sans</b> using <i>normalisation factor</i>=1.0,
     or by the module <b>eval_elast</b> using the option <i>evaluation parameter</i>=<i>momentum transfer</i>.
     The reference spectrum needs the same binning as the S(Q) file.<br />
@@ -600,6 +600,8 @@
     S(Q) = F_norm * I_smpl(Q)/I_ref(Q)
   </center>
   <p>
+    Accordingly, all 3 file names have to be given for this calculation. If this is not the case, only the intensity file will be generated.
+    The intensity file will be updated after each bunch, the S(Q) file will only be calculated at the end of the simulation. <br />
     F_norm considers the different scattering probabilities of the SANS samples and the isotropic scatterer into forward direction (&theta;=0).
     For the isotropic scatterer, the form factor F(<b>Q</b>) and the product (&rho;<sub>p</sub>-&rho;<sub>s</sub>)<sup>2</sup> f<sub>p</sub> V<sub>p</sub> are set to 1 (cf. 'sample_sans.html'.)
     Therefore:
