@@ -10,6 +10,7 @@ RelNotes
 SRC
 TOOLS
 Vitess
+Vitess-MacOS
 WWW
 YAML
 callVitess

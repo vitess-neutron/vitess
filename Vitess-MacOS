@@ -1,0 +1,14 @@
+#!/bin/sh
+# Find an alternative TCL/Tk installation on MacOS
+WISH=wish
+WD="`dirname "$0"`"
+
+if [ `uname` = Darwin ]; then
+    if [ -d /usr/local/tcltk/Applications/Utilities/Wish.app ]; then
+        WISH=/usr/local/tcltk/Applications/Utilities/Wish.app/Contents/MacOS/Wish
+    elif [ -d "$WD/Wish.app" ]; then
+        WISH="$WD/Wish.app/Contents/MacOS/Wish"
+    fi
+fi
+
+exec $WISH "$WD/Vitess" "$@"
