@@ -14,7 +14,7 @@ chopper_disc:
       type:    "window"
       descr:   "chopper window"
       tooltip: "chopper window description parameter"   
-      filename:"chopper_wnd.yaml"
+      filename: "chopper_wnd.yaml"
   - sParFile :                  # -S         [-]    parameter file name 
       type:    "file"    
       plottable: false

@@ -114,19 +114,19 @@ source_cws:
       descr:   "moderator window 1"
       tooltip: "parameters describing geometry and characteristics of moderator 1 are given on a separate window"
       column:  0                     
-      filename:"moderator_cws.yaml"
+      filename: "moderator_cws.yaml"
   - wModWnd2:
       type:    "window"
       descr:   "moderator window 2"
       tooltip: "parameters describing geometry and characteristics of moderator 2 are given on a separate window"
       column:  1                     
-      filename:"moderator_cws.yaml"
+      filename: "moderator_cws.yaml"
   - wModWnd3:
       type:    "window"
       descr:   "moderator window 3"
       tooltip: "parameters describing geometry and characteristics of moderator 3 are given on a separate window"
       column:  2                     
-      filename:"moderator_cws.yaml"
+      filename: "moderator_cws.yaml"
   - sModFile :                          # -r         [-]   name of the file containing the IDs for tracing
       type:    "file"
       plottable: false

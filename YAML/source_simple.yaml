@@ -75,7 +75,7 @@ source_simple:
       type:    "window"
       descr:   "moderator window"
       tooltip: "parameters describing the moderator geometry and characteristics"   
-      filename:"moderator_simple.yaml"
+      filename: "moderator_simple.yaml"
   - sModFile :                          # -r         [-]   name of the file containing the IDs for tracing
       type:    "file"
       plottable: false
