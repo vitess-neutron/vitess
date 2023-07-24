@@ -11,7 +11,7 @@ frame:      # source module that will be executed
   - Title_1 : 
       type:    "title" 
       default: "Transformation"
-  - eSequenc:              # -S    VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
+  - eSequence:              # -S    VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
       type:    "combo"  
       descr:   "sequence"
       tooltip: "sequence of Rotation, Translation, and Mirroring"
@@ -49,21 +49,21 @@ frame:      # source module that will be executed
   - Title_3 : 
       type:    "title" 
       default: "Translation"
-  - TransX  :               # -x   0.0   [cm]  x-component of the translation vector
+  - TranslX  :               # -x   0.0   [cm]  x-component of the translation vector
       type:    "float" 
       descr:   "x [cm]"
       tooltip: "x component of translation vector [cm]" 
       default: 0.0
       column:  0                     
       prefix:  "-x"     
-  - TransY  :               # -y   0.0   [cm]  y-component of the translation vector
+  - TranslY  :               # -y   0.0   [cm]  y-component of the translation vector
       type:    "float" 
       descr:   "y [cm]"
       tooltip: "y component of translation vector [cm]"
       default: 0.0
       column:  1                    
       prefix:  "-y"     
-  - TransZ  :               # -z   0.0   [cm]  z-component of the translation vector 
+  - TranslZ  :               # -z   0.0   [cm]  z-component of the translation vector 
       type:    "float" 
       descr:   "z [cm]"
       tooltip: "z component of translation vector [cm]" 
@@ -74,14 +74,14 @@ frame:      # source module that will be executed
   - Title_4 : 
       type:    "title" 
       default: "Mirror"
-  - MirrX   :               # -i  NO     [-]   flag: mirror at yz-plane            
+  - bMirrX   :               # -i  NO     [-]   flag: mirror at yz-plane            
       type:    "switch" 
       descr:   "mirror at yz plane"
       tooltip: "mirror x axis (plane yz)"
       default: false
       column:  0                     
       prefix:  "-i"     
-  - MirrY   :               # -j  NO     [-]   flag: mirror at xz-plane 
+  - bMirrY   :               # -j  NO     [-]   flag: mirror at xz-plane 
       type:    "switch" 
       descr:   "mirror at xz plane"
       default: "NO"
@@ -89,7 +89,7 @@ frame:      # source module that will be executed
       default: false
       column:  1                     
       prefix:  "-j"     
-  - MirrZ   :               # -k  NO     [-]   flag: mirror at xy-plane
+  - bMirrZ   :               # -k  NO     [-]   flag: mirror at xy-plane
       type:    "switch" 
       descr:   "mirror at xy plane"
       tooltip: "mirror z axis (plane xy)"

@@ -15,7 +15,7 @@ chopper_disc:
       descr:   "chopper window"
       tooltip: "chopper window description parameter"   
       filename:"chopper_wnd.yaml"
-  - ParFile :                  # -S         [-]    parameter file name 
+  - sParFile :                  # -S         [-]    parameter file name 
       type:    "file"    
       plottable: false
       descr:   "chopper file"
@@ -34,14 +34,14 @@ chopper_disc:
       tooltip: "orientation of the chopper at t=0"
       column:   1                     
       prefix:  "-o"     
-  - Dist    :       
+  - Distance:       
       type:    "float" 
       descr:   "distance to prev. module [cm]"
       tooltip: "distance of the chopper from the end of the previous component" 
       column:   2                     
       prefix:  "-l"     
 
-  - eAbsMat:   #  VtAbsMat   AbsMat_Txt2ID(const char* sText)
+  - eAbsorbMat:   #  VtAbsMat   AbsMat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "absorption"
       tooltip: "absorbing window material" 
@@ -57,7 +57,7 @@ chopper_disc:
       default: no
       column:  1                     
       prefix:  "-r"     
-  - bZeroT  : 
+  - bZeroTime  : 
       type:    "switch" 
       descr:   "set zero time"
       tooltip: "yes: the chopper defines the zero time \nno : the zero time is defined in the source  (see Help | chopper)" 
@@ -80,7 +80,7 @@ chopper_disc:
       column:  0                     
       prefix:  "-c"     
 
-  - NumWnds :  
+  - nWnds :  
       type:    "int" 
       descr:   "number of windows"
       tooltip: "number of chopper windows" 

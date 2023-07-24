@@ -13,7 +13,7 @@ read_in:       # source module that will be executed
   - Title_Format:
       type:    "title"
       default: "Format" 
-  - ePrgFmt:                 # -f   VtPrgFormat PrgFormat_Txt2ID(const char* sText)
+  - ePrgFormat:                 # -f   VtPrgFormat PrgFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
@@ -22,7 +22,7 @@ read_in:       # source module that will be executed
       default:  "VITESS"
       column:  0                     
       prefix:  "-f"   
-  - eDatFmt:                 # -F   VtDataFormat DataFormat_Txt2ID(const char* sText)
+  - eDataFormat:                 # -F   VtDataFormat DataFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "storage format" 
       tooltip: "format of the data to read: 'exp': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
@@ -35,39 +35,39 @@ read_in:       # source module that will be executed
   - Title_Input:
       type:    "title"
       default: "Input files" 
-  - File1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
+  - sFile1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
       type:    "file" 
       plottable: false
       descr:   "ASCII input file 1"
       tooltip: "ASCII 1st input file containing trajectories"
       prefix:  "-A"
-  - File2:                 # -B   NULL   [-]  ASCII 2nd input file containing trajectories
+  - sFile2:                 # -B   NULL   [-]  ASCII 2nd input file containing trajectories
       type:    "file" 
       plottable: false
       descr:   "ASCII input file 2" 
       tooltip: "ASCII 2nd input file containing trajectories"
       prefix:  "-B"
-  - File3:                 # -D   NULL   [-]  ASCII 3nd input file containing trajectories
+  - sFile3:                 # -D   NULL   [-]  ASCII 3nd input file containing trajectories
       type:    "file" 
       plottable: false
       descr:   "ASCII input file 3"  
       tooltip: "ASCII 3nd input file containing trajectories"
       prefix:  "-D"
-  - RiFrc1:                 # -a    1.0  [-]  
+  - FracSim1:                 # -a    1.0  [-]  
       type:    "float" 
       descr:   "weight of traj. in file 1"
       tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
       default: 1.0
       column:  0                     
       prefix:  "-a"   
-  - RiFrc2:                 # -b    0.0  [-]   
+  - FracSim2:                 # -b    0.0  [-]   
       type:    "float" 
       descr:   "weight of traj. in file 2"
       tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
       default: 0.0
       column:  1                     
       prefix:  "-b"   
-  - RiFrc3:                 # -d    0.0  [-] 
+  - FracSim3:                 # -d    0.0  [-] 
       type:    "float" 
       descr:   "weight of traj. in file 3"
       tooltip: "assuming that all input files are written after a completed simulation,\nthe sum of all weights must be 1 and each weight must be proportional to the number of trajectories started"
@@ -92,7 +92,7 @@ read_in:       # source module that will be executed
       tooltip: "Maximum number of trajectories that are read."
       column:  1                     
       prefix:  "-M"   
-  - RiFact:                 # -I    1.0  [-] 
+  - WeightFact:                 # -I    1.0  [-] 
       type:    "float" 
       descr:   "intensity factor"
       tooltip: "The weight of each neutron trajectory (from an MCNP simulation) is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnp-events"
@@ -100,14 +100,14 @@ read_in:       # source module that will be executed
       column:  2                     
       prefix:  "-I"   
  
-  - nSurface:               
+  - nSurfaceID:               
       type:    "int" 
       descr:   "surface ID" 
       tooltip: "Only for MCNP6: If a surface ID greater -1 is given, only neutrons passing this ID are read from file." 
       default: -1
       column:  2                     
       prefix:  "-s"   
-  - nInCol:                   # -C    -1  Read only events with a given color. A negative number means any color 
+  - iColor:                   # -C    -1  Read only events with a given color. A negative number means any color 
       type:    "int" 
       descr:   "read in color" 
       tooltip: "Read only events with a given color. A negative number means any color" 
@@ -115,19 +115,19 @@ read_in:       # source module that will be executed
       column:  0                     
       prefix:  "-C"
  
-  - InstFile:                 # 
+  - sInstrFile:                 # 
       type:    "file" 
       plottable: false
       descr:   "instrument input file"
-      tooltip: "Specifies the instrument file of the previous part of the simulation."
+      tooltip: "Specifies the instrument file (generated as instrument.inf) of the previous part of the simulation."
       prefix:  "--I"
-  - TrcFile:                  # 
+  - sTraceFile:                  # 
       type:    "file" 
       plottable: false
       descr:   "raytracing file"
       tooltip: "Name of the file that contains the IDs of the trajectories for tracing."
       prefix:  "-T"
-  - eTrcMode:                 # -t   VtTrace   Trace_Txt2ID(const char* sText);
+  - eTraceMode:                 # -t   VtTrace   Trace_Txt2ID(const char* sText);
       type:    "combo" 
       descr:   "raytracing mode" 
       tooltip: "no tracing\nwrite a files for each traj. of interest\nsimulation only with traj. of interest"

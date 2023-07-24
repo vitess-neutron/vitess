@@ -50,21 +50,21 @@ detector:
   - Title_flt: 
       type:    "title"
       default: "Filter" 
-  - nMinCol :
+  - iMinColor:
       type:    "int" 
       descr:   "min color"
       tooltip: "Minimal color necessary for the trajectory to be treated (-1 means all)"  
       min:     -1
       column:  0                     
       prefix:  "-q" 
-  - nMaxCol : 
+  - iMaxColor: 
       type:    "int" 
       descr:   "max color"
       tooltip: "Maximal color necessary for the trajectory to be treated (-1 means all)"  
       min:     -1
       column:  1                     
       prefix:  "-Q" 
-  - nAddCol :           
+  - iAddColor:           
       type:    "int" 
       descr:   "add color"
       tooltip: "Add value to color after detection. A negative number means no change (see also Help|Detector)"  
@@ -72,14 +72,14 @@ detector:
       column:  2                     
       prefix:  "-S" 
 
-  - bKeepCol:           
+  - bKeepColor:           
       type:    "switch" 
       descr:   "keep wrong color"
       tooltip: "If activated, neutrons outside the colour selection will be passed on to the next module untouched. Otherwise, these neutrons are discarded (default). Only relevant if 'min color' and/or 'max color' is used"  
       default: false
       column:  0                     
       prefix:  "-d" 
-  - nRepete:              
+  - nRep:              
       type:    "int" 
       descr:   "repetition"
       min:     1
@@ -134,7 +134,7 @@ detector:
       min:      0.0
       column:  1       
       prefix:  "-w"     
-  - Thikness:    
+  - Thickness:    
       type:    "float"    
       descr:   "thickness [cm]"
       tooltip: "Total thickness of the detecting material"
@@ -154,7 +154,7 @@ detector:
       min:     1
       column:  0                     
       prefix:  "-r" 
-  - nCols:  
+  - nColors:  
       type:    "int" 
       descr:   "number of columns"
       tooltip: "Number of columns partitioning the detector width (vert. tubes or digitalization bins)"  
@@ -171,7 +171,7 @@ detector:
       column:  2                     
       prefix:  "-n" 
 
-  - HorRes  :         
+  - ResHor  :         
       type:    "float"    
       descr:   "hor. resolution [cm]"
       tooltip: "Spatial resolution (FWHM) in horizontal direction"
@@ -179,7 +179,7 @@ detector:
       min:     0.0
       column:  0       
       prefix:  "-u"     
-  - VertRes:     
+  - ResVert:     
       type:    "float"    
       descr:   "vert. resolution [cm]"
       tooltip: "spatial resolution (FWHM) in vertical direction"
@@ -199,7 +199,7 @@ detector:
   - Title_eff: 
       type:    "title"
       default: "Detector efficiency" 
-  - EffFile :      
+  - sEffFile :      
       type:    "file"    
       plottable: true
       descr:   "lambda efficiency"
@@ -230,7 +230,7 @@ detector:
       min:     0.0
       column:  1                     
       prefix:  "-k"   
-  - EffMod  :                             
+  - EffModify:                             
       type:    "float" 
       descr:   "efficiency modifyer" 
       tooltip: "The efficiency calculated from the interaction cross-section with the chosen material or taken from the efficiency file is multiplied by this factor. (See also help file.)"
@@ -251,7 +251,7 @@ detector:
       default:  "vertical"
       column:  0                     
       prefix:  "-o"   
-  - eDetXsec:    # Function  VtTubeShape TubeShape_Txt2ID(const char* sText) 
+  - eDetXsection:    # Function  VtTubeShape TubeShape_Txt2ID(const char* sText) 
       type:    "combo" 
       descr:   "tube cross-section"  
       tooltip: "Choose circular or rectangular cross-section for cylindrical or cubic detectors" 
@@ -279,7 +279,7 @@ detector:
   - Title_flt: 
       type:    "title"
       default: "Geometry details: Flat detector" 
-  - Phi_n:                             
+  - PhiDetSurf:                             
       type:    "float" 
       descr:   "phi_n [deg]" 
       tooltip: "Inclined detector surface: phi_n [0,360] is the angle between the projection of the back surface normal onto (y',z') plane (analog to phi), (see also help file)"
@@ -288,7 +288,7 @@ detector:
       max:   360.0
       column:  0                     
       prefix:  "-V"   
-  - Theta_n:                             
+  - ThetaDetSurf:                             
       type:    "float" 
       descr:   "theta_n [deg]" 
       tooltip: "Inclined detector surface: theta_n [0,180] deg is the angle between (the backside of) the detector surface normal and the position vector (see also help file)."
@@ -310,7 +310,7 @@ detector:
       default:  "z"
       column:  0                     
       prefix:  "-x"   
-  - bCnstPhi:      
+  - bConstPhi:      
       type:    "switch" 
       descr:   "const phi"  
       tooltip: "flag: Use constant phi pixel, i.e. pixel size in height dimension is determined by constant angular spread instead of constant spatial extension." 

@@ -10,20 +10,20 @@
 sample_nxs:
   - category:  "sample"
 
-  - SmplFile:                  # -S         [-]    parameter file name 
+  - sSmplFile:                  # -S         [-]    parameter file name 
       type:    "file"    
       plottable: false
       descr:   "sample file"
       tooltip: "File containing parameters of the powder sample (size, poition, orientation)\nSee HelpFile 'sample.html'"
       prefix:  "-S"     
-  - NxsFile :                  # -s           nxs structure factor file name (of the sample material)
+  - sNxsFile :                  # -s           nxs structure factor file name (of the sample material)
       type:    "file"     
       plottable: false
       descr:   "nxs parameter\nfile"
       tooltip: "File containing information about the crystal (space group, atomic positions, ...)"
       prefix:  "-s"     
 
-  - nRepete  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory for each structure factor)
+  - nRep  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory for each structure factor)
       type:    "int" 
       descr:   "repetitions" 
       tooltip: "repetitions (number of trajectories generated per incoming trajectory\nfor each structure factor)"
@@ -31,7 +31,7 @@ sample_nxs:
       default: 1
       column:  0                     
       prefix:  "-A"     
-  - nColor  :                 # -c          colour of the neutrons scattered from the environment
+  - iColor  :                 # -c          colour of the neutrons scattered from the environment
       type:    "int" 
       descr:   "colour" 
       tooltip: "colour of the neutrons scattered from the sample"
@@ -39,21 +39,21 @@ sample_nxs:
       column:  1                     
       prefix:  "-c"     
 
-  - bIncScat:                # -I   NO      flag: incoherent scattering (YES  NO)  
+  - bIncohScat:                # -I   NO      flag: incoherent scattering (YES  NO)  
       type:    "switch" 
       descr:   "incoherent scattering"
       tooltip: "flag incoherent scattering (YES  NO)"
       default: [NO, YES]
       column:  0                     
       prefix:  "-I"     
-  - bTrtAll :                # -a   NO      flag: neutrons not hitting the sample are treated  (YES  NO) 
+  - bTreatAll:                # -a   NO      flag: neutrons not hitting the sample are treated  (YES  NO) 
       type:    "switch" 
       descr:   "treat all neutrons"
       tooltip: "flag neutrons not hitting the sample are treated"
       default: [NO, YES]
       column:  1                     
       prefix:  "-a"     
-  - bOnlyT  :                # -T   NO      flag: shall only transmission (imaging) be treated (YES) or scattering also (NO)
+  - bOnlyTransm:                # -T   NO      flag: shall only transmission (imaging) be treated (YES) or scattering also (NO)
       type:    "switch" 
       descr:   "transmission only"
       tooltip: "flag shall only transmission (imaging) be treated (YES)\nor scattering also (NO)"
@@ -100,21 +100,21 @@ sample_nxs:
   - Title: 
       type:    "title"    
       default: "Sample"
-  - PosX:                    # -X 0.0  [cm]   center x position of the sample
+  - SmplPosX:                    # -X 0.0  [cm]   center x position of the sample
       type:    "float" 
       descr:   "x [cm]"
       tooltip: "center x position of the sample"
       default: 0.0
       prefix:  "-x"     
       column:  0                     
-  - PosY:                    # -Y 0.0  [cm]   center y position of the sample 
+  - SmplPosY:                    # -Y 0.0  [cm]   center y position of the sample 
       type:    "float" 
       descr:   "y [cm]"
       tooltip: "center y position of the sample"
       default: 0.0
       prefix:  "-y"     
       column:  1                     
-  - PosZ:                    # -Z 0.0  [cm]   center z position of the sample 
+  - SmplPosZ:                    # -Z 0.0  [cm]   center z position of the sample 
       type:    "float" 
       descr:   "z [cm]"
       tooltip: "center z position of the sample"
@@ -122,7 +122,7 @@ sample_nxs:
       prefix:  "-z"     
       column:  2  
 
-  -  eSmplGeo:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
+  -  eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "sample\ngeometry"
       tooltip: "geometry of the sample:  cylinder, sphere, cuboid (=rectangular)"
@@ -155,21 +155,21 @@ sample_nxs:
       prefix:  "-w"     
       column:  2                     
 
-  - DirX:                    # -x 0.0  [cm]   x-component of the sample orientation 
+  - SmplDirX:                    # -x 0.0  [cm]   x-component of the sample orientation 
       type:    "float" 
       descr:   "x direction [cm]"
       tooltip: "x-component of the sample orientation"
       default: 0.0
       prefix:  "-X"     
       column:  0                     
-  - DirY:                    # -y 0.0  [cm]   y-component of the sample orientation 
+  - SmplDirY:                    # -y 0.0  [cm]   y-component of the sample orientation 
       type:    "float" 
       descr:   "y direction [cm]"
       tooltip: "y-component of the sample orientation"
       default: 0.0
       prefix:  "-Y"     
       column:  1                     
-  - DirZ:                     # -z 0.0  [cm]   z-component of the sample orientation
+  - SmplDirZ:                     # -z 0.0  [cm]   z-component of the sample orientation
       type:    "float" 
       descr:   "z direction [cm]"
       tooltip: "z-component of the sample orientation"

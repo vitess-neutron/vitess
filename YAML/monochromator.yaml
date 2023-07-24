@@ -8,13 +8,13 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 monochromator:
-  - ParFile :            
+  - sParFile :            
       type:    "file"    
       descr:   "parameter file"
       plottable: false
       tooltip: "Input file containing parameters of the monochromators\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-P"     
-  - GeomFile:            
+  - sGeomFile:            
       type:    "file"    
       plottable: false
       descr:   "geometry file"
@@ -33,7 +33,7 @@ monochromator:
       default:  "reflection"
       column:  0 
       prefix:  "-X"     
-  - eMonoArr:          # use:  VtMonoArrange MonoArrange_Txt2ID(const char* sText)
+  - eMonoArrange:          # use:  VtMonoArrange MonoArrange_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "monochromator geometry"
       tooltip: "Defines how the monochromator system is composed, either by calculating the arrangement of the crystal elements (CE), by reading it from file or treating only one crystal element"
@@ -49,7 +49,7 @@ monochromator:
       default:  no
       column:   0                     
       prefix:  "-B"     
-  - nRepete:           
+  - nRep:           
       type:    "int" 
       descr:   "repetition"
       tooltip: "Number of trajectories generated per incoming trajectory\nIf greater 1, the trajectory is used multiple times for better statistics."
@@ -92,7 +92,7 @@ monochromator:
       column:  1                     
       prefix:  "-M"     
 
-  - dSpread:                 
+  - d_Spread:                 
       type:    "float" 
       descr:   "d-spread"
       tooltip: "FWHM of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal."
@@ -118,14 +118,14 @@ monochromator:
       column:  2 
       prefix:  "-R"     
 
-  - MuScaTot:                 
+  - MuScatTotal:                 
       type:    "float" 
       descr:   "scattering coeff. [1/cm]"
       tooltip: "User defined macroscopic total scattering cross section of the sample"
       default: 0.0
       column:  0                     
       prefix:  "-c"     
-  - MuAbs   :      
+  - MuAbsorb   :      
       type:    "float" 
       descr:   "absorption coeff. [1/cm]"
       tooltip: "User defined macroscopic absorption cross section of the sample for 1.798 Ang"
@@ -145,7 +145,7 @@ monochromator:
       default: "double focussing"
       column:  0 
       prefix:  "-g"     
-  - NumHor:       
+  - nColumns:       
       type:    "int" 
       descr:   "number of columns"
       tooltip: "The number of columns of the crystal element matrix. 1 for 'vert. cylinder'"
@@ -153,7 +153,7 @@ monochromator:
       min:     1
       column:  0                     
       prefix:  "-H"     
-  - NumVert:       
+  - nRows:       
       type:    "int" 
       descr:   "number of rows"
       tooltip: "The number of rows of the crystal element matrix."
@@ -162,14 +162,14 @@ monochromator:
       column:  1                     
       prefix:  "-V"     
 
-  - RadHor:       
+  - RadiusFocHor:       
       type:    "float" 
       descr:   "hor. radius [cm]"
       tooltip: "Radius of focusing in horizontal direction for a double focusing monochromator. (Zero means infinite radius.)"
       min:     0.0
       column:  0                     
       prefix:  "-s"     
-  - RadVert:       
+  - RadiusFocVert:       
       type:    "float" 
       descr:   "vert. radius [cm]"
       tooltip: "lambda-focusing: distance from the sample center to the bottom row of the crystal elements\nspherical      : radius of the sphere\nvert. cylinder : radius of the vertical cylinder\ndouble focusing: Radius of focusing in vertical direction."
@@ -177,7 +177,7 @@ monochromator:
       min:     0.0
       column:  1                     
       prefix:  "-r"     
-  - Offset:       
+  - AngleOffsetVert:       
       type:    "float" 
       descr:   "vert. offset [deg]"
       tooltip: "Angular offset of the bottom row of the crystal elements"
@@ -222,7 +222,7 @@ monochromator:
   - Title_bragg: 
       type: "title" 
       default: "Properties of the reflecting planes" 
-  - dSpacing:       
+  - d_Spacing:       
       type:    "float" 
       descr:   "d-spacing [Ang]"
       tooltip: "Lattice distance corresponding to a reflection from a (h,k,l) crystal"
@@ -246,21 +246,21 @@ monochromator:
       default: 30.0
       column:  0                     
       prefix:  "-l"     
-  - BraggVrt:          
+  - BraggVert:          
       type:    "float" 
       descr:   "vert. offset reflection [deg]"
       tooltip: "Vertical offset from backscattering of the crystal planes determining the Bragg reflection."
       default: 0.0
       column:  1                     
       prefix:  "-L"     
-  - SfcHor:  
+  - SurfHor:  
       type:    "float" 
       descr:   "hor. offset surface [deg]"
       tooltip: "Horizontal offset of the crystal from backscattering considering the attenuation in the crystals\nIt is usually identical with offset from planes (for details see Help|monochromator)"
       default: 30.0
       column:  0                     
       prefix:  "-e"     
-  - SfcVrt:    
+  - SurfVert:    
       type:    "float" 
       descr:   "vert. offset surface [deg]"
       tooltip: "Vertical offset of the crystal from backscattering considering the attenuation in the crystals\nIt is usually identical with offset from planes (for details see Help|monochromator)"
@@ -271,21 +271,21 @@ monochromator:
   - Title_geometry: 
       type: "title" 
       default: "Geometry of the central monochromator element" 
-  - PosX:                   # 0.0  [cm]   center x position of the sample
+  - CntrPosX:                   # 0.0  [cm]   center x position of the sample
       type:    "float" 
       descr:   "x [cm]"
       tooltip: "X component of the center of the monochromator element or system"
       default: 20.0
       column:  0                     
       prefix:  "-x"     
-  - PosY:                   # 0.0  [cm]   center y position of the sample 
+  - CntrPosY:                   # 0.0  [cm]   center y position of the sample 
       type:    "float" 
       descr:   "Y [cm]"
       tooltip: "Y component of the center of the monochromator element or system"
       default: 0.0
       column:  1                     
       prefix:  "-y"     
-  - PosZ:                   #  0.0  [cm]   center z position of the sample 
+  - CntrPosZ:                   #  0.0  [cm]   center z position of the sample 
       type:    "float" 
       descr:   "Z [cm]"
       tooltip: "Z component of the center of the monochromator element or system"
@@ -328,21 +328,21 @@ monochromator:
       column:  0                     
       prefix:  "-F"     
 
-  - OutX:       
+  - OutFrameX:       
       type:    "float" 
       descr:   "X' [cm]"
       tooltip: "x coordinate of the output frame"
       default: 30.0
       column:  0                     
       prefix:  "-W"     
-  - OutY:        
+  - OutFrameY:        
       type:    "float" 
       descr:   "Y' [cm]"
       tooltip: "y coordinate of the output frame"
       default: 0.0
       column:  1                     
       prefix:  "-Y"     
-  - OutZ:      
+  - OutFrameZ:      
       type:    "float" 
       descr:   "Z' [cm]"
       tooltip: "z coordinate of the output frame"
@@ -350,14 +350,14 @@ monochromator:
       column:  2                     
       prefix:  "-Z"     
 
-  - OutHor:                   #  0.0 [deg]   horizontal angular coordinate in output frame  
+  - OutFrameHor:                   #  0.0 [deg]   horizontal angular coordinate in output frame  
       type:    "float" 
       descr:   "horiz. angle [deg]"
       tooltip: "Rotation angle of the output frame in horizontal direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. Help|monochromator)"
       default: 60.0
       column:  0                     
       prefix:  "-u"     
-  - OutVert   :                   # 0.0  [deg]   vertical angular coordinate in output frame 
+  - OutFrameVert   :                   # 0.0  [deg]   vertical angular coordinate in output frame 
       type:    "float" 
       descr:   "vert. angle [deg]"
       tooltip: "Rotation angle of the output frame in vertical direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. Help|monochromator)"

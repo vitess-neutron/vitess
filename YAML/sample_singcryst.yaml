@@ -1,0 +1,294 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# prefix: prefix for parameter in pipe
+sample_singcryst:
+  - category:  "sample"
+
+  - sParFile :                 
+      type:    "file"    
+      plottable: false
+      descr:   "parameter file"
+      tooltip: "File containing parameters of the single crystal sample\nThese parameters are only used if they are not given as direct input parameters."
+      prefix:  "-P"     
+  - sStructFile :           
+      type:    "file"    
+      plottable: false
+      descr:   "structure factor file"
+      tooltip: "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program."
+      prefix:  "-S"     
+  - d_Spread:            #  -d     [-]   d-spacing spread d_FWHM/d  
+      type:    "float" 
+      descr:   "d-spacing spread [-]"
+      tooltip: "d_fwhm/d, the relative 'thickness' of the Ewald sphere"
+      default:  0.0
+      min:      0.0
+      prefix:  "-d"     
+      column:   0                     
+  -  eDistr:            # VtDistr  Distr_Txt2ID(const char* sText)
+      type:    "combo" 
+      descr:   "d-spacing distribution"
+      tooltip: "function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN"
+      enum:    "VtDistr"
+      options:["Lorentzian", "Gaussian"]
+      default: "Gaussian"
+      prefix:  "-o"     
+      column:   0 
+
+# Extension for version 4.1
+#  - bIncohScat:                     # -I  NO     [-]    flag: shall incoherent scattering be done ?  
+#      type:    "switch" 
+#      descr:   "incoherent scattering"
+#      tooltip: "yes: activates calculation of incoherent scattering\nno : no incoherent scattering" 
+#      column:   0                     
+#      default:  no
+#      prefix:  "-I"     
+#  - iColor  :                     # -c         [-]    colour of the neutrons scattered from the environment
+#      type:    "int"    
+#      descr:   "colour"
+#      tooltip: "Colour of the neutrons scattered by the single crystal sample"
+#      min:     0 
+#      column:  0       
+#      prefix:  "-c"  
+#  - bTreatAll:                      # -I  NO     [-]    flag: shall neutrons not hitting the sample be treated ?  
+#      type:    "switch" 
+#      descr:   "treat all neutrons"
+#      tooltip: "no : only neutrons hitting the sample are treated\nyes: neutrons passing by are also treated" 
+#      column:   1                     
+#      default:  no
+#      prefix:  "-a"     
+
+  - Title: 
+      type:    "title"    
+      default: "Reciprocal Unit Cell Vectors"
+  - RcpUCVectAX:                  
+      descr:   "Vector A X [1/Ang]"
+      tooltip: "x component of the reciprocal unit cell vector A (defined in the sample frame)"
+      default: 1.0
+      column:   0       
+      prefix:  "-A"     
+  - RcpUCVectAY:                  
+      descr:   "Vector A Y [1/Ang]"
+      tooltip: "y component of the reciprocal unit cell vector A (defined in the sample frame)"
+      default: 0.0
+      column:   0       
+      prefix:  "-B"     
+  - RcpUCVectAZ:                  
+      descr:   "Vector A Z [1/Ang]"
+      tooltip: "z component of the reciprocal unit cell vector A (defined in the sample frame)"
+      default: 0.0
+      column:   0       
+      prefix:  "-C"     
+  - RcpUCVectBX:                  
+      descr:   "Vector B X [1/Ang]"
+      tooltip: "x component of the reciprocal unit cell vector B (defined in the sample frame)"
+      default: 1.0
+      column:   0       
+      prefix:  "-T"     
+  - RcpUCVectBY:                  
+      descr:   "Vector B Y [1/Ang]"
+      tooltip: "y component of the reciprocal unit cell vector B (defined in the sample frame)"
+      default: 0.0
+      column:   0       
+      prefix:  "-U"     
+  - RcpUCVectBZ:                  
+      descr:   "Vector B Z [1/Ang]"
+      tooltip: "z component of the reciprocal unit cell vector B (defined in the sample frame)"
+      default: 0.0
+      column:   0       
+      prefix:  "-V"     
+  - RcpUCVectCX:                  
+      descr:   "Vector C X [1/Ang]"
+      tooltip: "x component of the reciprocal unit cell vector C (defined in the sample frame)"
+      default: 1.0
+      column:   0       
+      prefix:  "-X"     
+  - RcpUCVectCY:                  
+      descr:   "Vector C Y [1/Ang]"
+      tooltip: "y component of the reciprocal unit cell vector C (defined in the sample frame)"
+      default: 0.0
+      column:   0       
+      prefix:  "-Y"     
+  - RcpUCVectCZ:                  
+      descr:   "Vector C Z [1/Ang]"
+      tooltip: "z component of the reciprocal unit cell vector C (defined in the sample frame)"
+      default: 0.0
+      column:   0       
+      prefix:  "-Z"     
+
+  - Title: 
+      type:    "title"    
+      default: "Scattering"
+  - NormFact : 
+      type:    "float"    
+      descr:   "normalization [a.u.]"
+      tooltip: "normalisation factor containing for example the number density"
+      default: 1.0
+      min:     0.000001
+      column:  2       
+      prefix:  "-N"     
+  - MuAbsorb   :  
+      type:    "float"    
+      descr:   "absorption [1/cm/Ang]"
+      tooltip: "Macroscopic absorption cross section per wavelength used to calculate the attenuation within the sample"
+      default: 20.0
+      min:     0.1
+      column:  2       
+      prefix:  "-m"     
+
+  - Title: 
+      type:    "title"    
+      default: "Sample Position and Geometry"
+  - PosSmplX:                  # -x    0.0  [cm]   center position X of the single crystal sample 
+      type:    "float"    
+      descr:   "X [cm]"
+      tooltip: "Center position X of the single crystal sample"
+      default: 30.0
+      column:   0       
+      prefix:  "-x"     
+  - PosSmplY:                  # -y    0.0  [cm]   center position Y of the single crystal sample 
+      type:    "float"    
+      descr:   "Y [cm]"
+      tooltip: "Center position Y of the single crystal sample"
+      column:  1       
+      prefix:  "-y"     
+  - PosSmplZ:                  # -z    0.0  [cm]   center position Z of the single crystal sample 
+      type:    "float"    
+      descr:   "Z [cm]"
+      tooltip: "center position Z of the single crystal sample" 
+      default: 0.0
+      column:  2       
+      prefix:  "-z"     
+
+  - RotSmplZ1:            
+      type:    "float" 
+      descr:   "phi(Z) [deg]"
+      tooltip: "First rotation angle of the sample, i.e. the reciprocal unit vectors abount the Z axis (cf. 'Help sample')"
+      default: 0.0
+      prefix:  "-p"     
+      column:  0                     
+  - RotSmplX:          
+      type:    "float" 
+      descr:   "chi(X) [deg]"
+      tooltip: "Second rotation angle of the sample, i.e. the reciprocal unit vectors about the new X axis (cf. 'Help sample')"
+      default: 0.0
+      prefix:  "-q"     
+      column:  1                     
+  - RotSmplZ2:       
+      type:    "float" 
+      descr:   "omega(Z) [deg]"
+      tooltip: "Third rotation angle of the sample, i.e. the reciprocal unit vectors about the new Z axis (cf. 'Help sample')"
+      default: 0.0
+      prefix:  "-O"     
+      column:  2                     
+
+  - eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
+      type:    "combo" 
+      descr:   "sample geometry"
+      tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
+      enum:    "VtSmplGeom"   
+      options:["cylinder", "sphere", "cuboid"]
+      default: "cuboid"
+      prefix:  "-G"     
+      column:  0 
+
+  - SmplDiam:                  # file  1.0  [cm]   thickness of the single crystal sample  (: R_out - R_in)
+      type:    "float"    
+      descr:   "thickness or diameter [cm]"
+      tooltip: "Thickness of a cubic sample, or diameter of sphere or cylinder."
+      min:     0.0001
+      default: 0.2
+      column:  0       
+      prefix:  "-t"     
+  - SmplHeight  :                  # file 20.0  [cm]   outer height of the single crystal sample
+      type:    "float"    
+      descr:   "height [cm]"
+      tooltip: Height of the single crystal sample (not needed for spherical shape)"
+      default: 0.2
+      min:     0.0
+      column:  1       
+      prefix:  "-h"     
+  - SmplWidth:                  # file 10.0  [cm]   outer diameter of the single crystal sample  (: 2*R_out)
+      type:    "float"    
+      descr:   "diameter [cm]"
+      tooltip: "Width of a cubic single crystal sample"
+      default: 0.2
+      min:     0.0
+      column:  2       
+      prefix:  "-w"     
+
+  - FrameOutHor:                   #  0.0 [deg]   horizontal angular coordinate in output frame  
+      type:    "float" 
+      descr:   "horiz. angle [deg]"
+      tooltip: "horizontal angular coordinate in output frame"
+      default: 0.0
+      prefix:  "-u"     
+      column:  0                     
+  - FrameOutVert   :                   # 0.0  [deg]   vertical angular coordinate in output frame 
+      type:    "float" 
+      descr:   "vert. angle [deg]"
+      tooltip: "vertical angular coordinate in output frame"
+      default: 0.0
+      prefix:  "-v"     
+      column:  1                     
+
+  - Title: 
+      type:    "title"    
+      default: "Structure factor file format"
+  - ColumnH   :                
+      type:    "int"    
+      descr:   "h column"
+      tooltip: "column of the structure factor file, where the Miller index h is given\nSee also 'Help sample'"
+      min:     0
+      column:  0       
+      prefix:  "-H"     
+  - ColumnK   :                
+      type:    "int"    
+      descr:   "h column"
+      tooltip: "column of the structure factor file, where the Miller index k is given\nSee also 'Help sample'"
+      min:     0
+      column:  1       
+      prefix:  "-K"     
+  - ColumnL   :                
+      type:    "int"    
+      descr:   "h column"
+      tooltip: "column of the structure factor file, where the Miller index l is given\nSee also 'Help sample'"
+      min:     0
+      column:  2       
+      prefix:  "-L"     
+  - ColumnStructFact:               
+      type:    "int"    
+      descr:   "F column"
+      tooltip: "column of the structure factor file, where the structure factor F is\nSee also HelpFile 'sample.html'"
+      min:     0
+      column:  0       
+      prefix:  "-F"     
+  - ColumnStructFactSqu   :            
+      type:    "int"    
+      descr:   "|F|² column"
+      tooltip: "column of the structure factor file, where the square of the structure factor F² is\nSee also HelpFile 'sample.html'"
+      default: 1
+      min:     0
+      column:  1       
+      prefix:  "-Q"     
+  - ColumnDW   : 
+      type:    "int"    
+      descr:   "Debye-Waller column"
+      tooltip: "column of the structure factor file, where the Debye-Waller factor is\nSee also HelpFile 'sample.html'"
+      min:     0
+      column:  2       
+      prefix:  "-W"     
+
+  - ScaleFact : 
+      type:    "float"    
+      descr:   "Scale factor"
+      tooltip: "Normalization factor for the structure factor\nSee also HelpFile 'sample.html'"
+      default: 1.0
+      min:     0.000001
+      column:  0       
+      prefix:  "-f"     

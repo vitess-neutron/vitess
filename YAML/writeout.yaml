@@ -38,7 +38,7 @@ writeout:      # source module that will be executed
   - Title_Format:
       type:    "title"
       default: "File formats" 
-  - ePrgFmt :                #         -f  VtPrgFormat PrgFormat_Txt2ID(const char* sText)
+  - ePrgFormat :                #         -f  VtPrgFormat PrgFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
@@ -47,7 +47,7 @@ writeout:      # source module that will be executed
       default:  "VITESS"
       column:  0                     
       prefix:  "-f"
-  - eDatFmt :                #         -F  VtDataFormat DataFormat_Txt2ID(const char* sText)
+  - eDataFormat :                #         -F  VtDataFormat DataFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "storage format" 
       tooltip: "format of the data to read: 'exponential': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
@@ -56,7 +56,7 @@ writeout:      # source module that will be executed
       default:  "float"
       column:  1                     
       prefix:  "-F"   
-  - eSepFmt :                #         -S  VtSeparator Separator_Txt2ID(const char* sText)
+  - eSepFormat :                #         -S  VtSeparator Separator_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "separator"
       tooltip: "separator between columns in the ASCII output file"
@@ -69,14 +69,14 @@ writeout:      # source module that will be executed
   - Title_Opt:
       type:    "title"
       default: "MCNP and SSW options" 
-  - FactInt :              
+  - IntFact:              
       type:    "float" 
       descr:   "intensity factor"
       tooltip: "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'."
       min:     0.0
       column:  0                     
       prefix:  "-I"
-  - nSurface:               
+  - nSurfaces:               
       type:    "int" 
       descr:   "surface ID" 
       tooltip: "Only for MCNP6: Number written as surface ID to the output file" 
@@ -108,46 +108,46 @@ writeout:      # source module that will be executed
   - Title_Filter: 
       type:    "title" 
       default: "Filter selection"
-  - iDetCol :               #         -C  "writeout color"              "Write only events with a given color. A negative number means any color."
+  - iOutColor:               #         -C  "writeout color"              "Write only events with a given color. A negative number means any color."
       type:    "int" 
       descr:   "writeout color" 
       tooltip: "Write only events with a given color. A negative number means any color."
       column:  0                     
       prefix:  "-C"   
    
-  - FlmbdMin:               #         -l  "lambda min [Ang]"           "minimal wavelength to be taken into account"
+  - FilterLambdaMin:               #         -l  "lambda min [Ang]"           "minimal wavelength to be taken into account"
       type:    "float" 
       descr:   "lambda min [Ang]"
       tooltip: "minimal wavelength to be taken into account"
       column:  0                     
       prefix:  "-l"   
-  - FlmbdMax:               #         -L  "lambda max [Ang]"           "maximal wavelength to be taken into account"
+  - FilterLambdaMax:               #         -L  "lambda max [Ang]"           "maximal wavelength to be taken into account"
       type:    "float" 
       descr:   "lambda max [Ang]"
       tooltip: "maximal wavelength to be taken into account"
       column:  1                     
       prefix:  "-L"
    
-  - FwidtMin:               #         -u  "y-pos min [cm]"             "minimal horizontal position to be taken into account"
+  - FilterWidthMin:               #         -u  "y-pos min [cm]"             "minimal horizontal position to be taken into account"
       type:    "float" 
       descr:   "y-pos min [cm]"
       tooltip: "minimal horizontal position to be taken into account"
       column:  0                     
       prefix:  "-u"   
-  - FwidtMax:               #         -U  "y-pos max [cm]"             "maximal horizontal position to be taken into account"
+  - FilterWidthMax:               #         -U  "y-pos max [cm]"             "maximal horizontal position to be taken into account"
       type:    "float" 
       descr:   "y-pos max [cm]"
       tooltip: "maximal horizontal position to be taken into account"
       column:  1                     
       prefix:  "-U"   
  
-  - FhiteMin:               #         -v  "z-pos min [cm]"             "minimal vertical position to be taken into account"
+  - FilterHeightMin:               #         -v  "z-pos min [cm]"             "minimal vertical position to be taken into account"
       type:    "float" 
       descr:   "z-pos min [cm]"
       tooltip: "minimal vertical position to be taken into account"
       column:  0                     
       prefix:  "-v"   
-  - FhiteMax:               #         -V  "z-pos max [cm]"             "maximal vertical position to be taken into account"
+  - FilterHeightMax:               #         -V  "z-pos max [cm]"             "maximal vertical position to be taken into account"
       type:    "float" 
       descr:   "z-pos max [cm]"
       tooltip: "maximal vertical position to be taken into account"

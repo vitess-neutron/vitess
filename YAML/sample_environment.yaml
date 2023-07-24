@@ -8,19 +8,19 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 sample_environment:
-  - ParFile :                  # -F         [-]    parameter file name 
+  - sParFile :                  # -F         [-]    parameter file name 
       type:    "file"    
       plottable: false
       descr:   "parameter file"
       tooltip: "File containing parameters of the sample environment\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-F"     
-  - StrFile :                  # file       [-]    structure factor file name (of the sample environment material)
+  - sStructFile:                # file       [-]    structure factor file name (of the sample environment material)
       type:    "file"    
       plottable: false
       descr:   "structure factor file"
       tooltip: "This file describes the material of the sample environment. It contains the d-spacing value and information to calculate the scattering cross-section of each reflection. It can be in .str (VITESS), .laz and .lau format."
       prefix:  "-s"     
-  - eDirIO:                  # -r    VtDir DirInOut_Txt2ID(const char* sText)
+  - eDirInOut:                  # -r    VtDir DirInOut_Txt2ID(const char* sText)
       type:    "combo"    
       descr:   "direction"
       tooltip: "Direction of the beam passing the sample environment\nin : sample environment before sample\nout: sample environment after sample"
@@ -29,7 +29,7 @@ sample_environment:
       default: "in"
       column:   0       
       prefix:  "-r"     
-  - nColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
+  - iColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
       type:    "int"    
       descr:   "colour"
       tooltip: "Colour of the neutrons coherently scattered from the environment, incoherently scattered neutrons get 'color+1'"
@@ -58,7 +58,7 @@ sample_environment:
       column:  2       
       prefix:  "-z"     
 
-  - Thicknes:                  # file  1.0  [cm]   thickness of the sample environment  (: R_out - R_in)
+  - Thickness:                  # file  1.0  [cm]   thickness of the sample environment  (: R_out - R_in)
       type:    "float"    
       descr:   "thickness [cm]"
       tooltip: "Thickness of the sample environment, which is assumed to be a hollow cylinder."
@@ -86,7 +86,7 @@ sample_environment:
   - Title: 
       type:    "title"    
       default: "Scattering"
-  - MuScaInc:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample environment material 
+  - MuScatIncoh:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample environment material 
       type:    "float"    
       descr:   "incoherent scattering [1/cm]"
       tooltip: "Macroscopic incoherent scattering cross section of the sample environment material.\nIf a non-zero value is given, incoherent scattering is applied."
@@ -94,7 +94,7 @@ sample_environment:
       min:     0.0
       column:  0       
       prefix:  "-i"     
-  - MuScaTot:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
+  - MuScatTotal:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
       type:    "float"    
       descr:   "total scattering [1/cm]"
       tooltip: "Macroscopic total scattering cross section of the sample environment material (used for attenuation)"
@@ -102,7 +102,7 @@ sample_environment:
       min:     0.0
       column:  1       
       prefix:  "-T"     
-  - MuAbs   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample environment material 
+  - MuAbsorb   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample environment material 
       type:    "float"    
       descr:   "absorption [1/cm]"
       tooltip: "Macroscopic absorption cross section of the sample environment material  (used for attenuation)"

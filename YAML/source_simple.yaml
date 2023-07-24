@@ -10,7 +10,7 @@
 
 source_simple:
   - category:  "source"
-  - eKind   :                          # -K       VtSrcKind SrcKind_Txt2ID(const char* sText)   SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
+  - eSrcKind   :                       # -K       VtSrcKind SrcKind_Txt2ID(const char* sText)   SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
       type:    "combo"                 # This shall not be selected, but defined by the chosen module   
       hidden:  true
       descr:   "kind of source"
@@ -22,7 +22,7 @@ source_simple:
   - Titel_Sim:                       
       type:    "title" 
       default: "Simulation parameters"
-  - nBundle:                            # -n   10 [-]   number of bundles  
+  - nBunches:                            # -n   10 [-]   number of bundles  
       type:    "int" 
       descr :  "number of bundels"  
       tooltip: "number of packages into which the whole simulation is separated"
@@ -36,7 +36,7 @@ source_simple:
       default: 1000000 
       column:  1                     
       prefix:  "-n"     
-  - SimName : 
+  - sSimName: 
       type:    "string"
       descr:   "simulation name"
       tooltip: "name or ID of the simulation given by the user (only for indexing)"
@@ -44,7 +44,7 @@ source_simple:
       column:  2
       prefix:  "-I"
 
-  - Lmin    :                          # -m        [Ang]  minimum of the wavelength range 
+  - MinLambda    :                          # -m        [Ang]  minimum of the wavelength range 
       type:    "float" 
       descr:   "min. wavelength [Ang]"
       tooltip: "minimum of the wavelength range"
@@ -52,7 +52,7 @@ source_simple:
       default: 1.0
       column:  0                     
       prefix:  "-m"     
-  - Lmax    :                          # -M        [Ang]  maximum of the wavelength range 
+  - MaxLambda    :                          # -M        [Ang]  maximum of the wavelength range 
       type:    "float" 
       descr:   "max. wavelength [Ang]"
       tooltip: "maximum of the wavelength range" 
@@ -71,12 +71,12 @@ source_simple:
       options: ["", "CWS"] 
       default:  "CWS" 
       prefix:  "-S"     
-  - ModWnd:
+  - wModWnd:
       type:    "window"
       descr:   "moderator window"
       tooltip: "parameters describing the moderator geometry and characteristics"   
       filename:"moderator_simple.yaml"
-  - ModFile :                          # -r         [-]   name of the file containing the IDs for tracing
+  - sModFile :                          # -r         [-]   name of the file containing the IDs for tracing
       type:    "file"
       plottable: false
       descr:   "moderator file"
@@ -86,29 +86,29 @@ source_simple:
   - Titel_Prop :                       
       type:    "title" 
       default: "Flight direction and propagation"
-  - eDirect :                          # -d  VtDirect Direct_Txt2ID(const char* sText)
+  - eDirMode:                          # -d  VtDirect Direct_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "direction defined"
-      tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
+      tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propagated to the window" 
       enum:    "VtDirect"
       options: ["by divergence", "by real window", "by virtual window"] 
       default: "by real window"
       column:   0                     
       prefix:  "-d"     
-  - DivHmax :                          # -z        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
+  - MaxDivY:                          # -y        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 
       type:    "float" 
       descr:   "max. divergence x <-> y [deg]"
-      tooltip: "maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero)" 
+      tooltip: "maximum horizontal divergence (absolute value)" 
       column:  0                     
       prefix:  "-y"     
-  - DivVmax :                          # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
+  - MaxDivZ:                          # -z        [deg]  maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero) 
       type:    "float" 
       descr:   "max. divergence x <-> z [deg]"
-      tooltip: "maximum vertical divergence (half of angular spread x-z-plane, if min. value is zero)"
+      tooltip: "maximum vertical divergence (absolute value)"
       column:  1                     
       prefix:  "-z"     
 
-  - TDist   :                          # -D 100.0  [cm]   distance moderator - target window 
+  - TargetDist:                       # -D 100.0  [cm]   distance moderator - target window 
       type:    "float" 
       descr:   "distance to window [cm]"
       tooltip: "distance moderator - target window" 
@@ -116,7 +116,7 @@ source_simple:
       default: 100.0
       column:  0                     
       prefix:  "-D"     
-  - TWidth  :                          # -w   3.0  [cm]   width of the target window 
+  - TargetWidth:                      # -w   3.0  [cm]   width of the target window 
       type:    "float" 
       descr:   "window width [cm]"
       tooltip: "width of the target window" 
@@ -124,7 +124,7 @@ source_simple:
       default: 3.0
       column:  1                     
       prefix:  "-w"     
-  - THeight :                          # -h   3.0  [cm]   height of the target window 
+  - TargetHeight :                    # -h   3.0  [cm]   height of the target window 
       type:    "float" 
       descr:   "window height [cm]"
       tooltip: "height of the target window"

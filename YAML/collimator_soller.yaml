@@ -1,0 +1,66 @@
+#input fields so far
+#type: title, file, string, float, int, combo (for selection list)
+#descr: description of the parameter lable
+#default: Value for title, values for selection list, optional default values
+#min: minimum value optional
+#max: maximum value optional
+#column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+#prefix: prefix for parameter in pipe
+collimator_soller:
+  - category:  "collimator"
+
+  - bAngleCollim:   
+      type:    "switch" 
+      descr:   "angular\ncollimation" 
+      tooltip: "ON: certain angles will define a collimation channel \nOFF: the collimation always refers to the angle 0, i.e. the ideal flight direction along the x-axis"
+      column:  0                     
+      default: [NO,YES]
+      prefix:  "-k"   
+
+  - CollimDiv:               
+      type: "float" 
+      descr:  "collimator\ndivergence [deg]"  
+      tooltip: "Allowed horizontal divergence (FWHM of a triangular shape)"
+      default: 1.0
+      min:     0.0001
+      column:  0                     
+      prefix: "-d"   
+  - TransmPeak:       
+      type: "float" 
+      descr:  "peak\ntransmission"  
+      tooltip: "Maximal probability for passing through the soller collimator\n(corresponds to an average loss due to blocking neutrons by the finite size of the soller collimator blades)"
+      default:  0.9
+      min:      0.0001
+      max:      1.0
+      column:  1                     
+      prefix: "-e"   
+
+  - title_AngleCollim: 
+      type:    "title" 
+      default: "Angular collimation"
+  - Distance:                
+      type: "float" 
+      descr:  "minimum of\nangle range [deg]" 
+      tooltip: "Minimum of the angular range covered by the radial collimator"
+      default: 10.0
+      min:      0.0
+      column:   0                     
+      prefix: "-m"   
+  - nChannels:      
+      type:    "int" 
+      descr:   "number of\ncoll. centers" 
+      tooltip: "Number of the collimator channels"
+      default: 40    
+      min:      1 
+      column:   1                     
+      prefix:  "-n" 
+  - BladeThickn:   
+      type:    "float" 
+      descr:   "angle\nspacing [deg]"  
+      tooltip: "Additional angular distance between the collimation centres due to the thickness of the collimator blades"
+      default: 0.1
+      min:     0.0 
+      column:  2                     
+      prefix: "-a"  
+
+

@@ -19,7 +19,7 @@ velselect:
       min:     0.00001
       column:  0                     
       prefix:  "-W" 
-  - WndHite :            # -H  [cm]   height of entrance and exit window
+  - WndHeight :            # -H  [cm]   height of entrance and exit window
       type:    "float" 
       descr:   "window height [cm]"  
       tooltip: "Height of entrance and exit window of the selector [cm]"
@@ -36,7 +36,7 @@ velselect:
       min:     0.00001
       column:  0                     
       prefix:  "-l" 
-  - RadiusO :             # -r   20.0  [cm]   outer radius of the velocity selector 
+  - RadiusOut:             # -r   20.0  [cm]   outer radius of the velocity selector 
       type:    "float" 
       descr:   "outer radius [cm]"
       tooltip: "Outer radius of the velocity selector"
@@ -44,7 +44,7 @@ velselect:
       default: 14.5
       column:  1                     
       prefix:  "-r" 
-  - RadiusI :             # -i   20.0  [cm]   inner  radius of the velocity selector 
+  - RadiusIn:            # -i   20.0  [cm]   inner  radius of the velocity selector 
       type:    "float" 
       descr:   "inner radius [cm]"
       tooltip: "Radius of the part of the rotor without absorbing blades"
@@ -71,14 +71,14 @@ velselect:
   - Title_Rot: 
       type:    "title" 
       default: "Channels and rotation"
-  - Freq    :         # -s  250.0  [Hz]   number of velocity selector rotations per second
+  - Freq:            # -s  250.0  [Hz]   number of velocity selector rotations per second
       type:    "float" 
       descr:   "rotations per sec."  
       tooltip: "Number of rotations per second"
       default: 212.3 
       column:  0                     
       prefix:  "-s" 
-  - nChannel:                # -w   90     [-]   number of windows 
+  - nChannels:            # -w   90     [-]   number of windows 
       type:    "int" 
       descr:   "number of channels" 
       tooltip: "Number of velocity selector channels"
@@ -86,7 +86,7 @@ velselect:
       min:     1 
       column:  1                     
       prefix:  "-w" 
-  - Twist   :             # -c   45.0  [deg]  twist of the velocity selector channels
+  - Twist:            # -c   45.0  [deg]  twist of the velocity selector channels
       type:    "float" 
       descr:   "twist [deg]"  
       tooltip: "Twist of velocity selector channels "
@@ -94,10 +94,10 @@ velselect:
       column:  2                     
       prefix:  "-c" 
 
-  - Spacer  :            # -d    0.0  [cm]   blade thickness   
+  - BladeThickn:            # -d    0.0  [cm]   blade thickness   
       type:    "float" 
-      descr:   "spacer width [cm]"  
-      tooltip: "Width of blades separating the channels of the velocity selector"
+      descr:   "blade thickness [cm]"  
+      tooltip: "Thickness of the blades separating the channels of the velocity selector"
       default: 0.04
       column:  0                     
       prefix: "-d"  

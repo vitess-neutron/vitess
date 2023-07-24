@@ -10,7 +10,7 @@
 sample_inelast:
   - category:  "sample"
 
-  - ParFile :            
+  - sParFile :            
       type:    "file"    
       plottable: false
       descr:   "parameter file"
@@ -73,7 +73,7 @@ sample_inelast:
       column:  2                     
       prefix:  "-z"    
       
-  - bBoseFac:                 # -D    NO  flag: multiplication with the Bose factor
+  - bBoseFact:                 # -D    NO  flag: multiplication with the Bose factor
       type:    "switch" 
       descr:   "Bose factor?" 
       tooltip: "flag:  multiplication with the Bose factor (cf. 'Help|sample')"
@@ -87,7 +87,7 @@ sample_inelast:
       min:     0.0001
       column:  1                     
       prefix:  "-T"     
-  - Repete  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory) 
+  - nRep:                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory) 
       type:    "int" 
       descr:   "repetition" 
       tooltip: "number of trajectories generated per incoming trajectory"
@@ -98,7 +98,7 @@ sample_inelast:
   - Title_scattering: 
       type: "title" 
       default: "Scattering parameters" 
-  - ScatLmbd:                 #  0.0 [Ang]   average wavelength Lmbd of the scattered neutrons
+  - ScatLambda:                 #  0.0 [Ang]   average wavelength Lambda of the scattered neutrons
       type:    "float" 
       descr:   "lambda final[Ang]"
       tooltip: "Average wavelength Lambda of the scattered neutrons"
@@ -120,19 +120,19 @@ sample_inelast:
       column:  2                     
       prefix:  "-F"     
 
-  - VarLmbd:                  #  0.0 [Ang]   wavelength variation DelLmbd of the scattered neutrons [Lmbd-DelLmbd/2, Lmbd+DelLmbd/2]
+  - DelLambda:                  #  0.0 [Ang]   wavelength variation DelLambda of the scattered neutrons [Lambda-DelLambda/2, Lambda+DelLambda/2]
       type:    "float" 
       descr:   "delta lambda final [Ang]"
-      tooltip: "Range around the mean wavelength, i.e. the final wavelength will be in the range [Lmbd-DelLmbd], Lmbd+DelLmbd]"
+      tooltip: "Range around the mean wavelength, i.e. the final wavelength will be in the range [Lambda-DelLambda], Lambda+DelLambda]"
       column:  0                     
       prefix:  "-l"     
-  - VarHor:                   #  0.0 [deg]   variation DelTheta determining the hor. scat. range [Theta-DelTheta/2, Theta+DelTheta/2]
+  - DelScatHor:                   #  0.0 [deg]   variation DelTheta determining the hor. scat. range [Theta-DelTheta/2, Theta+DelTheta/2]
       type:    "float" 
       descr:   "delta angle horiz [deg]"
       tooltip: "Horizontal range DelTheta around the mean scattering direction, i.e. the outgoing angle will be in range [Theta-DelTheta, Theta+DelTheta]"
       column:  1                     
       prefix:  "-e"     
-  - VarVert:                  #  0.0 [deg]   variation DelPhi determining the vert. scat. range [Phi-DelPhi/2, Phi+DelPhi/2]
+  - DelScatVert:                  #  0.0 [deg]   variation DelPhi determining the vert. scat. range [Phi-DelPhi/2, Phi+DelPhi/2]
       type:    "float" 
       descr:   "delta angle vert [deg]"
       tooltip: "Vertical range DelPhi around the mean scattering dirction, i.e. the outgoing angle will be in range [Phi-DelPhi, Phi+DelPhi]"
@@ -140,14 +140,14 @@ sample_inelast:
       column:  2                     
       prefix:  "-f"     
 
-  - MuScaTot:                 #  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample 
+  - MuScatTotal:                 #  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample 
       type:    "float" 
       descr:   "scattering coeff. [1/cm]"
       tooltip: "User defined macroscopic total scattering cross section of the sample"
       default: 0.0
       column:  0                     
       prefix:  "-s"     
-  - MuAbs   :                 #  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample 
+  - MuAbsorb   :                 #  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample 
       type:    "float" 
       descr:   "absorption coeff. [1/cm/Ang]"
       tooltip: "User defined macroscopic absorption cross section of the sample per wavelength"
@@ -158,21 +158,21 @@ sample_inelast:
   - Title_position: 
       type: "title" 
       default: "Position, orientation and geometry of the sample"                    
-  - PosX:                     #  0.0  [cm]   center x position of the sample
+  - SmplPosX:                     #  0.0  [cm]   center x position of the sample
       type:    "float" 
       descr:   "X [cm]"
       tooltip: "center x position of the sample"
       default: 20.0
       column:  0                     
       prefix:  "-X"     
-  - PosY:                     #  0.0  [cm]   center y position of the sample 
+  - SmplPosY:                     #  0.0  [cm]   center y position of the sample 
       type:    "float" 
       descr:   "Y [cm]"
       tooltip: "center y position of the sample"
       default: 0.0
       column:  1                     
       prefix:  "-Y"     
-  - PosZ:                     #  0.0  [cm]   center z position of the sample 
+  - SmplPosZ:                     #  0.0  [cm]   center z position of the sample 
       type:    "float" 
       descr:   "Z [cm]"
       tooltip: "center z position of the sample"
@@ -180,7 +180,7 @@ sample_inelast:
       column:  2  
       prefix:  "-Z"     
  
-  - eSmplGeo:                 #  VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
+  - eSmplGeom:                 #  VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
@@ -212,14 +212,14 @@ sample_inelast:
       column:  2                     
       prefix:  "-w"     
                   
-  - SmplHor:                  #  0.0  [deg]  horizontal rotation of the sample 
+  - SmplRotHor:                  #  0.0  [deg]  horizontal rotation of the sample 
       type:    "float" 
       descr:   "horizontal angle [deg]"
       tooltip: "Rotation of the sample in horizontal direction (first rotation)"
       default: 0.0
       column:  0                     
       prefix:  "-o"     
-  - SmplVert:                 #  0.0  [deg]  vertical rotation of the sample
+  - SmplRotVert:                 #  0.0  [deg]  vertical rotation of the sample
       type:    "float" 
       descr:   "vertical angle [deg]"
       tooltip: "Rotation of the sample in vertical direction (second rotation)"
@@ -231,7 +231,7 @@ sample_inelast:
       type: "title" 
       default: "reference wavevector" 
 
-  - LmbdInit:                 #  6.0  [Ang]  initial wavelength
+  - LambdaInit:                 #  6.0  [Ang]  initial wavelength
       type:    "float" 
       descr:   "lambda initial [Ang]"
       tooltip: "wavelength of the incoming neutron (see Help|sample)"
@@ -245,7 +245,7 @@ sample_inelast:
       default: 0.0
       column:  1                     
       prefix:  "-i"     
-  - DirInVrt:                 #  0.0  [deg]  vertical orientation of the incoming neutron
+  - DirInVert:                 #  0.0  [deg]  vertical orientation of the incoming neutron
       type:    "float" 
       descr:   "angle vert initial [deg]"
       tooltip: "vertical orientation of the incoming neutron (see 'Help|sample')"
@@ -267,21 +267,21 @@ sample_inelast:
       column:   0                     
       prefix:  "-g"     
 
-  - OutX:                     #  0.0  [cm]   x coordinate in output frame 
+  - FrameOutX:                     #  0.0  [cm]   x coordinate in output frame 
       type:    "float" 
       descr:   "X' [cm]"
       tooltip: "x coordinate of the output frame"
       default: 20.0
       column:  0                     
       prefix:  "-R"     
-  - OutY:                     #  0.0  [cm]   y coordinate in output frame 
+  - FrameOutY:                     #  0.0  [cm]   y coordinate in output frame 
       type:    "float" 
       descr:   "Y' [cm]"
       tooltip: "y coordinate of the output frame"
       default: 0.0
       column:  1                     
       prefix:  "-S"     
-  - OutZ:                     #  0.0  [cm]   z coordinate in output frame  
+  - FrameOutZ:                     #  0.0  [cm]   z coordinate in output frame  
       type:    "float" 
       descr:   "Z' [cm]"
       tooltip: "z coordinate of the output frame"
@@ -289,14 +289,14 @@ sample_inelast:
       column:  2                     
       prefix:  "-W"     
 
-  - OutHor:                   #  0.0  [deg]  horizontal angular coordinate in output frame  
+  - FrameOutHor:                   #  0.0  [deg]  horizontal angular coordinate in output frame  
       type:    "float" 
       descr:   "horiz. angle [deg]"
       tooltip: "Rotation angle of the output frame in horizontal direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
       default: 0.0
       column:  0                     
       prefix:  "-u"     
-  - OutVert   :               #  0.0  [deg]  vertical angular coordinate in output frame 
+  - FrameOutVert   :               #  0.0  [deg]  vertical angular coordinate in output frame 
       type:    "float" 
       descr:   "vert. angle [deg]"
       tooltip: "Rotation angle of the output frame in vertical direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"

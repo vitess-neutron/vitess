@@ -10,14 +10,14 @@
 sample_reflectom:
   - category:  "sample"
 
-  - SmplFile:    
+  - sSmplFile:    
       type:    "file" 
       plottable: false
       descr:   "parameter file"  
       tooltip: "name of the file containing the sample parameters"
       prefix:  "-P"
 
-  - ReflFile:    
+  - sReflFile:    
       type:    "file" 
       plottable: true
       descr:   "reflectivity file"  
@@ -45,7 +45,7 @@ sample_reflectom:
       default:  "Y"
       column:  1                     
       prefix:  "-R"   
-  - bTreatAl: 
+  - bTreatAll: 
       type:    "switch" 
       descr:   "treat neutrons not reflected"
       tooltip: "yes: neutrons that are not reflected by the sample are treated \nno : neutrons that are not reflected by the sample are removed (default)" 
@@ -65,7 +65,7 @@ sample_reflectom:
   - Title_Substrate: 
       type:    "title" 
       default: "Substrate"
-  - eSubsMat:                  # VtMirrMat  MirrMat_Txt2ID(const char* sText) 
+  - eSubstrMat:                  # VtMirrMat  MirrMat_Txt2ID(const char* sText) 
       type:    "combo" 
       descr:   "substrate material"
       tooltip: "Material of the substrate (for a treatment of the neutron absorption while passing through the substrate)." 
@@ -74,7 +74,7 @@ sample_reflectom:
       default:  "Silicon"
       column:  0                     
       prefix:  "-M"     
-  - SubThick:              
+  - SubstrThick:              
       type:    "float" 
       descr:   "substrate thickn.[cm]"
       tooltip: "Thickness of the substrate on which the sample is put"
@@ -82,7 +82,7 @@ sample_reflectom:
       min:     0.0
       prefix:  "-h"
       column:  0                     
-  - SubMuSca:    
+  - SubstrMuSca:    
       type:    "float" 
       descr:   "total scat. coeff. [1/cm]"
       tooltip: "Macroscopic total scattering cross-section of the substrate material to calculate the attenation inside the substrate.\nOnly needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
@@ -90,7 +90,7 @@ sample_reflectom:
       min    : 0.0
       column:  1                     
       prefix:  "-s"     
-  - SubMuAbs:                
+  - SubstrMuAbsorb:                
       type:    "float" 
       descr:   "absorption coeff. [1/cm/Ang]"
       tooltip: "Macroscopic absorption cross-section of the substrate material (with respect for a wavelength of 1.798 Ang) to calculate the attenation inside the substrate.\nOnly needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
@@ -102,21 +102,21 @@ sample_reflectom:
   - Title_SmplGeom: 
       type:    "title" 
       default: "Sample position and size"
-  - PosX:             
+  - SmplPosX:             
       type:    "float" 
       descr:   "pos x [cm]"
       tooltip: "center x position of the sample"
       default: 0.0
       prefix:  "-x"
       column:  0                     
-  - PosY:       
+  - SmplPosY:       
       type:    "float" 
       descr:   "pos y [cm]"
       tooltip: "center y position of the sample"
       default: 0.0
       prefix:  "-y"
       column:  1                     
-  - PosZ:   
+  - SmplPosZ:   
       type:    "float" 
       descr:   "pos z [cm]"
       tooltip: "center z position of the sample"
@@ -132,7 +132,7 @@ sample_reflectom:
       min:     0.0
       prefix:  "-T"
       column:  0                     
-  - SmplWidt:  
+  - SmplWidth:  
       type:    "float" 
       descr:   "sample width [cm]"
       tooltip: "width of the sample  (along y-/z-axis)"
@@ -140,7 +140,7 @@ sample_reflectom:
       min:     0.0
       prefix:  "-W"
       column:  1                     
-  - SmplLeng:  
+  - SmplLength:  
       type:    "float" 
       descr:   "sample length [cm]"
       tooltip: "length of the sample (along x-axis for reflection angle 0)."
@@ -149,10 +149,10 @@ sample_reflectom:
       prefix:  "-L"
       column:  2                     
 
-  - Title_OffSpec: 
+  - Title_OffSpecular: 
       type:    "title" 
       default: "Offspecular and incoherent scattering"
-  - bOffSpec:           
+  - bOffSpecular:           
       type:    "switch" 
       descr:   "offspecular scattering" 
       tooltip: "Flag: offspecular scattering is simulated (yes, no)"
@@ -160,14 +160,14 @@ sample_reflectom:
       column:   0                     
       prefix:  "-o"   
 
-  - bIncScat:               
+  - bIncohScat:               
       type:    "switch" 
       descr:   "incoherent scattering" 
       tooltip: "Flag: incoherent scattering is simulated (yes, no)"
       default:  no
       column:   0                     
       prefix:  "-B"   
-  - MuIncSca:        
+  - MuIncohSca:        
       type:    "float" 
       descr:   "inc. cross-section [1/cm]"
       tooltip: "macroscopic incoherent scattering cross section of the sample"
@@ -175,7 +175,7 @@ sample_reflectom:
       min:     0.0
       column:  1                     
       prefix:  "-X"   
-  - StoNArea:          
+  - IncohNormFact:          
       type:    "float" 
       descr:   "norm factor"
       tooltip: "If incoherent scattering from sample is taken into account, the norm factor describes the fraction of the detector where the specular signal is expected with respect to the whole detector area."
@@ -203,7 +203,7 @@ sample_reflectom:
       min:     0.0
       column:  1                     
       prefix:  "-p"   
-  - DetHite :     
+  - DetHeight :     
       type:    "float" 
       descr:   "detector height"
       tooltip: "height of the detector (to calculate solid angle for incoherent scattering)" 
@@ -215,7 +215,7 @@ sample_reflectom:
   - Title_OutFrame: 
       type:    "title" 
       default: "Output frame"
-  - eFrame:    #  VtFrameGen FrameGen_Txt2ID(const char* sText)
+  - eOUtFrame:    #  VtFrameGen FrameGen_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': puts output direction along the reflected beam"
@@ -225,21 +225,21 @@ sample_reflectom:
       column:  0                     
       prefix:  "-g"     
 
-  - OutX   : 
+  - FrameOutX   : 
       type:    "float" 
       descr:   "out x [cm]"
       tooltip: "x coordinate in output frame"
       default: 0.0
       prefix:  "-u"
       column:  0                     
-  - OutY   :  
+  - FrameOutY   :  
       type:    "float" 
       descr:   "out y [cm]"
       tooltip: "y coordinate in output frame"
       default: 0.0
       prefix:  "-v"
       column:  1                     
-  - OutZ   : 
+  - FrameOutZ   : 
       type:    "float" 
       descr:   "out z [cm]"
       tooltip: "z coordinate in output frame"
@@ -247,14 +247,14 @@ sample_reflectom:
       prefix:  "-w"
       column:  2                     
 
-  - OutHor   : 
+  - FrameOutHor   : 
       type:    "float" 
       descr:   "horizontal angle [deg]"
       tooltip: "horizontal angular coordinate in output frame"
       default: 0.0
       prefix:  "-k"
       column:  0                     
-  - OutVert   :   
+  - FrameOutVert   :   
       type:    "float" 
       descr:   "vertical angle [deg]"
       tooltip: "vertical angular coordinate in output frame"

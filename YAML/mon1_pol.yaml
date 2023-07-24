@@ -22,7 +22,7 @@ mon1_pol:
   - Title_Par: 
       type:    "title" 
       default: "Parameter and range"
-  - ePar    :             #     -k     [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)     
+  - eMonPar    :             #     -k     [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)     
       type:    "combo" 
       descr:   "variable parameter" 
       tooltip: "ID for the parameter, as a function of which the intensity is shown" 
@@ -31,22 +31,22 @@ mon1_pol:
       default:  "lambda"
       column:  0
       prefix:  "-k"   
-  -  iColour:                  # -C    [-]   index: for bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColour >= 0 
+  -  iColor:                  # -C    [-]   index: for bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColor >= 0 
       type:    "int" 
-      tooltip: "excludes all neutrons with diff. color from monitoring, if iColour >= 0"             
+      tooltip: "excludes all neutrons with diff. color from monitoring, if iColor >= 0"             
       descr:   "color" 
       min:     -1
       column:  1
       prefix:  "-C"   
 
-  - MinY    :             #     -m  "min. y-value [cm]"        "lower bound value of the monitored range"
+  - MinVal:             #     -m  "min. y-value [cm]"        "lower bound value of the monitored range"
       type:    "float" 
       descr:   "min. y-value [cm]" 
       tooltip: "lower bound value of the monitored range" 
       default: 0.0
       column:  0
       prefix:  "-m"  
-  - MaxY    :             #     -M  "max. y-value [cm]"        "upper bound value of the monitored range"
+  - MayValY    :             #     -M  "max. y-value [cm]"        "upper bound value of the monitored range"
       type:    "float" 
       descr:   "max. y-value [cm]" 
       tooltip: "upper bound value of the monitored range" 
@@ -90,14 +90,14 @@ mon1_pol:
   - Title_Opt: 
       type:    "title" 
       default: "Options"
-  - bProbWt :             #     -p  "probability weight"       "YES: Probability weight   NO: number of trajectories
+  - bProbWeight :             #     -p  "probability weight"       "YES: Probability weight   NO: number of trajectories
       type:    "switch" 
       descr:   "probability weight" 
       tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored" 
       default:  yes
       column:  0
       prefix:  "-p"   
-  - bExclude:             #     -e  "exclusive counts"         "YES: only neutrons meeting the monitor conditions are written   NO: all are written
+  - bExcl:             #     -e  "exclusive counts"         "YES: only neutrons meeting the monitor conditions are written   NO: all are written
       type:    "switch" 
       descr:   "exclusive counts" 
       tooltip: "yes: only trajectories meeting the monitor conditions are written\no : all are written"

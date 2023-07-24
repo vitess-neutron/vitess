@@ -10,7 +10,7 @@
 sample_elasticisotr:
   - category:  "sample"
 
-  - ParFile :                  # -F         [-]    parameter file name 
+  - sParFile :                  # -F         [-]    parameter file name 
       type:    "file"    
       plottable: false
       descr:   "parameter file"
@@ -20,14 +20,14 @@ sample_elasticisotr:
   - Title_options: 
       type:    "title" 
       default: "Special Options"
-  - bColor   :                 # -c ANY_COLOR [-]  color: if != -1, only neutrons of this colour are treated
+  - iColor   :                 # -c ANY_COLOR [-]  color: if != -1, only neutrons of this colour are treated
       type:    "int" 
       descr:   "color"
       tooltip: "if != -1, only neutrons of this colour are treated"
       default: -1
       column:  0                     
       prefix:  "-c"     
-  - Repete:                    # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory)
+  - nRep:                    # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory)
       type:    "int" 
       descr:   "repetition"
       min:     1
@@ -57,7 +57,7 @@ sample_elasticisotr:
       default:    0.0
       prefix:  "-F"     
       column:  1                     
-  - VarHor:             
+  - DelScatHor:             
       type:    "float" 
       descr:   "delta angle horiz [deg]"
       tooltip: "Horizontal range DelTheta around the mean scattering dirction determining the horizontal scattering range [Theta-DelTheta, Theta+DelTheta]"
@@ -65,7 +65,7 @@ sample_elasticisotr:
       max:      180.0
       prefix:  "-e"     
       column:  0                     
-  - VarVert:            
+  - DelScatVert:            
       type:    "float" 
       descr:   "delta angle vert [deg]"
       tooltip: "Vertical range DelPhi around the mean scattering dirction determining the vertical scattering range [Phi-DelPhi, Phi+DelPhi]"
@@ -74,7 +74,7 @@ sample_elasticisotr:
       prefix:  "-f"     
       column:  1                     
 
-  - MuScaTot:                   # 0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample 
+  - MuScatTotal:                   # 0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample 
       type:    "float" 
       descr:   "scattering coeff. [1/cm]"
       tooltip: "User defined macroscopic total scattering cross section of the sample"
@@ -82,7 +82,7 @@ sample_elasticisotr:
       default: 0.0
       prefix:  "-T"     
       column:  0                     
-  - MuAbs   :                   # 0.0 [1/cm]  user defined macroscopic absorption cross section of the sample 
+  - MuAbsorb   :                   # 0.0 [1/cm]  user defined macroscopic absorption cross section of the sample 
       type:    "float" 
       descr:   "absorption coeff. [1/cm/Ang]"
       tooltip: "User defined macroscopic absorption cross section of the sample per wavelength"
@@ -96,21 +96,21 @@ sample_elasticisotr:
       type: "title" 
       default: "Position, orientation and geometry of the sample" 
                     
-  - PosX:                   # 0.0  [cm]   center x position of the sample
+  - SmplPosX:                   # 0.0  [cm]   center x position of the sample
       type:    "float" 
       descr:   "X [cm]"
       tooltip: "center x position of the sample"
       default: 20.0
       prefix:  "-x"     
       column:  0                     
-  - PosY:                   # 0.0  [cm]   center y position of the sample 
+  - SmplPosY:                   # 0.0  [cm]   center y position of the sample 
       type:    "float" 
       descr:   "Y [cm]"
       tooltip: "center y position of the sample"
       default: 0.0
       prefix:  "-y"     
       column:  1                     
-  - PosZ:                   #  0.0  [cm]   center z position of the sample 
+  - SmplPosZ:                   #  0.0  [cm]   center z position of the sample 
       type:    "float" 
       descr:   "Z [cm]"
       tooltip: "center z position of the sample"
@@ -118,7 +118,7 @@ sample_elasticisotr:
       prefix:  "-z"     
       column:  2  
 
-  - eSmplGeo:               #  VtSmplGeom SmplGeom_Txt2ID(const char* sText)
+  - eSmplGeom:               #  VtSmplGeom SmplGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
@@ -150,14 +150,14 @@ sample_elasticisotr:
       prefix:  "-w"     
       column:  2                     
                    
-  - SmplHor:                   # 0.0  [deg]    horizontal rotation of the sample 
+  - RotSmplHor:                   # 0.0  [deg]    horizontal rotation of the sample 
       type:    "float" 
       descr:   "horizontal angle [deg]"
       tooltip: "Rotation of the sample in horizontal direction (first rotation)"
       default: 0.0
       prefix:  "-o"     
       column:  0                     
-  - SmplVert:                   # 0.0  [deg]    vertical rotation of the sample
+  - RotSmplVert:                   # 0.0  [deg]    vertical rotation of the sample
       type:    "float" 
       descr:   "vertical angle [deg]"
       tooltip: "Rotation of the sample in vertical direction (second rotation)"
@@ -169,21 +169,21 @@ sample_elasticisotr:
       type: "title" 
       default: "Output frame" 
 
-  - OutX:                   #  0.0  [cm]   x coordinate in output frame 
+  - FrameOutX:                   #  0.0  [cm]   x coordinate in output frame 
       type:    "float" 
       descr:   "X' [cm]"
       tooltip: "x coordinate of the output frame"
       default: 0.0
       prefix:  "-X"     
       column:  0                     
-  - OutY:                   # 0.0  [cm]   y coordinate in output frame 
+  - FrameOutY:                   # 0.0  [cm]   y coordinate in output frame 
       type:    "float" 
       descr:   "Y' [cm]"
       tooltip: "y coordinate of the output frame"
       default: 0.0
       prefix:  "-Y"     
       column:  1                     
-  - OutZ:                   # 0.0  [cm]   z coordinate in output frame  
+  - FrameOutZ:                   # 0.0  [cm]   z coordinate in output frame  
       type:    "float" 
       descr:   "Z' [cm]"
       tooltip: "z coordinate of the output frame"
@@ -191,14 +191,14 @@ sample_elasticisotr:
       prefix:  "-Z"     
       column:  2                     
 
-  - OutHor:                   #  0.0 [deg]   horizontal angular coordinate in output frame  
+  - FrameOutHor:                   #  0.0 [deg]   horizontal angular coordinate in output frame  
       type:    "float" 
       descr:   "horiz. angle [deg]"
       tooltip: "Rotation angle of the output frame in horizontal direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
       default: 0.0
       prefix:  "-u"     
       column:  0                     
-  - OutVert   :                   # 0.0  [deg]   vertical angular coordinate in output frame 
+  - FrameOutVert   :                   # 0.0  [deg]   vertical angular coordinate in output frame 
       type:    "float" 
       descr:   "vert. angle [deg]"
       tooltip: "Rotation angle of the output frame in vertical direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"

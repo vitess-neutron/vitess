@@ -17,7 +17,7 @@ space:
       min:     0.0
       column:  0                     
       prefix:  "-d"     
-  - MyScat:     
+  - MuScatTotal:     
       type:    "float" 
       descr:   "total scattering [1/cm]"
       tooltip: "macroscopic total scattering coefficient"
@@ -25,7 +25,7 @@ space:
       min:     0.0
       column:  1                     
       prefix:  "-M"     
-  - MyAbs:   
+  - MuAbsorb:   
       type:    "float" 
       descr:   "absorption [1/cm]"
       tooltip: "macroscopic absorption cross-section for 1.798 Ang" 

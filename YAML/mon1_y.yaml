@@ -8,21 +8,21 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
 # prefix: prefix for parameter in pipe
 
-mon1_lambda:
+mon1_y:
   - category:  "monitor"
 
   - sMonFile:                 # -O    [-]   monitor output file containing intensity as a function of the chosen parameter
       type:    "file"
       plottable: true
       descr:   "monitor file" 
-      tooltip: "monitor output file containing intensity as a function of the neutron wavelength" 
+      tooltip: "monitor output file containing intensity as a function of the horizontal neutron position" 
       default: "monitor.dat"
       prefix:  "-O"   
   - sRefFile:                 # -R    [-]   Reference input file containing data to normalize the monitor data
       type:    "file"
       plottable: false
       descr:   "reference file" 
-      tooltip: "Reference input file containing data to normalize the monitored wavelength spectrum"
+      tooltip: "Reference input file containing data to normalize the monitored position spectrum"
       prefix:  "-R"   
 
   - Title_Par: 
@@ -34,21 +34,21 @@ mon1_lambda:
       descr:   "variable parameter" 
       tooltip: "parameter, as a function of which the intensity is shown"
       enum:    "VtMon1Par"
-      options: ["lambda","time","div_y","div_z","pos_y","pos_z","energy"]
-      default:  "lambda"
+      options: ["lambda","time","div_y","div_z","pos_y","pos_z","energy","div_rad"]
+      default:  "pos_y"
       prefix:  "-k"   
 
-  - MinLambda:                 # -m   [var]  lower bound value of the monitored range
+  - MinY    :                 # -m   [var]  lower bound value of the monitored range
       type:    "float" 
-      descr:   "min. wavelength [Ang]" 
-      tooltip: "lower bound value of the monitored wavelength range" 
+      descr:   "min. hor. positon [cm]" 
+      tooltip: "lower bound value of the monitored horizontal position\nnegative values: on the right, positive values: on the left" 
       default: 0.0
       column:  0                     
       prefix:  "-m"  
-  - MaxLambda:                 # -M   [var]  upper bound value of the monitored range
+  - MaxY    :                 # -M   [var]  upper bound value of the monitored range
       type:    "float" 
-      descr:   "max. wavelength [Ang]" 
-      tooltip: "upper bound value of the monitored wavelength range" 
+      descr:   "max. hor. positon [cm]" 
+      tooltip: "upper bound value of the monitored horizontal position\nnegative values: on the right, positive values: on the left" 
       column:  1                     
       default: 10.0
       prefix:  "-M"   
@@ -106,40 +106,42 @@ mon1_lambda:
   - Title_Filter: 
       type:    "title" 
       default: "Filter selection"
-  - FilterMinTime:                 # -t    [ms]  minimal TOF to be taken into account
+  - FilterMinLambda:                 # -l   [Ang]  minimal wavelength to be taken into account
+      type:    "float" 
+      descr:   "filter lambda min [A]"  
+      tooltip: "minimal wavelength to be taken into account"
+      min:     0.0
+      column:  0                     
+      prefix:  "-l"  
+  - FilterMinTime :                 # -t    [ms]  minimal TOF to be taken into account
       type:    "float" 
       descr:   "time interval begin [ms]" 
       tooltip: "minimal TOF to be taken into account"
-      column:  0                     
-      prefix:  "-t"  
-  - FilterMinY   :                 # -y    [cm]  minimal horizontal position to be taken into account
-      type:    "float" 
-      descr:   "filter y pos. min [cm]"  
-      tooltip: "minimal horizontal position to be taken into account"
       column:  1                     
-      prefix:  "-y"  
+      prefix:  "-t"  
   - FilterMinZ   :                 # -z    [cm]  minimal vertical position to be taken into account
       type:    "float" 
       descr:   "filter z pos. min [cm]" 
       tooltip: "minimal vertical position to be taken into account" 
       column:  2                     
       prefix:  "-z"   
-  - FilterMaxTime:                 # -T    [ms]  maximal TOF to be taken into account
+  - FilterMaxLambda:                 # -L   [Ang]  maximal wavelength to be taken into account
+      type:    "float" 
+      descr:   "filter lambda min [A]" 
+      tooltip: "maximal wavelength to be taken into account"
+      min:     0.0
+      column:  0                     
+      prefix:  "-L"   
+  - FilterMaxTime :                 # -T    [ms]  maximal TOF to be taken into account
       type:    "float" 
       descr:   "time interval end [ms]" 
       tooltip: "maximal TOF to be taken into account"
-      column:  0                     
-      prefix:  "-T" 
-  - FilterMaxY   :                 # -Y    [cm]  maximal horizontal position to be taken into account
-      type:    "float" 
-      descr:   "filter y pos. max [cm]"  
-      tooltip: "maximal horizontal position to be taken into account"
       column:  1                     
-      prefix:  "-Y"  
+      prefix:  "-T" 
   - FilterMaxZ   :                 # -Z    [cm]  maximal vertical position to be taken into account
       type:    "float" 
       descr:   "filter z pos. max [cm]"  
       tooltip: "maximal vertical position to be taken into account"
-      column:  3                     
+      column:  2                     
       prefix:  "-Z"  
 
