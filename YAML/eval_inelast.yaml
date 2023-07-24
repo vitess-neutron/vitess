@@ -36,7 +36,7 @@ eval_inelast:                    # source module that will be executed
       descr:   "geometry" 
       tooltip: "Defines geometry type of TOF instrument" 
       enum:    "VtInstGeom"
-      options:["direct geometry", "indirect geometry"]
+      options: ["direct geometry", "indirect geometry"]
       default: "direct geometry"
       column:  0                     
       prefix:  "-A"   

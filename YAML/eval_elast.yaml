@@ -18,7 +18,7 @@ eval_elast:            # source module that will be executed
       descr:   "evaluation parameter" 
       tooltip: "Parameter, as a function of which the intensity is shown" 
       enum:    "VtEvalPar"                     
-      options:["d-spacing", "momentum transfer Q", "scattering angle", "wavelength difference"]
+      options: ["d-spacing", "momentum transfer Q", "scattering angle", "wavelength difference"]
       default: "d-spacing"
       prefix:  "-k"   
   - sEvalFile:  
@@ -95,7 +95,7 @@ eval_elast:            # source module that will be executed
       descr:   "Scat. axis of the sample" 
       tooltip: "Defines if the scattering of the sample occurs only in y-direction or only in z-direction or is isotropic" 
       enum:    "VtAxis"
-      options:["none", "y", "z"]
+      options: ["none", "y", "z"]
       default: "none"
       column:   2                     
       prefix:  "-A"   

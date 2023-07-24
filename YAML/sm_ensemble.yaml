@@ -59,7 +59,7 @@ sm_ensemble:
       descr:   "substrate material"
       tooltip: "Material of the mirror substrate for a treatment of the neutron absorption by passing through the mirror. Available: Silicon, Sapphire and 'Other' \nBeware that 'Other' only works with the old file format" 
       enum:    "VtMirrmat"
-      options:["Other","Silicon","Sapphire"]
+      options: ["Other","Silicon","Sapphire"]
       default: "Silicon"
       column:   2                     
       prefix:  "-S"     

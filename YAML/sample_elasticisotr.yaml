@@ -123,7 +123,7 @@ sample_elasticisotr:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
       enum:    "VtSmplGeom"   
-      options:["cylinder", "sphere", "cuboid", "hollow-cylinder"]
+      options: ["cylinder", "sphere", "cuboid", "hollow-cylinder"]
       default: "cylinder"
       prefix:  "-G"     
       column:   0 

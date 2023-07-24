@@ -185,7 +185,7 @@ sample_inelast:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
       enum:    "VtSmplGeom"   
-      options:["cylinder", "sphere", "cuboid", "hollow-cylinder"]
+      options: ["cylinder", "sphere", "cuboid", "hollow-cylinder"]
       default: "cylinder"
       column:  0 
       prefix:  "-G"     
@@ -262,7 +262,7 @@ sample_inelast:
       descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': creates output direction using the initial wavevector values (see Help|sample)"
       enum:     VtFrameGen
-      options:["standard frame generation", "user defined frame"
+      options: ["standard frame generation", "user defined frame"
       default: "standard frame generation"
       column:   0                     
       prefix:  "-g"     

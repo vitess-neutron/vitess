@@ -46,7 +46,7 @@ chopper_disc:
       descr:   "absorption"
       tooltip: "absorbing window material" 
       enum:    "VtAbsMat"
-      options:["ideal absorber","gadolinium","bor10"]
+      options: ["ideal absorber","gadolinium","bor10"]
       default: "ideal absorber"
       column:   0                     
       prefix:  "-g"     

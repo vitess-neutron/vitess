@@ -84,7 +84,7 @@ sample_sans:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
       enum:    "VtSmplGeom"   
-      options:["cylinder", "sphere", "cuboid"]
+      options: ["cylinder", "sphere", "cuboid"]
       default: "cylinder"
       prefix:  "-G"     
       column:  0 
@@ -144,7 +144,7 @@ sample_sans:
       descr:   "shape of particles"
       tooltip: "Shape of the scattering objects: spheres, polydispersive spheres, ellipsoids, parallelepipeds, cylinders"
       enum:    "VtPtclGeom"
-      options:["spheres", "polydispersive spheres", "ellipsoids", "parallelepipeds", "cylinders", "isotropic scattering"]
+      options: ["spheres", "polydispersive spheres", "ellipsoids", "parallelepipeds", "cylinders", "isotropic scattering"]
       default: "spheres"
       prefix:  "-O"     
       column:  0 

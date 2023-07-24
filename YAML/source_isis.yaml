@@ -103,7 +103,7 @@ source_isis:
       descr:   "direction defined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
       enum:    "VtDirect"
-      options:["by real window", "by virtual window"] 
+      options: ["by real window", "by virtual window"] 
       default: "by real window"
       column:  0                     
       prefix:  "-d"     

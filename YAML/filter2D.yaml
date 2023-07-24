@@ -14,7 +14,7 @@ filter2D:
       descr:   "filter parameter"  
       tooltip: "2D parameter that is filtered (position or divergence)" 
       enum:    "VtMon2Par"
-      options:["position","divergence"]   
+      options: ["position","divergence"]   
       default: "position"   
       column:   0                     
       prefix:  "-P"   

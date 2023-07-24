@@ -15,7 +15,7 @@ source_simple:
       hidden:  true
       descr:   "kind of source"
       enum:    "VtSrcKind"
-      options:["simple source", "continuous source", "pulsed source", "source ISIS", "source ESS"]
+      options: ["simple source", "continuous source", "pulsed source", "source ISIS", "source ESS"]
       default: "simple source" 
       prefix:  "-K"     
 

@@ -15,7 +15,7 @@ chopper_fermi:
       descr:   "channel shape"
       tooltip: "straight: straight Fermi chopper\ncircular: Curved Fermi chopper with circular shaped channels \nideal: Curved Fermi chopper with channels close to parabolic shape" 
       enum:    "VtChnlShape"
-      options:["straight","circular", "ideal"]
+      options: ["straight","circular", "ideal"]
       default: "straight"
       column:  1                     
       prefix:  "-g"     

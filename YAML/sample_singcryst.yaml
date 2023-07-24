@@ -35,7 +35,7 @@ sample_singcryst:
       descr:   "d-spacing distribution"
       tooltip: "function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN"
       enum:    "VtDistr"
-      options:["Lorentzian", "Gaussian"]
+      options: ["Lorentzian", "Gaussian"]
       default: "Gaussian"
       prefix:  "-o"     
       column:   0 
@@ -192,7 +192,7 @@ sample_singcryst:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
       enum:    "VtSmplGeom"   
-      options:["cylinder", "sphere", "cuboid"]
+      options: ["cylinder", "sphere", "cuboid"]
       default: "cuboid"
       prefix:  "-G"     
       column:  0 

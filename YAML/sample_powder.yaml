@@ -110,7 +110,7 @@ sample_powder:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
       enum:    "VtSmplGeom"   
-      options:["cylinder", "sphere", "cuboid"]
+      options: ["cylinder", "sphere", "cuboid"]
       default: "cylinder"
       column:  0 
       prefix:  "-G"     

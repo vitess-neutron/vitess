@@ -25,7 +25,7 @@ sample_environment:
       descr:   "direction"
       tooltip: "Direction of the beam passing the sample environment\nin : sample environment before sample\nout: sample environment after sample"
       enum:    "VtDir"
-      options:["in","out"]
+      options: ["in","out"]
       default: "in"
       column:   0       
       prefix:  "-r"     

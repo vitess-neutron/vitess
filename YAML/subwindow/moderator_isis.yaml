@@ -20,7 +20,7 @@ moderator_isis:
       descr:   "target station"
       tooltip: "target station"
       enum:    "VtTS"
-      default:["TS 1","TS 2"] 
+      default: ["TS 1","TS 2"] 
       default: "TS 1" 
       column:   0                     
       prefix:  "-S"    

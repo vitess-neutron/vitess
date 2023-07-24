@@ -18,7 +18,7 @@ eval_elast2:                    # source module that will be executed
       descr:   "evaluation parameter" 
       tooltip: "Parameter combination, as a function of which the intensity is shown" 
       enum:    "VtEvalComb"
-      options:["Scattering angle [deg] and wavelength [A]", "Scattering angle [deg] and TOF [ms]"]
+      options: ["Scattering angle [deg] and wavelength [A]", "Scattering angle [deg] and TOF [ms]"]
       default: "Scattering angle [deg] and wavelength [A]"
       column:   0                     
       prefix:  "-k"   
@@ -68,7 +68,7 @@ eval_elast2:                    # source module that will be executed
       descr:   "Sort by" 
       tooltip: "Sort order in the data file" 
       enum:    "VtEvalSort"
-      options:["Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"]
+      options: ["Nothing" "Scattering angle" "Scattering angle (reverse)" "Wavelength/TOF" "Wavelength/TOF (reverse)" "Intensity" "Intensity (reverse)" "Counts" "Counts (reverse)"]
       default: "Nothing"
       column:   0                     
       prefix:  "-s"   
@@ -129,7 +129,7 @@ eval_elast2:                    # source module that will be executed
       descr:   "Scat. angle selection" 
       tooltip: "Defines the way how the scattering angle is determined" 
       enum:    "VtAngleSel"
-      options:["direction", "position"]
+      options: ["direction", "position"]
       default: "direction"
       column:   2                     
       prefix:  "-D"   

@@ -45,7 +45,7 @@ mon1_brl:
       descr:   "norm. type"
       tooltip: "absolute:  absolute brilliance [n/(cm²s sr Ang)]\ntransfer:  relative brilliance (= brilliance transfer)\n1% lambda  brilliance within 1% DelLamdba/Lambda [n/(cm²s sr)]"
       enum:    "VtBrlNorm"
-      options:["absolute","transfer","1% lambda"]
+      options: ["absolute","transfer","1% lambda"]
       default: "absolute"
       column:   1            
       prefix:  "-N"

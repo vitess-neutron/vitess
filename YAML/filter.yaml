@@ -14,7 +14,7 @@ filter:
       descr:   "filter parameter 1"  
       tooltip: "1st parameter that is filtered"
       enum:    "VtMonPar"      
-      options:["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
+      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
       default: "none"
       column:   0                     
       prefix:  "-I"   
@@ -36,7 +36,7 @@ filter:
       descr:   "filter parameter 2"  
       tooltip: "2nd parameter that is filtered " 
       enum:    "VtMonPar"      
-      options:["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
+      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
       default: "none"
       column:   0                     
       prefix:  "-J"   
@@ -58,7 +58,7 @@ filter:
       descr:   "filter parameter 3"  
       tooltip: "3rd parameter that is filtered " 
       enum:    "VtMonPar"      
-      options:["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
+      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
       default: "none"
       column:   0                     
       prefix:  "-K"   
@@ -80,7 +80,7 @@ filter:
       descr:   "filter parameter 4"  
       tooltip: "4th parameter that is filtered " 
       enum:    "VtMonPar"      
-      options:["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
+      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
       default: "none"
       column:   0                     
       prefix:  "-L"   
@@ -102,7 +102,7 @@ filter:
       descr:   "filter combination"  
       tooltip: "If several filters defined, neutrons pass if they fulfill all criteria (AND), at least one (OR) or (1 and 2) or (3 and 4) (AND_OR_AND)" 
       enum:    "VtFiltComb"
-      options:["AND", "OR", "AND_OR_AND"]   
+      options: ["AND", "OR", "AND_OR_AND"]   
       default: "AND"   
       column:   0                     
       prefix:  "-C"   

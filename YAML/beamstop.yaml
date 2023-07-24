@@ -22,7 +22,7 @@ beamstop:
       descr:   "beamstop shape"  
       tooltip: "shape of the beamstop" 
       enum:    "VtShape"
-      options:["rectangular","circular"]   
+      options: ["rectangular","circular"]   
       default: "rectangular"   
       column:   0                     
       prefix:  "-R"   
