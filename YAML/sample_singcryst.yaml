@@ -268,7 +268,7 @@ sample_singcryst:
       min:     0
       column:  0       
       prefix:  "-F"     
-  - ColumnStructFactSqu   :            
+  - ColumnStructFactSq:            
       type:    "int"    
       descr:   "|F|² column"
       tooltip: "column of the structure factor file, where the square of the structure factor F² is\nSee also HelpFile 'sample.html'"
