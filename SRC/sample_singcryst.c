@@ -264,7 +264,7 @@ int main(int argc, char **argv)
             CopyVector(Pos2v, Neutrons.Position);
             CopyVector(Dir, Neutrons.Vector);
 
-            Neutrons.Color = (short) no[repet]; 
+            Neutrons.Color = (short) (no[repet] % 32768); 
 
             /*	 writes output binary file */
             if (Prob > wei_min) 
