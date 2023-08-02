@@ -101,14 +101,14 @@ source_ess:
       default: ["2016_Butterfly2", "2015_Butterfly1", "2013_VarHeight", "2013_Schoenfeldt", "2012_Zanini", "2001_Mezei"] 
       column:  2                     
       prefix:  "-v"     
-  - Freq    :                          # -R        [Hz]   pulse frequency 
+  - Freq:                              # -R        [Hz]   pulse frequency 
       type:    "float" 
       descr:   "frequency [Hz]"
       tooltip: "pulse repetition rate" 
       default: 50 
       column:  0                     
       prefix:  "-R"     
-  - PulseLen                          # -p   1.0  [ms]   proton pulse length  
+  - PulseLen:                          # -p   1.0  [ms]   proton pulse length  
       type:    "float" 
       descr:   "proton pulse length [ms]"
       tooltip: "proton pulse length"
@@ -137,23 +137,12 @@ source_ess:
       column:  1                     
       prefix:  "-i"     
 
-  - wModWnd1:
+  - wModWnd:
       type:    "window"
       descr:   "moderator window 1"
-      tooltip: "parameters describing geometry and characteristics of moderator 1 are given on a separate window"
+      tooltip: "parameters describing geometry and characteristics of a moderator are given on a separate window"
+      max:    10
       column:  0                     
-      filename: "moderator_ess.yaml"
-  - wModWnd2:
-      type:    "window"
-      descr:   "moderator window 2"
-      tooltip: "parameters describing geometry and characteristics of moderator 2 are given on a separate window"
-      column:  1                     
-      filename: "moderator_ess.yaml"
-  - wModWnd3:
-      type:    "window"
-      descr:   "moderator window 3"
-      tooltip: "parameters describing geometry and characteristics of moderator 3 are given on a separate window"
-      column:  2                     
       filename: "moderator_ess.yaml"
   - sModFile:                          # -r         [-]   name of the file containing the IDs for tracing
       type:    "file"

@@ -10,10 +10,12 @@
 chopper_disc:
   - category:  "chopper"
 
-  - Chopper_Window:
+  - wChopWnd:
       type:    "window"
       descr:   "chopper window"
-      tooltip: "chopper window description parameter"   
+      tooltip: "chopper window description parameter"
+      max:    10
+      column:  1
       filename: "chopper_wnd.yaml"
   - sParFile :                  # -S         [-]    parameter file name 
       type:    "file"    
