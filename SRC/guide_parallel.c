@@ -169,10 +169,10 @@ VtGdeShape eGuideShapeY=VT_CONSTANT,  // -Y   [-]   shape of the guide in horizo
 const char *ShapeFileName          // -S   [-]   name of the file containing the sizes of the guide, output or input file
           ="guide_shape.dat";     
 long   nPieces   = 1;              // -N   [-]   number of guide pieces
-double GuideEntrWidth= 0.0,        // -H  [cm]   height of the guide exit              
+double GuideEntrWidth= 0.0,        // -w  [cm]   height of the guide exit              
        GuideEntrHeight=0.0,        // -h  [cm]   height of the guide entrance           
        GuideExitWidth= 0.0,        // -W  [cm]   width of the guide exit  
-       GuideExitHeight=0.0,        // -w  [cm]   width of the guide entrance  
+       GuideExitHeight=0.0,        // -H  [cm]   width of the guide entrance  
        piecelength=0.0,            // -p  [cm]   length of 1 piece of the guide 
        Radius  = 0.0,              // -R   [m]   radius of a guide that is curved (in horizontal plane)       
        D_Foc2Y = 0.0,              // -f  [cm]   pos. behind guide of 2nd focal point in horizontal direction (for elliptic shape) 

@@ -28,7 +28,7 @@ mon1_lambda:
   - Title_Par: 
       type:    "title" 
       default: "Range"
-  - eMonPar:                 # -k    [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)
+  - eMonPar:                  # -k    [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)
       type:    "combo" 
       hidden:  true
       descr:   "variable parameter" 
@@ -38,14 +38,14 @@ mon1_lambda:
       default:  "lambda"
       prefix:  "-k"   
 
-  - MinLambda:                 # -m   [var]  lower bound value of the monitored range
+  - MinLambda:                # -m   [var]  lower bound value of the monitored range
       type:    "float" 
       descr:   "min. wavelength [Ang]" 
       tooltip: "lower bound value of the monitored wavelength range" 
       default: 0.0
       column:  0                     
       prefix:  "-m"  
-  - MaxLambda:                 # -M   [var]  upper bound value of the monitored range
+  - MaxLambda:                # -M   [var]  upper bound value of the monitored range
       type:    "float" 
       descr:   "max. wavelength [Ang]" 
       tooltip: "upper bound value of the monitored wavelength range" 
@@ -64,7 +64,7 @@ mon1_lambda:
   - Title_Opt: 
       type:    "title" 
       default: "Options"
-  - iColor:                  # -C    [-]   index: for bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColor >= 0 
+  - iColor:                   # -C    [-]   index: for bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColor >= 0 
       type:    "int"          #                    for bAllFile=TRUE  max. color to which additional monitor files are generated             
       tooltip: "bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColor >= 0\nbAllFile=TRUE  max. color to which additional monitor files are generated"             
       descr:   "color" 
@@ -79,14 +79,14 @@ mon1_lambda:
       column:   1                     
       prefix:  "-c"   
 
-  - bProbWeight :                 # -p    [-]   flag: YES: Probability weight   NO: number of trajectories
+  - bProbWeight :             # -p    [-]   flag: YES: Probability weight   NO: number of trajectories
       type:    "switch" 
       descr:   "probability weight" 
       tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
       default:  yes
       column:  0                     
       prefix:  "-p"   
-  - bExcl:                 # -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written   NO: all are written
+  - bExcl:                    # -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written   NO: all are written
       type:    "switch" 
       descr:   "exclusive counts" 
       tooltip: "yes: only trajectories meeting the monitor conditions are written\nno : all are written"

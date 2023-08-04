@@ -10,13 +10,12 @@
 sample_reflectom:
   - category:  "sample"
 
-  - sSmplFile:    
+  - sSampleFile:    
       type:    "file" 
       plottable: false
       descr:   "parameter file"  
       tooltip: "name of the file containing the sample parameters"
       prefix:  "-P"
-
   - sReflFile:    
       type:    "file" 
       plottable: true
@@ -74,7 +73,7 @@ sample_reflectom:
       default:  "Silicon"
       column:  0                     
       prefix:  "-M"     
-  - SubstrThick:              
+  - SubstrThickn:              
       type:    "float" 
       descr:   "substrate thickn.[cm]"
       tooltip: "Thickness of the substrate on which the sample is put"
@@ -82,7 +81,7 @@ sample_reflectom:
       min:     0.0
       prefix:  "-h"
       column:  0                     
-  - SubstrMuSca:    
+  - SubstrMuScat:    
       type:    "float" 
       descr:   "total scat. coeff. [1/cm]"
       tooltip: "Macroscopic total scattering cross-section of the substrate material to calculate the attenation inside the substrate.\nOnly needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
@@ -99,24 +98,24 @@ sample_reflectom:
       column:  2                     
       prefix:  "-m"     
 
-  - Title_SmplGeom: 
+  - Title_SampleGeom: 
       type:    "title" 
       default: "Sample position and size"
-  - SmplPosX:             
+  - SamplePosX:             
       type:    "float" 
       descr:   "pos x [cm]"
       tooltip: "center x position of the sample"
       default: 0.0
       prefix:  "-x"
       column:  0                     
-  - SmplPosY:       
+  - SamplePosY:       
       type:    "float" 
       descr:   "pos y [cm]"
       tooltip: "center y position of the sample"
       default: 0.0
       prefix:  "-y"
       column:  1                     
-  - SmplPosZ:   
+  - SamplePosZ:   
       type:    "float" 
       descr:   "pos z [cm]"
       tooltip: "center z position of the sample"
@@ -124,7 +123,7 @@ sample_reflectom:
       prefix:  "-z"
       column:  2                     
 
-  - SmplThick:  
+  - SampleThickn:  
       type:    "float" 
       descr:   "thickness [cm]"
       tooltip: "Thickness of the reflecting sample.\nIt determines the range of depth in which the reflection is supposed to take place."
@@ -132,7 +131,7 @@ sample_reflectom:
       min:     0.0
       prefix:  "-T"
       column:  0                     
-  - SmplWidth:  
+  - SampleWidth:  
       type:    "float" 
       descr:   "sample width [cm]"
       tooltip: "width of the sample  (along y-/z-axis)"
@@ -140,7 +139,7 @@ sample_reflectom:
       min:     0.0
       prefix:  "-W"
       column:  1                     
-  - SmplLength:  
+  - SampleLength:  
       type:    "float" 
       descr:   "sample length [cm]"
       tooltip: "length of the sample (along x-axis for reflection angle 0)."
@@ -167,7 +166,7 @@ sample_reflectom:
       default:  no
       column:   0                     
       prefix:  "-B"   
-  - MuIncohSca:        
+  - MuScatIncoh:        
       type:    "float" 
       descr:   "inc. cross-section [1/cm]"
       tooltip: "macroscopic incoherent scattering cross section of the sample"

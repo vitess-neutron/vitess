@@ -11,7 +11,7 @@
 mon2_pos:        
   - category:  "monitor"
 
-  - sMonFile:              #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position"
+  - sMonFile:          #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position"
       type:    "file" 
       plottable: true
       descr:   "monitor file"  
@@ -36,7 +36,7 @@ mon2_pos:
       default: 5.0
       column:  1                     
       prefix:  "-W"  
-  - nBinsY  :              # >=1 -y  "number of y-bins"         "number of monitor channels in horizontal direction"
+  - nBinsY  :          # >=1 -y  "number of y-bins"         "number of monitor channels in horizontal direction"
       type:   "int" 
       descr:   "number of y-bins"
       tooltip: "number of monitor channels in horizontal direction"
@@ -45,21 +45,21 @@ mon2_pos:
       column:  2                     
       prefix:  "-y"  
 
-  - MinZ:               #     -h  "min. z-value [cm]"        "bottom position of the monitored area"
+  - MinZ:              #     -h  "min. z-value [cm]"        "bottom position of the monitored area"
       type:   "float" 
       descr:   "min. z-value [cm]" 
       tooltip: "bottom position of the monitored area"
       default: -5.0 
       column:  0                     
       prefix:  "-h"  
-  - MaxZ:               #     -H  "max. z-value [cm]"        "top position of the monitored area"
+  - MaxZ:              #     -H  "max. z-value [cm]"        "top position of the monitored area"
       type:    "float" 
       descr:   "max. z-value [cm]"  
       tooltip: "top position of the monitored area"
       default: 5.0  
       column:  1                     
       prefix:  "-H"  
-  - nBinsZ  :              # >=1 -z  "number of z-bins"         "number of monitor channels in vertical direction"
+  - nBinsZ  :          # >=1 -z  "number of z-bins"         "number of monitor channels in vertical direction"
       type:    "int" 
       descr:   "number of z-bins"  
       tooltip: "number of monitor channels in vertical direction"
@@ -71,7 +71,7 @@ mon2_pos:
   - Title_Opt: 
       type:    "title" 
       default: "Options"
-  - bProbWeight :              #     -p  "probability weight"       "Display  : YES: Beam intensity   NO: number of trajectories"
+  - bProbWeight :      #     -p  "probability weight"       "Display  : YES: Beam intensity   NO: number of trajectories"
       type:    "switch" 
       descr:   "probability weight" 
       tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
@@ -79,14 +79,14 @@ mon2_pos:
       default: true
       column:  0                     
       prefix:  "-p"  
-  - bExcl:              #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+  - bExcl:             #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
       type:    "switch" 
       descr:   "exclusive counts" 
       tooltip: "yes: only trajctories meeting the monitor conditions are written \nno : all trajctories are written"
       default:  no
       column:  1                     
       prefix:  "-e"  
-  - eFormat :              #     -F    VtFormat2D Format2D_Txt2ID(const char* sText)
+  - eFormat :          #     -F    VtFormat2D Format2D_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "file format" 
       tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
@@ -99,13 +99,13 @@ mon2_pos:
   - Title_Filter: 
       type:    "title" 
       default: "Filter selection"
-  - FilterMinLambda:              #     -l  "filter lambda min [Ang]"  "minimal wavelength to be taken into account"
+  - FilterMinLambda:   #     -l  "filter lambda min [Ang]"  "minimal wavelength to be taken into account"
       type:    "float" 
       descr:   "filter lambda min [Ang]"
       tooltip: "minimal wavelength to be taken into account"
       column:  0                     
       prefix:  "-l"  
-  - FilterMaxLambda:              #     -L  "filter lambda max [Ang]"  "maximal wavelength to be taken into account"
+  - FilterMaxLambda:   #     -L  "filter lambda max [Ang]"  "maximal wavelength to be taken into account"
       type:    "float" 
       descr:   "filter lambda max [Ang]"
       tooltip: "maximal wavelength to be taken into account"

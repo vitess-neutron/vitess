@@ -260,7 +260,7 @@ detector:
       default:  "circular"
       column:  1                     
       prefix:  "-b"   
-  - Thickn:                             
+  - WallThickn:                             
       type:    "float" 
       descr:   "wall thickness [cm]" 
       tooltip: "Thickness of tube walls\nWalls are treated as vacuum, i.e. no detection possible within the walls but also no unwanted scattering"
