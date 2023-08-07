@@ -549,7 +549,7 @@ void SetGeometry(char* sColor)
 
     for (k=0; k < nWindows; k++)
     { 
-      phi_wnd = 180.0/M_PI * (stWnd[k].Pos + ChopperInitialOffset + Frequency * time) + 90.0; // 0° to left, not to top in vis. tool
+      phi_wnd = -180.0/M_PI * (stWnd[k].Pos + ChopperInitialOffset + Frequency * time) + 90.0; // 0° to left, not to top in vis. tool
       phi_red = RedAngle(phi_wnd, dir);
 
       stGeometry.pCircle[k+1].Radius     = BlowUp * Radius;
