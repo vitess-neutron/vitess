@@ -28,6 +28,7 @@
  1.19  JAN 2010  M. Fromme     thread parallelisation
  1.20  Feb 2021  K. Lieutenant tidy up, new central visualization parameters                
  1.21  Sep 2022  K. Lieutenant correction broad channels                
+ 1.22  Aug 2023  K. Lieutenant visualization corrected and activated
 *****************************************************************************************************************************/
 
 #include <stdio.h>
@@ -85,6 +86,9 @@ double w_ch=0.0,                //         [cm]   width of each channel
        coef_pi   =0.0,          //         [rad]  reduzierte Phase
        radius_of_curv=0.0,      //         [cm]   radius of the curved channels   
        angle_channel =0.0;      //         [rad]  angle of the curved channels   
+VectorType ChopCyl={0.0,0.0,0.0},//        [cm]   dimension of the collimation stack of the Fermi chopper 
+           ShdwCyl={0.0,0.0,0.0};//        [cm]   dimension of the total Fermi chopper (max. of shadowing cylinder and collimation block)      
+
 
 
 /******************************/
@@ -98,6 +102,7 @@ void    SetGeometry   (char* sColor);        // Fills the structure stGeometry f
 static int inPhase   (int gates, double phase0, const double WL, const VectorType Dir, const VectorType Pos);                       // Checks if neutron passes through all gates
 static int outOfPhase(int i, int j, int gates, const double phase0, const double WL, const VectorType Dir, const VectorType Pos);   // Checks if neutron is out of one gate  
 static double CalcPhase(const double x_ch_k_j, const double y_ch_k_j, const double WL, const VectorType Dir, const VectorType Pos); // Calculates the chopper phase for which the gate edge hits the neutron trajectory
+static void WriteOwnIAP(Neutron* pNeutron, VtReason eReason, const VectorType PosLocal);                                                  // transfers from component to incoming neutron frame before writing interseciton point 
 
 
 /******************************/
@@ -110,10 +115,10 @@ int main(int argc, char **argv)
   _eModule=MCN_CHOP_FERMI;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.21");
+  PrintModuleName(_eModule, "1.22");
   OwnInit(argc, argv);
 
-  bVisInstalled = MISSING;  // needs to be done still
+  bVisInstalled = TRUE;  // needs to be done still
   if (bVisInstr) 
     bBlowUp = TRUE;
 
@@ -123,10 +128,15 @@ int main(int argc, char **argv)
 
   // Finish: print parameters, write geometry and instrument file, free memory
   // -----------------------------------------------------
-  OwnCleanup();
-
   fprintf(LogFilePtr," \n");
 
+  /* write geometry file */
+  SetGeometry("blue");
+
+  /* Do module specific cleanups */
+  OwnCleanup();
+
+  /* Do the general cleanup */
   Cleanup(pos_chp[0],pos_chp[1],pos_chp[2], 0.0,0.0);	
 
   return 0;
@@ -139,8 +149,10 @@ int main(int argc, char **argv)
 void processNeutron (int i, int thread_i) 
 {
   double     WL=0.0, TOF=0.0, phase0=0.0, 
-             pos[3]={0.0,0.0,0.0}, n[3]={0.0,0.0,0.0};
-  VectorType Pos={0.0,0.0,0.0}, Dir={0.0,0.0,0.0}, Path={0.0,0.0,0.0};
+             n[3]   ={0.0,0.0,0.0};
+  VectorType Pos={0.0,0.0,0.0},   Dir={0.0,0.0,0.0}, Path={0.0,0.0,0.0},
+             PosIn={0.0,0.0,0.0}, PosOut={0.0,0.0,0.0},    // intersection points with the shadowing cylinder
+             pos1 ={0.0,0.0,0.0}, pos2={0.0,0.0,0.0};      // intersection points with the collimation stack, no used
   Neutron neutron;
 
   InitNeutron(&neutron);
@@ -166,11 +178,24 @@ void processNeutron (int i, int thread_i)
     n[0] = 1.;
     n[1] = n[2] = 0.;
 
-    if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1) 
+    // check if Fermi chopper is hit and determine intersection points
+    // ---------------------------------------------------------------
+    if (IntersectionWithCylinder(ShdwCyl, Pos, Dir, PosIn, PosOut)==0)
+    {
+      WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0]);  // trajectory ends
+    }
+    else
+    {
+      WriteOwnIAP(&InputNeutrons[i], VT_ENTERED, PosIn);  // cylinder hit
+    }
+    if (IntersectionWithCylinder(ChopCyl, Pos, Dir, pos1, pos2)==0)
+      return;
+    
+
+ /* if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1) 
     { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] - diameter/2.0);
       return;
     }
-
     if (pos[2] >= height/2.   || pos[2] <= - height/2. ||
         pos[1] >= diameter/2. || pos[1] <= - diameter/2.)
     { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] - diameter/2.0);
@@ -178,18 +203,16 @@ void processNeutron (int i, int thread_i)
     }
 
     if (PlaneLineIntersect(Pos, Dir, n, diameter/2., pos) != 1)
-    { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] - diameter/2.0);
+    { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] + diameter/2.0);
       return;
     }
-
     if( pos[2] >= height/2.   || pos[2] <= - height/2. ||
         pos[1] >= diameter/2. || pos[1]<= - diameter/2.)	
-    { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] - diameter/2.0);
+    { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] + diameter/2.0);
       return;
-    }
+    }*/
 
     /* translates neutron variables for X'= - diameter/2.  */
-
     TOF += (- diameter/2. - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 			
     if (TOF<0 && Nchannels==1)
@@ -225,7 +248,7 @@ void processNeutron (int i, int thread_i)
         return;
       }
     }
-    WriteDIAP(&InputNeutrons[i], VT_PASSED, pos_chp[0]);
+    WriteOwnIAP(&InputNeutrons[i], VT_PASSED, PosOut);
 
     /* Output matters */
     /* transmit coordinates which were not changed, the rest overwrite below */
@@ -350,6 +373,8 @@ void OwnInit(int argc, char *argv[])
     argv++;
   }
 
+  // basic checks of input parameters and parameter calculations
+  // -----------------------------------------------------------
   if (eFmOption==VT_NO_FERMI_TYPE || eGeomOption==VT_NO_CHN_SHAPE)
     Error("Chopper geometry not defined");
 
@@ -357,6 +382,11 @@ void OwnInit(int argc, char *argv[])
     Error("Minimum position is diameter/2");
 
   if(Nchannels==1) wallwidth=0.;
+
+  ChopCyl[0] = sqrt(sq(depth)+sq(width));
+  ChopCyl[2] = height;
+  ShdwCyl[0] = fmax(diameter, sqrt(sq(depth)+sq(width)));
+  ShdwCyl[2] = height;
 
   GatesFilePtr = OpenOutputFile("gates.dat", FALSE, "w");
 
@@ -671,8 +701,8 @@ void SetGeometry(char* sColor)
       stGeometry.pCuboid[0].vCntr[1]   = pos_chp[1];
       stGeometry.pCuboid[0].vCntr[2]   = pos_chp[2];
       stGeometry.pCuboid[0].vNormal[0] = cos(theta);
-      stGeometry.pCuboid[0].vNormal[0] = sin(theta);
-      stGeometry.pCuboid[0].vNormal[0] = 0.0;
+      stGeometry.pCuboid[0].vNormal[1] = sin(theta);
+      stGeometry.pCuboid[0].vNormal[2] = 0.0;
     }
     else                             
     { Error("Invalid Fermi type option");
@@ -706,7 +736,7 @@ void SetGeometry(char* sColor)
       stGeometry.pCylSlice[1].vSymAxis[1]= 0.0;
       stGeometry.pCylSlice[1].vSymAxis[2]= 1.0;
       stGeometry.pCylSlice[1].OpenAngle  = Degrees(opening);
-      stGeometry.pCylSlice[1].Phi        =-Degrees(phi);
+      stGeometry.pCylSlice[1].Phi        = Degrees(phi) + 180.0;
 
       stGeometry.nRectangles = 2;
       stGeometry.pRectangle  = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
@@ -844,6 +874,24 @@ static double CalcPhase(const double x_ch_k_j, const double y_ch_k_j, const doub
   phase = pha_k_j - omega_fact * (x_ch_k_j * cos(pha_k_j) - y_ch_new_k_j * sin(pha_k_j) - Pos[0]);
 
   return phase;
+}
+
+
+/****************************************************************************************************/
+/** transfers from 'component frame' to 'incoming neutron frame' before writing interseciton point **/
+/****************************************************************************************************/
+void WriteOwnIAP(Neutron* pNeutron, VtReason eReason, const VectorType PosLocal)
+{ 
+  if (bVisTraj==TRUE)
+  {
+    Neutron ScatNeut;
+
+    CopyNeutron(pNeutron, &ScatNeut);
+    CopyVector (PosLocal, ScatNeut.Position);
+    AddVector  (ScatNeut.Position, pos_chp) ; 
+
+    WriteWWP(&ScatNeut, eReason);
+  }
 }
 
 
