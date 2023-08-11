@@ -1561,6 +1561,7 @@ void      MonPar_ID2Txt(char* sText, const VtMonPar eID)
     case K_Z      : strcpy(sText, "k_z"      ); break;
     case POS_R    : strcpy(sText, "pos_r"    ); break;
     case POS_PHI  : strcpy(sText, "pos_phi"  ); break;
+    case POS_THETA: strcpy(sText, "pos_theta"); break;
     case DIR_PHI  : strcpy(sText, "dir_phi"  ); break;
     case DIR_THETA: strcpy(sText, "dir_theta"); break;
     case COL_VERT : strcpy(sText, "col_vert" ); break;
@@ -1586,6 +1587,7 @@ VtMonPar  MonPar_Txt2ID(const char* sText)
   else if (strcmp(sText, "pos_r"    )==0 
         || strcmp(sText, "r")        ==0) eID=POS_R    ;
   else if (strcmp(sText, "pos_phi"  )==0) eID=POS_PHI  ;
+  else if (strcmp(sText, "pos_theta")==0) eID=POS_THETA;
   else if (strcmp(sText, "dir_phi"  )==0) eID=DIR_PHI  ;
   else if (strcmp(sText, "dir_theta")==0) eID=DIR_THETA;
   else if (strcmp(sText, "col_vert" )==0) eID=COL_VERT ;
