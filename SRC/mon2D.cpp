@@ -333,9 +333,10 @@ double Mon2D::DetermineParameter(VtMonPar id, Neutron* pNeutr)
 
   double paramValue = 0;
   
-  MathVector neutronVector (pNeutr->Vector[0], pNeutr->Vector[1], pNeutr->Vector[2]);
-  MathVector neutronPosition (pNeutr->Position[0], pNeutr->Position[1], pNeutr->Position[2]);
-  MathVector neutronPositionProjYZ (pNeutr->Position[1], pNeutr->Position[2], 0);
+  MathVector neutronVector  (pNeutr->Vector[0],   pNeutr->Vector[1],   pNeutr->Vector[2]);
+  MathVector neutronPosition(pNeutr->Position[0], pNeutr->Position[1], pNeutr->Position[2]);
+  MathVector neutronPositionProjYZ(pNeutr->Position[1], pNeutr->Position[2], 0);
+  MathVector neutronPositionProjXY(pNeutr->Position[0], pNeutr->Position[1], 0);
   
   double divy = 0;
   double divz = 0;
@@ -392,6 +393,10 @@ double Mon2D::DetermineParameter(VtMonPar id, Neutron* pNeutr)
     case POS_PHI:
       // phi angle of the r-phi cylindrical coordinate system corresponding to the y-z plane
       paramValue = neutronPositionProjYZ.Phi()*180./M_PI; 
+      break;
+    case POS_THETA:
+      // orientation of pos_r in the x-y plane (in a cylindrical coordinate system)
+      paramValue = neutronPositionProjXY.Phi()*180./M_PI;   
       break;
     
     case DIR_PHI:  

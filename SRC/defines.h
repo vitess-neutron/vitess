@@ -819,6 +819,7 @@ typedef enum
   K_Z      =  9,
   POS_R    = 10,
   POS_PHI  = 11,
+  POS_THETA= 18,
   DIR_PHI  = 15,
   DIR_THETA= 16,
   COL_VERT = 12,
