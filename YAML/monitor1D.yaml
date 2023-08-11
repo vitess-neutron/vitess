@@ -27,7 +27,7 @@ monitor1D:                    # source module that will be executed
       tooltip: "x-axis parameter for the first 1D monitor file"
       enum:    "VtMonPar"
       options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta","col_vert","col_hor","color"]
+                "pos_r","pos_phi","pos_theta","dir_phi","dir_theta","col_vert","col_hor","color"]
       default:  "none"
       column:  0                     
       prefix:  "-X"   

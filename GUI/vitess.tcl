@@ -2810,8 +2810,8 @@ proc genFE {n} {
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the 1st parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} 
-    {  1     2     17    3     4      5     6      7   8   9   10     11      15      16          12    13    14}}
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {  1     2     17    3     4      5     6      7   8   9   10     11       18       15      16          12    13    14}}
 }
 
 set mAV1 {
@@ -2833,12 +2833,14 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} {0 1 2 17 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} {0 1 2 17 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
 set fComb {
@@ -2894,13 +2896,15 @@ proc monitor1DCheckErr {{app _}} {
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} {1 2 17 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {  1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
 set mA2 {
   {parameter2 radio pos_z {
     "parameter\non y-axis" "choose the parameter to be shown on the y-axis" "" Y}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} {1 2 17 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {  1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set mAV {
   {}
@@ -2922,12 +2926,14 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} {0 1 2 17 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi dir_phi dir_theta col_vert col_hor color} {0 1 2 17 3 4 5 6 7 8 9 10 11 15 16 12 13 14}}
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
 set fComb {
@@ -3447,8 +3453,8 @@ set isoESET {
   {thrad float 3 {"thickness or\ndiameter [cm]" "thickness or diameter of sample"} gt0 "" 1}
   {hei float 0 {"height [cm]" "height of sample"} ge0 "" 1}
   {wid float 0 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option"} ge0 "" 1}
-  {oh float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample in horizontal (first rotation) direction"}}
-  {ov float 0 {"offset angle\nvert.  [deg]" "rotation of the sample in vertical (first rotation) direction"}}
+  {oh float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample about the z-axis in a horizontal plane (first rotation)"}}
+  {ov float 0 {"offset angle\nvert.  [deg]" "rotation of the sample about the (new) y-axis in a vertical direction (second rotation)"}}
   {"Output Frame" header}
   {x2 float 0 {"X' [cm]"}}
   {y2 float 0 {"Y' [cm]"}}
