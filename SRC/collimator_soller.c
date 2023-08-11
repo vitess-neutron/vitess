@@ -11,6 +11,7 @@
 /* 1.0  Sep  1999  D. Wechsler    initial version                                           */
 /* 1.1  Jan  2004  K. Lieutenant  changes for 'instrument.dat'                              */
 /* 1.2  Aug  2019  K. Lieutenant  subroutines and visualisation included                    */
+/* 1.3  Aug  2023  K. Lieutenant  visualisation completed                                   */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -27,8 +28,12 @@
 /** Definitions, structures, enums **/
 /************************************/
 // #define MAX_ANG        10000   //       maximal number of collimation centers
-#define STD_COLL_DIST     50   // [cm]  virtual distance of the radial collimator for visualization 
-#define STD_COLL_HEIGHT   10   // [cm]  virtual distance of the radial collimator for visualization 
+#define STD_COLL_DIST     50   // [cm]  virtual radius of the radial collimator for visualization 
+#define STD_COLL_THICK     5   // [cm]  virtual thickness of the radial collimator for visualization 
+#define STD_COLL_HEIGHT   10   // [cm]  virtual height of the collimator for visualization 
+#define STD_COLL_WIDTH    10   // [cm]  virtual width of the collimator for visualization 
+#define STD_COLL_LENGTH   20   // [cm]  virtual length of the collimator for visualization 
+#define MAX_CHANNELS      20.0
 
 
 /******************************/
@@ -46,11 +51,12 @@ short   bAngColl=FALSE;      // -k         flag: angular collimation
 long    nAngles =1;          // -n         number of collimation channels = Angle grid
 double  PeakTransm=1.0,      // -e         maximal probability for passing through the collimator (considers effectively the blocking due to the width of collimator blades
 	      HorCollDiv=0.0,      // -d  [deg]  allowed divergence FWHM; always with respect to y-direction
-	      AngSpacing=0.0,      // -a  [deg]  angular distance betwee
+	      AngSpacing=0.0,      // -a  [deg]  angular distance between two collimation centers
         AngleMin  =0.0;      // -m  [deg]  minimum of angle range 
 
 // Variables determined from input parameters or trajectory data
 double  AngleMax  =0.0;      //     [deg]  maximum of angle range 
+double* Angle;               //     [deg] (pointer to) array of angles of maximal transition
 
 
 /******************************/
@@ -63,7 +69,6 @@ int main(int argc, char *argv[])
 	short   bTransmit=FALSE;   //       flag: neutron has passed through collimator
 	double  CollimProb=0.0,    //       transmission probability 
           HorDiv=0.0;        // [deg] horizontal divergence of the neutron trajectory
-  double* pAngle;            // [deg] (pointer to) array of angles of maximal transition
 	Neutron Output;            //       trajectory written to the output (to be read by the next module)
 
   InitNeutron(&Output);
@@ -74,35 +79,36 @@ int main(int argc, char *argv[])
 
   Init(argc, argv, _eModule);
   if (bAngColl)
-	  print_module_name("Virtual angular Collimator 1.2");
+	  print_module_name("Virtual angular Collimator 1.3");
   else
-	  print_module_name("Virtual Soller Collimator 1.2");
+	  print_module_name("Virtual Soller Collimator 1.3");
   OwnInit(argc,argv);
+
 
   // array of angles of maximal transition:
   // allocate memory, initialize, fill array
   // ---------------------------------------
-  pAngle  = (double*) calloc(nAngles, sizeof(double));
+  Angle  = (double*) calloc(nAngles, sizeof(double));
   for (j=0; j < nAngles; j++) 
-    pAngle[j]=0.0;
+    Angle[j]=0.0;
 
 	if (bAngColl==TRUE && nAngles > 1) // case radial collimator	
 	{ 
-    pAngle[0] = AngleMin;
+    Angle[0] = AngleMin;
 		for(j=1; j < nAngles; j++)
-			pAngle[j] = pAngle[j-1] + 2.0*HorCollDiv + AngSpacing;
+			Angle[j] = Angle[j-1] + 2.0*HorCollDiv + AngSpacing;
   
-    AngleMax = pAngle[nAngles - 1];
-  	bVisInstalled = TRUE;
+    AngleMax = Angle[nAngles - 1];
 	}
 	else // case linear collimator in beamline direction (angle=0.0)
 	{	
     nAngles  = 1; 
     AngleMax = AngleMin;
-  	bVisInstalled = FALSE;
+
+    if (bVisInstr) bBlowUp = TRUE;
 	}
 
-  bBlowUp = FALSE;
+  bVisInstalled = TRUE;
 
 	DECLARE_ABORT;
 
@@ -127,9 +133,9 @@ int main(int argc, char *argv[])
 
 			  for(j=0;j<nAngles; j++)
 			  {
-				  if (fabs(pAngle[j]-HorDiv) < HorCollDiv)
+				  if (fabs(Angle[j]-HorDiv) < HorCollDiv)
 				  { 	
-            CollimProb = PeakTransm*(1.0 - (fabs(pAngle[j]-HorDiv) / HorCollDiv));
+            CollimProb = PeakTransm*(1.0 - (fabs(Angle[j]-HorDiv) / HorCollDiv));
 					  bTransmit=TRUE;
 					  break;
 				  }
@@ -227,9 +233,14 @@ void SetGeometry(char* sColor)
  // Geometry data
 	if (bVisInstr)
   {
+    int    j=0, k=0, l=0,          //        indices of collimation centers, blades per collimation center and the combination
+           nBlades=4,              //        number of blades per radial collimation center
+           nChannels=1;            //        number of channels in the Soller collimator
     double ry =0.0, rz=0.0,        // [rad]  directions of the incoming beam
            Xi =0.0,                // [deg]  direction to the center of the collimator
-           distance=STD_COLL_DIST; // [cm]   virtual distance of the radial collimator for visualization 
+           radius=STD_COLL_DIST,   // [cm]   virtual radius of the radial collimator for visualization
+           length=STD_COLL_THICK,  // [cm]   virtual length of the collimator for visualization
+           dist  =1.0;             // [cm]   channel width = blade distance for the linear collimator
 
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
@@ -237,8 +248,11 @@ void SetGeometry(char* sColor)
 
     if (AngleMax > AngleMin)
     { 
-      stGeometry.nCylSlices = 1; 
-      stGeometry.pCylSlice  = (VtCylSlice*) calloc(1, sizeof(VtCylSlice));
+      nBlades=4;
+      stGeometry.nCylSlices  = 2; 
+      stGeometry.pCylSlice   = (VtCylSlice*) calloc(stGeometry.nCylSlices, sizeof(VtCylSlice));
+      stGeometry.nRectangles = nBlades*nAngles; 
+      stGeometry.pRectangle  = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
 
       // get direction to the center of the collimator
       RotMatrixToAnglesZY(RotMatrixM, &ry, &rz);
@@ -246,17 +260,84 @@ void SetGeometry(char* sColor)
 
       Xi = 0.5*(AngleMax+AngleMin) + rz/M_PI*180.0;
 	      
-      stGeometry.pCylSlice[0].Radius     = distance; 
-      stGeometry.pCylSlice[0].Width      = distance*(AngleMax-AngleMin)/180.0*M_PI;
+      stGeometry.pCylSlice[0].Radius     =  radius-0.5*length; 
+      stGeometry.pCylSlice[0].Width      = (radius-0.5*length)*(AngleMax-AngleMin)/180.0*M_PI;
       stGeometry.pCylSlice[0].Height     = STD_COLL_HEIGHT;
-      stGeometry.pCylSlice[0].vCntr[0]   = 0.;
-      stGeometry.pCylSlice[0].vCntr[1]   = 0.;
-      stGeometry.pCylSlice[0].vCntr[2]   = 0.;
+      stGeometry.pCylSlice[0].vCntr[0]   = 0.0;
+      stGeometry.pCylSlice[0].vCntr[1]   = 0.0;
+      stGeometry.pCylSlice[0].vCntr[2]   = 0.0;
       stGeometry.pCylSlice[0].vSymAxis[0]= 0;
       stGeometry.pCylSlice[0].vSymAxis[1]= 0;
       stGeometry.pCylSlice[0].vSymAxis[2]= 1;
       stGeometry.pCylSlice[0].OpenAngle  = AngleMax-AngleMin;
       stGeometry.pCylSlice[0].Phi        = Xi;
+
+      stGeometry.pCylSlice[1].Radius     =  radius+0.5*length; 
+      stGeometry.pCylSlice[1].Width      = (radius+0.5*length)*(AngleMax-AngleMin)/180.0*M_PI;
+      stGeometry.pCylSlice[1].Height     = STD_COLL_HEIGHT;
+      stGeometry.pCylSlice[1].vCntr[0]   = 0.0;
+      stGeometry.pCylSlice[1].vCntr[1]   = 0.0;
+      stGeometry.pCylSlice[1].vCntr[2]   = 0.0;
+      stGeometry.pCylSlice[1].vSymAxis[0]= 0;
+      stGeometry.pCylSlice[1].vSymAxis[1]= 0;
+      stGeometry.pCylSlice[1].vSymAxis[2]= 1;
+      stGeometry.pCylSlice[1].OpenAngle  = AngleMax-AngleMin;
+      stGeometry.pCylSlice[1].Phi        = Xi;
+
+      for (j=0; j < nAngles; j++)
+      { 
+        for (k=0; k < nBlades; k++)
+        { 
+          l = nBlades*j + k; 
+          Xi = Angle[j] + rz/M_PI*180.0 + HorCollDiv*(2*k-(nBlades-1))/(nBlades-1);
+
+          stGeometry.pRectangle[l].Width     = length;
+          stGeometry.pRectangle[l].rotAngle  = 0.0;
+          stGeometry.pRectangle[l].Height    = STD_COLL_HEIGHT;
+          stGeometry.pRectangle[l].vCntr[0]  = radius*cos(Radians(Xi));
+          stGeometry.pRectangle[l].vCntr[1]  = radius*sin(Radians(Xi));
+          stGeometry.pRectangle[l].vCntr[2]  = 0.0;
+          stGeometry.pRectangle[l].vNormal[0]= -sin(Radians(Xi));
+          stGeometry.pRectangle[l].vNormal[1]=  cos(Radians(Xi));
+          stGeometry.pRectangle[l].vNormal[2]= 0.0;
+        }
+      }
+    }
+    else
+    {
+      stGeometry.nHulls      = 1; 
+      stGeometry.pHull       = (VtHull*) calloc(stGeometry.nHulls, sizeof(VtHull));
+      stGeometry.pHull[0].WidthIn   = STD_COLL_WIDTH;
+      stGeometry.pHull[0].WidthOut  = STD_COLL_WIDTH;
+      stGeometry.pHull[0].HeightIn  = STD_COLL_HEIGHT;
+      stGeometry.pHull[0].HeightOut = STD_COLL_HEIGHT;
+      stGeometry.pHull[0].Length    = STD_COLL_LENGTH;
+      stGeometry.pHull[0].vCntr[0]  = 0.0;
+      stGeometry.pHull[0].vCntr[1]  = 0.0;
+      stGeometry.pHull[0].vCntr[2]  = 0.0;
+      stGeometry.pHull[0].vNormal[0]= 1.0;
+      stGeometry.pHull[0].vNormal[1]= 0.0;
+      stGeometry.pHull[0].vNormal[2]= 0.0;
+      stGeometry.pHull[0].rotAngle  = 0.0;
+
+      dist = stGeometry.pHull[0].Length * tan(Radians(HorCollDiv));
+      if (dist < stGeometry.pHull[0].WidthIn/MAX_CHANNELS)
+        dist = stGeometry.pHull[0].WidthIn/MAX_CHANNELS;
+      nChannels = (int)(Round(stGeometry.pHull[0].WidthIn/dist));
+      stGeometry.nRectangles = nChannels+1; 
+      stGeometry.pRectangle  = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+      for (k=0; k <= nChannels; k++)
+      { 
+        stGeometry.pRectangle[k].Width     = STD_COLL_LENGTH;
+        stGeometry.pRectangle[k].Height    = STD_COLL_HEIGHT;
+        stGeometry.pRectangle[k].rotAngle  = 0.0;
+        stGeometry.pRectangle[k].vCntr[0]  = 0.0;
+        stGeometry.pRectangle[k].vCntr[1]  =(k - 0.5*nChannels)*dist;
+        stGeometry.pRectangle[k].vCntr[2]  = 0.0;
+        stGeometry.pRectangle[k].vNormal[0]= 0.0;
+        stGeometry.pRectangle[k].vNormal[1]= 1.0;
+        stGeometry.pRectangle[k].vNormal[2]= 0.0;
+      }
     }
   }
 }

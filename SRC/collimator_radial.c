@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
             // find out entrance channel   (channel = 0 means 'blade position')
             iChanIn = DetermineChannel(NewAngH, AngMinAct, AngSep, Distance);
 
-            if (iChanIn > 0)
+            if (iChanIn > 0 && iChanIn <= nChannels)
             {	
               bHit2 = AdvanceToCylinderSurface(&ToF2, &OutNeutron, Distance+Length, ExitHeight, VelocityReal); 
 
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
                     OutNeutron.Time += (ToF1 + ToF2);
                     // WriteNeutron(&OutNeutron);
                     WriteNeutron(&InputNeutrons[i]);
-                    // WriteIAP(&OutNeutron, VT_EXITED);
+                    WriteIAP(&OutNeutron, VT_EXITED);
                   }
                   else
                   { // estimate point inside the collimator for absorption

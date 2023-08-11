@@ -110,38 +110,27 @@ int main(int argc, char *argv[])
       { 
         // Check to see if the neutron is initially in the entrance to the collimator
         // --------------------------------------------------------------------------
-        if (fabs(InputNeutrons[i].Position[1]) > CollEntrWidth/2.0)  continue;
-        if (fabs(InputNeutrons[i].Position[2]) > CollEntrHeight/2.0) continue;
-	  
-        OutNeutron = InputNeutrons[i];
+        if (fabs(InputNeutrons[i].Position[1]) > CollEntrWidth/2.0 ||
+            fabs(InputNeutrons[i].Position[2]) > CollEntrHeight/2.0)
+        { 
+          WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+          continue;
+        }
 	  
         // find out the entrance channel   (channel = 0 means 'blade position')
-        iChanIn = DetermineChannel(OutNeutron.Position[1], ChanMinIn, ChanDistIn);
+        iChanIn = DetermineChannel(InputNeutrons[i].Position[1], ChanMinIn, ChanDistIn);
 	  
-        if (iChanIn > 0)
+        if (iChanIn > 0 && iChanIn <= nChannels)
         {	
           // Pass a pointer to the neutron and the collimator structure to a subroutine to
           // calculate the propagation inside  collimator frame                           
           // Check if neutron leaves inside the exit area and determine the channel       
           // ------------------------------------------------------------------------------
+          OutNeutron = InputNeutrons[i];
           bReach = PathThroughColl(&ToF, &OutNeutron, CollExit, keygrav);
 
           // find out the exit channel   (channel = 0 means 'blade position')
           iChanOut = DetermineChannel(OutNeutron.Position[1], ChanMinOut, ChanDistOut);
-
-          /* if (bReach)
-          {
-            if (fabs(OutNeutron.Position[1]) <= CollExitWidth/2.0  &&  
-                fabs(OutNeutron.Position[2]) <= CollExitHeight/2.0)
-            {	
-              // find out the exit channel   (channel = 0 means 'blade position')
-              iChanOut = DetermineChannel(OutNeutron.Position[1], ChanMinOut, ChanDistOut);
-            }
-            else
-            {	
-              iChanOut = -1;
-            }
-          } */
 
           // Writeout new data set, if neutron enters and leaves through the same channel */
           // ------------------------------------------------------------------------------
@@ -149,9 +138,10 @@ int main(int argc, char *argv[])
           {
             if (fabs(OutNeutron.Position[2]) <= CollExitHeight/2.0)
             {
+              WriteIAP(&OutNeutron, VT_PASSED);
+
               OutNeutron.Position[0]=0.0;
               OutNeutron.Time += ToF;
-
               WriteNeutron(&OutNeutron);
             }
           }
@@ -163,8 +153,8 @@ int main(int argc, char *argv[])
                      prc=0.0;                // fraction of the channel length needed to reach the first wall
 
               AbsNeutron = InputNeutrons[i];
-              Yr_in  = (InputNeutrons[i].Position[1] - ChanMinIn)  / (CollEntrWidth/nChannels); 
-              Yr_out = (OutNeutron.Position[1]       - ChanMinOut) / (CollExitWidth/nChannels); 
+              Yr_in  = (InputNeutrons[i].Position[1] - ChanMinIn)  / ((CollEntrWidth+BladeWidth)/nChannels); 
+              Yr_out = (OutNeutron.Position[1]       - ChanMinOut) / ((CollExitWidth+BladeWidth)/nChannels); 
             
               if (Yr_out > Yr_in)
                 prc = (ceil (Yr_in) - Yr_in) / (Yr_out - Yr_in); 
@@ -178,7 +168,11 @@ int main(int argc, char *argv[])
                 WriteWWP(&AbsNeutron, VT_ABSORBED);
             }
           }
-        } 
+        }
+        else
+        {
+          WriteIAP(&InputNeutrons[i], VT_ABSORBED);
+        }
       }
     }
   }
@@ -306,9 +300,9 @@ void SetGeometry(char* sColor)
   if (bVisInstr)
   {
     int i=0;   // index of hulls 
-    double AvrgChanWidth = (CollEntrWidth+CollExitWidth)/(2.0*nChannels);
+    double AvrgChanWidth = (CollEntrWidth+CollExitWidth+2.0*BladeWidth)/(2.0*nChannels);
 
-    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    sprintf(sVisDescrpt, "  :%s", sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
@@ -317,13 +311,13 @@ void SetGeometry(char* sColor)
 
     for (i=0; i < stGeometry.nHulls; i++)
     { 
-      stGeometry.pHull[i].WidthIn   = BlowUp * CollEntrWidth/nChannels;
-      stGeometry.pHull[i].WidthOut  = BlowUp * CollExitWidth/nChannels;
-      stGeometry.pHull[i].HeightIn  = BlowUp * CollEntrHeight;
-      stGeometry.pHull[i].HeightOut = BlowUp * CollExitHeight;
+      stGeometry.pHull[i].WidthIn   = BlowUp * (CollEntrWidth - (double)(nChannels-1)*BladeWidth) / nChannels;
+      stGeometry.pHull[i].WidthOut  = BlowUp * (CollExitWidth - (double)(nChannels-1)*BladeWidth) / nChannels;
+      stGeometry.pHull[i].HeightIn  = BlowUp *  CollEntrHeight;
+      stGeometry.pHull[i].HeightOut = BlowUp *  CollExitHeight;
       stGeometry.pHull[i].Length    =      Length;
       stGeometry.pHull[i].vCntr[0]  =  0.5*Length;
-      stGeometry.pHull[i].vCntr[1]  = (-0.25*(CollEntrWidth+CollExitWidth) + (i+0.5)*AvrgChanWidth)*BlowUp;
+      stGeometry.pHull[i].vCntr[1]  = (-0.25*(CollEntrWidth+CollExitWidth) + ((double)i+0.5)*AvrgChanWidth)*BlowUp;
       stGeometry.pHull[i].vCntr[2]  = 0.0;
       stGeometry.pHull[i].vNormal[0]= 1.0;
       stGeometry.pHull[i].vNormal[1]= 0.0;

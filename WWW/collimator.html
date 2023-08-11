@@ -26,41 +26,6 @@
     This is a realistic description of a Soller collimator and is therefore the recommended choice.
   </p>
 
-  <br>
-  <h2><font size="+1"> VITESS Module 'collimator_soller' for Different Kinds of Collimators </font></h2>
-  <p>
-    In contrast, the module <b>collimator_soller</b> simulates a collimator by allowing a certain divergence range (in the x-y-plane) which is described by a triangular distribution
-    characterising the probability that a neutron of a certain divergence passes through the collimator.&nbsp; The maximal possible divergence d_phi then corresponds to the width
-    w and length l of a soller collimator channel, i.e. tan d_phi = w/l. The FWHM of the probability distribution (the peak is centered at divergence 0) is also d_phi.
-    The module <b>collimator_soller</b> does neither change the neutron position or direction nor the frame of reference.&nbsp;<br>
-    This method of simulating collimation is a good approximation. If the module is used, entrance and exit area should be simulated in addition using either the module <b>slit</b>
-    or <b>spacewindow</b> to allow for the limitation in solid angle and take care of the propagation.
-    <br>
-    This module can also be used to simulate a radial collimator. In this case, the direction of the first channel, the number of channels and the 'additional angular spacing'
-    have to be given: <br />
-    Each collimation center is defined by an angle corresponding to divergence 0. The first centre is defined by the 'minimum of angle range'.
-    The following centers (always higher angles) are calculated by considering a gap of (2*allowed_div_fwhm + additional_spacing) between two centers.
-    'allowed_div_fwhm' is the FWHM value of the triangular shape. 'additional_spacing' is the additional angular distance between the collimation centers
-    due to the size of collimator spacers. Therefore, the maximal direction of the last center can be calculated as:
-  </p>
-  <p>
-    &nbsp;&nbsp;&nbsp;angle_max = angle_min + (num_centers - 1)*(2*allowed_div_fwhm + additional_spacing)
-  </p>
-
-  <br>
-  <h2><font size="+1"> VITESS Module 'collimator_radial' to simulate Radial Collimators </font></h2>
-  <p>
-    A more appropriate way to simulate radial collimators is to use the module <b>collimator_radial</b>.
-    It is realized by a number of channels defining different directions in the horizontal plane.
-    Their walls are vertical planes throught the origin; a thickness of these blades can be considered, but zero thickness works as well. All walls are treated as 100% absorbing.
-    There is no separation in vertical direction, but it considers entrance and exit height of the collimator. <br />
-    As the module <b>collimator</b> it calculates the neutron trajectory through the collimator and removes it from the simulation, if it hits one of the (absorbing) walls.
-    Otherwise, it propagates the neutrons to the end of the radial collimator. <br />
-    Furthermore, an oscillation of the collimator can be treated. If this is used, the orientation of the collimator (at the time the neutron is passing)
-    is determined by a random choice within a range given. In this way, the shadowing effect of the blades can be simulated and the extent of this effect estimated.
-  </p>
-
-  <br>
   <h4> Parameters for module 'collimator' </h4>
   <table cellpadding="2" cellspacing="2" border="1" width="100%">
     <tbody>
@@ -73,15 +38,19 @@
 
       <tr>
         <td valign="top">entrance width<br>exit width<br>[cm]     </td>
-        <td valign="top">Total width of the collimator entrance and exit (between the two walls defining beginning of first and end of last channel)<br />
-                         (center of the entrance window at y=0)</td>
+        <td valign="top">
+          Total width of the collimator entrance and exit (between the two walls defining beginning of first and end of last channel)<br />
+          (center of the entrance window at y=0)
+        </td>
         <td valign="top">&gt;= 0    </td>
         <td valign="top">-w<br>-W   </td>
       </tr>
       <tr>
         <td valign="top">entrance height<br>exit height<br>[cm]    </td>
-        <td valign="top">Entrance and exit height of the collimator<br />
-                         (center of the entrance window at z=0)</td>
+        <td valign="top">
+          Entrance and exit height of the collimator<br />
+          (center of the entrance window at z=0)
+        </td>
         <td valign="top">&gt;= 0       </td>
         <td valign="top">-h<br>-H      </td>
       </tr>
@@ -108,6 +77,31 @@
   </table>
 
   <br>
+  <br>
+  <h2><font size="+1"> VITESS Module 'collimator_soller' for Different Kinds of Collimators </font></h2>
+  <p>
+    In contrast, the module <b>collimator_soller</b> simulates a collimator by allowing a certain divergence range (in the x-y-plane), which is described by a triangular distribution
+    characterising the probability that a neutron of a certain divergence passes through the collimator. The maximal possible divergence &delta;&phi; then corresponds to the width
+    <i>w</i> and length <i>l</i> of a Soller collimator channel, i.e. tan &delta;&phi; = w/l. The FWHM of the probability distribution is also &delta;&phi;, (the peak is centered at divergence 0).
+    The module <b>collimator_soller</b> does neither change the neutron position or direction nor the frame of reference.<br>
+    This method of simulating collimation is a good approximation. If this module is used, entrance and exit area should be simulated in addition using either the module <b>slit</b>
+    or <b>spacewindow</b> to allow for the spatial limitation and take care of the propagation.
+    <br>
+    This module can also be used to simulate a radial collimator. In this case, the direction of the first channel, the number of channels and the 'additional angular spacing' &Delta;&phi;
+    have to be given: <br />
+    Each collimation center is defined by an angle corresponding to zero divergence. The first centre is defined by the 'minimum of angle range' &phi;<sub>min</sub>.
+    The following centers (always at higher angles) are calculated by considering a gap of (2*&delta;&phi; + &Delta;&phi;) between two centers.
+    Therefore, the direction of the last center can be calculated as:
+  </p>
+  <p>
+    &nbsp;&nbsp;&nbsp;&phi;<sub>max</sub> = &phi;<sub>min</sub> + (N<sub>centers</sub> - 1)*(2*&delta;&phi; + &Delta;&phi;)
+  </p>
+  <p>
+    Note that the collimator does not have any size, if represented by this module.
+    For the visualization, fixed sizes of 20 x 10 x 10 cm³ (L x W x H) for the Soller collimator and 10 cm height, 50 cm radius and 5 cm thickness for the radial collimator are assumed.
+    It shows 3 channels in each collimation center and up to 20 channels in the Soller collimator.
+  </p>
+
   <h4>Parameters for module 'collimator_soller'</h4>
   <table cellpadding="2" cellspacing="2" border="1" width="100%">
     <tbody>
@@ -129,15 +123,15 @@
       </tr>
       <tr>
         <td valign="top">collimator divergence<br>[deg]</td>
-        <td valign="top">Allowed x-y divergence (FWHM of the triangular shape)  </td>
-        <td valign="top">&gt;= 0 </td>
+        <td valign="top">Maximal horizontal divergence &delta;&phi; (= FWHM of the triangular shape)  </td>
+        <td valign="top">&gt; 0 </td>
         <td valign="top">-d      </td>
       </tr>
       <tr>
         <td valign="top">peak transmission </td>
         <td valign="top">
           Maximal probability for passing through the soller collimator
-          (corresponds to an average loss due to blocking neutrons by the finite size of the Soller collimator)
+          (corresponds to the transmission of neutrons with zero divergence)
         </td>
         <td valign="top">]0, 1] </td>
         <td valign="top">-e    </td>
@@ -145,11 +139,11 @@
       <tr>
         <td valign="top">minimum of angle range<br>[deg]</td>
         <td valign="top">
-          The lowest angle defining a zero-divergence direction               <br />
+          The lowest angle &phi;<sub>min</sub> defining a zero-divergence direction               <br />
           &nbsp;&nbsp;0 deg: direction of the beam impinging on the sample (= x-axis) <br />
           90 deg: to the left (= y-axis)                                   <br />
           The following centers (always higher angles) are calculated by considering
-          a gap of (2*allowed_div_fwhm + angle_spacing) between two centers.
+          a gap of 2*&delta;&phi; + &Delta;&phi; between two centers.
         </td>
         <td valign="top">[-180°, 180°[  </td>
         <td valign="top">-m       </td>
@@ -157,8 +151,8 @@
       <tr>
         <td valign="top">number of collimation centers   </td>
         <td valign="top">
-          Number of orientations corresponding to divergence 0 (or to peak transmission resp.).
-          The difference between two collimation centers is: 2*allowed_div_fwhm + angle_spacing
+          Number of orientations N<sub>centers</sub> corresponding to divergence 0 (or to peak transmission resp.).
+          The difference between two collimation centers is: 2*&delta;&phi; + &Delta;&phi;
         </td>
         <td valign="top">&gt;= 1 </td>
         <td valign="top">
@@ -167,14 +161,27 @@
       </tr>
       <tr>
         <td valign="top">angle spacing <br />[deg]</td>
-        <td valign="top">Additional angular distance between the collimation centers due to the size of collimator spacers </td>
+        <td valign="top">Additional angular distance &Delta;&phi; between the collimation centers due to the size of collimator spacers </td>
         <td valign="top">&gt;= 0 </td>
         <td valign="top">-a      </td>
       </tr>
     </tbody>
   </table>
 
-  <br />
+  <br>
+  <br>
+  <h2><font size="+1"> VITESS Module 'collimator_radial' to simulate Radial Collimators </font></h2>
+  <p>
+    A more appropriate way to simulate radial collimators is to use the module <b>collimator_radial</b>.
+    It is realized by a number of channels defining different directions in the horizontal plane.
+    Their walls are vertical planes throught the origin; a thickness of these blades can be considered, but zero thickness works as well. All walls are treated as 100% absorbing.
+    There is no separation in vertical direction, but it considers entrance and exit height of the collimator. <br />
+    As the module <b>collimator</b> it calculates the neutron trajectory through the collimator and removes it from the simulation, if it hits one of the (absorbing) walls.
+    Otherwise, it propagates the neutrons to the end of the radial collimator. <br />
+    Furthermore, an oscillation of the collimator can be treated. If this is used, the orientation of the collimator (at the time the neutron is passing)
+    is determined by a random choice within a range given. In this way, the shadowing effect of the blades can be simulated and the extent of this effect estimated.
+  </p>
+
   <h4> Parameters for module 'collimator_radial' </h4>
   <table cellpadding="2" cellspacing="2" border="1" width="100%">
     <tbody>
@@ -197,8 +204,10 @@
       </tr>
       <tr>
         <td valign="top">width<br>[deg]      </td>
-        <td valign="top">Angular range covered by the radial collimator (between the two walls defining beginning of first and end of last channel)<br />
-                         Channel centers and blades are pointing to the origin, i.e. the centre of the sample.</td>
+        <td valign="top">
+          Angular range covered by the radial collimator (between the two walls defining beginning of first and end of last channel)<br />
+          Channel centers and blades are pointing to the origin, i.e. the centre of the sample.
+        </td>
         <td valign="top">[0°,360°]</td>
         <td valign="top">-w   </td>
       </tr>
@@ -215,8 +224,10 @@
 
       <tr>
         <td valign="top">entrance height<br />exit height<br>[cm]</td>
-        <td valign="top">Entrance and exit height of the radial collimator<br />
-                         The center of entrance and exit is set to z=0, i.e. the collimator is symmetrical to the x-y-plane</td>
+        <td valign="top">
+          Entrance and exit height of the radial collimator<br />
+          The center of entrance and exit is set to z=0, i.e. the collimator is symmetrical to the x-y-plane
+        </td>
         <td valign="top">&gt;= 0       </td>
         <td valign="top">-h<br>-H      </td>
       </tr>
