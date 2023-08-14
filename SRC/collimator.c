@@ -159,6 +159,7 @@ int main(int argc, char *argv[])
           { // otherwise write point of absorption for visualization 
             if (bVisTraj) 
             { 
+              int k;
               double Yr_in=0.0, Yr_out=0.0,  // relative position at entrance at exit: 0.0 - 1.0, rightmost channel, 1.0 - 2.0 next channel to the left ....
                      prc=0.0;                // fraction of the channel length needed to reach the first wall
 
@@ -171,7 +172,7 @@ int main(int argc, char *argv[])
               else if (Yr_out < Yr_in)
                 prc = (floor(Yr_in) - Yr_in) / (Yr_out - Yr_in); 
 
-              for (int k=0; k < 3; k++)
+              for (k=0; k < 3; k++)
                  AbsNeutron.Position[k] = InputNeutrons[i].Position[k] + prc * (OutNeutron.Position[k] - InputNeutrons[i].Position[k]);
 
               if (fabs(AbsNeutron.Position[2]) <= CollExitHeight/2.0 && AbsNeutron.Position[0] <= Length)
