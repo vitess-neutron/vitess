@@ -114,42 +114,37 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
 
 
 // Set sample geometry for visualisation
-void SetSampleGeometry(SampleType *Sample, double RotMatrixSample[3][3])
+void SetSampleGeometry(SampleType *Sample)
 {
-  VectorType SampleDir;
-
-  CopyVector   (Sample->Direction, SampleDir);
-  RotBackVector(RotMatrixSample,   SampleDir);
-
   switch(Sample->Type) 
   {
     case VT_CUBE:
       stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
       stGeometry.nCuboids = 1; 
       
-      stGeometry.pCuboid[0].Length = BlowUp * Sample->SG.Cube.thickness; 
-      stGeometry.pCuboid[0].Width  = BlowUp * Sample->SG.Cube.width;
-      stGeometry.pCuboid[0].Height = BlowUp * Sample->SG.Cube.height;
+      stGeometry.pCuboid[0].Length    = BlowUp * Sample->SG.Cube.thickness; 
+      stGeometry.pCuboid[0].Width     = BlowUp * Sample->SG.Cube.width;
+      stGeometry.pCuboid[0].Height    = BlowUp * Sample->SG.Cube.height;
       stGeometry.pCuboid[0].vCntr[0]  = Sample->Position[0];
       stGeometry.pCuboid[0].vCntr[1]  = Sample->Position[1];
       stGeometry.pCuboid[0].vCntr[2]  = Sample->Position[2];
-      stGeometry.pCuboid[0].vNormal[0]= SampleDir[0];
-      stGeometry.pCuboid[0].vNormal[1]= SampleDir[1];
-      stGeometry.pCuboid[0].vNormal[2]= SampleDir[2];
+      stGeometry.pCuboid[0].vNormal[0]= Sample->Direction[0];
+      stGeometry.pCuboid[0].vNormal[1]= Sample->Direction[1];
+      stGeometry.pCuboid[0].vNormal[2]= Sample->Direction[2];
       break;
       
     case VT_CYL:
       stGeometry.pCylinder = calloc(1, sizeof(VtCylinder));
       stGeometry.nCylinders = 1;
 
-      stGeometry.pCylinder[0].Radius    = BlowUp * Sample->SG.Cyl.r;
-      stGeometry.pCylinder[0].Length    = BlowUp * Sample->SG.Cyl.height;
-      stGeometry.pCylinder[0].vCntr[0]  = Sample->Position[0];
-      stGeometry.pCylinder[0].vCntr[1]  = Sample->Position[1];
-      stGeometry.pCylinder[0].vCntr[2]  = Sample->Position[2];
-      stGeometry.pCylinder[0].vSymAxis[0] = SampleDir[0];
-      stGeometry.pCylinder[0].vSymAxis[1] = SampleDir[1];
-      stGeometry.pCylinder[0].vSymAxis[2] = SampleDir[2];
+      stGeometry.pCylinder[0].Radius     = BlowUp * Sample->SG.Cyl.r;
+      stGeometry.pCylinder[0].Length     = BlowUp * Sample->SG.Cyl.height;
+      stGeometry.pCylinder[0].vCntr[0]   = Sample->Position[0];
+      stGeometry.pCylinder[0].vCntr[1]   = Sample->Position[1];
+      stGeometry.pCylinder[0].vCntr[2]   = Sample->Position[2];
+      stGeometry.pCylinder[0].vSymAxis[0]= Sample->Direction[0];
+      stGeometry.pCylinder[0].vSymAxis[1]= Sample->Direction[1];
+      stGeometry.pCylinder[0].vSymAxis[2]= Sample->Direction[2];
       break;
 
     case VT_HOL_CYL:
@@ -162,9 +157,9 @@ void SetSampleGeometry(SampleType *Sample, double RotMatrixSample[3][3])
       stGeometry.pHolCyl[0].vCntr[0]    = Sample->Position[0];
       stGeometry.pHolCyl[0].vCntr[1]    = Sample->Position[1];
       stGeometry.pHolCyl[0].vCntr[2]    = Sample->Position[2];
-      stGeometry.pHolCyl[0].vSymAxis[0] = SampleDir[0];
-      stGeometry.pHolCyl[0].vSymAxis[1] = SampleDir[1];
-      stGeometry.pHolCyl[0].vSymAxis[2] = SampleDir[2];
+      stGeometry.pHolCyl[0].vSymAxis[0] = Sample->Direction[0];
+      stGeometry.pHolCyl[0].vSymAxis[1] = Sample->Direction[1];
+      stGeometry.pHolCyl[0].vSymAxis[2] = Sample->Direction[2];
       break;
 
     case VT_SPHERE:

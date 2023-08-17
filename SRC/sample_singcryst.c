@@ -478,7 +478,8 @@ void SetSamplePar(SampleType* pSample)
          diamtr=0.0,height=0.0, width=0.0,
          norm=0.0,  muAbs =0.0, scale_f2=1.0;
   VtSmplGeom geom=VT_NO_GEOM;
-  SampleType sample;         // file  sample geometry
+  VectorType DirSample={0.0,0.0,1.0}; // sample orientation
+  SampleType sample;                  // structure sample geometry
 
   InitSample(pSample);
   InitSample(&sample);
@@ -551,12 +552,6 @@ void SetSamplePar(SampleType* pSample)
   if (eGeom==VT_NO_GEOM)
     Error2("Sample geometry could not be identified", sGeom);
 
-  // fills data structures
-  FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2], 0.0, 0.0, 1.0, Diameter, Height, Width, 0.0);
-  DimSample[0] = Diameter;
-  DimSample[1] = Width;
-  DimSample[2] = Height;
-
   /* converts degs in radian etc. */
   AnglOmega   *= M_PI/180.;
   AnglChi     *= M_PI/180.;
@@ -570,7 +565,18 @@ void SetSamplePar(SampleType* pSample)
   FillRotMatrixXZ(RotMatrixChi,   0.0, AnglChi); 
   FillRotMatrixZY(RotMatrixOmega, 0.0, AnglOmega); 
 
-}/* End ReadParameterFile() */
+  // fills data structures
+	RotBackVector(RotMatrixOmega, DirSample);
+  RotBackVector(RotMatrixChi,   DirSample);
+  RotBackVector(RotMatrixPhi,   DirSample);
+  FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2],  DirSample[0], DirSample[1], DirSample[2], Diameter, Height, Width, 0.0);
+
+  DimSample[0] = Diameter;
+  DimSample[1] = Width;
+  DimSample[2] = Height;
+
+  return;
+}/* End SetSamplePar() */
 
  
 /*******************************************************/

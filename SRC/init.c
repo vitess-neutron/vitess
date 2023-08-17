@@ -1010,6 +1010,22 @@ void ChangeNeutronID(Neutron* n)
 }
 
 
+short PropagateX(Neutron* pNeutron, double DistX)
+{ 
+    VectorType vPath;
+    double     PathLen=0.0;
+    short      rc=FALSE;
+
+    if (pNeutron->Vector[0] > 0.0)
+    { PathLen = DistX/pNeutron->Vector[0];
+      CopyVector(pNeutron->Vector, vPath) ;
+      MultiplyByScalar(vPath, PathLen);
+      AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
+      rc=TRUE;
+    }
+    return rc;
+}
+
 /*******************************************************************/
 /* WriteNeutron writes a neutron to the neutron ouput buffer       */
 /* OuputNeutrons and flushes the buffer to the output file if the  */
@@ -1142,23 +1158,16 @@ void WriteInstrData(VectorType Pos)
   }
 }
 
-void WriteDIAP(Neutron* pNeutron, VtReason eReason, double Dist)
+void WriteDIAP(Neutron* pNeutron, VtReason eReason, double DistX)
 { 
   if (bVisTraj==TRUE)
   {
-    Neutron ScatNeut;
-    VectorType vPath;
-    double     PathLen=0.0;
+    Neutron ScatNeutr;
 
-    if (pNeutron->Vector[0] > 0.0)
-      PathLen = Dist/pNeutron->Vector[0];
+    CopyNeutron(pNeutron, &ScatNeutr);
+    PropagateX(&ScatNeutr, DistX);
 
-    CopyNeutron(pNeutron, &ScatNeut);
-    CopyVector(ScatNeut.Vector, vPath) ;
-    MultiplyByScalar(vPath, PathLen);
-    AddVector  (ScatNeut.Position, vPath) ; /* vPath = displacement vector */
-
-    WriteWWP(&ScatNeut, eReason);
+    WriteWWP(&ScatNeutr, eReason);
   }
 }
 

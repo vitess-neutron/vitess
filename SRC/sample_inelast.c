@@ -563,7 +563,7 @@ void OwnCleanup()
 /*******************************************************/
 /** Reads the sample parameters from file             **/
 /*******************************************************/
-void SetSamplePar(SampleType* pSample)
+void SetSamplePar()
 {
   FILE*  pFile=NULL;
   char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="";
@@ -579,10 +579,6 @@ void SetSamplePar(SampleType* pSample)
          out_h =0.0, out_v =0.0;
   VtSmplGeom eGeo=VT_NO_GEOM;
   VtFrameGen eFrm=VT_NO_FRAME; 
-  SampleType sample;         // file  sample geometry
-
-  InitSample(pSample);
-  InitSample(&sample);
 
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
@@ -651,31 +647,6 @@ void SetSamplePar(SampleType* pSample)
   if (eGeom==VT_NO_GEOM)
     Error2("Sample geometry could not be identified", sGeom);
 
-  // fills data structures
-  FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2], 0.0, 0.0, 1.0, Diameter, Height, Width, 0.0);
-  if (eGeom==VT_HOL_CYL)
-  {
-    DimSample[0] = Diameter;  DimSampleHol[0] = Width; 
-    DimSample[1] = 0.0;       DimSampleHol[1] = 0.0;    
-    DimSample[2] = Height;    DimSampleHol[2] = Height;
-  }
-  else
-  {
-    DimSample[0] = Diameter;
-    DimSample[1] = Width;    
-    DimSample[2] = Height;  
-  }
-
-  if (PosSample[0] < 0.5*DimSample[0] || PosSample[0] < 0.5*DimSample[1] || PosSample[0] < 0.5*DimSample[2]) 
-    Error("Distance to sample smaller than half the sample size in at least one dimension");
-
-  k_reference[0] = 2.* M_PI / LmbdInit * (double) cos(DirInVert) * (double) cos(DirInHor) ;
-  k_reference[1] = 2.* M_PI / LmbdInit * (double) cos(DirInVert) * (double) sin(DirInHor) ;
-  k_reference[2] = 2.* M_PI / LmbdInit * (double) sin(DirInVert) ;
-
-  if (LengthVector(k_reference) == 0.)
-    Error("Zero reference wavevector not allowed");
-
   /* sets default values if frame for output not user defined */
   if (eFrame==VT_FRAME_STD)
   {
@@ -700,12 +671,36 @@ void SetSamplePar(SampleType* pSample)
 /**********************************************************************/
 /** calculates ariables from input parameters and writes to log file **/
 /**********************************************************************/
-void  CalcAndWritePar()
+void  CalcAndWritePar(SampleType* pSample)
 {
   char   sFrm[30]="";
   double scattered_dir[3];
   double	wl, wl_scattered, q_length, scattering_angle, energy_transfer ;
   VectorType	k_scattered ;
+  VectorType  DirSample={0.0,0.0,1.0}; // sample orientation
+
+  if (eGeom==VT_HOL_CYL)
+  {
+    DimSample[0] = Diameter;  DimSampleHol[0] = Width; 
+    DimSample[1] = 0.0;       DimSampleHol[1] = 0.0;    
+    DimSample[2] = Height;    DimSampleHol[2] = Height;
+  }
+  else
+  {
+    DimSample[0] = Diameter;
+    DimSample[1] = Width;    
+    DimSample[2] = Height;  
+  }
+
+  if (PosSample[0] < 0.5*DimSample[0] || PosSample[0] < 0.5*DimSample[1] || PosSample[0] < 0.5*DimSample[2]) 
+    Error("Distance to sample smaller than half the sample size in at least one dimension");
+
+  k_reference[0] = 2.* M_PI / LmbdInit * (double) cos(DirInVert) * (double) cos(DirInHor) ;
+  k_reference[1] = 2.* M_PI / LmbdInit * (double) cos(DirInVert) * (double) sin(DirInHor) ;
+  k_reference[2] = 2.* M_PI / LmbdInit * (double) sin(DirInVert) ;
+
+  if (LengthVector(k_reference) == 0.)
+    Error("Zero reference wavevector not allowed");
 
   /* prints parameters into log file for verification */
   fprintf(LogFilePtr, "S(q,omega) parameters\n");
@@ -760,6 +755,12 @@ void  CalcAndWritePar()
   FillRotMatrixZY(RotMatrixOut,     AnglOutVert,  AnglOutHor) ;
 
   RotVector(RotMatrixSample, scattered_dir) ;
+
+  // fills data structures
+  RotBackVector(RotMatrixSample, DirSample);
+
+  InitSample(pSample);
+  FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2],  DirSample[0], DirSample[1], DirSample[2], Diameter, Height, Width, 0.0);
 
   fprintf(LogFilePtr,"repetition         : %ld\n", Repetition) ;
   if(Repetition > 1) fprintf(LogFilePtr,"\nWarning: Excessive use of repetition rate > 1 can lead to wrong results. Be sure that you have very good statistics\n" 

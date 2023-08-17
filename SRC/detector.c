@@ -705,8 +705,8 @@ void SetGeometry(char* sColor)
     if (Detector.eGeom==VT_DET_CYL)
     { // cylinder
       double ry, rz;
-      stGeometry.pCylSlice = (VtCylSlice*) calloc(1, sizeof(VtCylSlice));
-      stGeometry.nCylSlices = 1; 
+      stGeometry.nCylSlices = 2; 
+      stGeometry.pCylSlice = (VtCylSlice*) calloc(stGeometry.nCylSlices, sizeof(VtCylSlice));
 	
       stGeometry.pCylSlice[0].Radius = Detector.Distance; 
       if(Detector.Width > (int) 2*M_PI*Detector.DG.Cyl.r) 
@@ -729,13 +729,16 @@ void SetGeometry(char* sColor)
       stGeometry.pCylSlice[0].Phi = Detector.Theta/M_PI*180.;
       //coordinates differently defined in visualization:
       if(Detector.DG.Cyl.eAxis==X_AXIS)
-        stGeometry.pCylSlice[0].Phi = Detector.Phi/M_PI*180.+90.;
-        else if(Detector.DG.Cyl.eAxis==Y_AXIS)
-      stGeometry.pCylSlice[0].Phi = -Detector.Theta/M_PI*180.;
+        stGeometry.pCylSlice[0].Phi =  Detector.Phi/M_PI*180.+90.;
+      else if(Detector.DG.Cyl.eAxis==Y_AXIS)
+        stGeometry.pCylSlice[0].Phi = -Detector.Theta/M_PI*180.;
 	
       stGeometry.pCylSlice[0].OpenAngle = Detector.Width/(2.*M_PI*Detector.Distance)*360.;
       RotMatrixToAnglesZY(RotMatrixM, &ry, &rz);
       stGeometry.pCylSlice[0].Phi += rz/M_PI*180.;
+
+      memcpy(&stGeometry.pCylSlice[1], &stGeometry.pCylSlice[0], sizeof(VtCylSlice));
+      stGeometry.pCylSlice[1].Radius += Detector.Thickness;
     }
     else
     { // cube

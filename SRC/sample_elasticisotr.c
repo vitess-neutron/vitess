@@ -38,9 +38,9 @@
 /***********************************/
 void  OwnInit(int argc, char *argv[]);                  // Reads input parameters and sets global variables
 void  OwnCleanup();                                     // Does module specific cleanup
-void  SetSamplePar   (SampleType *pSample);             // Reads sample parameters and combines with input parameters
-void  CalcAndWritePar();                                // Calculates arrays from input parameters and writes to log file
-void  SetGeometry(char* sColor);                        // Fills the structure stGeometry for visualization
+void  SetSamplePar   ();                                // Reads sample parameters and combines with input parameters
+void  CalcAndWritePar(SampleType *pSample);             // Calculates arrays from input parameters and writes to log file
+void  SetGeometry    (char* sColor);                    // Fills the structure stGeometry for visualization
 void  TransformIn2Smpl(VectorType pos, VectorType dir); // Co-ordinate transformation from input frame to sample frame
 void  TransformSmpl2In(VectorType Pos, VectorType Dir); // Co-ordinate transformation from sample frame to input frame
 void  TransformIn2Out (VectorType Pos, VectorType Dir); // Co-ordinate transformation from input frame to output frame
@@ -109,11 +109,10 @@ int main(int argc, char **argv)
     bBlowUp     = TRUE;
 
   /* Reads sample parameters and combines with input parameters */
-  InitSample  (&stSample);
-  SetSamplePar(&stSample);
+  SetSamplePar();
 
-  /* determines the dependent parameters and write out important parameters */
-  CalcAndWritePar();
+  /* determines the dependent parameters and writes out important parameters */
+  CalcAndWritePar(&stSample);
 
   DECLARE_ABORT;
 	
@@ -518,7 +517,7 @@ void OwnCleanup()
 /*******************************************************/
 /** Reads the sample parameters from file             **/
 /*******************************************************/
-void SetSamplePar(SampleType* pSample)
+void SetSamplePar()
 {
   FILE*  pFile=NULL;
   char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="";
@@ -532,10 +531,7 @@ void SetSamplePar(SampleType* pSample)
          out_x =0.0, out_y =0.0, out_z=0.0, 
          out_h =0.0, out_v =0.0;
   VtSmplGeom geom=VT_NO_GEOM;
-  SampleType sample;         // file  sample geometry
 
-  InitSample(pSample);
-  InitSample(&sample);
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
   { 
@@ -595,21 +591,6 @@ void SetSamplePar(SampleType* pSample)
   if (eGeom==VT_NO_GEOM)
     Error2("Sample geometry could not be identified", sGeom);
 
-  // fills data structures
-  FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2], 0.0, 0.0, 1.0, Diameter, Height, Width, 0.0);
-  if (eGeom==VT_HOL_CYL)
-  {
-    DimSample[0] = Diameter;  DimSampleHol[0] = Width; 
-    DimSample[1] = 0.0;       DimSampleHol[1] = 0.0;    
-    DimSample[2] = Height;    DimSampleHol[2] = Height;
-  }
-  else
-  {
-    DimSample[0] = Diameter;
-    DimSample[1] = Width;    
-    DimSample[2] = Height;  
-  }
-
   /* converts degs in radian etc. */
   AnglSmplHor  *= M_PI/180. ;
   AnglSmplVert *= M_PI/180. ;
@@ -624,17 +605,13 @@ void SetSamplePar(SampleType* pSample)
 }/* End ReadParFile */
 
 
-/**********************************************************************/
-/** calculates ariables from input parameters and writes to log file **/
-/**********************************************************************/
-void  CalcAndWritePar()
+/***********************************************************************/
+/** calculates variables from input parameters and writes to log file **/
+/***********************************************************************/
+void  CalcAndWritePar(SampleType* pSample)
 {
   double scattered_dir[3];
-
-  fprintf(LogFilePtr,"Repetition rate:     %ld\n", Repetition) ;
-  if(Repetition > 20)
-    fprintf(LogFilePtr,"Warning: Excessive use of repetition rate >> 1 can lead to wrong results. Be sure that you have very good statistics\n" 
-                       "in wavelength, time, x,y,z and directions just before the sample\n") ;
+  VectorType DirSample={0.0,0.0,1.0}; // sample orientation
 
   /* computes global reference values */
   scattered_dir[0]= (double) cos(ScatMain[2]*M_PI/180.) * (double) cos(ScatMain[1]*M_PI/180.) ;
@@ -644,9 +621,32 @@ void  CalcAndWritePar()
   fprintf(LogFilePtr,"Scattered dir. :     %6.3f    %6.3f    %6.3f\n", scattered_dir[0], scattered_dir[1], scattered_dir[2]) ;
 
   FillRotMatrixZY(RotMatrixScatter, ScatMain[2]*M_PI/180., ScatMain[1]*M_PI/180.) ; 
-  FillRotMatrixZY(RotMatrixSample,  AnglSmplVert,           AnglSmplHor) ;
-  FillRotMatrixZY(RotMatrixOut,     AnglOutVert,            AnglOutHor) ;
+  FillRotMatrixZY(RotMatrixSample,  AnglSmplVert,          AnglSmplHor) ;
+  FillRotMatrixZY(RotMatrixOut,     AnglOutVert,           AnglOutHor) ;
 
+  RotBackVector(RotMatrixSample, DirSample);
+
+  // fills data structures
+  InitSample(pSample);
+  FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2], DirSample[0], DirSample[1], DirSample[2], Diameter, Height, Width, 0.0);
+
+  if (eGeom==VT_HOL_CYL)
+  {
+    DimSample[0] = Diameter;  DimSampleHol[0] = Width; 
+    DimSample[1] = 0.0;       DimSampleHol[1] = 0.0;    
+    DimSample[2] = Height;    DimSampleHol[2] = Height;
+  }
+  else
+  {
+    DimSample[0] = Diameter;
+    DimSample[1] = Width;    
+    DimSample[2] = Height;  
+  }
+
+  fprintf(LogFilePtr,"Repetition rate:     %ld\n", Repetition) ;
+  if(Repetition > 20)
+    fprintf(LogFilePtr,"Warning: Excessive use of repetition rate >> 1 can lead to wrong results. Be sure that you have very good statistics\n" 
+                       "in wavelength, time, x,y,z and directions just before the sample\n") ;
 }/* End OwnInit */
 
 
@@ -662,7 +662,7 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&stSample, RotMatrixSample);
+    SetSampleGeometry(&stSample);
   }
 }
 
