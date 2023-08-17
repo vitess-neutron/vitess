@@ -36,12 +36,14 @@
 /***********************************/
 /** Prototypes of local functions **/
 /***********************************/
-void   OwnInit(int argc, char *argv[]);                 // Reads input parameters and sets global variables
-void   OwnCleanup();                                    // Does module specific cleanup
-void   SetSamplePar   (SampleType *pSample);            // Reads sample parameters and combines with input parameters
-void   CalcAndWritePar();                               // Calculates arrays from input parameters and writes to log file
-void   SetGeometry(char* sColor);                       // Fills the structure stGeometry for visualization 
-void   OutputTransform(VectorType Pos, VectorType Dir); // Co-ordinate transformation to output frame
+void  OwnInit(int argc, char *argv[]);                  // Reads input parameters and sets global variables
+void  OwnCleanup();                                     // Does module specific cleanup
+void  SetSamplePar   (SampleType *pSample);             // Reads sample parameters and combines with input parameters
+void  CalcAndWritePar();                                // Calculates arrays from input parameters and writes to log file
+void  SetGeometry(char* sColor);                        // Fills the structure stGeometry for visualization
+void  TransformIn2Smpl(VectorType pos, VectorType dir); // Co-ordinate transformation from input frame to sample frame
+void  TransformSmpl2In(VectorType Pos, VectorType Dir); // Co-ordinate transformation from sample frame to input frame
+void  TransformIn2Out (VectorType Pos, VectorType Dir); // Co-ordinate transformation from input frame to output frame
 
 
 /******************************/
@@ -89,11 +91,12 @@ int main(int argc, char **argv)
              Pos1v ={0.0,0.0,0.0}, Pos2v  ={0.0,0.0,0.0}, Pos3v={0.0,0.0,0.0}, Pos4v={0.0,0.0,0.0}, 
              propag={0.0,0.0,0.0}, propag1={0.0,0.0,0.0},                                // propagation vectors e.g. from entry to point of scattering to calculate TOF
              Pos   ={0.0,0.0,0.0}, Dir    ={0.0,0.0,0.0}, Pos_final={0.0,0.0,0.0};
-  Neutron    Neutrons;
+  Neutron    InNeutron, OutNeutron;
   
   // initialisation
   // --------------
-  InitNeutron(&Neutrons);
+  InitNeutron(&InNeutron);
+  InitNeutron(&OutNeutron);
 
  _eModule = MCN_SMPL_EL_ISO;
 
@@ -132,14 +135,13 @@ int main(int argc, char **argv)
       { 
         if (iColor==ANY_COLOR || iColor==InputNeutrons[i].Color)
         {
-          MaxPathLengthHol = PathLengthHol = 0.; 
+          MaxPathLengthHol = PathLengthHol = 0.0;
             
-          InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+          CopyNeutron(&InputNeutrons[i], &InNeutron);
+          InputNeutrons[i].Vector[0] = sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
         
           /* translates and rotates into frame of the sample  */
-          SubVector(InputNeutrons[i].Position, PosSample) ;
-          RotVector(RotMatrixSample, InputNeutrons[i].Position) ;
-          RotVector(RotMatrixSample, InputNeutrons[i].Vector) ;
+          TransformIn2Smpl(InputNeutrons[i].Position, InputNeutrons[i].Vector) ;
         
           /* gives intersection positions with sample */
           if (eGeom==VT_CYL && IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) 
@@ -241,7 +243,7 @@ int main(int argc, char **argv)
               CopyVector (Pos1v, ScatNeut.Position);
               ScatNeut.Probability=Prob;
 
-              WriteWWP(&ScatNeut, VT_SCATTERED);
+              WriteOwnIAP(&ScatNeut, VT_SCATTERED, RotMatrixSample, PosSample);
             }
 
             /* scattering: new neutron variables*/ 
@@ -318,7 +320,7 @@ int main(int argc, char **argv)
               SubVector (Pos_final, Pos) ;	  
               PathLength = LengthVector(Pos_final) + PathLengthHol;  
 
-            if(PathLengthHol != 0.) 
+            if (PathLengthHol != 0.0)
               CopyVector(Pos4v, Pos2v);  /* for hollow cylinder option: set output position to where it crosses the outer cylinder if crossed  */
 
             // Prob *= (double) exp( - PathLength * (AbsorptionC * WL + ScatteringC));
@@ -330,35 +332,40 @@ int main(int argc, char **argv)
             SubVector(propag, Pos);  // propag: vector point of scattering to sample exit position
             TOF += LengthVector(propag) / V_FROM_LAMBDA(WL) ;
 
-            OutputTransform(Pos2v, Dir) ;
+            TransformSmpl2In(Pos2v, Dir);
+            TransformIn2Out (Pos2v, Dir);
 		
-            Prob *= ScatRange[1]/90. * sin(ScatRange[2]* M_PI/90.) /4.;  /* solid angle / 4pi */
+            Prob *= ScatRange[1]/90. * sin(ScatRange[2]* M_PI/90.) /4.0;  /* solid angle / 4pi */
             if (Prob <= ProbCutoff) goto getlost2 ;
 
-            /* transmit coordinates which were not changed, the rest overwrite below */
-            Neutrons = InputNeutrons[i]; 
+            /* transmit coordinates to the outgoing neutron */
+            OutNeutron = InputNeutrons[i];
 
-            Neutrons.Time = TOF ;	
-            Neutrons.Probability = Prob/Repetition ;
+            OutNeutron.Time = TOF;
+            OutNeutron.Probability = Prob/Repetition;
 
-            CopyVector(Pos2v, Neutrons.Position) ;	
-            CopyVector(Dir, Neutrons.Vector) ;	
+            CopyVector(Pos2v, OutNeutron.Position);
+            CopyVector(Dir,   OutNeutron.Vector);
 
             /* writes output binary file */
-            WriteNeutron(&Neutrons) ;
+            WriteNeutron(&OutNeutron) ;
 
-          getlost2: ;
-
+          getlost2:
+            WriteDIAP(&InNeutron, VT_ABSORBED, PosSample[0]);
           }  /*repetition*/
               /* here continues if neutron gets lost */
               
-        getlost: ;   
+        getlost:
+          WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0]);
         }
-        else  // icolor != 0
+        else  // neutron passes if: iColor >= 0 and iColor != neutron
         {
-          Neutrons = InputNeutrons[i]; 
-          SubVector(Neutrons.Position, PosSample) ;
-          WriteNeutron(&Neutrons) ;
+          OutNeutron = InputNeutrons[i]; 
+          PropagateX(&OutNeutron, TranslOut[0]);
+          WriteIAP(&OutNeutron, VT_PASSED);
+          // SubVector(OutNeutron.Position, PosSample) ;
+          TransformIn2Out(OutNeutron.Position, OutNeutron.Vector);
+          WriteNeutron(&OutNeutron) ;
         }
       }
     }   // for loop over trajectories
@@ -655,21 +662,32 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&stSample);
+    SetSampleGeometry(&stSample, RotMatrixSample);
   }
 }
 
 
-/*******************************************************/
-/** Co-ordinate transformation to output frame        **/
-/*******************************************************/
-void OutputTransform(VectorType pos, VectorType dir)
+/************************************************************/
+/** Co-ordinate transformations from sample to input frame **/
+/**                         and from input to output frame **/
+/************************************************************/
+void TransformIn2Smpl(VectorType pos, VectorType dir)
+{
+  /* computes neutron variables in the sample frame */
+  SubVector(pos, PosSample) ;
+  RotVector(RotMatrixSample, pos) ;
+  RotVector(RotMatrixSample, dir) ;
+}
+void TransformSmpl2In(VectorType pos, VectorType dir)
 {
   /* computes neutron variables in the initial frame */
   RotBackVector(RotMatrixSample, pos) ;
   RotBackVector(RotMatrixSample, dir) ;
   AddVector(pos, PosSample) ;
+}
 
+void TransformIn2Out(VectorType pos, VectorType dir)
+{
   /* computes neutron variables in the output frame */
   SubVector(pos, TranslOut) ;
   RotVector(RotMatrixOut, pos) ;

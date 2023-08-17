@@ -114,8 +114,13 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
 
 
 // Set sample geometry for visualisation
-void SetSampleGeometry(SampleType *Sample)
+void SetSampleGeometry(SampleType *Sample, double RotMatrixSample[3][3])
 {
+  VectorType SampleDir;
+
+  CopyVector   (Sample->Direction, SampleDir);
+  RotBackVector(RotMatrixSample,   SampleDir);
+
   switch(Sample->Type) 
   {
     case VT_CUBE:
@@ -128,9 +133,9 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pCuboid[0].vCntr[0]  = Sample->Position[0];
       stGeometry.pCuboid[0].vCntr[1]  = Sample->Position[1];
       stGeometry.pCuboid[0].vCntr[2]  = Sample->Position[2];
-      stGeometry.pCuboid[0].vNormal[0]= Sample->Direction[0];
-      stGeometry.pCuboid[0].vNormal[1]= Sample->Direction[1];
-      stGeometry.pCuboid[0].vNormal[2]= Sample->Direction[2];
+      stGeometry.pCuboid[0].vNormal[0]= SampleDir[0];
+      stGeometry.pCuboid[0].vNormal[1]= SampleDir[1];
+      stGeometry.pCuboid[0].vNormal[2]= SampleDir[2];
       break;
       
     case VT_CYL:
@@ -142,9 +147,9 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pCylinder[0].vCntr[0]  = Sample->Position[0];
       stGeometry.pCylinder[0].vCntr[1]  = Sample->Position[1];
       stGeometry.pCylinder[0].vCntr[2]  = Sample->Position[2];
-      stGeometry.pCylinder[0].vSymAxis[0] = Sample->Direction[0];
-      stGeometry.pCylinder[0].vSymAxis[1] = Sample->Direction[1];
-      stGeometry.pCylinder[0].vSymAxis[2] = Sample->Direction[2];
+      stGeometry.pCylinder[0].vSymAxis[0] = SampleDir[0];
+      stGeometry.pCylinder[0].vSymAxis[1] = SampleDir[1];
+      stGeometry.pCylinder[0].vSymAxis[2] = SampleDir[2];
       break;
 
     case VT_HOL_CYL:
@@ -157,9 +162,9 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pHolCyl[0].vCntr[0]    = Sample->Position[0];
       stGeometry.pHolCyl[0].vCntr[1]    = Sample->Position[1];
       stGeometry.pHolCyl[0].vCntr[2]    = Sample->Position[2];
-      stGeometry.pHolCyl[0].vSymAxis[0] = Sample->Direction[0];
-      stGeometry.pHolCyl[0].vSymAxis[1] = Sample->Direction[1];
-      stGeometry.pHolCyl[0].vSymAxis[2] = Sample->Direction[2];
+      stGeometry.pHolCyl[0].vSymAxis[0] = SampleDir[0];
+      stGeometry.pHolCyl[0].vSymAxis[1] = SampleDir[1];
+      stGeometry.pHolCyl[0].vSymAxis[2] = SampleDir[2];
       break;
 
     case VT_SPHERE:
@@ -170,9 +175,9 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pSphere[0].vCntr[0]  = Sample->Position[0];
       stGeometry.pSphere[0].vCntr[1]  = Sample->Position[1];
       stGeometry.pSphere[0].vCntr[2]  = Sample->Position[2];
-       
+      break;
 
-    default: 
+/*    default:
       stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
       stGeometry.nCuboids = 1; 
       
@@ -185,7 +190,7 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pCuboid[0].vNormal[0]= 1.0;
       stGeometry.pCuboid[0].vNormal[1]= 0.0;
       stGeometry.pCuboid[0].vNormal[2]= 0.0;
-      break;
+      break;*/
   }
   return;
 }
@@ -552,4 +557,26 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
     }
   }
   return NumLines;
+}
+
+
+
+/******************************************************************************************************/
+/** transfers from neutron from 'sample frame' to 'incoming frame' before writing interseciton point **/
+/******************************************************************************************************/
+void WriteOwnIAP(Neutron* pNeutrSmpl, VtReason eReason, double RotMatrixSmpl[3][3], VectorType PosSmpl)
+{
+  if (bVisTraj==TRUE)
+  {
+    Neutron NeutrIn;
+
+    CopyNeutron(pNeutrSmpl, &NeutrIn);
+
+    /* computes neutron variables in the initial frame */
+    RotBackVector(RotMatrixSmpl, NeutrIn.Position) ;
+    RotBackVector(RotMatrixSmpl, NeutrIn.Vector) ;
+    AddVector(NeutrIn.Position, PosSmpl);
+
+    WriteWWP(&NeutrIn, eReason);
+  }
 }

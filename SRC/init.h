@@ -72,7 +72,9 @@ void WriteNeutron     (Neutron* OutNeutron);
 void WriteEOB         ();
 void ChangeNeutronID  (Neutron* n);
 
-void  WriteDIAP       (Neutron* pNeutron, VtReason eReason, double Dist);
+short PropagateX      (Neutron* pNeutron, double DistX);                                 // Propagates the neutron to a plane in a certain distance along the x-axis
+
+void  WriteDIAP       (Neutron* pNeutron, VtReason eReason, double DistX);
 void  WriteIAP        (Neutron* pNeutron, VtReason eReason);
 void  WriteWWP        (Neutron* pNeutron, VtReason eReason);
 void  WriteInstrData  (VectorType EndPos);

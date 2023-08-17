@@ -26,7 +26,7 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
                 const double Xdir,   const double Ydir,  const double Zdir, 
                 const double SizeD,  const double SizeH, const double SizeW, const double SizeT);
 
-void SetSampleGeometry(SampleType *Sample);
+void SetSampleGeometry(SampleType *Sample, double RotMatrixSample[3][3]);
 
 int  CompPair(const void* p1, const void* p2);
 int  ReadTilComment(char* pBuffer, FILE* pSampleFile);
@@ -42,5 +42,6 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
 
 int ReadStructureFile(const char* sStructFile, int tag, DoublePair* structFactorLookup[]);
 
+void WriteOwnIAP(Neutron* pNeutrSmpl, VtReason eReason, double RotMatrixSmpl[3][3], VectorType PosSmpl);
 
 #endif
