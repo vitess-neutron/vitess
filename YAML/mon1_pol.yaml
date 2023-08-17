@@ -22,16 +22,16 @@ mon1_pol:
   - Title_Par: 
       type:    "title" 
       default: "Parameter and range"
-  - eMonPar    :             #     -k     [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)     
+  - eMonPar    :          #     -k     [-]   VtMon1Par  Mon1Par_Txt2ID(const char* sText)     
       type:    "combo" 
       descr:   "variable parameter" 
-      tooltip: "ID for the parameter, as a function of which the intensity is shown" 
+      tooltip: "ID for the parameter, as a function of which the polarzation is shown" 
       enum:    "VtMon1Par"
-      options: ["lambda","time","div_y","div_z","pos_y","pos_z"]
-      default:  "lambda"
+      options: ["MON_LAMBDA","MON_TIME","MON_DIV_Y","MON_DIV_Z","MON_Y","MON_Z"]
+      default:  "MON_LAMBDA"
       column:  0
       prefix:  "-k"   
-  -  iColor:                  # -C    [-]   index: for bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColor >= 0 
+  -  iColor:              #     -C    [-]   index: for bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColor >= 0 
       type:    "int" 
       tooltip: "excludes all neutrons with diff. color from monitoring, if iColor >= 0"             
       descr:   "color" 
@@ -39,14 +39,14 @@ mon1_pol:
       column:  1
       prefix:  "-C"   
 
-  - MinVal:             #     -m  "min. y-value [cm]"        "lower bound value of the monitored range"
+  - MinValue:             #     -m  "min. value [cm]"        "lower bound value of the monitored range"
       type:    "float" 
       descr:   "min. y-value [cm]" 
       tooltip: "lower bound value of the monitored range" 
       default: 0.0
       column:  0
       prefix:  "-m"  
-  - MayValY    :             #     -M  "max. y-value [cm]"        "upper bound value of the monitored range"
+  - MaxValue:             #     -M  "max. value [cm]"        "upper bound value of the monitored range"
       type:    "float" 
       descr:   "max. y-value [cm]" 
       tooltip: "upper bound value of the monitored range" 

@@ -23,9 +23,8 @@ monitor2D:                    # source module that will be executed
       descr:   "1st parameter on x-axis"
       tooltip: "x-axis parameter for the 2D monitor file"
       enum:    "VtMonPar"
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z", "lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","pos_theta","dir_phi","dir_theta", "col_vert","col_hor","color"]
-      default:  "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default:  "NO_PAR"
       column:  0                     
       prefix:  "-X"   
   - ePar2  :                 # -Y   VtMonPar  MonPar_Txt2ID(const char* sText)
@@ -33,9 +32,8 @@ monitor2D:                    # source module that will be executed
       descr:   "2nd parameter on y-axis"
       tooltip: "x-axis parameter for the 2D monitor file"
       enum:    "VtMonPar"
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z", "lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","pos_theta","dir_phi","dir_theta", "col_vert","col_hor","color"]
-      default:  "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default:  "NO_PAR"
       column:  1                     
       prefix:  "-Y"   
 
@@ -106,8 +104,8 @@ monitor2D:                    # source module that will be executed
       descr:   "file format" 
       tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
       enum:     "VtFormat2D"
-      options: ["matrix","xyz","matrix compact","xyz compact"]
-      default:  "matrix"
+      options: ["MATRIX","XYZ","MATR_CMPT","MXYZ_CMPT"]
+      default:  "MATRIX"
       column:  2                     
       prefix:  "-F"  
  
@@ -132,9 +130,8 @@ monitor2D:                    # source module that will be executed
       descr:   "filter parameter 1"  
       tooltip: "filter parameter 1"
       enum:    "VtMonPar"
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta","col_vert","col_hor","color"]
-      default:  "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default:  "NO_PAR"
       column:  0                     
       prefix:  "-I"  
   - MinFilterVal1:                # -u        minimum value of filter parameter 1 to be taken into account
@@ -154,8 +151,8 @@ monitor2D:                    # source module that will be executed
       descr:   "filter combination" 
       tooltip: "filter 1 and 2 combined with AND or OR"
       enum:    "VtFiltComb"
-      options: ["AND", "OR"]
-      default:  "AND"
+      options: ["AND_AND_AND", "OR_OR_OR"]
+      default:  "AND_AND_AND"
       column:   0                     
       prefix:  "-C"  
 
@@ -164,9 +161,8 @@ monitor2D:                    # source module that will be executed
       descr:   "filter parameter 2"
       tooltip: "filter parameter 2"
       enum:    "VtMonPar"
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta","col_vert","col_hor","color"]
-      default:  "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default:  "NO_PAR"
       column:  0                    
       prefix:  "-J"  
   - MinFilterVal2:                 # -v        minimum value of parameter 2 to be taken into account

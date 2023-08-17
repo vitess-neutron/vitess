@@ -31,8 +31,8 @@ sample_reflectom:
       descr:   "mode" 
       tooltip: "Select between sample (reflectivity data from the 'reflectivity file') and reference (reflectivity R=1 for all angles)"
       enum:    "VtMeasMode"
-      options: ["sample", "reference"]   
-      default:  "sample"
+      options: ["VT_SAMPLE", "VT_REFERENCE"]   
+      default:  "VT_SAMPLE"
       column:  0                     
       prefix:  "-O"   
   - eRotAxis:                 # VtRotAxis RotAxis_Txt2ID(const char* sText);
@@ -40,8 +40,8 @@ sample_reflectom:
       descr:   "axis of rotation"
       tooltip: "rotation axis of the sample, Y or Z"
       enum:    "VtRotAxis"
-      options: ["Y", "Z"]   
-      default:  "Y"
+      options: ["VT_ROT_Y", "VT_ROT_Z"]   
+      default:  "VT_ROT_Y"
       column:  1                     
       prefix:  "-R"   
   - bTreatAll: 
@@ -69,8 +69,8 @@ sample_reflectom:
       descr:   "substrate material"
       tooltip: "Material of the substrate (for a treatment of the neutron absorption while passing through the substrate)." 
       enum:    "VtMirrMat"
-      options: ["Other","Silicon","Glass","B4C"]
-      default:  "Silicon"
+      options: ["VT_MIRR_OTHER","VT_MIRR_SI","VT_MIRR_GLASS","VT_MIRR_B4C"]
+      default:  "VT_MIRR_SI"
       column:  0                     
       prefix:  "-M"     
   - SubstrThickn:              
@@ -214,13 +214,13 @@ sample_reflectom:
   - Title_OutFrame: 
       type:    "title" 
       default: "Output frame"
-  - eOUtFrame:    #  VtFrameGen FrameGen_Txt2ID(const char* sText)
+  - eOutFrame:    #  VtFrameGen FrameGen_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': puts output direction along the reflected beam"
       enum:    "VtFrameGen"
-      options: ["user defined frame", "standard frame generation"]
-      default:  "standard frame generation"
+      options: ["VT_FRAME_USER", "VT_FRAME_STD"]
+      default:  "VT_FRAME_STD"
       column:  0                     
       prefix:  "-g"     
 

@@ -10,7 +10,7 @@
 
 moderator_isis:
   - category: "moderator"
-  - ModName :
+  - sModName :
       descr:   "name"
       type:    "string"
       column:  0                #0-2
@@ -20,8 +20,8 @@ moderator_isis:
       descr:   "target station"
       tooltip: "target station"
       enum:    "VtTS"
-      default: ["TS 1","TS 2"] 
-      default: "TS 1" 
+      options: ["VT_TS_1","VT_TS_2"] 
+      default: "VT_TS_1" 
       column:   0                     
       prefix:  "-S"    
   - ModWidth:                   #   [cm]   width  of the moderator 

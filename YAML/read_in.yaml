@@ -13,41 +13,41 @@ read_in:       # source module that will be executed
   - Title_Format:
       type:    "title"
       default: "Format" 
-  - ePrgFormat:                 # -f   VtPrgFormat PrgFormat_Txt2ID(const char* sText)
+  - ePrgFormat:               # -f   VtPrgFormat PrgFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
       enum:     "VtPrgFormat"
-      options: ["VITESS", "McStas", "MCPL", "MCNP6", "SSW"]
-      default:  "VITESS"
+      options: ["VT_VITESS_FMT", "VT_MCSTAS_FMT", "VT_MCPL_FMT", "VT_MCNP6_FMT", "VT_SSW_FMT"]
+      default:  "VT_VITESS_FMT"
       column:  0                     
       prefix:  "-f"   
-  - eDataFormat:                 # -F   VtDataFormat DataFormat_Txt2ID(const char* sText)
+  - eDataFormat:              # -F   VtDataFormat DataFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "storage format" 
       tooltip: "format of the data to read: 'exp': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
       enum:     "VtDataFormat"
-      options: ["exp", "float", "binary"]   
-      default:  "float"
+      options: ["VT_EXPONENTIAL", "VT_FLOAT", "VT_BINARY"]   
+      default:  "VT_FLOAT"
       column:  1                     
       prefix:  "-F"   
  
   - Title_Input:
       type:    "title"
       default: "Input files" 
-  - sFile1:                 # -A   NULL   [-]  ASCII 1st input file containing trajectories
+  - sFile1:                   # -A   NULL   [-]  ASCII 1st input file containing trajectories
       type:    "file" 
       plottable: false
       descr:   "ASCII input file 1"
       tooltip: "ASCII 1st input file containing trajectories"
       prefix:  "-A"
-  - sFile2:                 # -B   NULL   [-]  ASCII 2nd input file containing trajectories
+  - sFile2:                   # -B   NULL   [-]  ASCII 2nd input file containing trajectories
       type:    "file" 
       plottable: false
       descr:   "ASCII input file 2" 
       tooltip: "ASCII 2nd input file containing trajectories"
       prefix:  "-B"
-  - sFile3:                 # -D   NULL   [-]  ASCII 3nd input file containing trajectories
+  - sFile3:                   # -D   NULL   [-]  ASCII 3nd input file containing trajectories
       type:    "file" 
       plottable: false
       descr:   "ASCII input file 3"  
@@ -92,7 +92,7 @@ read_in:       # source module that will be executed
       tooltip: "Maximum number of trajectories that are read."
       column:  1                     
       prefix:  "-M"   
-  - WeightFact:                 # -I    1.0  [-] 
+  - WeightFact:               # -I    1.0  [-] 
       type:    "float" 
       descr:   "intensity factor"
       tooltip: "The weight of each neutron trajectory (from an MCNP simulation) is multiplied by this factor\nto yield correct absolute source flux values: F = I_src/N_mcnp-events"
@@ -115,25 +115,25 @@ read_in:       # source module that will be executed
       column:  0                     
       prefix:  "-C"
  
-  - sInstrFile:                 # 
+  - sInstrFile:               # 
       type:    "file" 
       plottable: false
       descr:   "instrument input file"
       tooltip: "Specifies the instrument file (generated as instrument.inf) of the previous part of the simulation."
       prefix:  "--I"
-  - sTraceFile:                  # 
+  - sTraceFile:               # 
       type:    "file" 
       plottable: false
       descr:   "raytracing file"
       tooltip: "Name of the file that contains the IDs of the trajectories for tracing."
       prefix:  "-T"
-  - eTraceMode:                 # -t   VtTrace   Trace_Txt2ID(const char* sText);
+  - eTraceMode:               # -t   VtTrace   Trace_Txt2ID(const char* sText);
       type:    "combo" 
       descr:   "raytracing mode" 
       tooltip: "no tracing\nwrite a files for each traj. of interest\nsimulation only with traj. of interest"
       enum:    "VtTrace"
-      options: ["no tracing", "write trace files", "only trace trajectories"]   
-      default:  "no tracing"
+      options: ["NO_TRACING", "WRITE_TRC_FILES", "ONLY_TRC_TRAJ"]   
+      default:  "NO_TRACING"
       column:  0                     
       prefix:  "-t"
  

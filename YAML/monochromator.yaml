@@ -29,8 +29,8 @@ monochromator:
       descr:   "monochromator type"
       tooltip: "Choose between 'reflection' and 'transmission' geometry of the monochromator"
       enum:     VtMonoType
-      options: ["reflection", "transmission"]
-      default:  "reflection"
+      options: ["REFL_MONO", "TRANSM_MONO"]
+      default:  "REFL_MONO"
       column:  0 
       prefix:  "-X"     
   - eMonoArrange:          # use:  VtMonoArrange MonoArrange_Txt2ID(const char* sText)
@@ -38,8 +38,8 @@ monochromator:
       descr:   "monochromator geometry"
       tooltip: "Defines how the monochromator system is composed, either by calculating the arrangement of the crystal elements (CE), by reading it from file or treating only one crystal element"
       enum:     VtMonoArrange
-      options: ["calculated CE array", "CE array from file", "single CE"]
-      default:  "calculated CE array"
+      options: ["CE_ARRAY_CALC", "CE_ARRAY_FILE", "SINGLE_CE"]
+      default:  "CE_ARRAY_CALC"
       column:  0 
       prefix:  "-O"     
   - bTransm:             
@@ -104,8 +104,8 @@ monochromator:
       descr:   "d-distribution"
       tooltip: "defines the d-spacing distribution function."
       enum:    "VtDistr"
-      options: ["Lorentzian", "Gaussian"]
-      default:  "Gaussian"
+      options: ["LORENTZIAN", "GAUSSIAN"]
+      default:  "GAUSSIAN"
       column:  1 
       prefix:  "-d"     
   - PeakRefl:            
@@ -141,8 +141,8 @@ monochromator:
       descr:   "focusing option"
       tooltip: "Focusing option for generated monochromator geometries\nFor details see Help|monochromator.\nResult will be written to focus file."
       enum:    "VtMonoFocus"
-      options: ["vert. cylinder", "double focussing", "spherical", "constant lambda"]
-      default: "double focussing"
+      options: ["VERT_CYL", "DBL_FOC", "SPHERICAL", "CONST_LMBD"]
+      default: "DBL_FOC"
       column:  0 
       prefix:  "-g"     
   - nColumns:       
@@ -300,7 +300,7 @@ monochromator:
       default: 0.5
       column:  0                     
       prefix:  "-i"     
-  -  Width:                   # 0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder 
+  - Width:                   # 0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder 
       type:    "float" 
       descr:   "width [cm]"
       tooltip: "width of a crystal element"
@@ -323,8 +323,8 @@ monochromator:
       descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': creates output direction using the given Bragg angles (see Help|monochromator)"
       enum:    "VtFrameGen"
-      options: ["user defined frame", "standard frame generation"]
-      default:  "standard frame generation"
+      options: ["VT_FRAME_USER", "VT_FRAME_STD"]
+      default:  "VT_FRAME_STD"
       column:  0                     
       prefix:  "-F"     
 

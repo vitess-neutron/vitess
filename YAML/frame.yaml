@@ -78,7 +78,7 @@ frame:      # source module that will be executed
       type:    "switch" 
       descr:   "mirror at yz plane"
       tooltip: "mirror x axis (plane yz)"
-      default: false
+      default: no
       column:  0                     
       prefix:  "-i"     
   - bMirrY   :               # -j  NO     [-]   flag: mirror at xz-plane 
@@ -86,14 +86,14 @@ frame:      # source module that will be executed
       descr:   "mirror at xz plane"
       default: "NO"
       tooltip: "mirror y axis (plane xz)"
-      default: false
+      default: no
       column:  1                     
       prefix:  "-j"     
   - bMirrZ   :               # -k  NO     [-]   flag: mirror at xy-plane
       type:    "switch" 
       descr:   "mirror at xy plane"
       tooltip: "mirror z axis (plane xy)"
-      default: false
+      default: no
       column:  2                     
       prefix:  "-k"   
  

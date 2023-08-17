@@ -95,7 +95,7 @@ sample_s_q:
       
   - Title: 
       type:    "title"    
-      default: "Sample"
+      default: "Sample position and geometry"
   - PosSmplX:                  # -x    0.0  [cm]   center position X of the sample 
       type:    "float"    
       descr:   "x [cm]"
@@ -117,13 +117,13 @@ sample_s_q:
       column:  2       
       prefix:  "-z"     
 
-  -  eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
+  - eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
       enum:    "VtSmplGeom"   
-      options: ["cylinder", "sphere", "cuboid"]
-      default: "cylinder"
+      options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+      default: "VT_CYL"
       prefix:  "-G"     
       column:  0 
 
@@ -177,13 +177,13 @@ sample_s_q:
   - Title: 
       type:    "title"    
       default: "Scattering"
-  -  eDataSrc:               # VtDataSrc   DataSrc_Txt2ID(const char* sText) 
+  - eDataSrc:               # VtDataSrc   DataSrc_Txt2ID(const char* sText) 
       type:    "combo" 
       descr:   "structure factors"
       tooltip: "Source of the structure factor data, either 'from file' or 'as function'\nIn the latter case, an adaption of the program and re-compiling may be needed (see Help|sample)"
       enum:    "VtDataSrc"
-      options: ["from file", "as function"]
-      default:  "from file"
+      options: ["VT_FR_FILE", "VT_AS_FCT"]
+      default:  "VT_FR_FILE"
       prefix:  "-G"     
       column:  0 
   - sStructFile :                  # file       [-]    structure factor file name (of the sample material)

@@ -15,7 +15,7 @@ detector:
       type:    "switch" 
       descr:   "array item"  
       tooltip: "'no' (default): only detector or last detector in an array\n'yes'         : first or intermediate item of a detector array" 
-      default: false
+      default: no
       column:  1                     
       prefix:  "-B"   
 
@@ -24,8 +24,8 @@ detector:
       descr:   "geometry"  
       tooltip: "Geometry of the detector" 
       enum:    "VtDetGeom"
-      options: ["flat","cylindrical"]   
-      default:  "flat"
+      options: ["VT_DET_FLAT","VT_DET_CYL"]   
+      default:  "VT_DET_FLAT"
       column:  0                     
       prefix:  "-G"   
   - eDetType:     #   Function  VtDetType DetType_Txt2ID(const char* sText)  
@@ -33,8 +33,8 @@ detector:
       descr:   "Type"  
       tooltip: "Detector type: gas tubes (only when 'flat') or area/volume detector" 
       enum:    "VtDetType"
-      options: ["tubes","area/volume"]   
-      default:  "area/volume"
+      options: ["VT_DET_TUBE","VT_DET_AREA"]   
+      default:  "VT_DET_AREA"
       column:  1                     
       prefix:  "-a"   
   - eDetUse:    #   Function  VtDetUse  DetUse_Txt2ID(const char* sText)  
@@ -42,8 +42,8 @@ detector:
       descr:   "usage"  
       tooltip: "'monitor only' leaves neutron position and weight unchanged\n'realistic' considers efficiency, cell size and resolution\n'grid off' only the efficiency (see also Help|Detector)" 
       enum:    "VtDetUse"
-      options: ["realistic", "monitor only", "grid off"]   
-      default:  "realistic"
+      options: ["VT_DET_REAL", "VT_GRID_OFF", "VT_MON_ONLY"]   
+      default:  "VT_MON_ONLY"
       column:  2                     
       prefix:  "-U"   
 
@@ -76,7 +76,7 @@ detector:
       type:    "switch" 
       descr:   "keep wrong color"
       tooltip: "If activated, neutrons outside the colour selection will be passed on to the next module untouched. Otherwise, these neutrons are discarded (default). Only relevant if 'min color' and/or 'max color' is used"  
-      default: false
+      default: no
       column:  0                     
       prefix:  "-d" 
   - nRep:              
@@ -210,8 +210,8 @@ detector:
       descr:   "absorber material"  
       tooltip: "Material that interacts with neutrons and thus determines the (wavelength-dependent) detection efficiency." 
       enum:    "VtDetAbs"
-      options: ["BF3 gas","3He gas","solid B10","solid Li6","other"] 
-      default:  "3He gas"
+      options: ["VT_GAS_BF3","VT_GAS_HE3","VT_SOLID_B10","VT_SOLID_LI6","VT_ABS_OTHER"] 
+      default:  "VT_GAS_HE3"
       column:  0                     
       prefix:  "-m"   
   - Par1  :                             
@@ -247,8 +247,8 @@ detector:
       descr:   "tube orientation"  
       tooltip: "Orientation of tubes: horizontal means that the cylinder (or tube) axis is parallel to the y axis, vertical means parallel to the z axis. (See also help file.)" 
       enum:    "VtOrient"
-      options: ["horizontal", "vertical"]   
-      default:  "vertical"
+      options: ["HORIZONTAL", "VERTICAL"]   
+      default:  "VERTICAL"
       column:  0                     
       prefix:  "-o"   
   - eDetXsection:    # Function  VtTubeShape TubeShape_Txt2ID(const char* sText) 
@@ -256,8 +256,8 @@ detector:
       descr:   "tube cross-section"  
       tooltip: "Choose circular or rectangular cross-section for cylindrical or cubic detectors" 
       enum:    "VtTubeShape"
-      options: ["circular", "rectangular"]   
-      default:  "circular"
+      options: ["VT_TUBE_CIRCLE", "VT_TUBE_SQUARE"]   
+      default:  "VT_TUBE_CIRCLE"
       column:  1                     
       prefix:  "-b"   
   - WallThickn:                             
@@ -272,7 +272,7 @@ detector:
       type:    "switch" 
       descr:   "layers shifted"  
       tooltip: "flag: layers shifted against each other by half the diameter" 
-      default: false
+      default: no
       column:  1                     
       prefix:  "-s"   
 
@@ -306,15 +306,15 @@ detector:
       descr:   "axis orientation"  
       tooltip: "Orientation of the cylinder axis; it must be parallel to x, y or z axis" 
       enum:    "VtAxis"
-      options: ["x", "y", "z"]   
-      default:  "z"
+      options: ["X_AXIS", "Y_AXIS", "Z_AXIS"]   
+      default:  "Z_AXIS"
       column:  0                     
       prefix:  "-x"   
   - bConstPhi:      
       type:    "switch" 
       descr:   "const phi"  
       tooltip: "flag: Use constant phi pixel, i.e. pixel size in height dimension is determined by constant angular spread instead of constant spatial extension." 
-      default: false
+      default: no
       column:  1                     
       prefix:  "-z"   
   - OutFile :   

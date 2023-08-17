@@ -14,8 +14,8 @@ filter:
       descr:   "filter parameter 1"  
       tooltip: "1st parameter that is filtered"
       enum:    "VtMonPar"      
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
-      default: "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default: "NO_PAR"
       column:   0                     
       prefix:  "-I"   
   - MinPar1 :   
@@ -36,8 +36,8 @@ filter:
       descr:   "filter parameter 2"  
       tooltip: "2nd parameter that is filtered " 
       enum:    "VtMonPar"      
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
-      default: "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default: "NO_PAR"
       column:   0                     
       prefix:  "-J"   
   - MinPar2 :   
@@ -58,8 +58,8 @@ filter:
       descr:   "filter parameter 3"  
       tooltip: "3rd parameter that is filtered " 
       enum:    "VtMonPar"      
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
-      default: "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default: "NO_PAR"
       column:   0                     
       prefix:  "-K"   
   - MinPar3 :   
@@ -80,8 +80,8 @@ filter:
       descr:   "filter parameter 4"  
       tooltip: "4th parameter that is filtered " 
       enum:    "VtMonPar"      
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z","r","phi","dir_phi","dir_theta","col_vert","col_hor","color"]   
-      default: "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default: "NO_PAR"
       column:   0                     
       prefix:  "-L"   
   - MinPar4 :   
@@ -102,7 +102,7 @@ filter:
       descr:   "filter combination"  
       tooltip: "If several filters defined, neutrons pass if they fulfill all criteria (AND), at least one (OR) or (1 and 2) or (3 and 4) (AND_OR_AND)" 
       enum:    "VtFiltComb"
-      options: ["AND", "OR", "AND_OR_AND"]   
-      default: "AND"   
+      options: ["AND_AND_AND", "OR_OR_OR", "AND_OR_AND"]   
+      default: "AND_AND_AND"   
       column:   0                     
       prefix:  "-C"   

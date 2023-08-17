@@ -20,8 +20,8 @@ moderator_simple:
       descr:   "shape"
       tooltip: "moderator shape"
       enum:    "VtModShape"
-      options: ["rectangular", "circular"] 
-      default:  "circular"
+      options: ["VT_MOD_SQUARE", "VT_MOD_CIRCLE"] 
+      default:  "VT_MOD_CIRCLE"
       column:  0                     
       prefix:  "-s"    
 

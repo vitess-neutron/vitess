@@ -36,8 +36,8 @@ mon1_brl:
       descr:   "variable parameter"
       tooltip: "ID for the parameter, as a function of which the brilliance is shown"
       enum:    "VtBrlPar"
-      options: ["time","lambda","energy","pos_y","pos_z","pos_rad","div_y","div_z","div_rad"]
-      default:  "time"
+      options: ["VT_TIME","VT_LAMBDA","VT_ENERGY","VT_POS_Y","VT_POS_Z","VT_POS_R","VT_DIV_HOR","VT_DIV_VERT","VT_DIV_RAD"]
+      default:  "VT_TIME"
       column:  0            
       prefix:  "-k"
   - eBrlNorm:                  #     -N  "norm. type"     VtBrlNorm BrlNorm_Txt2ID(const char* sText)            
@@ -45,19 +45,19 @@ mon1_brl:
       descr:   "norm. type"
       tooltip: "absolute:  absolute brilliance [n/(cm²s sr Ang)]\ntransfer:  relative brilliance (= brilliance transfer)\n1% lambda  brilliance within 1% DelLamdba/Lambda [n/(cm²s sr)]"
       enum:    "VtBrlNorm"
-      options: ["absolute","transfer","1% lambda"]
-      default: "absolute"
+      options: ["BRL_ABS","BRL_TRANSF","BRL_PCT"]
+      default: "BRL_ABS"
       column:   1            
       prefix:  "-N"
 
-  - bLogBin:                #     -B  "logarithmic binning"
+  - bLogBin:               #     -B  "logarithmic binning"
       type:    "switch" 
       descr:   "logarithmic binning" 
       tooltip: "yes: bin size increases exponentially\nno : bin size is constant"
       default:  no
       column:   0            
       prefix:  "-B" 
-  - bExcl:              #     -e  "exclusive counts"
+  - bExcl:                 #     -e  "exclusive counts"
       type:    "switch" 
       descr:   "exclusive counts" 
       tooltip: "yes: only neutrons meeting the monitor conditions are written\nno : all are written"
@@ -73,7 +73,7 @@ mon1_brl:
       min:     1
       column:  0            
       prefix:  "-n"
-  - iColor:               #     -C  "color"                     
+  - iColor:                #     -C  "color"                     
       type:    "int" 
       descr:   "color" 
       tooltip: "color of the trajectories condidered by the monitor   (default  ALL)"
@@ -95,14 +95,14 @@ mon1_brl:
       column:  1             
       prefix:  "-T"
 
-  - MinLambda:               #     -l  "min. lambda [Ang]"
+  - MinLambda:             #     -l  "min. lambda [Ang]"
       type:    "float" 
       descr:   "min. lambda [Ang]"
       tootip:  "minimal wavelength to be taken into account"
       min:     0.0
       column:  0            
       prefix:  "-l"
-  - MaxLambda:               #     -L  "max. lambda [Ang]"
+  - MaxLambda:             #     -L  "max. lambda [Ang]"
       type:    "float" 
       descr:   "max. lambda [Ang]" 
       tooltip: "maximal wavelength to be taken into account"

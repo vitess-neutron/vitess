@@ -89,8 +89,8 @@ mon2_div:
       descr:   "file format" 
       tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
       enum:     "VtFormat2D"
-      options: ["matrix","xyz","matrix compact","xyz compact"]
-      default:  "matrix"
+      options: ["MATRIX","XYZ","MATR_CMPT","MXYZ_CMPT"]
+      default:  "MATRIX"
       column:  2                     
       prefix:  "-F"  
 

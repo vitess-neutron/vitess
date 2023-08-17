@@ -15,8 +15,8 @@ source_ess:
       hidden:  true
       descr:   "source type"
       enum:    "VtSrcKind"
-      options: ["simple source", "continuous source", "pulsed source", "source ISIS", "source ESS"]
-      default: "source ESS" 
+      options: ["SRC_SIMPLE", "SRC_CWS", "SRC_PULSED", "SRC_ISIS", "SRC_ESS"]
+      default: "SRC_ESS" 
       prefix:  "-K"     
 
   - Titel_Sim:                       
@@ -81,8 +81,8 @@ source_ess:
       descr:   "source name" 
       tooltip: "name of the source"
       enum:    "VtSrcName"
-      options: ["-", "ESS","SNS"]
-      default:  "-"
+      options: ["ANYSOURCE", "ESS","SNS"]
+      default:  "ESS"
       column:   0                     
       prefix:  "-N"     
   - eSrcType:                          # -S    VtSrcType SrcType_Txt2ID(const char* sText)      CWS SPSS LPSS
@@ -90,7 +90,7 @@ source_ess:
       descr:   "source type"
       tooltip: "parameter describing the time dependence of the proton beam: continuous (CWS), short pulses (SPSS) or long pulses (LPSS)"   
       enum:    "VtSrcType"
-      options: ["", "LPSS", "SPSS"] 
+      options: ["CWS", "LPSS", "SPSS"] 
       default:  "LPSS" 
       column:   1                     
       prefix:  "-S"     
@@ -98,7 +98,9 @@ source_ess:
       type:    "combo" 
       descr:   "data base"
       tooltip: "version of the data base"
-      default: ["2016_Butterfly2", "2015_Butterfly1", "2013_VarHeight", "2013_Schoenfeldt", "2012_Zanini", "2001_Mezei"] 
+      enum:    "EssModVsn"
+      options: ["MEZEI_2001", "ZANINI_2012", "SCHOENFELDT_2013", "VARHEIGHT_2013", "BUTTERFLY2_2015", "BUTTERFLY1_2016"] 
+      default: "BUTTERFLY1_2016"
       column:  2                     
       prefix:  "-v"     
   - Freq:                              # -R        [Hz]   pulse frequency 
@@ -159,8 +161,8 @@ source_ess:
       descr:   "direction defined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
       enum:    "VtDirect"
-      options: ["by divergence", "by real window", "by virtual window"] 
-      default: "by real window"
+      options: ["VT_DIVERGENCE", "VT_REAL_WND", "VT_VIRT_WND"] 
+      default: "VT_REAL_WND"
       column:   0                     
       prefix:  "-d"     
 
@@ -284,8 +286,8 @@ source_ess:
       descr:   "kind of raytracing"
       tooltip: "write trace files: writes a file for each trajectries of interest\nonly trace trajectories: simulation only started for trajectories of interest"
       enum:    "VtTrace"
-      options: ["no tracing", "write trace files", "only trace trajectories"]   
-      default:  "no tracing"
+      options: ["NO_TRACING", "WRITE_TRC_FILES", "ONLY_TRC_TRAJ"]   
+      default:  "NO_TRACING"
       column:  0                     
       prefix:  "-k"     
   - sTraceFile :                          # -r         [-]   name of the file containing the IDs for tracing

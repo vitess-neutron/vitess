@@ -760,7 +760,8 @@ typedef enum
   VT_NO_DET_USE=-1,
   VT_DET_REAL  = 0,
   VT_MON_ONLY  = 1,
-  VT_GRID_OFF  = 2
+  VT_GRID_OFF  = 2,
+  VT_EFF_OFF   = 3
 }
 VtDetUse;
 

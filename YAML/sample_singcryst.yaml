@@ -30,13 +30,13 @@ sample_singcryst:
       min:      0.0
       prefix:  "-d"     
       column:   0                     
-  -  eDistr:            # VtDistr  Distr_Txt2ID(const char* sText)
+  - eDistr:            # VtDistr  Distr_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "d-spacing distribution"
       tooltip: "function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN"
       enum:    "VtDistr"
-      options: ["Lorentzian", "Gaussian"]
-      default: "Gaussian"
+      options: ["LORENTZIAN", "GAUSSIAN"]
+      default: "GAUSSIAN"
       prefix:  "-o"     
       column:   0 
 
@@ -143,7 +143,7 @@ sample_singcryst:
 
   - Title: 
       type:    "title"    
-      default: "Sample Position and Geometry"
+      default: "Sample position and Geometry"
   - PosSmplX:                  # -x    0.0  [cm]   center position X of the single crystal sample 
       type:    "float"    
       descr:   "X [cm]"
@@ -192,8 +192,8 @@ sample_singcryst:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
       enum:    "VtSmplGeom"   
-      options: ["cylinder", "sphere", "cuboid"]
-      default: "cuboid"
+      options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+      default: "VT_CUBE"
       prefix:  "-G"     
       column:  0 
 

@@ -57,7 +57,7 @@ sample_sans:
       
   - Title: 
       type:    "title"    
-      default: "Sample"
+      default: "Sample position and geometry"
   - PosSmplX:                  # -x    0.0  [cm]   center position X of the SANS sample 
       type:    "float"    
       descr:   "x [cm]"
@@ -84,8 +84,8 @@ sample_sans:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
       enum:    "VtSmplGeom"   
-      options: ["cylinder", "sphere", "cuboid"]
-      default: "cylinder"
+      options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+      default:  "VT_CYL"
       prefix:  "-G"     
       column:  0 
 
@@ -139,13 +139,13 @@ sample_sans:
   - Title: 
       type:    "title"    
       default: "Scattering"
-  -  ePtclGeom:               # VtPtclGeom   PtclGeom_Txt2ID(const char* sText)
+  - ePtclGeom:               # VtPtclGeom   PtclGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "shape of particles"
       tooltip: "Shape of the scattering objects: spheres, polydispersive spheres, ellipsoids, parallelepipeds, cylinders"
       enum:    "VtPtclGeom"
-      options: ["spheres", "polydispersive spheres", "ellipsoids", "parallelepipeds", "cylinders", "isotropic scattering"]
-      default: "spheres"
+      options: ["VT_PTCL_SPHERE", "VT_PTCL_POLY_SPH", "VT_PTCL_ELLIPS", "VT_PTCL_EPIPED", "VT_PTCL_CYL", "VT_ISOTROPIC"]
+      default: "VT_PTCL_SPHERE"
       prefix:  "-O"     
       column:  0 
 

@@ -14,8 +14,8 @@ filter2D:
       descr:   "filter parameter"  
       tooltip: "2D parameter that is filtered (position or divergence)" 
       enum:    "VtMon2Par"
-      options: ["position","divergence"]   
-      default: "position"   
+      options: ["MON2_POS","MON2_DIV"]   
+      default: "MON2_POS"   
       column:   0                     
       prefix:  "-P"   
   - sTabFile  :                 # -m   NULL   [-]  file describing the transmission of the material in the open part of window

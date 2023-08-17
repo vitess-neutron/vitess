@@ -11,14 +11,14 @@ guide:
   - category:  "guide"
   - Title_Shape : 
       type:    "title" 
-      default: "Shape and size of guide"                     
+      default: "Shape and size of the guide"                     
   - eShapeY :                 # -Y    VtGdeShape  GdeShape_Txt2ID(const char* sText)   
       type:    "combo" 
       descr:   "horizontal shape"
       tooltip: "shape of the guide in horizontal direction" 
       enum:    "VtGdeShape"
-      options: ["constant","linear","curved","parabolic","elliptic","from file","curved+linear"]
-      default:  "constant"
+      options: ["VT_CONSTANT","VT_LINEAR","VT_CURVED","VT_LIN_CURV","VT_PARABOLIC","VT_ELLIPTIC","VT_FROM_FILE"]
+      default:  "VT_CONSTANT"
       column:  0                     
       prefix:  "-Y"  
   - eShapeZ :                 # -Z    VtGdeShape  GdeShape_Txt2ID(const char* sText)       
@@ -26,8 +26,8 @@ guide:
       descr:   "vertical shape"
       tooltip: "shape of the guide in vertical direction"
       enum:    "VtGdeShape"
-      options: ["constant","linear","parabolic","elliptic","from file"]
-      default:  "constant"
+      options: ["VT_CONSTANT","VT_LINEAR","VT_PARABOLIC","VT_ELLIPTIC","VT_FROM_FILE"]
+      default:  "VT_CONSTANT"
       column:  1                     
       prefix:  "-Z"  
   - sShapeFile:               # -S "guide_shape.dat" [-]   name of the file containing the sizes of the guide, output or input file
@@ -204,7 +204,7 @@ guide:
       type:    "switch" 
       descr:   "abutment loss" 
       tooltip: "flag: abutment loss  0: no  1: yes neutrons hitting the surface close to the end of a guide (segment) are absorbed" 
-      default: false
+      default: no
       column:  0                     
       prefix:  "-a" 
   - AbutLen :                 # -l    0.0  [cm]   area around the connection of guide segments, where neutrons are absorbed 
@@ -252,8 +252,8 @@ guide:
       descr:   "format" 
       tooltip: "Trajectories to be written out, in each case with or without linefeed\n (see help file for details)" 
       enum:    "VtListPar"
-      options: ["Trajectories passing the guide end", "Trajectories passing the guide end (LF)", "Only successful reflections", "Only successful reflections (LF)", "Traj. with at least 1 reflection", "Traj. with at least 1 reflection (LF)", "All trajectories", "All trajectories (LF)"]
-      default:  "Trajectories passing the guide end (LF)"
+      options: ["VT_LIST_PASS", "VT_LIST_PASS_LF", "VT_LIST_REFL", "VT_LIST_REFL_LF", "VT_LIST_T1SR", "VT_LIST_T1SR_LF", "VT_LIST_ALL", "VT_LIST_ALL_LF"]
+      default:  "VT_LIST_PASS_LF"
       column:  0                     
       prefix:  "-O"
   - eListGeom:                # -v    VtListVbs ListVbs_Txt2ID(const char* sText) 
@@ -261,8 +261,8 @@ guide:
       descr:   "geometry list"
       tooltip: "additional trajectories are written at the entry and the exit of the guide ('entry & exit') or each guide piece ('yes')."
       enum:    "VtListVbs"
-      options: ["no", "yes", "entry & exit"]
-      default:  "no"
+      options: ["VT_LSTM_NO", "VT_LSTM_YES", "VT_LSTM_EDGE"]
+      default:  "VT_LSTM_NO"
       column:  1                     
       prefix:  "-v"  
   - nListMin :                # -e    0     [-]   Minimum number of reflections within the guide for reflection list output 
@@ -322,8 +322,8 @@ guide:
       descr:   "filter" 
       tooltip: "Choose which trajectories will be binned. This option is also affected by the format option above!!!\nall events;\nonly scattered neutrons;\nonly died neutrons."
       enum:    "VtPlotFilt"
-      options: ["all", "only scattered", "only died"]
-      default:  "all"
+      options: ["VT_PLOT_ALL", "VT_PLOT_SCAT", "VT_PLOT_DIED"]
+      default:  "VT_PLOT_ALL"
       column:  0                     
       prefix:  "-B"  
   - ePlotX:                   # -t    VtPlotPar PlotPar_Txt2ID(const char* sText)
@@ -331,9 +331,9 @@ guide:
       descr:   "X values"
       tooltip: "Parameter for the x-axis of the reflection plot"
       enum:    "VtPlotPar"
-      options: ["Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
-                "Position X","Position Y","Position Z","Vector X","Vector Y","Vector Z","Spin X","Spin Y","Spin Z","Scattered (Mode)"] 
-      default:  "Position X"
+      options: ["dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
+                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"] 
+      default:  "dKeyPositionX"
       column:  0                     
       prefix:  "-t"  
   - ePlotY:                   # -T    VtPlotPar PlotPar_Txt2ID(const char* sText)
@@ -341,9 +341,9 @@ guide:
       descr:   "Y values"
       tooltip: "Parameter for the y-axis of the reflection plot"
       enum:    "VtPlotPar"
-      options: ["Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
-                "Position X","Position Y","Position Z","Vector X","Vector Y","Vector Z","Spin X","Spin Y","Spin Z","Scattered (Mode)"] 
-      default:  "m"
+      options: ["dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
+                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"] 
+      default:  "dKeym"
       column:  1                     
       prefix:  "-T"  
   - ePlotProb:                # -V    VtPlotPar PlotPar_Txt2ID(const char* sText)
@@ -351,9 +351,9 @@ guide:
       descr:   "Weight"
       tooltip: "Parameter for the weighting function f(x,y) for reflection plot"
       enum:    "VtPlotPar"
-      options: ["none","Ref. Angle","m","Reflectivity","DivY","DivZ","Color","TOF","Wavelength","Probability",
-               "Position X","Position Y","Position Z","Vector X","Vector Y","Vector Z","Spin X","Spin Y","Spin Z","Scattered (Mode)"] 
-      default:  "Probability"
+      options: ["KeyNone","dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
+                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"] 
+      default:  "dKeyProbability"
       column:  2                     
       prefix:  "-V"  
   - nPlotX  :                 # -k  100     [-]   number of X bins in reflection plot

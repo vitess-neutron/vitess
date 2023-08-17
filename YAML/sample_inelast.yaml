@@ -185,8 +185,8 @@ sample_inelast:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
       enum:    "VtSmplGeom"   
-      options: ["cylinder", "sphere", "cuboid", "hollow-cylinder"]
-      default: "cylinder"
+      options: ["VT_CYL", "VT_SPHERE", "VT_CUBE", "VT_HOL_CYL"]
+      default:  "VT_CYL"
       column:  0 
       prefix:  "-G"     
 
@@ -227,10 +227,9 @@ sample_inelast:
       column:  1                     
       prefix:  "-O"     
 
-  - Title_frame: 
+  - Title_ref: 
       type: "title" 
       default: "reference wavevector" 
-
   - LambdaInit:                 #  6.0  [Ang]  initial wavelength
       type:    "float" 
       descr:   "lambda initial [Ang]"
@@ -256,14 +255,13 @@ sample_inelast:
   - Title_frame: 
       type: "title" 
       default: "Output frame" 
-
-  - eFrame:                   #  VtFrameGen FrameGen_Txt2ID(const char* sText)
+  - eOutFrame:                   #  VtFrameGen FrameGen_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': creates output direction using the initial wavevector values (see Help|sample)"
       enum:     VtFrameGen
-      options: ["standard frame generation", "user defined frame"
-      default: "standard frame generation"
+      options: ["VT_FRAME_USER", "VT_FRAME_STD"]
+      default: "VT_FRAME_STD"
       column:   0                     
       prefix:  "-g"     
 

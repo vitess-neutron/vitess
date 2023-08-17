@@ -15,8 +15,8 @@ source_simple:
       hidden:  true
       descr:   "kind of source"
       enum:    "VtSrcKind"
-      options: ["simple source", "continuous source", "pulsed source", "source ISIS", "source ESS"]
-      default: "simple source" 
+      options: ["SRC_SIMPLE", "SRC_CWS", "SRC_PULSED", "SRC_ISIS", "SRC_ESS"]
+      default: "SRC_SIMPLE" 
       prefix:  "-K"     
 
   - Titel_Sim:                       
@@ -68,7 +68,7 @@ source_simple:
       hidden:  true
       descr:   "source type"
       enum:    "VtSrcType"
-      options: ["", "CWS"] 
+      options: ["NO_TYPE", "CWS"] 
       default:  "CWS" 
       prefix:  "-S"     
   - wModWnd:
@@ -93,8 +93,8 @@ source_simple:
       descr:   "direction defined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propagated to the window" 
       enum:    "VtDirect"
-      options: ["by divergence", "by real window", "by virtual window"] 
-      default: "by real window"
+      options: ["VT_DIVERGENCE", "VT_REAL_WND", "VT_VIRT_WND"] 
+      default: "VT_REAL_WND"
       column:   0                     
       prefix:  "-d"     
   - MaxDivY:                          # -y        [deg]  maximum horizontal divergence (half of angular spread x-z-plane, if min. value is zero) 

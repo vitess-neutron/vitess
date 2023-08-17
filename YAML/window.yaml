@@ -25,8 +25,8 @@ window:
       descr:   "window shape"  
       tooltip: "shape of the aperture" 
       enum:    "VtShape"
-      options: ["rectangular", "circular"] 
-      default:  "rectangular"  
+      options: ["VT_SQUARE", "VT_CIRCLE"] 
+      default:  "VT_SQUARE"  
       column:  1                     
       prefix:  "-R"   
 
@@ -92,14 +92,14 @@ window:
   - Title_Opt : 
       type:    "title"
       default: "Options" 
-  - bBeamstop:                # -S         [-]   Flag: beamstop              true: beamstop   false normal window
+  - bBeamstop:                # -S         [-]   Flag: beamstop              yes: beamstop   no: normal window
       type:    "switch" 
       descr:   "used as beamstop"  
       tooltip: "yes: negative window: absorption inside and transmission outside \nno : normal window:   transmission inside and absorption outside (default)"
       default:  no
       column:   0                     
       prefix:  "-S"   
-  - bOldFrame:                # -F         [-]   Flag: use previous frame    true: frame unchanged   false: shift as usual
+  - bOldFrame:                # -F         [-]   Flag: use previous frame    yes: frame unchanged   no: shift as usual
       type:    "switch" 
       descr:   "used previous frame"  
       tooltip: "yes: the co-ordinate system of the previous module is kept\nno : the co-ordinate system is shifted to the window exit as usual (default)"
@@ -115,8 +115,8 @@ window:
       descr:   "frame material"  
       tooltip: "Material used for the absorbing window frame"
       enum:    "VtWndAbs"
-      options: ["from file", "gadolinium", "cadmium", "bor10", "europium", "silicon", "ideal absorber"]
-      default:  "ideal absorber"
+      options: ["VT_WABS_FILE", "VT_WABS_GD", "VT_WABS_CD, "VT_WABS_B10, "VT_WABS_EU", "VT_WABS_SI", "VT_WABS_IDEAL"]
+      default:  "VT_WABS_IDEAL"
       column:  1                     
       prefix:  "-c" 
   - ThicknOut:                # -t    0.0  [cm]  thickness of the frame material    

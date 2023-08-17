@@ -35,8 +35,8 @@ sm_ensemble:
       descr:   "spin quant. direction"
       tooltip: "direction of spin quantisation in accordance with input data (e.g. source module)" 
       enum:    "VtAxis"
-      options: ["X","Y","Z","none"]
-      default: "none"
+      options: ["X_AXIS","Y_AXIS","Z_AXIS","NO_AXIS"]
+      default: "NO_AXIS"
       column:   1                     
       prefix:  "-Q"     
 
@@ -59,8 +59,8 @@ sm_ensemble:
       descr:   "substrate material"
       tooltip: "Material of the mirror substrate for a treatment of the neutron absorption by passing through the mirror. Available: Silicon, Sapphire and 'Other' \nBeware that 'Other' only works with the old file format" 
       enum:    "VtMirrmat"
-      options: ["Other","Silicon","Sapphire"]
-      default: "Silicon"
+      options: ["VT_MIRR_OTHER","VT_MIRR_SI","VT_MIRR_SAPPH"]
+      default:  "VT_MIRR_SI"
       column:   2                     
       prefix:  "-S"     
 

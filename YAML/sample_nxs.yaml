@@ -43,21 +43,21 @@ sample_nxs:
       type:    "switch" 
       descr:   "incoherent scattering"
       tooltip: "flag incoherent scattering (YES  NO)"
-      default: [NO, YES]
+      default: no
       column:  0                     
       prefix:  "-I"     
   - bTreatAll:                # -a   NO      flag: neutrons not hitting the sample are treated  (YES  NO) 
       type:    "switch" 
       descr:   "treat all neutrons"
       tooltip: "flag neutrons not hitting the sample are treated"
-      default: [NO, YES]
+      default: no
       column:  1                     
       prefix:  "-a"     
   - bOnlyTransm:                # -T   NO      flag: shall only transmission (imaging) be treated (YES) or scattering also (NO)
       type:    "switch" 
       descr:   "transmission only"
       tooltip: "flag shall only transmission (imaging) be treated (YES)\nor scattering also (NO)"
-      default: [NO, YES]
+      default: no
       column:  2                     
       prefix:  "-T"     
 
@@ -99,7 +99,7 @@ sample_nxs:
                     
   - Title: 
       type:    "title"    
-      default: "Sample"
+      default: "Sample position and geometry"
   - SmplPosX:                    # -X 0.0  [cm]   center x position of the sample
       type:    "float" 
       descr:   "x [cm]"
@@ -122,11 +122,12 @@ sample_nxs:
       prefix:  "-z"     
       column:  2  
 
-  -  eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
+  - eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "sample\ngeometry"
       tooltip: "geometry of the sample:  cylinder, sphere, cuboid (=rectangular)"
-      default: [cylinder, sphere, cuboid]
+      options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+      default:  "VT_CYL"
       prefix:  "-G"     
       column:  0 
                    
@@ -146,7 +147,7 @@ sample_nxs:
       default: 2.0
       prefix:  "-h"     
       column:  1                      
-  -  Width:                  # -W 0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder 
+  - Width:                  # -W 0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder 
       type:    "float" 
       descr:   "inner diameter\nor width [cm]"
       tooltip: "width of cuboid or inner diameter of a hollow cylinder"

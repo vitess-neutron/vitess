@@ -10,7 +10,7 @@
 
 moderator_ess:
   - category: "moderator"
-  - ModName :
+  - sModName :
       descr:   "name"
       type:    "string"
       column:  0                #0-2
@@ -19,8 +19,8 @@ moderator_ess:
       type:    "combo" 
       descr:   "type"
       tooltip: "moderator type"
-      options: ["decoupled poisoned", "decoupled unpoisoned", "coupled", "multi-spectral"] 
-      default:  "coupled"
+      options: ["POISONED", "DECOUPLED", "COUPLED", "MULT_SPEC"] 
+      default:  "COUPLED"
       column:   0                     
       prefix:  "-t"    
 #  - eModShape:                    #   VtModShape ModShape_Txt2ID(const char* sText)
@@ -28,8 +28,8 @@ moderator_ess:
 #      descr:   "shape"
 #      tooltip: "moderator shape"
 #      enum:    "VtModShape"
-#      options: ["rectangular", "circular"] 
-#      default:  "rectangular"
+#      options: ["VT_MOD_SQUARE", "VT_MOD_CIRCLE"] 
+#      default:  "VT_MOD_SQUARE"
 #      column:   1                     
 #      prefix:  "-s"    
 #
@@ -76,13 +76,13 @@ moderator_ess:
       column:  2                     
       prefix:  "-Z"
 
-  - iOrder:                   #   [-]    spatial order of the moderator (the higher the number the more it is in the background) 
+  - iOrder:                     #   [-]    spatial order of the moderator (the higher the number the more it is in the background) 
       type:    "int" 
       descr:   "spatial order"
       tooltip: "spatial order of the moderator (the higher the number the more it is in the background)"
       column:  0                     
       prefix: "-o" 
-  - iColor:                   #   [-]    the trajectories can be marked by this 'color' to identify the moderator of origin 
+  - iColor:                     #   [-]    the trajectories can be marked by this 'color' to identify the moderator of origin 
       type:    "int" 
       descr:   "color"
       tooltip: "the trajectories can be marked by this 'color' to identify the moderator of origin"
@@ -90,14 +90,15 @@ moderator_ess:
       column:  1                     
       prefix: "-c" 
      
-  - ModTemp:                   #   [K]    temperature of a Maxwellian distribution 
+  - eModTemp:                   #   [K]    temperature of a Maxwellian distribution 
       type:    "float" 
       descr:   "temperature [K]"
       tooltip: "Temperature of a Maxwellian distribution"
-      default: 50.0             # [50.0, 325.0]?
+      options: ["50.0", "325.0"]
+      default: "50.0"
       column:  0                   
       prefix: "-T"      
-  - PerformFact:                   #   [-]    Factor allowing for losses by aging or engineering design d 
+  - PerformFact:                #   [-]    Factor allowing for losses by aging or engineering design d 
       type:    "float" 
       descr:   "performance factor"
       tooltip: "Factor allowing for losses by aging or engineering design d"

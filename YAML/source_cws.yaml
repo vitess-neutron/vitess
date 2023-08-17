@@ -15,8 +15,8 @@ source_cws:
       hidden:  true
       descr:   "kind of source"
       enum:    "VtSrcKind"
-      options: ["simple source", "continuous source", "pulsed source", "source ISIS", "source ESS"]
-      default: "continuous source" 
+      options: ["SRC_SIMPLE", "SRC_CWS", "SRC_PULSED", "SRC_ISIS", "SRC_ESS"]
+      default: "SRC_CWS" 
       prefix:  "-K"     
  
   - Titel_Sim:                       
@@ -82,7 +82,7 @@ source_cws:
       hidden:  true
       descr:   "source type"
       enum:    "VtSrcType"
-      options: ["", "CWS"] 
+      options: ["NO_TYPE", "CWS"] 
       default:  "CWS" 
       prefix:  "-S"     
   - eSrcName :                          # -N    VtSrcName SrcName_Txt2ID(const char* sText)
@@ -90,8 +90,8 @@ source_cws:
       descr:   "source name" 
       tooltip: "name of the source"
       enum:    "VtSrcName"
-      options: ["-", "FRM2","ILL"]
-      default:  "-"
+      options: ["ANYSOURCE", "FRM2","ILL"]
+      default:  "ANYSOURCE"
       column:   0                     
       prefix:  "-N"     
   - SrcPower:                          # -L   2.0  [MW]   average source power
@@ -131,8 +131,8 @@ source_cws:
       descr:   "direction defined"
       tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
       enum:    "VtDirect"
-      options: ["by divergence", "by real window", "by virtual window"] 
-      default: "by real window"
+      options: ["VT_DIVERGENCE", "VT_REAL_WND", "VT_VIRT_WND"] 
+      default: "VT_REAL_WND"
       column:   0                     
       prefix:  "-d"     
 
@@ -256,8 +256,8 @@ source_cws:
       descr:   "raytracing mode"
       tooltip: "write trace files: writes a file for each trajectries of interest\nonly trace trajectories: simulation only started for trajectories of interest"
       enum:    "VtTrace"
-      options: ["no tracing", "write trace files", "only trace trajectories"]   
-      default:  "no tracing"
+      options: ["NO_TRACING", "WRITE_TRC_FILES", "ONLY_TRC_TRAJ"]   
+      default:  "NO_TRACING"
       column:  0                     
       prefix:  "-k"     
   - sTraceFile :                          # -r         [-]   name of the file containing the IDs for tracing

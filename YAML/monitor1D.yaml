@@ -21,31 +21,30 @@ monitor1D:                    # source module that will be executed
   - Title_Par: 
       type:    "title" 
       default: "Parameter and range"
-  - eParA  :                 # -X   VtMonPar  MonPar_Txt2ID(const char* sText)
+  - ePar:                     # -X   VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "1st parameter on x-axis"
       tooltip: "x-axis parameter for the first 1D monitor file"
       enum:    "VtMonPar"
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","pos_theta","dir_phi","dir_theta","col_vert","col_hor","color"]
-      default:  "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default:  "NO_PAR"
       column:  0                     
       prefix:  "-X"   
-  - MinPar:                 # -w          minimal x value for the first 1D monitor file
+  - MinPar:                   # -w          minimal x value for the first 1D monitor file
       type:    "float" 
       descr:   "min. x value 1st par." 
       tooltip: "minimal x value for the first 1D monitor file"
       default: 0.0
       column:  0                     
       prefix:  "-w"  
-  - MaxPar:                 # -W  10.0   maximal x value for the first 1D monitor file 
+  - MaxPar:                   # -W  10.0   maximal x value for the first 1D monitor file 
       type:    "float" 
       descr:   "max. x value 1st par."
       tooltip: "maximal x value for the first 1D monitor file"
       default: 10.0
       column:  0                     
       prefix:  "-W"  
-  - nBinPar:                 # -x   100    number of x channels for the first 1D monitor file 
+  - nBinPar:                  # -x   100    number of x channels for the first 1D monitor file 
       type:    "int" 
       descr:   "number of bins 1st par." 
       tooltip: "number of x channels for the first 1D monitor file" 
@@ -64,7 +63,7 @@ monitor1D:                    # source module that will be executed
       default:  yes
       column:  0                     
       prefix:  "-p"  
-  - bExcl:                 # -e  NO    Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
+  - bExcl:                    # -e  NO    Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
       type:    "switch" 
       descr:   "exclusive counts" 
       tooltip: "yes: only trajectories meeting the monitor conditions are written \nno : all trajectories are written"
@@ -75,68 +74,66 @@ monitor1D:                    # source module that will be executed
   - Title_Filter: 
       type:    "title" 
       default: "Filter selection"
-  - LambdaMin :                 # -l       minimum wavelength to be taken into account [Ang]
+  - LambdaMin :               # -l       minimum wavelength to be taken into account [Ang]
       type:    "float" 
       descr:   "lambda min [Ang]"  
       tooltip: "minimum wavelength to be taken into account [Ang]"
       column:  1                     
       prefix:  "-l"   
-  - LambdaMax :                 # -L       maximum wavelength to be taken into account [Ang]
+  - LambdaMax :               # -L       maximum wavelength to be taken into account [Ang]
       type:    "float" 
       descr:   "lambda max [A]" 
       tooltip: "maximum wavelength to be taken into account [Ang]" 
       column:   2                     
       prefix:  "-L"  
 
-  - eFilterPar1 :                 # -I VtMonPar  MonPar_Txt2ID(const char* sText)
+  - eFilterPar1 :             # -I VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "filter parameter 1"  
       tooltip: "filter parameter 1"
       enum:    "VtMonPar"
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta","col_vert","col_hor","color"]
-      default:  "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default:  "NO_PAR"
       column:  0                     
       prefix:  "-I"  
-  - MinFilterValue1:                # -u        minimum value of filter parameter 1 to be taken into account
+  - MinFilterValue1:          # -u        minimum value of filter parameter 1 to be taken into account
       type:    "float" 
       descr:   "filter 1 min value" 
       tooltip: "minimum value of filter parameter 1 to be taken into account"
       column:  1                     
       prefix:  "-u"  
-  - MaxFilterValue1:                 # -U       maximum value of filter parameter 1 to be taken into account 
+  - MaxFilterValue1:          # -U       maximum value of filter parameter 1 to be taken into account 
       type:    "float" 
       descr:   "filter 1 max value" 
       column:  2                     
       prefix:  "-U"  
 
-  - eFilterCombi:                 # -C  VtFiltComb FiltComb_Txt2ID(const char* sText)
+  - eFilterCombi:             # -C  VtFiltComb FiltComb_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "filter combination" 
       tooltip: "filter 1 and 2 combined with AND or OR"
       enum:    "VtFiltComb"
-      options: ["AND", "OR"]
-      default:  "AND"
+      options: ["AND_AND_AND", "OR_OR_OR"]
+      default:  "AND_AND_AND"
       column:  0                     
       prefix:  "-C"  
 
-  - eFilterPar2 :                 # -J  VtMonPar  MonPar_Txt2ID(const char* sText)
+  - eFilterPar2 :             # -J  VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "filter parameter 2"
       tooltip: "filter parameter 2"
       enum:    "VtMonPar"
-      options: ["none","pos_x","pos_y","pos_z","div_y","div_z","lambda","energy","time","k_y","k_z",
-                "pos_r","pos_phi","dir_phi","dir_theta","col_vert","col_hor","color"]
-      default:  "none"
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      default:  "NO_PAR"
       column:  0                    
       prefix:  "-J"  
-  - MinFilterValue2:                 # -v        minimum value of parameter 2 to be taken into account
+  - MinFilterValue2:          # -v        minimum value of parameter 2 to be taken into account
       type:    "float" 
       descr:   "filter 2 min value"  
       tooltip: "minimum value of parameter 2 to be taken into account" 
       column:  1                     
       prefix:  "-v"  
-  - MaxFilterValue2:                 # -V        maximum value of parameter 2 to be taken into account
+  - MaxFilterValue2:          # -V        maximum value of parameter 2 to be taken into account
       type:    "float" 
       tooltip: "maximum value of parameter 2 to be taken into account"
       descr:   "filter 2 max value"
@@ -146,7 +143,7 @@ monitor1D:                    # source module that will be executed
   - title_Pol: 
       type:    "title" 
       default: "Polarisation analysis"
-  - bPolAnalysis :                 # -P  NO    YES: polarisation monitored   NO: intensity monitored
+  - bPolAnalysis :            # -P  NO    YES: polarisation monitored   NO: intensity monitored
       type:    "switch" 
       descr:   "Polarisation analysis" 
       tooltip: "yes: polarisation is monitored \nno : intensity is monitored"

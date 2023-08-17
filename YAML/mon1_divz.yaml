@@ -34,8 +34,8 @@ mon1_divz:
       descr:   "variable parameter" 
       tooltip: "parameter, as a function of which the intensity is shown"
       enum:    "VtMon1Par"
-      options: ["lambda","time","div_y","div_z","pos_y","pos_z","energy","div_rad"]
-      default:  "div_z"
+      options: ["MON_LAMBDA","MON_TIME","MON_DIV_Y","MON_DIV_Z","MON_Y","MON_Z","MON_ENERGY","MON_DIV_YZ"]
+      default:  "MON_DIV_Z"
       prefix:  "-k"   
 
   - MinDivZ:                 # -m   [var]  lower bound value of the monitored range
@@ -98,8 +98,8 @@ mon1_divz:
       descr:   "normalization" 
       tooltip: "none: intensities of the neutron trajctories are distributed unchanged into channels\nbin size: intensities are normalized to the channel width\nreference file: intensities are divided by those in the reference file" 
       enum:    "VtMonNorm"
-      options: ["none","bin size","reference file"]   
-      default:  "none"
+      options: ["NO_NORM","NORM_BIN_SIZE","NORM_REF_FILE"]   
+      default:  "NO_NORM"
       column:  2                     
       prefix:  "-f"    
 

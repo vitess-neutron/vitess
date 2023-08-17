@@ -91,11 +91,9 @@ sample_elasticisotr:
       prefix:  "-m"     
       column:  1                     
 
-
   - Title_position: 
       type: "title" 
       default: "Position, orientation and geometry of the sample" 
-                    
   - SmplPosX:                   # 0.0  [cm]   center x position of the sample
       type:    "float" 
       descr:   "X [cm]"
@@ -123,8 +121,8 @@ sample_elasticisotr:
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
       enum:    "VtSmplGeom"   
-      options: ["cylinder", "sphere", "cuboid", "hollow-cylinder"]
-      default: "cylinder"
+      options: ["VT_CYL", "VT_SPHERE", "VT_CUBE", "VT_HOL_CYL"]
+      default:  "VT_CYL"
       prefix:  "-G"     
       column:   0 
 
@@ -142,7 +140,7 @@ sample_elasticisotr:
       default: 2.0
       prefix:  "-h"     
       column:  1                      
-  -  Width:                   # 0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder 
+  - Width:                   # 0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder 
       type:    "float" 
       descr:   "inner diameter or width [cm]"
       tooltip: "width of a cuboid or inner diameter of a hollow cylinder"
@@ -153,14 +151,14 @@ sample_elasticisotr:
   - RotSmplHor:                   # 0.0  [deg]    horizontal rotation of the sample 
       type:    "float" 
       descr:   "horizontal angle [deg]"
-      tooltip: "Rotation of the sample in horizontal direction (first rotation)"
+      tooltip: "Rotation of the sample about the z-axis in a horizontal plane (first rotation)"
       default: 0.0
       prefix:  "-o"     
       column:  0                     
   - RotSmplVert:                   # 0.0  [deg]    vertical rotation of the sample
       type:    "float" 
       descr:   "vertical angle [deg]"
-      tooltip: "Rotation of the sample in vertical direction (second rotation)"
+      tooltip: "Rotation of the sample about the (new) y-axis in a vertical plane (second rotation)"
       default: 0.0
       prefix:  "-O"     
       column:  1                     
@@ -168,7 +166,6 @@ sample_elasticisotr:
   - Title_frame: 
       type: "title" 
       default: "Output frame" 
-
   - FrameOutX:                   #  0.0  [cm]   x coordinate in output frame 
       type:    "float" 
       descr:   "X' [cm]"

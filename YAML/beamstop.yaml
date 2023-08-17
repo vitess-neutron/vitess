@@ -22,8 +22,8 @@ beamstop:
       descr:   "beamstop shape"  
       tooltip: "shape of the beamstop" 
       enum:    "VtShape"
-      options: ["rectangular","circular"]   
-      default: "rectangular"   
+      options: ["VT_SQUARE","VT_CIRCLE"]   
+      default: "VT_SQUARE"   
       column:   0                     
       prefix:  "-R"   
   - bProp:                

@@ -75,8 +75,7 @@ mon2_pos:
       type:    "switch" 
       descr:   "probability weight" 
       tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
-      default: "YES"
-      default: true
+      default:  yes
       column:  0                     
       prefix:  "-p"  
   - bExcl:             #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
@@ -91,8 +90,8 @@ mon2_pos:
       descr:   "file format" 
       tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
       enum:     "VtFormat2D"
-      options: ["matrix","xyz","matrix compact","xyz compact"]
-      default:  "matrix"
+      options: ["MATRIX","XYZ","MATR_CMPT","MXYZ_CMPT"]
+      default:  "MATRIX"
       column:  2                     
       prefix:  "-F"  
 

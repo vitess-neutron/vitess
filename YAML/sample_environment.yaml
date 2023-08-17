@@ -25,8 +25,8 @@ sample_environment:
       descr:   "direction"
       tooltip: "Direction of the beam passing the sample environment\nin : sample environment before sample\nout: sample environment after sample"
       enum:    "VtDir"
-      options: ["in","out"]
-      default: "in"
+      options: ["VT_IN","VT_OUT"]
+      default: "VT_IN"
       column:   0       
       prefix:  "-r"     
   - iColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
@@ -90,15 +90,15 @@ sample_environment:
       type:    "float"    
       descr:   "incoherent scattering [1/cm]"
       tooltip: "Macroscopic incoherent scattering cross section of the sample environment material.\nIf a non-zero value is given, incoherent scattering is applied."
-      default: 20.0
+      default: 0.0
       min:     0.0
       column:  0       
       prefix:  "-i"     
-  - MuScatTotal:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
+  - MuScatTotal:                  # file  0.5 [1/cm]  user defined macroscopic total scattering cross section of the sample environment material 
       type:    "float"    
       descr:   "total scattering [1/cm]"
       tooltip: "Macroscopic total scattering cross section of the sample environment material (used for attenuation)"
-      default: 20.0
+      default: 0.1
       min:     0.0
       column:  1       
       prefix:  "-T"     
@@ -106,7 +106,7 @@ sample_environment:
       type:    "float"    
       descr:   "absorption [1/cm]"
       tooltip: "Macroscopic absorption cross section of the sample environment material  (used for attenuation)"
-      default: 20.0
+      default: 0.0
       min:     0.0
       column:  2       
       prefix:  "-m"     
@@ -114,7 +114,7 @@ sample_environment:
       type:    "float"    
       descr:   "unit cell volume [A^3]"
       tooltip: "Unit cell volume of the sample environment material"
-      default: 20.0
+      default: 65.0
       min:     0.0001
       column:  0       
       prefix:  "-U"     

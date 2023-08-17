@@ -23,8 +23,8 @@ moderator_cws:
       descr:   "shape"
       tooltip: "moderator shape"
       enum:    "VtModShape"
-      options: ["rectangular", "circular"] 
-      default:  "rectangular"
+      options: ["VT_MOD_SQUARE", "VT_MOD_CIRCLE"] 
+      default:  "VT_MOD_SQUARE"
       column:   0                     
       prefix:  "-s"    
 

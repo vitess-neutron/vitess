@@ -752,6 +752,7 @@ void        PrgFormat_ID2Txt(char* sText, const VtPrgFormat eID)
     case VT_MCPL_FMT  : strcpy(sText, "MCPL"  ); break;
     case VT_MCNPX_FMT : strcpy(sText, "MCNPX" ); break;
     case VT_MCNP6_FMT : strcpy(sText, "MCNP6" ); break;
+    case VT_SSW_FMT   : strcpy(sText, "SSW"   ); break;
     default  : strcpy(sText, "");
   }
 }
@@ -764,6 +765,7 @@ VtPrgFormat PrgFormat_Txt2ID(const char* sText)
   else if (strcmp(sText, "MCPL"  )==0) eID=VT_MCPL_FMT  ;
   else if (strcmp(sText, "MCNPX" )==0) eID=VT_MCNPX_FMT ;
   else if (strcmp(sText, "MCNP6" )==0) eID=VT_MCNP6_FMT ;
+  else if (strcmp(sText, "SSW"   )==0) eID=VT_SSW_FMT ;
   
   return eID;
 }
@@ -1435,10 +1437,11 @@ VtDetUse   DetUse_Txt2ID(const char* sText)
 {
   VtDetUse eID=VT_NO_DET_USE;
 
-       if (strcmp(sText, "normal"      )==0 
-        || strcmp(sText, "realistic"   )==0) eID=VT_DET_REAL;
-  else if (strcmp(sText, "monitor only")==0) eID=VT_MON_ONLY;
-  else if (strcmp(sText, "grid off"    )==0) eID=VT_GRID_OFF;
+       if (strcmp(sText, "normal"        )==0 
+        || strcmp(sText, "realistic"     )==0) eID=VT_DET_REAL;
+  else if (strcmp(sText, "grid off"      )==0) eID=VT_GRID_OFF;
+  else if (strcmp(sText, "efficiency off")==0) eID=VT_EFF_OFF;
+  else if (strcmp(sText, "monitor only"  )==0) eID=VT_MON_ONLY;
   
   return eID;
 }
@@ -1586,7 +1589,8 @@ VtMonPar  MonPar_Txt2ID(const char* sText)
   else if (strcmp(sText, "k_z"      )==0) eID=K_Z      ;
   else if (strcmp(sText, "pos_r"    )==0 
         || strcmp(sText, "r")        ==0) eID=POS_R    ;
-  else if (strcmp(sText, "pos_phi"  )==0) eID=POS_PHI  ;
+  else if (strcmp(sText, "pos_phi"  )==0 
+        || strcmp(sText, "phi")      ==0) eID=POS_PHI  ;
   else if (strcmp(sText, "pos_theta")==0) eID=POS_THETA;
   else if (strcmp(sText, "dir_phi"  )==0) eID=DIR_PHI  ;
   else if (strcmp(sText, "dir_theta")==0) eID=DIR_THETA;

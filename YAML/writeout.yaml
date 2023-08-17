@@ -20,49 +20,49 @@ writeout:      # source module that will be executed
       tooltip: "name of the trajectory output file"
       default: "events.out" 
       prefix:  "-A"
-  - bActive :               #         -a  "Active?"                     "flag: YES: output file is written   NO: output file is not written
+  - bActive :                #         -a  "Active?"                     "flag: YES: output file is written   NO: output file is not written
       type:    "switch" 
       descr:   "Active?" 
       tooltip: "YES: output file is written   NO: output file is not written"
-      default: true
+      default: yes
       column:  0                     
       prefix:  "-a"  
   - bHeader :               
       type:    "switch" 
       descr:   "Header" 
       tooltip: "YES: write header to ASCII file beginning each line with '#'    NO: write only data, no header"
-      default: true
+      default: yes
       column:  1                     
       prefix:  "-h"  
  
   - Title_Format:
       type:    "title"
       default: "File formats" 
-  - ePrgFormat :                #         -f  VtPrgFormat PrgFormat_Txt2ID(const char* sText)
+  - ePrgFormat :             #         -f  VtPrgFormat PrgFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "data format" 
       tooltip: "data format of the program"
       enum:     "VtPrgFormat"
-      options: ["VITESS", "McStas", "MCPL", "MCNP6", "SSW"]
-      default:  "VITESS"
+      options: ["VT_VITESS_FMT", "VT_MCSTAS_FMT", "VT_MCPL_FMT", "VT_MCNP6_FMT", "VT_SSW_FMT"]
+      default:  "VT_VITESS_FMT"
       column:  0                     
       prefix:  "-f"
-  - eDataFormat :                #         -F  VtDataFormat DataFormat_Txt2ID(const char* sText)
+  - eDataFormat :            #         -F  VtDataFormat DataFormat_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "storage format" 
       tooltip: "format of the data to read: 'exponential': scientific format,  'float': floating point  or binary \n(MCPL is always binary)"
       enum:     "VtDataFormat"
-      options: ["exp", "float", "binary"]   
-      default:  "float"
+      options: ["VT_EXPONENTIAL", "VT_FLOAT", "VT_BINARY"]   
+      default:  "VT_FLOAT"
       column:  1                     
       prefix:  "-F"   
-  - eSepFormat :                #         -S  VtSeparator Separator_Txt2ID(const char* sText)
+  - eSepFormat :             #         -S  VtSeparator Separator_Txt2ID(const char* sText)
       type:    "combo" 
       descr:   "separator"
       tooltip: "separator between columns in the ASCII output file"
       enum:     "VtSeparator"
-      options: ["space", "tabulator"]   
-      default:  "space"   
+      options: ["VT_BLANK", "VT_TABULATOR"]   
+      default:  "VT_BLANK"   
       column:  2                     
       prefix:  "-S" 
   
@@ -115,39 +115,39 @@ writeout:      # source module that will be executed
       column:  0                     
       prefix:  "-C"   
    
-  - FilterLambdaMin:               #         -l  "lambda min [Ang]"           "minimal wavelength to be taken into account"
+  - FilterLambdaMin:         #         -l  "lambda min [Ang]"           "minimal wavelength to be taken into account"
       type:    "float" 
       descr:   "lambda min [Ang]"
       tooltip: "minimal wavelength to be taken into account"
       column:  0                     
       prefix:  "-l"   
-  - FilterLambdaMax:               #         -L  "lambda max [Ang]"           "maximal wavelength to be taken into account"
+  - FilterLambdaMax:         #         -L  "lambda max [Ang]"           "maximal wavelength to be taken into account"
       type:    "float" 
       descr:   "lambda max [Ang]"
       tooltip: "maximal wavelength to be taken into account"
       column:  1                     
       prefix:  "-L"
    
-  - FilterWidthMin:               #         -u  "y-pos min [cm]"             "minimal horizontal position to be taken into account"
+  - FilterWidthMin:          #         -u  "y-pos min [cm]"             "minimal horizontal position to be taken into account"
       type:    "float" 
       descr:   "y-pos min [cm]"
       tooltip: "minimal horizontal position to be taken into account"
       column:  0                     
       prefix:  "-u"   
-  - FilterWidthMax:               #         -U  "y-pos max [cm]"             "maximal horizontal position to be taken into account"
+  - FilterWidthMax:          #         -U  "y-pos max [cm]"             "maximal horizontal position to be taken into account"
       type:    "float" 
       descr:   "y-pos max [cm]"
       tooltip: "maximal horizontal position to be taken into account"
       column:  1                     
       prefix:  "-U"   
  
-  - FilterHeightMin:               #         -v  "z-pos min [cm]"             "minimal vertical position to be taken into account"
+  - FilterHeightMin:         #         -v  "z-pos min [cm]"             "minimal vertical position to be taken into account"
       type:    "float" 
       descr:   "z-pos min [cm]"
       tooltip: "minimal vertical position to be taken into account"
       column:  0                     
       prefix:  "-v"   
-  - FilterHeightMax:               #         -V  "z-pos max [cm]"             "maximal vertical position to be taken into account"
+  - FilterHeightMax:         #         -V  "z-pos max [cm]"             "maximal vertical position to be taken into account"
       type:    "float" 
       descr:   "z-pos max [cm]"
       tooltip: "maximal vertical position to be taken into account"

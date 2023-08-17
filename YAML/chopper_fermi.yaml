@@ -15,8 +15,8 @@ chopper_fermi:
       descr:   "channel shape"
       tooltip: "straight: straight Fermi chopper\ncircular: Curved Fermi chopper with circular shaped channels \nideal: Curved Fermi chopper with channels close to parabolic shape" 
       enum:    "VtChnlShape"
-      options: ["straight","circular", "ideal"]
-      default: "straight"
+      options: ["VT_CHN_STR","VT_CHN_CIRC", "VT_CHN_IDEAL"]
+      default: "VT_CHN_STR"
       column:  1                     
       prefix:  "-g"     
 
@@ -130,11 +130,11 @@ chopper_fermi:
       default:  no
       column:   0                     
       prefix:  "-z"     
-  - nGates  : 
+  - eGates  : 
       type:    "combo" 
       descr:   "number of gates"
       tooltip: "number of gates representing the channels (see Help | chopper)" 
-      options: [4, 6, 8]
-      default:  6
+      options: ["4", "6", "8"]
+      default:  "6"
       column:   2                     
       prefix:  "-p"     
