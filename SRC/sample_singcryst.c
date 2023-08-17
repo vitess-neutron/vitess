@@ -479,10 +479,8 @@ void SetSamplePar(SampleType* pSample)
          norm=0.0,  muAbs =0.0, scale_f2=1.0;
   VtSmplGeom geom=VT_NO_GEOM;
   VectorType DirSample={0.0,0.0,1.0}; // sample orientation
-  SampleType sample;                  // structure sample geometry
 
   InitSample(pSample);
-  InitSample(&sample);
 
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)

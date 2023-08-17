@@ -33,8 +33,8 @@
 /******************************/
 void   OwnInit(int argc, char *argv[]);                       // Reads input parameters and sets global variables
 void   OwnCleanup();                                          // Does module specific cleanup
-void   SetSamplePar   (SampleType *pSample);                  // Reads sample parameters and combines with input parameters 
-void   CalcAndWritePar();                                     // Calculates arrays from input parameters and writes to log file
+void   SetSamplePar();                                        // Reads sample parameters and combines with input parameters 
+void   CalcAndWritePar(SampleType *pSample);                  // Calculates arrays from input parameters and writes to log file
 void   SetGeometry(char* sColor);                             // Fills the structure stGeometry for visualization 
 void   OutputTransform(VectorType Pos, VectorType Dir);       // Co-ordinate transformation to output frame
 long   S_q_w(double *wl, double *prob, VectorType Dir);       // S(q,w) scattering: new neutron variables
@@ -119,11 +119,10 @@ int main(int argc, char **argv)
     bBlowUp     = TRUE;
 
   /* Reads sample parameters and combines with input parameters */
-  InitSample  (&stSample);
-  SetSamplePar(&stSample);
+  SetSamplePar();
 
   /* Determines the dependent parameters and write out important parameters */
-  CalcAndWritePar();
+  CalcAndWritePar(&stSample);
 
   DECLARE_ABORT
 
