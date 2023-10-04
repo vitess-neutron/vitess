@@ -5,177 +5,178 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 sample_nxs:
   - category:  "sample"
 
-  - sSmplFile:                  # -S         [-]    parameter file name 
-      type:    "file"    
+  - sSmplFile:                  # -S         [-]    parameter file name
+      type:    "file"
       plottable: false
       descr:   "sample file"
       tooltip: "File containing parameters of the powder sample (size, poition, orientation)\nSee HelpFile 'sample.html'"
-      prefix:  "-S"     
+      prefix:  "-S"
   - sNxsFile :                  # -s           nxs structure factor file name (of the sample material)
-      type:    "file"     
+      type:    "file"
       plottable: false
       descr:   "nxs parameter\nfile"
       tooltip: "File containing information about the crystal (space group, atomic positions, ...)"
-      prefix:  "-s"     
+      prefix:  "-s"
 
   - nRep  :                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory for each structure factor)
-      type:    "int" 
-      descr:   "repetitions" 
+      type:    "int"
+      descr:   "repetitions"
       tooltip: "repetitions (number of trajectories generated per incoming trajectory\nfor each structure factor)"
       min:     1
       default: 1
-      column:  0                     
-      prefix:  "-A"     
+      column:  0
+      prefix:  "-A"
   - iColor  :                 # -c          colour of the neutrons scattered from the environment
-      type:    "int" 
-      descr:   "colour" 
+      type:    "int"
+      descr:   "colour"
       tooltip: "colour of the neutrons scattered from the sample"
       min:     -1
-      column:  1                     
-      prefix:  "-c"     
+      column:  1
+      prefix:  "-c"
 
-  - bIncohScat:                # -I   NO      flag: incoherent scattering (YES  NO)  
-      type:    "switch" 
+  - bIncohScat:                # -I   NO      flag: incoherent scattering (YES  NO)
+      type:    "switch"
       descr:   "incoherent scattering"
       tooltip: "flag incoherent scattering (YES  NO)"
       default: no
-      column:  0                     
-      prefix:  "-I"     
-  - bTreatAll:                # -a   NO      flag: neutrons not hitting the sample are treated  (YES  NO) 
-      type:    "switch" 
+      column:  0
+      prefix:  "-I"
+  - bTreatAll:                # -a   NO      flag: neutrons not hitting the sample are treated  (YES  NO)
+      type:    "switch"
       descr:   "treat all neutrons"
       tooltip: "flag neutrons not hitting the sample are treated"
       default: no
-      column:  1                     
-      prefix:  "-a"     
+      column:  1
+      prefix:  "-a"
   - bOnlyTransm:                # -T   NO      flag: shall only transmission (imaging) be treated (YES) or scattering also (NO)
-      type:    "switch" 
+      type:    "switch"
       descr:   "transmission only"
       tooltip: "flag shall only transmission (imaging) be treated (YES)\nor scattering also (NO)"
       default: no
-      column:  2                     
-      prefix:  "-T"     
+      column:  2
+      prefix:  "-T"
 
   - Theta   :                 # -D  90.0 [deg]   these angles determine orientation and range in which neutrons are scattered
-      type:    "float" 
+      type:    "float"
       descr:   "theta [deg]"
       tooltip: "these angles determine orientation and range in which neutrons are scattered"
       default: 90.0
       min:     0.0
-      column:  0                     
-      prefix:  "-D"     
-  - DelTheta:                 # -d   90.0 [deg]     Theta has to be in the range of [0 deg,180 deg]         
-      type:    "float" 
+      column:  0
+      prefix:  "-D"
+  - DelTheta:                 # -d   90.0 [deg]     Theta has to be in the range of [0 deg,180 deg]
+      type:    "float"
       descr:   "dtheta (deg]"
       tooltip: "theta has to be in the range of [0,180] deg"
       min:     0.0
       max:     180.0
       default: 90.0
-      column:  1                     
-      prefix:  "-d"     
-  - Phi     :                # -P  180.0 [deg]     Phi has to be in the range of   [0 deg,360 deg] 
-      type:    "float" 
+      column:  1
+      prefix:  "-d"
+  - Phi     :                # -P  180.0 [deg]     Phi has to be in the range of   [0 deg,360 deg]
+      type:    "float"
       descr:   "phi [deg]"
       min:     0.0
       max:     360.0
       default: 180.0
       tooltip: "phi has to be in the range of   [0,360] deg"
-      column:  2                     
-      prefix:  "-P"  
-  - DelPhi  :                # -p  180.0 [deg]     Example: 30 - 170 deg scattering angle to the right, +/- 15 deg in height 
-      type:    "float" 
+      column:  2
+      prefix:  "-P"
+  - DelPhi  :                # -p  180.0 [deg]     Example: 30 - 170 deg scattering angle to the right, +/- 15 deg in height
+      type:    "float"
       descr:   "dphi [deg]"
       min:     0.0
-      max:     360.0 
-      default: 180.0 
+      max:     360.0
+      default: 180.0
       tooltip: "Example  30 - 170 deg scattering angle to the right,\n+/- 15 deg in height"
-      column:  0                     
-      prefix:  "-p"     
-                    
-  - Title: 
-      type:    "title"    
+      column:  0
+      prefix:  "-p"
+
+  - Title:
+      type:    "title"
       default: "Sample position and geometry"
   - SmplPosX:                    # -X 0.0  [cm]   center x position of the sample
-      type:    "float" 
+      type:    "float"
       descr:   "x [cm]"
       tooltip: "center x position of the sample"
       default: 0.0
-      prefix:  "-x"     
-      column:  0                     
-  - SmplPosY:                    # -Y 0.0  [cm]   center y position of the sample 
-      type:    "float" 
+      prefix:  "-x"
+      column:  0
+  - SmplPosY:                    # -Y 0.0  [cm]   center y position of the sample
+      type:    "float"
       descr:   "y [cm]"
       tooltip: "center y position of the sample"
       default: 0.0
-      prefix:  "-y"     
-      column:  1                     
-  - SmplPosZ:                    # -Z 0.0  [cm]   center z position of the sample 
-      type:    "float" 
+      prefix:  "-y"
+      column:  1
+  - SmplPosZ:                    # -Z 0.0  [cm]   center z position of the sample
+      type:    "float"
       descr:   "z [cm]"
       tooltip: "center z position of the sample"
       default: 0.0
-      prefix:  "-z"     
-      column:  2  
+      prefix:  "-z"
+      column:  2
 
   - eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "sample\ngeometry"
       tooltip: "geometry of the sample:  cylinder, sphere, cuboid (=rectangular)"
+      enum :   "VtSmplGeom"
       options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
       default:  "VT_CYL"
-      prefix:  "-G"     
-      column:  0 
-                   
+      prefix:  "-G"
+      column:  0
+
   - SizePar1:                # -e 0.0  [cm]   thickness of cuboid or (outer) diameter of sphere or cylinder
-      type:    "float" 
+      type:    "float"
       descr:   "thickness or\ndiameter [cm]"
       tooltip: "thickness of cuboid or (outer) diameter of sphere or cylinder"
       min:     0.0001
       default: 0.5
-      prefix:  "-t"     
-      column:  0                     
+      prefix:  "-t"
+      column:  0
   - Height:                  # -H 0.0  [cm]   height of cuboid or cylinder
-      type:    "float" 
+      type:    "float"
       descr:   "height [cm]"
       tooltip: "height of cuboid or cylinder"
       min:     0.0
       default: 2.0
-      prefix:  "-h"     
-      column:  1                      
-  - Width:                  # -W 0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder 
-      type:    "float" 
+      prefix:  "-h"
+      column:  1
+  - Width:                  # -W 0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder
+      type:    "float"
       descr:   "inner diameter\nor width [cm]"
       tooltip: "width of cuboid or inner diameter of a hollow cylinder"
       min:     0.0
       default: 0.0
-      prefix:  "-w"     
-      column:  2                     
+      prefix:  "-w"
+      column:  2
 
-  - SmplDirX:                    # -x 0.0  [cm]   x-component of the sample orientation 
-      type:    "float" 
+  - SmplDirX:                    # -x 0.0  [cm]   x-component of the sample orientation
+      type:    "float"
       descr:   "x direction [cm]"
       tooltip: "x-component of the sample orientation"
       default: 0.0
-      prefix:  "-X"     
-      column:  0                     
-  - SmplDirY:                    # -y 0.0  [cm]   y-component of the sample orientation 
-      type:    "float" 
+      prefix:  "-X"
+      column:  0
+  - SmplDirY:                    # -y 0.0  [cm]   y-component of the sample orientation
+      type:    "float"
       descr:   "y direction [cm]"
       tooltip: "y-component of the sample orientation"
       default: 0.0
-      prefix:  "-Y"     
-      column:  1                     
+      prefix:  "-Y"
+      column:  1
   - SmplDirZ:                     # -z 0.0  [cm]   z-component of the sample orientation
-      type:    "float" 
+      type:    "float"
       descr:   "z direction [cm]"
       tooltip: "z-component of the sample orientation"
       default: 0.0
-      prefix:  "-Z"     
-      column:  2                     
+      prefix:  "-Z"
+      column:  2
 
 

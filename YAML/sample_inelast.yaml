@@ -5,299 +5,299 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 sample_inelast:
   - category:  "sample"
 
-  - sParFile :            
-      type:    "file"    
+  - sParFile :
+      type:    "file"
       plottable: false
       descr:   "parameter file"
       tooltip: "File containing parameters of the sample\nThese parameters are only used if they are not given as direct input parameters."
-      prefix:  "-P"     
+      prefix:  "-P"
 
-  - Title_param: 
-      type:    "title" 
+  - Title_param:
+      type:    "title"
       default: "S(q,w):  main (P) and dispersion (D) parameters"
   - P1      :                 # -a    0.0 [ueV]   reference energy (: peak position for vanishing energy dispersion)
-      type:    "float" 
+      type:    "float"
       descr:   "P1 [ueV]"
       tooltip: "reference energy (peak position for vanishing energy dispersion)"
       default: 0.0
-      column:  0                     
-      prefix:  "-a"     
+      column:  0
+      prefix:  "-a"
   - P2      :                 # -b    0.0 [ueV]   Lorentzian width (HWHM)
-      type:    "float" 
+      type:    "float"
       descr:   "P2 [ueV]"
       tooltip: "Lorentzian width (HWHM)"
       min:     0.0
-      default: 0.0 
-      column:  1                     
-      prefix:  "-b"     
+      default: 0.0
+      column:  1
+      prefix:  "-b"
   - P3      :                 # -c    0.0  [-]    scaling factor (for both peaks)
-      type:    "float" 
+      type:    "float"
       descr:   "P3"
       tooltip: "scaling factor (for both peaks)"
       min:     0.0001
-      default: 1.0 
-      column:  2                     
-      prefix:  "-c"     
+      default: 1.0
+      column:  2
+      prefix:  "-c"
   - P4      :                 # -d    0.0  [-]    intensity of the second peak relative to the first
-      type:    "float" 
+      type:    "float"
       descr:   "P4"
       tooltip: "intensity of the second peak relative to the first"
-      default: 0.0 
-      column:  0                     
-      prefix:  "-d"     
+      default: 0.0
+      column:  0
+      prefix:  "-d"
 
   - D1      :                 # -x    0.0  [cm]   linear energy dispersion coefficient of momentum component x
-      type:    "float" 
+      type:    "float"
       descr:   "D1 [ueV*Ang]"
       tooltip: "linear energy dispersion coefficient of momentum component x"
-      default: 0.0 
-      column:  0                     
-      prefix:  "-x"     
+      default: 0.0
+      column:  0
+      prefix:  "-x"
   - D2      :                 # -y    0.0 [deg]   linear energy dispersion coefficient of momentum component y
-      type:    "float" 
+      type:    "float"
       descr:   "D2 [ueV*Ang]"
       tooltip: "linear energy dispersion coefficient of momentum component y"
-      default: 0.0 
-      column:  1                     
-      prefix:  "-y"     
+      default: 0.0
+      column:  1
+      prefix:  "-y"
   - D3      :                 # -z    0.0 [deg]   linear energy dispersion coefficient of momentum component z
-      type:    "float" 
+      type:    "float"
       descr:   "D3 [ueV*Ang]"
       tooltip: "linear energy dispersion coefficient of momentum component z"
-      default: 0.0 
-      column:  2                     
-      prefix:  "-z"    
-      
+      default: 0.0
+      column:  2
+      prefix:  "-z"
+
   - bBoseFact:                 # -D    NO  flag: multiplication with the Bose factor
-      type:    "switch" 
-      descr:   "Bose factor?" 
+      type:    "switch"
+      descr:   "Bose factor?"
       tooltip: "flag:  multiplication with the Bose factor (cf. 'Help|sample')"
       default: no
-      column:  0                     
-      prefix:  "-D"     
+      column:  0
+      prefix:  "-D"
   - Temp    :                 # -T    0.0  [cm]   temperature of the sample
-      type:    "float" 
+      type:    "float"
       descr:   "temperature [K]"
       tooltip: "temperature of the sample (only needed if use of the Bose factor is chosen)"
       min:     0.0001
-      column:  1                     
-      prefix:  "-T"     
-  - nRep:                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory) 
-      type:    "int" 
-      descr:   "repetition" 
+      column:  1
+      prefix:  "-T"
+  - nRep:                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory)
+      type:    "int"
+      descr:   "repetition"
       tooltip: "number of trajectories generated per incoming trajectory"
       min:     1
-      column:  0                     
-      prefix:  "-A"     
+      column:  0
+      prefix:  "-A"
 
-  - Title_scattering: 
-      type: "title" 
-      default: "Scattering parameters" 
+  - Title_scattering:
+      type: "title"
+      default: "Scattering parameters"
   - ScatLambda:                 #  0.0 [Ang]   average wavelength Lambda of the scattered neutrons
-      type:    "float" 
+      type:    "float"
       descr:   "lambda final[Ang]"
       tooltip: "Average wavelength Lambda of the scattered neutrons"
       default: 6.0
-      column:  0                     
-      prefix:  "-L"     
+      column:  0
+      prefix:  "-L"
   - ScatHor:                  #  0.0 [deg]   horizontal rotation defining the main scattering direction
-      type:    "float" 
+      type:    "float"
       descr:   "angle horiz final [deg]"
       tooltip: "Horizontal rotation Theta defining the mean scattering direction"
       default: 0.0
-      column:  1                     
-      prefix:  "-E"     
+      column:  1
+      prefix:  "-E"
   - ScatVert:                 #  0.0 [deg]   vertical rotation defining the main scattering direction
-      type:    "float" 
+      type:    "float"
       descr:   "angle vert final [deg]"
       tooltip: "Vertical rotation Phi defining the mean scattering direction"
       default: 0.0
-      column:  2                     
-      prefix:  "-F"     
+      column:  2
+      prefix:  "-F"
 
   - DelLambda:                  #  0.0 [Ang]   wavelength variation DelLambda of the scattered neutrons [Lambda-DelLambda/2, Lambda+DelLambda/2]
-      type:    "float" 
+      type:    "float"
       descr:   "delta lambda final [Ang]"
       tooltip: "Range around the mean wavelength, i.e. the final wavelength will be in the range [Lambda-DelLambda], Lambda+DelLambda]"
-      column:  0                     
-      prefix:  "-l"     
+      column:  0
+      prefix:  "-l"
   - DelScatHor:                   #  0.0 [deg]   variation DelTheta determining the hor. scat. range [Theta-DelTheta/2, Theta+DelTheta/2]
-      type:    "float" 
+      type:    "float"
       descr:   "delta angle horiz [deg]"
       tooltip: "Horizontal range DelTheta around the mean scattering direction, i.e. the outgoing angle will be in range [Theta-DelTheta, Theta+DelTheta]"
-      column:  1                     
-      prefix:  "-e"     
+      column:  1
+      prefix:  "-e"
   - DelScatVert:                  #  0.0 [deg]   variation DelPhi determining the vert. scat. range [Phi-DelPhi/2, Phi+DelPhi/2]
-      type:    "float" 
+      type:    "float"
       descr:   "delta angle vert [deg]"
       tooltip: "Vertical range DelPhi around the mean scattering dirction, i.e. the outgoing angle will be in range [Phi-DelPhi, Phi+DelPhi]"
       default: 0.0
-      column:  2                     
-      prefix:  "-f"     
+      column:  2
+      prefix:  "-f"
 
-  - MuScatTotal:                 #  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample 
-      type:    "float" 
+  - MuScatTotal:                 #  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample
+      type:    "float"
       descr:   "scattering coeff. [1/cm]"
       tooltip: "User defined macroscopic total scattering cross section of the sample"
       default: 0.0
-      column:  0                     
-      prefix:  "-s"     
-  - MuAbsorb   :                 #  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample 
-      type:    "float" 
+      column:  0
+      prefix:  "-s"
+  - MuAbsorb   :                 #  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample
+      type:    "float"
       descr:   "absorption coeff. [1/cm/Ang]"
       tooltip: "User defined macroscopic absorption cross section of the sample per wavelength"
       default: 0.0
-      column:  1                     
-      prefix:  "-m"     
+      column:  1
+      prefix:  "-m"
 
-  - Title_position: 
-      type: "title" 
-      default: "Position, orientation and geometry of the sample"                    
+  - Title_position:
+      type: "title"
+      default: "Position, orientation and geometry of the sample"
   - SmplPosX:                     #  0.0  [cm]   center x position of the sample
-      type:    "float" 
+      type:    "float"
       descr:   "X [cm]"
       tooltip: "center x position of the sample"
       default: 20.0
-      column:  0                     
-      prefix:  "-X"     
-  - SmplPosY:                     #  0.0  [cm]   center y position of the sample 
-      type:    "float" 
+      column:  0
+      prefix:  "-X"
+  - SmplPosY:                     #  0.0  [cm]   center y position of the sample
+      type:    "float"
       descr:   "Y [cm]"
       tooltip: "center y position of the sample"
       default: 0.0
-      column:  1                     
-      prefix:  "-Y"     
-  - SmplPosZ:                     #  0.0  [cm]   center z position of the sample 
-      type:    "float" 
+      column:  1
+      prefix:  "-Y"
+  - SmplPosZ:                     #  0.0  [cm]   center z position of the sample
+      type:    "float"
       descr:   "Z [cm]"
       tooltip: "center z position of the sample"
       default: 0.0
-      column:  2  
-      prefix:  "-Z"     
- 
+      column:  2
+      prefix:  "-Z"
+
   - eSmplGeom:                 #  VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
-      enum:    "VtSmplGeom"   
+      enum:    "VtSmplGeom"
       options: ["VT_CYL", "VT_SPHERE", "VT_CUBE", "VT_HOL_CYL"]
       default:  "VT_CYL"
-      column:  0 
-      prefix:  "-G"     
+      column:  0
+      prefix:  "-G"
 
   - SizePar1:                 #  0.0  [cm]   thickness of cuboid or (outer) diameter of sphere or cylinder
-      type:    "float" 
+      type:    "float"
       descr:   "thickness or diameter [cm]"
       tooltip: "thickness of a cuboid or (outer) diameter of a sphere or cylinder"
       default: 0.5
-      column:  0                     
-      prefix:  "-t"     
+      column:  0
+      prefix:  "-t"
   - Height:                   #  0.0  [cm]   height of cuboid or cylinder
-      type:    "float" 
+      type:    "float"
       descr:   "height [cm]"
       tooltip: "height of a cuboid or cylinder"
       default: 2.0
-      column:  1                      
-      prefix:  "-h"     
-  - Width:                    #  0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder 
-      type:    "float" 
+      column:  1
+      prefix:  "-h"
+  - Width:                    #  0.0  [cm]   width of cuboid or inner diameter of a hollow cylinder
+      type:    "float"
       descr:   "inner diameter or width [cm]"
       tooltip: "width of a cuboid or inner diameter of a hollow cylinder"
       default: 0.0
-      column:  2                     
-      prefix:  "-w"     
-                  
-  - SmplRotHor:                  #  0.0  [deg]  horizontal rotation of the sample 
-      type:    "float" 
+      column:  2
+      prefix:  "-w"
+
+  - SmplRotHor:                  #  0.0  [deg]  horizontal rotation of the sample
+      type:    "float"
       descr:   "horizontal angle [deg]"
       tooltip: "Rotation of the sample in horizontal direction (first rotation)"
       default: 0.0
-      column:  0                     
-      prefix:  "-o"     
+      column:  0
+      prefix:  "-o"
   - SmplRotVert:                 #  0.0  [deg]  vertical rotation of the sample
-      type:    "float" 
+      type:    "float"
       descr:   "vertical angle [deg]"
       tooltip: "Rotation of the sample in vertical direction (second rotation)"
       default: 0.0
-      column:  1                     
-      prefix:  "-O"     
+      column:  1
+      prefix:  "-O"
 
-  - Title_ref: 
-      type: "title" 
-      default: "reference wavevector" 
+  - Title_ref:
+      type: "title"
+      default: "reference wavevector"
   - LambdaInit:                 #  6.0  [Ang]  initial wavelength
-      type:    "float" 
+      type:    "float"
       descr:   "lambda initial [Ang]"
       tooltip: "wavelength of the incoming neutron (see Help|sample)"
       default: 6.0
-      column:  0                     
-      prefix:  "-q"     
-  - DirInHor:                 #  0.0  [deg]  horizontal orientation of the incoming neutron 
-      type:    "float" 
+      column:  0
+      prefix:  "-q"
+  - DirInHor:                 #  0.0  [deg]  horizontal orientation of the incoming neutron
+      type:    "float"
       descr:   "angle horiz initial [deg]"
       tooltip: "horizontal orientation of the incoming neutron (see Help|sample)"
       default: 0.0
-      column:  1                     
-      prefix:  "-i"     
+      column:  1
+      prefix:  "-i"
   - DirInVert:                 #  0.0  [deg]  vertical orientation of the incoming neutron
-      type:    "float" 
+      type:    "float"
       descr:   "angle vert initial [deg]"
       tooltip: "vertical orientation of the incoming neutron (see 'Help|sample')"
       default: 0.0
-      column:  2                     
-      prefix:  "-I"     
+      column:  2
+      prefix:  "-I"
 
-  - Title_frame: 
-      type: "title" 
-      default: "Output frame" 
+  - Title_frame:
+      type: "title"
+      default: "Output frame"
   - eOutFrame:                   #  VtFrameGen FrameGen_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': creates output direction using the initial wavevector values (see Help|sample)"
       enum:     VtFrameGen
       options: ["VT_FRAME_USER", "VT_FRAME_STD"]
       default: "VT_FRAME_STD"
-      column:   0                     
-      prefix:  "-g"     
+      column:   0
+      prefix:  "-g"
 
-  - FrameOutX:                     #  0.0  [cm]   x coordinate in output frame 
-      type:    "float" 
+  - FrameOutX:                     #  0.0  [cm]   x coordinate in output frame
+      type:    "float"
       descr:   "X' [cm]"
       tooltip: "x coordinate of the output frame"
       default: 20.0
-      column:  0                     
-      prefix:  "-R"     
-  - FrameOutY:                     #  0.0  [cm]   y coordinate in output frame 
-      type:    "float" 
+      column:  0
+      prefix:  "-R"
+  - FrameOutY:                     #  0.0  [cm]   y coordinate in output frame
+      type:    "float"
       descr:   "Y' [cm]"
       tooltip: "y coordinate of the output frame"
       default: 0.0
-      column:  1                     
-      prefix:  "-S"     
-  - FrameOutZ:                     #  0.0  [cm]   z coordinate in output frame  
-      type:    "float" 
+      column:  1
+      prefix:  "-S"
+  - FrameOutZ:                     #  0.0  [cm]   z coordinate in output frame
+      type:    "float"
       descr:   "Z' [cm]"
       tooltip: "z coordinate of the output frame"
       default: 0.0
-      column:  2                     
-      prefix:  "-W"     
+      column:  2
+      prefix:  "-W"
 
-  - FrameOutHor:                   #  0.0  [deg]  horizontal angular coordinate in output frame  
-      type:    "float" 
+  - FrameOutHor:                   #  0.0  [deg]  horizontal angular coordinate in output frame
+      type:    "float"
       descr:   "horiz. angle [deg]"
       tooltip: "Rotation angle of the output frame in horizontal direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
       default: 0.0
-      column:  0                     
-      prefix:  "-u"     
-  - FrameOutVert   :               #  0.0  [deg]  vertical angular coordinate in output frame 
-      type:    "float" 
+      column:  0
+      prefix:  "-u"
+  - FrameOutVert   :               #  0.0  [deg]  vertical angular coordinate in output frame
+      type:    "float"
       descr:   "vert. angle [deg]"
       tooltip: "Rotation angle of the output frame in vertical direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
       default: 0.0
-      column:  1                     
-      prefix:  "-U"     
+      column:  1
+      prefix:  "-U"

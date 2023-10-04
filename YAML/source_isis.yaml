@@ -5,212 +5,212 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 
 source_isis:
   - category:  "source"
   - eSrcKind:                          # -K    VtSrcKind SrcKind_Txt2ID(const char* sText)     SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
-      type:    combo                   # This shall not be selected, but defined by the chosen module 
+      type:    combo                   # This shall not be selected, but defined by the chosen module
       hidden:  true
       descr:   "kind of source"
       enum:    "VtSrcKind"
       options: ["SRC_SIMPLE", "SRC_CWS", "SRC_PULSED", "SRC_ISIS", "SRC_ESS"]
-      default: "SRC_ISIS" 
-      prefix:  "-K"     
+      default: "SRC_ISIS"
+      prefix:  "-K"
 
-  - Titel_Sim :                       
-      type:    "title" 
+  - Titel_Sim :
+      type:    "title"
       default: "Simulation parameters"
-  - nBunches :                          # -n   10 [-]   number of bundles  
-      type:    "int" 
+  - nBunches :                          # -n   10 [-]   number of bundles
+      type:    "int"
       descr :  "number of bundels"
       tooltip: "number of packages into which the whole simulation is separated"
       default: 5
-      column:  0                     
-      prefix:  "-l"     
-  - nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)  
-      type:    "float" 
+      column:  0
+      prefix:  "-l"
+  - nTraj   :                          # -n   1.0e6 [-]   number of neutron trajectories (events)
+      type:    "float"
       descr :  "number of traj. per bundle"
       tooltip: "number of neutron trajectories (events) created in each bundle"
-      default: 1000000 
-      column:  1                     
-      prefix:  "-n"     
-  - sSimName : 
+      default: 1000000
+      column:  1
+      prefix:  "-n"
+  - sSimName :
       type:    "string"
       descr:   "simulation name"
       tooltip: "name or ID of the simulation given by the user (only for indexing)"
-      default: "" 
-      column:  2                       
+      default: ""
+      column:  2
       prefix:  "-I"
 
-  - MinLambda    :                          # -m        [Ang]  minimum of the wavelength range 
-      type:    "float" 
+  - MinLambda    :                          # -m        [Ang]  minimum of the wavelength range
+      type:    "float"
       descr:   "min. wavelength [Ang]"
       tooltip: "minimum of the wavelength range"
       min    : 0.0
       default: 1.0
-      column:  0                     
-      prefix:  "-m"     
-  - MaxLambda    :                          # -M        [Ang]  maximum of the wavelength range 
-      type:    "float" 
+      column:  0
+      prefix:  "-m"
+  - MaxLambda    :                          # -M        [Ang]  maximum of the wavelength range
+      type:    "float"
       descr:   "max. wavelength [Ang]"
-      tooltip: "maximum of the wavelength range" 
+      tooltip: "maximum of the wavelength range"
       default: 5.0
-      column:  1                     
-      prefix:  "-M"     
+      column:  1
+      prefix:  "-M"
 
-  - Titel_Mod :                       
-      type:    "title" 
+  - Titel_Mod :
+      type:    "title"
       default: "Source and moderator parameters"
   - eSrcType:                          # -S    VtSrcType SrcType_Txt2ID(const char* sText)      CWS SPSS LPSS
-      type:    combo       
+      type:    combo
       hidden:  true
       descr:   "source type"
-      tooltip: "parameter describing the time dependence of the proton beam: continuous (CWS), short pulses (SPSS) or long pulses (LPSS)"   
+      tooltip: "parameter describing the time dependence of the proton beam: continuous (CWS), short pulses (SPSS) or long pulses (LPSS)"
       enum:    "VtSrcType"
-      options: ["NO_TYPE", "SPSS"] 
-      default:  "SPSS" 
-      prefix:  "-S"     
+      options: ["NO_TYPE", "SPSS"]
+      default:  "SPSS"
+      prefix:  "-S"
   - sSrcName :                          # -N    VtSrcName SrcName_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       hidden:  true
-      descr:   "source name" 
+      descr:   "source name"
       tooltip: "name of the source"
       enum:    "VtSrcName"
       options: ["ANYSOURCE", "ISIS"]
       default:  "ISIS"
-      prefix:  "-N"     
-  - Freq    :                          # -R        [Hz]   pulse frequency 
-      type:    "float" 
+      prefix:  "-N"
+  - Freq    :                          # -R        [Hz]   pulse frequency
+      type:    "float"
       descr:   "frequency [Hz]"
-      tooltip: "pulse repetition rate" 
-      default: 50 
-      column:  0                     
-      prefix:  "-R"     
-  - sBeamline:                          # -B         [-]   name of the beamline  
-      type:    "string" 
+      tooltip: "pulse repetition rate"
+      default: 50
+      column:  0
+      prefix:  "-R"
+  - sBeamline:                          # -B         [-]   name of the beamline
+      type:    "string"
       descr:   "beamline"
-      tooltip: "name of the beamline" 
-      column:  1                     
-      prefix:  "-B"     
+      tooltip: "name of the beamline"
+      column:  1
+      prefix:  "-B"
 
-  - Titel_Prop :                       
-      type:    "title" 
+  - Titel_Prop :
+      type:    "title"
       default: "Flight direction and propagation"
   - eDirMode :                          # -d    VtDirect Direct_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "direction defined"
-      tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window" 
+      tooltip: "mode to determine neutron directions\n'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window"
       enum:    "VtDirect"
-      options: ["VT_REAL_WND", "VT_VIRT_WND"] 
+      options: ["VT_REAL_WND", "VT_VIRT_WND"]
       default: "VT_REAL_WND"
-      column:  0                     
-      prefix:  "-d"     
+      column:  0
+      prefix:  "-d"
 
-  - TargetDist   :                          # -D 100.0  [cm]   distance moderator - target window 
-      type:    "float" 
+  - TargetDist   :                          # -D 100.0  [cm]   distance moderator - target window
+      type:    "float"
       descr:   "distance to window [cm]"
-      tooltip: "distance moderator - target window" 
+      tooltip: "distance moderator - target window"
       min    :   0.0
       default: 100.0
-      column:  0                     
-      prefix:  "-D"     
-  - TargetWidth  :                          # -w   3.0  [cm]   width of the target window 
-      type:    "float" 
+      column:  0
+      prefix:  "-D"
+  - TargetWidth  :                          # -w   3.0  [cm]   width of the target window
+      type:    "float"
       descr:   "window width [cm]"
-      tooltip: "width of the target window" 
+      tooltip: "width of the target window"
       min    : 0.0
       default: 3.0
-      column:  1                     
-      prefix:  "-w"     
-  - TargetHeight :                          # -h   3.0  [cm]   height of the target window 
-      type:    "float" 
+      column:  1
+      prefix:  "-w"
+  - TargetHeight :                          # -h   3.0  [cm]   height of the target window
+      type:    "float"
       descr:   "window height [cm]"
       tooltip: "height of the target window"
       min    : 0.0
       default: 3.0
-      column:  2                     
-      prefix:  "-h"     
+      column:  2
+      prefix:  "-h"
 
-  - Titel_Time :                       
-      type:    "title" 
+  - Titel_Time :
+      type:    "title"
       default: "Time window"
-  - TofDist :                          # -s        [cm]   distance moderator - position of time window   
-      type:    "float" 
+  - TofDist :                          # -s        [cm]   distance moderator - position of time window
+      type:    "float"
       descr:   "distance to time window [cm]"
       tooltip: "distance moderator - position of time window"
-      column:  0                     
-      prefix:  "-s"     
-  - TofMin  :                          # -f        [cm]   min TOF allowed in time window  
-      type:    "float"    
+      column:  0
+      prefix:  "-s"
+  - TofMin  :                          # -f        [cm]   min TOF allowed in time window
+      type:    "float"
       descr:   "min. TOF to time window [ms]"
-      tooltip: "min TOF allowed in time window" 
-      column:  1                     
-      prefix:  "-f"     
-  - TofMax  :                          # -F        [cm]   max TOF allowed in time window 
-      type:    "float" 
+      tooltip: "min TOF allowed in time window"
+      column:  1
+      prefix:  "-f"
+  - TofMax  :                          # -F        [cm]   max TOF allowed in time window
+      type:    "float"
       descr:   "max. TOF to time window [ms]"
-      tooltip: "max TOF allowed in time window" 
-      column:  2                     
-      prefix:  "-F"     
+      tooltip: "max TOF allowed in time window"
+      column:  2
+      prefix:  "-F"
 
-  - Titel_Pol:                       
-      type:    "title" 
+  - Titel_Pol:
+      type:    "title"
       default: "Polarization"
-  - PolDirX :                          # -X        [cm]   x-component of the polarisation 
-      type:    "float" 
+  - PolDirX :                          # -X        [cm]   x-component of the polarisation
+      type:    "float"
       descr:   "polarisation direction X"
-      tooltip: "x-component of the polarisation" 
-      column:  0                     
-      prefix:  "-X"        
+      tooltip: "x-component of the polarisation"
+      column:  0
+      prefix:  "-X"
   - PolDirY :                          # -Y        [cm]   y-component of the polarisation
       descr:   "Y"
-      type:    "float" 
+      type:    "float"
       tooltip: "y-component of the polarisation"
-      column:  1                     
-      prefix:  "-Y"     
+      column:  1
+      prefix:  "-Y"
   - PolDirZ :                          # -V        [cm]   z-component of the polarisation
-      type:    "float" 
+      type:    "float"
       descr:   "Z"
       tooltip: "z-component of the polarisation"
-      column:  2                     
-      prefix:  "-V"     
-  - PolDeg  :                          # -P        [cm]   degree of polarization [%] 
-      type:    "float" 
+      column:  2
+      prefix:  "-V"
+  - PolDeg  :                          # -P        [cm]   degree of polarization [%]
+      type:    "float"
       descr:   "degree of polarization [%]"
-      tooltip: "degree of polarization [%]" 
-      column:  0                     
-      prefix:  "-P"     
+      tooltip: "degree of polarization [%]"
+      column:  0
+      prefix:  "-P"
 
-  - Titel_Special :                       
-      type:    "title" 
+  - Titel_Special :
+      type:    "title"
       default: "Special simulation parameters"
   - TimeMeas:                          # -A         [s]   time of measurement in second
-      type:    "float" 
+      type:    "float"
       descr:   "time of measurement [s]"
       tooltip: "time of measurement in second (used for detector counts)"
-      column:  0                     
-      prefix:  "-A"     
-  - LambdaWant:                          # -W        [Ang]  desired wavelength           
-      type:    "float"   
+      column:  0
+      prefix:  "-A"
+  - LambdaWant:                          # -W        [Ang]  desired wavelength
+      type:    "float"
       descr:   "desired wavelength [Ang]"
-      tooltip: "desired wavelength (can be used for chopper phasing)" 
-      column:  1                     
-      prefix:  "-W"     
+      tooltip: "desired wavelength (can be used for chopper phasing)"
+      column:  1
+      prefix:  "-W"
   - eTraceMode:                          # -k   VtTrace Trace_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "kind of raytracing"
       tooltip: "'write trace files': writes a file for each trajectries of interest\n'only trace trajectories': simulation only started for trajectories of interest"
       enum:    "VtTrace"
-      options: ["NO_TRACING", "WRITE_TRC_FILES", "ONLY_TRC_TRAJ"]   
+      options: ["NO_TRACING", "WRITE_TRC_FILES", "ONLY_TRC_TRAJ"]
       default:  "NO_TRACING"
-      column:  0                     
-      prefix:  "-k"     
+      column:  0
+      prefix:  "-k"
   - TraceFile :                          # -r         [-]   name of the file containing the IDs for tracing
-      type:    "file" 
+      type:    "file"
       plottable: false
       descr:   "raytracing file"
       tooltip: "name of the file containing the IDs for tracing"
-      prefix:  "-r"     
+      prefix:  "-r"
 

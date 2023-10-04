@@ -5,221 +5,221 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 sample_sans:
   - category:  "sample"
 
-  - sParFile :                  # -S         [-]    parameter file name 
-      type:    "file"    
+  - sParFile :                  # -S         [-]    parameter file name
+      type:    "file"
       plottable: false
       descr:   "sample file"
       tooltip: "File containing parameters of the SANS sample\nThese parameters are only used if they are not given as direct input parameters."
-      prefix:  "-S"     
+      prefix:  "-S"
 
-  - MaxTheta:    
-      type:    "float" 
+  - MaxTheta:
+      type:    "float"
       descr:   "max. theta [deg]"
       tooltip: "maximal deviation from the x-axis (beamline direction) into which neutrons are scattered"
       default: 10.0
-      prefix:  "-M"     
-      column:  0         
-      
-  - bIncohScat:                     # -I  NO     [-]    flag: shall incoherent scattering be done ?  
-      type:    "switch" 
+      prefix:  "-M"
+      column:  0
+
+  - bIncohScat:                     # -I  NO     [-]    flag: shall incoherent scattering be done ?
+      type:    "switch"
       descr:   "incoherent scattering"
-      tooltip: "yes: activates calculation of incoherent scattering\nno: no incoherent scattering" 
+      tooltip: "yes: activates calculation of incoherent scattering\nno: no incoherent scattering"
       default:  no
-      column:   0                     
-      prefix:  "-I"     
+      column:   0
+      prefix:  "-I"
   - nRep:                   # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory)
-      type:    "int" 
+      type:    "int"
       descr:   "repetition"
       tooltip: "repetitions (number of trajectories generated per incoming trajectory)"
       min:     1
-      default: 1 
-      column:  1                     
-      prefix:  "-A"     
+      default: 1
+      column:  1
+      prefix:  "-A"
   - iColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
-      type:    "int"    
+      type:    "int"
       descr:   "colour"
       tooltip: "Colour of the neutrons scattered by the SANS sample"
-      min:     0 
-      column:  000001       
-      prefix:  "-c"  
-  - bTreatAll:                      # -I  NO     [-]    flag: shall neutrons not hitting the sample be treated ?  
-      type:    "switch" 
+      min:     0
+      column:  000001
+      prefix:  "-c"
+  - bTreatAll:                      # -I  NO     [-]    flag: shall neutrons not hitting the sample be treated ?
+      type:    "switch"
       descr:   "treat all neutrons"
-      tooltip: "no: only neutrons hitting the sample are treated\nyes: neutrons passing by are also treated" 
+      tooltip: "no: only neutrons hitting the sample are treated\nyes: neutrons passing by are also treated"
       default:  no
-      column:  1                     
-      prefix:  "-a"     
-      
-  - Title: 
-      type:    "title"    
+      column:  1
+      prefix:  "-a"
+
+  - Title:
+      type:    "title"
       default: "Sample position and geometry"
-  - PosSmplX:                  # -x    0.0  [cm]   center position X of the SANS sample 
-      type:    "float"    
+  - PosSmplX:                  # -x    0.0  [cm]   center position X of the SANS sample
+      type:    "float"
       descr:   "x [cm]"
       tooltip: "Center position X of the SANS sample"
       default: 30.0
-      column:   0       
-      prefix:  "-x"     
-  - PosSmplY:                  # -y    0.0  [cm]   center position Y of the SANS sample 
-      type:    "float"    
+      column:   0
+      prefix:  "-x"
+  - PosSmplY:                  # -y    0.0  [cm]   center position Y of the SANS sample
+      type:    "float"
       descr:   "y [cm]"
       tooltip: "Center position Y of the SANS sample"
-      column:  1       
-      prefix:  "-y"     
-  - PosSmplZ:                  # -z    0.0  [cm]   center position Z of the SANS sample 
-      type:    "float"    
+      column:  1
+      prefix:  "-y"
+  - PosSmplZ:                  # -z    0.0  [cm]   center position Z of the SANS sample
+      type:    "float"
       descr:   "z [cm]"
-      tooltip: "center position Z of the SANS sample" 
+      tooltip: "center position Z of the SANS sample"
       default: 0.0
-      column:  2       
-      prefix:  "-z"     
+      column:  2
+      prefix:  "-z"
 
   - eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "sample geometry"
       tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
-      enum:    "VtSmplGeom"   
+      enum:    "VtSmplGeom"
       options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
       default:  "VT_CYL"
-      prefix:  "-G"     
-      column:  0 
+      prefix:  "-G"
+      column:  0
 
   - SmplDiam:                  # file  1.0  [cm]   thickness of the SANS sample  (: R_out - R_in)
-      type:    "float"    
+      type:    "float"
       descr:   "thickness or diameter [cm]"
       tooltip: "Thickness of a cubic sample, or diameter of spherical of cylindrical sample."
       min:     0.0001
       default: 0.2
-      column:  0       
-      prefix:  "-t"     
+      column:  0
+      prefix:  "-t"
   - SmplHeight:                  # file 20.0  [cm]   outer height of the SANS sample
-      type:    "float"    
+      type:    "float"
       descr:   "height [cm]"
       tooltip: Height of the SANS sample (not needed for spherical shape)"
       default: 0.5
       min:     0.0
-      column:  1       
-      prefix:  "-h"     
+      column:  1
+      prefix:  "-h"
   - SmplWidth:                  # file 10.0  [cm]   outer diameter of the SANS sample  (: 2*R_out)
-      type:    "float"    
+      type:    "float"
       descr:   "width [cm]"
       tooltip: "Width of a cubic SANS sample"
       default: 0.5
       min:     0.0
-      column:  2       
-      prefix:  "-w"     
+      column:  2
+      prefix:  "-w"
 
-  - SmplOrientX:   
-      type:    "float" 
+  - SmplOrientX:
+      type:    "float"
       descr:   "x direction [cm]"
       tooltip: "x-component of the sample orientation"
       default: 0.0
-      prefix:  "-X"     
-      column:  0                     
-  - SmplOrientY:  
-      type:    "float" 
+      prefix:  "-X"
+      column:  0
+  - SmplOrientY:
+      type:    "float"
       descr:   "y direction [cm]"
       tooltip: "y-component of the sample orientation"
       default: 0.0
-      prefix:  "-Y"     
-      column:  1                     
-  - SmplOrientZ:  
-      type:    "float" 
+      prefix:  "-Y"
+      column:  1
+  - SmplOrientZ:
+      type:    "float"
       descr:   "z direction [cm]"
       tooltip: "z-component of the sample orientation"
       default: 0.0
-      prefix:  "-Z"     
-      column:  2                     
+      prefix:  "-Z"
+      column:  2
 
-  - Title: 
-      type:    "title"    
+  - Title:
+      type:    "title"
       default: "Scattering"
   - ePtclGeom:               # VtPtclGeom   PtclGeom_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "shape of particles"
       tooltip: "Shape of the scattering objects: spheres, polydispersive spheres, ellipsoids, parallelepipeds, cylinders"
       enum:    "VtPtclGeom"
       options: ["VT_PTCL_SPHERE", "VT_PTCL_POLY_SPH", "VT_PTCL_ELLIPS", "VT_PTCL_EPIPED", "VT_PTCL_CYL", "VT_ISOTROPIC"]
       default: "VT_PTCL_SPHERE"
-      prefix:  "-O"     
-      column:  0 
+      prefix:  "-O"
+      column:  0
 
-  - RadiusPtcl:                  
-      type:    "float"    
+  - RadiusPtcl:
+      type:    "float"
       descr:   "radius 1 or length [Ang]"
       tooltip: "Size of the particles:\n(Min.) radius of a sphere, thickness of a parallelepiped, or first radius of a cylinder or an ellipsoid. (See also Help|sample)"
       min:     0.0001
       default: 100.0
-      column:  0       
-      prefix:  "-U"     
-  - WidthPtcl  :          
-      type:    "float"    
+      column:  0
+      prefix:  "-U"
+  - WidthPtcl  :
+      type:    "float"
       descr:   "radius 2 or width [Ang]"
       tooltip: "Size of the particles:\nWidth of a parallelepiped or 2nd or max. radius of an ellipsoid, a cylinder or max. radius of spheres. (See also Help|sample)"
       default: 0.5
       min:     0.0
-      column:  1       
-      prefix:  "-V"     
-  - HeightPtcl:          
-      type:    "float"    
+      column:  1
+      prefix:  "-V"
+  - HeightPtcl:
+      type:    "float"
       descr:   "radius 3 or height [Ang]"
       tooltip: "Size of the particles:\nHeight of a parallelepiped or cylinder or 3rd radius of an ellipsoid. (See also Help|sample)"
       default: 0.5
       min:     0.0
-      column:  2       
-      prefix:  "-W"     
+      column:  2
+      prefix:  "-W"
 
-  - ScatLenPtcl:              
-      type:    "float"    
+  - ScatLenPtcl:
+      type:    "float"
       descr:   "scat. len. dens. particl [1/cm^2]"
       tooltip: "Scattering length density of the particles"
       default: 2.0e+10
       min:     0.0
-      column:  0       
-      prefix:  "-l"     
-  - ScatLenSolv:              
-      type:    "float"    
+      column:  0
+      prefix:  "-l"
+  - ScatLenSolv:
+      type:    "float"
       descr:   "scat. len. dens. solvent^ [1/cm2]"
       tooltip: "Scattering length density of the solvent"
       default: 1.0e+10
       min:     0.0
-      column:  1       
-      prefix:  "-L"     
-  - PtclFrac: 
-      type:    "float"    
+      column:  1
+      prefix:  "-L"
+  - PtclFrac:
+      type:    "float"
       descr:   "vol. fraction of particles"
       tooltip: "Normalization factor for the structure factor\nSee also Help|sample"
       default: 1.0
       min:     0.000001
-      column:  2       
-      prefix:  "-f"     
+      column:  2
+      prefix:  "-f"
 
-  - MuScatIncoh:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the SANS sample material 
-      type:    "float"    
+  - MuScatIncoh:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the SANS sample material
+      type:    "float"
       descr:   "incoherent scattering [1/cm]"
       tooltip: "Macroscopic incoherent scattering cross section of the SANS sample material.\nNeeded if 'Incoherent scattering' is chosen."
       default: 0.0
       min:     0.0
-      column:  0       
-      prefix:  "-i"     
-  - MuScatTotal:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the SANS sample material 
-      type:    "float"    
+      column:  0
+      prefix:  "-i"
+  - MuScatTotal:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the SANS sample material
+      type:    "float"
       descr:   "total scattering [1/cm]"
       tooltip: "Macroscopic total scattering cross section of the SANS sample material (used for attenuation)"
       default: 20.0
       min:     0.5
-      column:  1       
-      prefix:  "-T"     
-  - MuAbsorb   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the SANS sample material 
-      type:    "float"    
+      column:  1
+      prefix:  "-T"
+  - MuAbsorb   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the SANS sample material
+      type:    "float"
       descr:   "absorption [1/cm]"
       tooltip: "Macroscopic absorption cross section of the SANS sample material for 1.798 Ang (used for attenuation)"
       default: 0.1
       min:     0.0
-      column:  2       
-      prefix:  "-m"     
+      column:  2
+      prefix:  "-m"

@@ -5,132 +5,132 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 
 mon2_div:
   - category:  "monitor"
 
   - sMonFile:              #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position
-      type:    "file" 
+      type:    "file"
       plottable: true
       descr:   "monitor file"
       tooltip: "monitor output file containing intensity as a function of y- and z-position"
       default: "sample.div"
-      prefix:  "-O"  
-   
-  - Title_Par: 
-      type:    "title" 
+      prefix:  "-O"
+
+  - Title_Par:
+      type:    "title"
       default: "Ranges"
   - MinDivY:               #     -w  "min. y-value [deg]"       "minimal horizontal divergence to be monitored"
-      type:    "float" 
-      descr:   "min. y-value [deg]" 
+      type:    "float"
+      descr:   "min. y-value [deg]"
       tooltip: "minimal horizontal divergence to be monitored"
       default: -5.0
-      column:  0                     
-      prefix:  "-w"  
+      column:  0
+      prefix:  "-w"
   - MaxDivY:               #     -W  "max. y-value [deg]"       "maximal horizontal divergence to be monitored"
-      type:    "float" 
+      type:    "float"
       descr:   "max. y-value [deg]"
       tooltip: "maximal horizontal divergence to be monitored"
       default: 5.0
-      column:  1                     
-      prefix:  "-W"  
+      column:  1
+      prefix:  "-W"
   - nBinsDivY:             # >=1 -y  "number of y-bins"         "number of monitor channels in horizontal direction"
-      type:    "int" 
+      type:    "int"
       descr:   "number of y-bins"
       tooltip: "number of monitor channels in horizontal direction"
       default: 50
       min:     1
-      column:  2                     
-      prefix:  "-y"  
+      column:  2
+      prefix:  "-y"
 
   - MinDivZ:               #     -h  "min. z-value [deg]"       "minimal vertical divergence to be monitored"
-      type:    "float" 
+      type:    "float"
       descr:   "min. z-value [deg]"
       tooltip: "minimal vertical divergence to be monitored"
       default: -5.0
-      column:  0                     
-      prefix:  "-h"  
+      column:  0
+      prefix:  "-h"
   - MaxDivZ:               #     -H  "max. z-value [deg]"       "maximal vertical divergence to be monitored"
-      type:    "float" 
-      descr:   "max. z-value [deg]"  
+      type:    "float"
+      descr:   "max. z-value [deg]"
       tooltip: "maximal vertical divergence to be monitored"
       default: 5.0
-      column:  1                     
-      prefix:  "-H"  
+      column:  1
+      prefix:  "-H"
   - nBinsDivZ  :           # >=1 -z  "number of z-bins"         "number of monitor channels in vertical direction"
-      type:    "int" 
-      descr:   "number of z-bins" 
+      type:    "int"
+      descr:   "number of z-bins"
       tooltip: "number of monitor channels in vertical direction"
       default: 50
-      column:  2                     
-      prefix:  "-z"  
+      column:  2
+      prefix:  "-z"
 
-  - Title_Opt: 
-      type:    "title" 
+  - Title_Opt:
+      type:    "title"
       default: "Options"
   - bProbWeight :              #     -p  "probability weight"       "Display  : YES: Beam intensity   NO: number of trajectories"
-      type:    "switch" 
-      descr:   "probability weight" 
+      type:    "switch"
+      descr:   "probability weight"
       tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
       default:  yes
-      column:   0                     
-      prefix:  "-p"  
+      column:   0
+      prefix:  "-p"
   - bExcl:                 #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
-      type:    "switch" 
-      descr:   "exclusive counts"  
+      type:    "switch"
+      descr:   "exclusive counts"
       tooltip: "yes: only trajectories meeting the monitor conditions are written\nno : all are written"
       default:  no
-      column:   1                     
-      prefix:  "-e"  
+      column:   1
+      prefix:  "-e"
   - eFormat :              #     -F   VtFormat2D Format2D_Txt2ID(const char* sText)
-      type:    "combo" 
-      descr:   "file format" 
+      type:    "combo"
+      descr:   "file format"
       tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
       enum:     "VtFormat2D"
       options: ["MATRIX","XYZ","MATR_CMPT","MXYZ_CMPT"]
       default:  "MATRIX"
-      column:  2                     
-      prefix:  "-F"  
+      column:  2
+      prefix:  "-F"
 
-  - Title_Filter: 
-      type:    "title" 
+  - Title_Filter:
+      type:    "title"
       default: "Filter selection"
   - FilterMinLambda:           #     -l  "lambda min [Ang]"  "minimal wavelength to be taken into account"
-      type:    "float" 
-      descr:   "lambda min [Ang]" 
+      type:    "float"
+      descr:   "lambda min [Ang]"
       tooltip: "minimal wavelength to be taken into account"
-      column:  0                     
-      prefix:  "-l"  
+      column:  0
+      prefix:  "-l"
   - FilterMaxLambda:           #     -L  "lambda min [Ang]"  "maximal wavelength to be taken into account"
-      type:    "float" 
-      descr:   "lambda min [Ang]" 
+      type:    "float"
+      descr:   "lambda min [Ang]"
       tooltip: "maximal wavelength to be taken into account"
-      column:  1                     
-      prefix:  "-L"  
+      column:  1
+      prefix:  "-L"
   - FilterMinY:              #     -u  "y-pos min [cm]     "minimal horizontal position to be taken into account"
-      type:    "float" 
-      descr:   "y-pos min [cm]" 
+      type:    "float"
+      descr:   "y-pos min [cm]"
       tooltip: "minimal horizontal position to be taken into account"
-      column:  0                     
-      prefix:  "-u"  
+      column:  0
+      prefix:  "-u"
   - FilterMaxY:              #     -U  "y-pos max [cm]     "maximal horizontal position to be taken into account"
-      type:    "float" 
-      descr:   "y-pos max [cm]" 
-      tooltip: "maximal horizontal position to be taken into account" 
-      column:  1                     
-      prefix:  "-U"  
+      type:    "float"
+      descr:   "y-pos max [cm]"
+      tooltip: "maximal horizontal position to be taken into account"
+      column:  1
+      prefix:  "-U"
   - FilterMinZ:              #     -v  "z-pos min [cm]     "minimal vertical position to be taken into account"
-      type:    "float" 
+      type:    "float"
       descr:   "z-pos min [cm]"
       tooltip: "minimal vertical position to be taken into account"
-      column:  0                     
-      prefix:  "-v"  
+      column:  0
+      prefix:  "-v"
   - FilterMaxZ:              #     -V  "z-pos max [cm]     "maximal vertical position to be taken into account"
-      type:    "float" 
-      descr:   "z-pos max [cm]" 
-      tooltip: "maximal vertical position to be taken into account" 
-      column:  1                     
-      prefix:  "-V"  
+      type:    "float"
+      descr:   "z-pos max [cm]"
+      tooltip: "maximal vertical position to be taken into account"
+      column:  1
+      prefix:  "-V"
 

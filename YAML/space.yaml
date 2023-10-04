@@ -5,32 +5,32 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 space:
   - category:  "spacewindow"
-  - Distance:      
-      type:    "float" 
+  - Distance:
+      type:    "float"
       descr:   "distance [cm]"
       tooltip: "length of the free flight path (along the x-axis)"
       default: 0.0
       min:     0.0
-      column:  0                     
-      prefix:  "-d"     
-  - MuScatTotal:     
-      type:    "float" 
+      column:  0
+      prefix:  "-d"
+  - MuScatTotal:
+      type:    "float"
       descr:   "total scattering [1/cm]"
       tooltip: "macroscopic total scattering coefficient"
       default: 0.0
       min:     0.0
-      column:  1                     
-      prefix:  "-M"     
-  - MuAbsorb:   
-      type:    "float" 
+      column:  1
+      prefix:  "-M"
+  - MuAbsorb:
+      type:    "float"
       descr:   "absorption [1/cm]"
-      tooltip: "macroscopic absorption cross-section for 1.798 Ang" 
+      tooltip: "macroscopic absorption cross-section for 1.798 Ang"
       default: 0.0
       min:     0.0
-      column:  2                     
-      prefix:  "-m"     
+      column:  2
+      prefix:  "-m"
 

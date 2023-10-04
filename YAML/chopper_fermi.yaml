@@ -5,136 +5,137 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 chopper_fermi:
   - category:  "chopper"
 
   - eChanShape:    #  VtChnlShape  ChnlShape_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "channel shape"
-      tooltip: "straight: straight Fermi chopper\ncircular: Curved Fermi chopper with circular shaped channels \nideal: Curved Fermi chopper with channels close to parabolic shape" 
+      tooltip: "straight: straight Fermi chopper\ncircular: Curved Fermi chopper with circular shaped channels \nideal: Curved Fermi chopper with channels close to parabolic shape"
       enum:    "VtChnlShape"
       options: ["VT_CHN_STR","VT_CHN_CIRC", "VT_CHN_IDEAL"]
       default: "VT_CHN_STR"
-      column:  1                     
-      prefix:  "-g"     
+      column:  1
+      prefix:  "-g"
 
-  - sOutFile :       
-      type:    "file"    
+  - sOutFile :
+      type:    "file"
       plottable: false
       descr:   "geometry file"
       tooltip: "output file of the curved channel geometry"
-      prefix:  "-G"   
+      prefix:  "-G"
 
-  - PosMainX:   
-      type:    "float"    
+  - PosMainX:
+      type:    "float"
       descr:   "position X [cm]"
       tooltip: "Center position X of the Fermi chopper"
       default:  10.0
-      column:    0       
-      prefix:  "-X"     
-  - PosMainY:   
-      type:    "float"    
+      column:    0
+      prefix:  "-X"
+  - PosMainY:
+      type:    "float"
       descr:   "position Y [cm]"
       tooltip: "Center position Y of the Fermi chopper"
       default:   0.0
-      column:    1       
-      prefix:  "-Y"     
-  - PosMainZ:  
-      type:    "float"    
+      column:    1
+      prefix:  "-Y"
+  - PosMainZ:
+      type:    "float"
       descr:   "position Z [cm]"
-      tooltip: "center position Z of the Fermi chopper" 
+      tooltip: "center position Z of the Fermi chopper"
       default:   0.0
-      column:    2       
-      prefix:  "-V"     
+      column:    2
+      prefix:  "-V"
 
-  - Height  :  
-      type:    "float" 
+  - Height  :
+      type:    "float"
       descr:   "height [cm]"
-      tooltip: "height of the channels of the Fermi chopper" 
+      tooltip: "height of the channels of the Fermi chopper"
       default:   5.0
       min:       0.0001
-      column:    0                     
-      prefix:  "-a"     
-  - Width  :         
-      type:    "float" 
+      column:    0
+      prefix:  "-a"
+  - Width  :
+      type:    "float"
       descr:   "width [cm]"
       tooltip: "width of the active area of the Fermi chopper"
       default:   4.0
       min:       0.0001
-      column:    1                     
-      prefix:  "-b"     
-  - Length  :       
-      type:    "float" 
+      column:    1
+      prefix:  "-b"
+  - Length  :
+      type:    "float"
       descr:   "channel length [cm]"
-      tooltip: "channel length of the Fermi chopper (not active for the channel shape option 'ideal')" 
+      tooltip: "channel length of the Fermi chopper (not active for the channel shape option 'ideal')"
       default:   3.0
       min:       0.0001
-      column:    2                     
-      prefix:  "-c"     
+      column:    2
+      prefix:  "-c"
 
-  - nChannels:  
-      type:    "int" 
+  - nChannels:
+      type:    "int"
       descr:   "number of channels"
-      tooltip: "number of channels of the Fermi chopper" 
+      tooltip: "number of channels of the Fermi chopper"
       default:  20
       min:       1
-      column:    0                     
-      prefix:  "-l"     
-  - Thickness:  
-      type:    "float" 
+      column:    0
+      prefix:  "-l"
+  - Thickness:
+      type:    "float"
       descr:   "wall thickness [cm]"
-      tooltip: "thickness of the blades separating the Fermi chopper channels" 
+      tooltip: "thickness of the blades separating the Fermi chopper channels"
       default:   0.02
       min:       0.0
-      column:    1                     
-      prefix:  "-m"     
-  - Diameter:    
-      type:    "float" 
+      column:    1
+      prefix:  "-m"
+  - Diameter:
+      type:    "float"
       descr:   "diameter [cm]"
-      tooltip: "diameter of the shadowing cylinder (see Help | chopper)" 
+      tooltip: "diameter of the shadowing cylinder (see Help | chopper)"
       default:   8.0
       min:       0.0
-      column:    2                     
-      prefix:  "-r"     
+      column:    2
+      prefix:  "-r"
 
-  - Freq:  
-      type:    "float" 
+  - Freq:
+      type:    "float"
       descr:   "rotations per second"
-      tooltip: "frequency of the chopper rotation" 
+      tooltip: "frequency of the chopper rotation"
       default: 500.0
       min:       0.0001
-      column:    0                     
-      prefix:  "-n"     
-  - Phase:    
-      type:    "float" 
+      column:    0
+      prefix:  "-n"
+  - Phase:
+      type:    "float"
       descr:   "phase [deg]"
-      tooltip: "Chopper orientation at time = 0" 
+      tooltip: "Chopper orientation at time = 0"
       default:   0.0
       min:       0.0001
-      column:    1                     
-      prefix:  "-q"     
-  - OptLambda :       
-      type:    "float" 
+      column:    1
+      prefix:  "-q"
+  - OptLambda :
+      type:    "float"
       descr:   "optimal wavelength [Ang]"
       tooltip: "only for a curved Fermi choppoer: optimal wavelength to be transmitted by the curved Fermi chopper (cf. Help | chopper)"
       min:      0.0001
-      column:   2                     
-      prefix:  "-L"     
+      column:   2
+      prefix:  "-L"
 
-  - bZeroTime  : 
-      type:    "switch" 
+  - bZeroTime  :
+      type:    "switch"
       descr:   "set zero time"
-      tooltip: "yes: the chopper defines the zero time \nno : the zero time is defined in the source  (see Help | chopper)" 
+      tooltip: "yes: the chopper defines the zero time \nno : the zero time is defined in the source  (see Help | chopper)"
       default:  no
-      column:   0                     
-      prefix:  "-z"     
-  - eGates  : 
-      type:    "combo" 
+      column:   0
+      prefix:  "-z"
+  - eGates  :
+      type:    "int"
       descr:   "number of gates"
-      tooltip: "number of gates representing the channels (see Help | chopper)" 
-      options: ["4", "6", "8"]
-      default:  "6"
-      column:   2                     
-      prefix:  "-p"     
+      tooltip: "number of gates representing the channels (see Help | chopper)"
+      min:     4
+      max:     8
+      default:  6
+      column:   2
+      prefix:  "-p"

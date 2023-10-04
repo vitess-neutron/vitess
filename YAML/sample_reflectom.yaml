@@ -5,258 +5,258 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 sample_reflectom:
   - category:  "sample"
 
-  - sSampleFile:    
-      type:    "file" 
+  - sSampleFile:
+      type:    "file"
       plottable: false
-      descr:   "parameter file"  
+      descr:   "parameter file"
       tooltip: "name of the file containing the sample parameters"
       prefix:  "-P"
-  - sReflFile:    
-      type:    "file" 
+  - sReflFile:
+      type:    "file"
       plottable: true
-      descr:   "reflectivity file"  
+      descr:   "reflectivity file"
       tooltip: "name of the file containing the sample reflectometry"
       prefix:  "-I"
 
-  - Title_Geom: 
-      type:    "title" 
+  - Title_Geom:
+      type:    "title"
       default: "Geometry and options"
-  - eMeasMod:                 # VtMeasMode  MeasMode_Txt2ID(const char* sText) 
-      type:    "combo" 
-      descr:   "mode" 
+  - eMeasMod:                 # VtMeasMode  MeasMode_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "mode"
       tooltip: "Select between sample (reflectivity data from the 'reflectivity file') and reference (reflectivity R=1 for all angles)"
       enum:    "VtMeasMode"
-      options: ["VT_SAMPLE", "VT_REFERENCE"]   
+      options: ["VT_SAMPLE", "VT_REFERENCE"]
       default:  "VT_SAMPLE"
-      column:  0                     
-      prefix:  "-O"   
+      column:  0
+      prefix:  "-O"
   - eRotAxis:                 # VtRotAxis RotAxis_Txt2ID(const char* sText);
-      type:    "combo" 
+      type:    "combo"
       descr:   "axis of rotation"
       tooltip: "rotation axis of the sample, Y or Z"
       enum:    "VtRotAxis"
-      options: ["VT_ROT_Y", "VT_ROT_Z"]   
+      options: ["VT_ROT_Y", "VT_ROT_Z"]
       default:  "VT_ROT_Y"
-      column:  1                     
-      prefix:  "-R"   
-  - bTreatAll: 
-      type:    "switch" 
+      column:  1
+      prefix:  "-R"
+  - bTreatAll:
+      type:    "switch"
       descr:   "treat neutrons not reflected"
-      tooltip: "yes: neutrons that are not reflected by the sample are treated \nno : neutrons that are not reflected by the sample are removed (default)" 
+      tooltip: "yes: neutrons that are not reflected by the sample are treated \nno : neutrons that are not reflected by the sample are removed (default)"
       default:  no
-      column:   2                     
-      prefix:  "-A"     
+      column:   2
+      prefix:  "-A"
 
-  - RotAngle:             
-      type:    "float" 
+  - RotAngle:
+      type:    "float"
       descr:   "reflection angle [deg]"
-      tooltip: "The sample is rotated by this angle around the 'axis of rotation'. zero means: parallel to x-axis,i.e. surface normal in z-direction;\n(small) positive angles cause flight directions after reflection with positive y or z components resp." 
+      tooltip: "The sample is rotated by this angle around the 'axis of rotation'. zero means: parallel to x-axis,i.e. surface normal in z-direction;\n(small) positive angles cause flight directions after reflection with positive y or z components resp."
       default: 1.0
       min    : 0.0
-      column:  0                     
-      prefix:  "-a"   
+      column:  0
+      prefix:  "-a"
 
-  - Title_Substrate: 
-      type:    "title" 
+  - Title_Substrate:
+      type:    "title"
       default: "Substrate"
-  - eSubstrMat:                  # VtMirrMat  MirrMat_Txt2ID(const char* sText) 
-      type:    "combo" 
+  - eSubstrMat:                  # VtMirrMat  MirrMat_Txt2ID(const char* sText)
+      type:    "combo"
       descr:   "substrate material"
-      tooltip: "Material of the substrate (for a treatment of the neutron absorption while passing through the substrate)." 
+      tooltip: "Material of the substrate (for a treatment of the neutron absorption while passing through the substrate)."
       enum:    "VtMirrMat"
       options: ["VT_MIRR_OTHER","VT_MIRR_SI","VT_MIRR_GLASS","VT_MIRR_B4C"]
       default:  "VT_MIRR_SI"
-      column:  0                     
-      prefix:  "-M"     
-  - SubstrThickn:              
-      type:    "float" 
+      column:  0
+      prefix:  "-M"
+  - SubstrThickn:
+      type:    "float"
       descr:   "substrate thickn.[cm]"
       tooltip: "Thickness of the substrate on which the sample is put"
       default: 0.0
       min:     0.0
       prefix:  "-h"
-      column:  0                     
-  - SubstrMuScat:    
-      type:    "float" 
+      column:  0
+  - SubstrMuScat:
+      type:    "float"
       descr:   "total scat. coeff. [1/cm]"
       tooltip: "Macroscopic total scattering cross-section of the substrate material to calculate the attenation inside the substrate.\nOnly needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
       default: 0.0
       min    : 0.0
-      column:  1                     
-      prefix:  "-s"     
-  - SubstrMuAbsorb:                
-      type:    "float" 
+      column:  1
+      prefix:  "-s"
+  - SubstrMuAbsorb:
+      type:    "float"
       descr:   "absorption coeff. [1/cm/Ang]"
       tooltip: "Macroscopic absorption cross-section of the substrate material (with respect for a wavelength of 1.798 Ang) to calculate the attenation inside the substrate.\nOnly needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
       default: 0.0
       min    : 0.0
-      column:  2                     
-      prefix:  "-m"     
+      column:  2
+      prefix:  "-m"
 
-  - Title_SampleGeom: 
-      type:    "title" 
+  - Title_SampleGeom:
+      type:    "title"
       default: "Sample position and size"
-  - SamplePosX:             
-      type:    "float" 
+  - SamplePosX:
+      type:    "float"
       descr:   "pos x [cm]"
       tooltip: "center x position of the sample"
       default: 0.0
       prefix:  "-x"
-      column:  0                     
-  - SamplePosY:       
-      type:    "float" 
+      column:  0
+  - SamplePosY:
+      type:    "float"
       descr:   "pos y [cm]"
       tooltip: "center y position of the sample"
       default: 0.0
       prefix:  "-y"
-      column:  1                     
-  - SamplePosZ:   
-      type:    "float" 
+      column:  1
+  - SamplePosZ:
+      type:    "float"
       descr:   "pos z [cm]"
       tooltip: "center z position of the sample"
       default: 0.0
       prefix:  "-z"
-      column:  2                     
+      column:  2
 
-  - SampleThickn:  
-      type:    "float" 
+  - SampleThickn:
+      type:    "float"
       descr:   "thickness [cm]"
       tooltip: "Thickness of the reflecting sample.\nIt determines the range of depth in which the reflection is supposed to take place."
       default: 0.00001
       min:     0.0
       prefix:  "-T"
-      column:  0                     
-  - SampleWidth:  
-      type:    "float" 
+      column:  0
+  - SampleWidth:
+      type:    "float"
       descr:   "sample width [cm]"
       tooltip: "width of the sample  (along y-/z-axis)"
       default: 2.0
       min:     0.0
       prefix:  "-W"
-      column:  1                     
-  - SampleLength:  
-      type:    "float" 
+      column:  1
+  - SampleLength:
+      type:    "float"
       descr:   "sample length [cm]"
       tooltip: "length of the sample (along x-axis for reflection angle 0)."
       default: 5.0
       min:     0.0
       prefix:  "-L"
-      column:  2                     
+      column:  2
 
-  - Title_OffSpecular: 
-      type:    "title" 
+  - Title_OffSpecular:
+      type:    "title"
       default: "Offspecular and incoherent scattering"
-  - bOffSpecular:           
-      type:    "switch" 
-      descr:   "offspecular scattering" 
+  - bOffSpecular:
+      type:    "switch"
+      descr:   "offspecular scattering"
       tooltip: "Flag: offspecular scattering is simulated (yes, no)"
       default:  no
-      column:   0                     
-      prefix:  "-o"   
+      column:   0
+      prefix:  "-o"
 
-  - bIncohScat:               
-      type:    "switch" 
-      descr:   "incoherent scattering" 
+  - bIncohScat:
+      type:    "switch"
+      descr:   "incoherent scattering"
       tooltip: "Flag: incoherent scattering is simulated (yes, no)"
       default:  no
-      column:   0                     
-      prefix:  "-B"   
-  - MuScatIncoh:        
-      type:    "float" 
+      column:   0
+      prefix:  "-B"
+  - MuScatIncoh:
+      type:    "float"
       descr:   "inc. cross-section [1/cm]"
       tooltip: "macroscopic incoherent scattering cross section of the sample"
       default: 0.0
       min:     0.0
-      column:  1                     
-      prefix:  "-X"   
-  - IncohNormFact:          
-      type:    "float" 
+      column:  1
+      prefix:  "-X"
+  - IncohNormFact:
+      type:    "float"
       descr:   "norm factor"
       tooltip: "If incoherent scattering from sample is taken into account, the norm factor describes the fraction of the detector where the specular signal is expected with respect to the whole detector area."
       default: 1.0
       min:     0.0
-      column:  2                     
-      prefix:  "-S"   
+      column:  2
+      prefix:  "-S"
 
-  - Title_Det: 
-      type:    "title" 
+  - Title_Det:
+      type:    "title"
       default: "Detector Geometry"
-  - DetDist :           
-      type:    "float" 
+  - DetDist :
+      type:    "float"
       descr:   "detector distance"
-      tooltip: "distance to the detector (to calculate the solid angle for incoherent scattering)" 
+      tooltip: "distance to the detector (to calculate the solid angle for incoherent scattering)"
       default: 1.0
       min:     0.0
-      column:  0                     
-      prefix:  "-d"   
-  - DetWidth:     
-      type:    "float" 
+      column:  0
+      prefix:  "-d"
+  - DetWidth:
+      type:    "float"
       descr:   "detector width"
       tooltip: "width of the detector (to calculate the solid angle for incoherent scattering)"
       default: 0.0
       min:     0.0
-      column:  1                     
-      prefix:  "-p"   
-  - DetHeight :     
-      type:    "float" 
+      column:  1
+      prefix:  "-p"
+  - DetHeight :
+      type:    "float"
       descr:   "detector height"
-      tooltip: "height of the detector (to calculate solid angle for incoherent scattering)" 
+      tooltip: "height of the detector (to calculate solid angle for incoherent scattering)"
       default: 0.0
       min:     0.0
-      column:  2                     
-      prefix:  "-t"   
-   
-  - Title_OutFrame: 
-      type:    "title" 
+      column:  2
+      prefix:  "-t"
+
+  - Title_OutFrame:
+      type:    "title"
       default: "Output frame"
   - eOutFrame:    #  VtFrameGen FrameGen_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "frame generation"
       tooltip: "'user defined frame': output frame defined by the values below\n'standard frame generation': puts output direction along the reflected beam"
       enum:    "VtFrameGen"
       options: ["VT_FRAME_USER", "VT_FRAME_STD"]
       default:  "VT_FRAME_STD"
-      column:  0                     
-      prefix:  "-g"     
+      column:  0
+      prefix:  "-g"
 
-  - FrameOutX   : 
-      type:    "float" 
+  - FrameOutX   :
+      type:    "float"
       descr:   "out x [cm]"
       tooltip: "x coordinate in output frame"
       default: 0.0
       prefix:  "-u"
-      column:  0                     
-  - FrameOutY   :  
-      type:    "float" 
+      column:  0
+  - FrameOutY   :
+      type:    "float"
       descr:   "out y [cm]"
       tooltip: "y coordinate in output frame"
       default: 0.0
       prefix:  "-v"
-      column:  1                     
-  - FrameOutZ   : 
-      type:    "float" 
+      column:  1
+  - FrameOutZ   :
+      type:    "float"
       descr:   "out z [cm]"
       tooltip: "z coordinate in output frame"
       default: 0.0
       prefix:  "-w"
-      column:  2                     
+      column:  2
 
-  - FrameOutHor   : 
-      type:    "float" 
+  - FrameOutHor   :
+      type:    "float"
       descr:   "horizontal angle [deg]"
       tooltip: "horizontal angular coordinate in output frame"
       default: 0.0
       prefix:  "-k"
-      column:  0                     
-  - FrameOutVert   :   
-      type:    "float" 
+      column:  0
+  - FrameOutVert   :
+      type:    "float"
       descr:   "vertical angle [deg]"
       tooltip: "vertical angular coordinate in output frame"
       default: 0.0
       prefix:  "-K"
-      column:  1                     
+      column:  1
