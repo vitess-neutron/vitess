@@ -104,7 +104,7 @@ monitor2D:                    # source module that will be executed
       descr:   "file format"
       tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
       enum:     "VtFormat2D"
-      options: ["MATRIX","XYZ","MATR_CMPT","MXYZ_CMPT"]
+      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT"]
       default:  "MATRIX"
       column:  2
       prefix:  "-F"

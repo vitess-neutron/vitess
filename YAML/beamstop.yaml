@@ -35,7 +35,7 @@ beamstop:
       prefix:  "-p"
 
   - Title_cir:
-      type:    "co-ordinates of a circular beamstop"
+      type:    "title"
       default: "circular beamstop coordinates"
   - Radius  :                 # -r    0.0  [cm]  radius of circular beamstop
       type:    "float"

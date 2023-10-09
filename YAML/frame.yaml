@@ -16,7 +16,7 @@ frame:      # source module that will be executed
       descr:   "sequence"
       tooltip: "sequence of Rotation, Translation, and Mirroring"
       enum:    "VtTfmnSeq"
-      options: ["RTM","RMT","TRM","TMR","MTR","MRT"]
+      options: ["VT_RTM","VT_RMT","VT_TRM","VT_TMR","VT_MTR","VT_MRT"]
       default: "RTM"
       column:  0
       prefix:  "-S"
