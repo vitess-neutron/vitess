@@ -35,9 +35,11 @@ void   OwnCleanup();                                          // Does module spe
 void   SetSamplePar   (SampleType *pSample);                  // Reads sample parameters and combines with input parameters
 void   ReadStructFile ();                                     // Reads the structure factor file
 void   SetGeometry    (char* sColor);                         // Fills the structure stGeometry for visualization 
-void   OutputTransform(VectorType Pos, VectorType Dir);       // Co-ordinate transformation to output frame
 double dSpreadLorentzian(double rdelta);                      // probability of finding a d-spacing in Lorentzian approximation
 double dSpreadGaussian(double rdelta);                        // probability of finding a d-spacing in Gaussian approximation 
+void   TransformIn2Smpl(VectorType pos, VectorType dir);      // Co-ordinate transformation from input frame to sample frame
+void   TransformSmpl2In(VectorType pos, VectorType dir);      // Co-ordinate transformation from sample frame to input frame
+void   TransformIn2Out (VectorType pos, VectorType dir);      // Co-ordinate transformation from input frame to output frame
 
 
 /******************************/
@@ -102,11 +104,12 @@ int main(int argc, char **argv)
              Pos_final={0.0,0.0,0.0};
   VectorType Pos1f={0.0,0.0,0.0}, Pos2f={0.0,0.0,0.0},
              Pos1v={0.0,0.0,0.0}, Pos2v={0.0,0.0,0.0};
-  Neutron    Neutrons;
+  Neutron	   InNeutron, OutNeutron;
 
   // Initialisation
   // --------------
-  InitNeutron(&Neutrons);
+  InitNeutron(&OutNeutron);
+  InitNeutron(&InNeutron);
 
   _eModule = MCN_SMPL_SNGL_X;
 
@@ -142,19 +145,12 @@ int main(int argc, char **argv)
       else
       { 
         InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
+        CopyNeutron(&InputNeutrons[i], &InNeutron);
 
         if(InputNeutrons[i].Probability <= wei_min) goto getlost ;
 
         /* translates and rotates into frame of the sample, where phi-khi-omega are consecutive rotations of the sample(!) in the initial frame */
-        SubVector(InputNeutrons[i].Position, PosSample);
-
-        RotBackVector(RotMatrixOmega, InputNeutrons[i].Position);
-        RotBackVector(RotMatrixChi,   InputNeutrons[i].Position);
-        RotBackVector(RotMatrixPhi,   InputNeutrons[i].Position);
-	
-        RotBackVector(RotMatrixOmega, InputNeutrons[i].Vector);
-        RotBackVector(RotMatrixChi,   InputNeutrons[i].Vector);
-        RotBackVector(RotMatrixPhi,   InputNeutrons[i].Vector);
+        TransformIn2Smpl(InputNeutrons[i].Position, InputNeutrons[i].Vector);
 
         /* gives intersection positions with sample */
         if (eGeom==VT_CYL)
@@ -208,9 +204,13 @@ int main(int argc, char **argv)
             if (bVisTraj==TRUE)
             {
               Neutron ScatNeut;
+              /* neutron variables at the scattering point in the sample frame */
               CopyNeutron(&InputNeutrons[i], &ScatNeut);
               CopyVector (Pos1v, ScatNeut.Position);
               ScatNeut.Probability=Prob;
+
+              /* computes neutron variables in the initial frame and write interaction point */
+              TransformSmpl2In(ScatNeut.Position, ScatNeut.Vector);
 
               WriteWWP(&ScatNeut, VT_SCATTERED);
             }
@@ -253,27 +253,30 @@ int main(int argc, char **argv)
 
             /* Output matters */
             TOF +=  PathLength / V_FROM_LAMBDA(WL);
-            OutputTransform(Pos2v, Dir);
+            TransformSmpl2In(Pos2v, Dir);
+            TransformIn2Out (Pos2v, Dir);
 
             /* transmit coordinates which were not changed, the rest overwrite below */
-            Neutrons = InputNeutrons[i]; 
+            OutNeutron = InputNeutrons[i]; 
 
-            Neutrons.Time = TOF ;
-            Neutrons.Probability = Prob ;
+            OutNeutron.Time = TOF ;
+            OutNeutron.Probability = Prob ;
 
-            CopyVector(Pos2v, Neutrons.Position);
-            CopyVector(Dir, Neutrons.Vector);
+            CopyVector(Pos2v, OutNeutron.Position);
+            CopyVector(Dir, OutNeutron.Vector);
 
-            Neutrons.Color = (short) (no[repet] % 32768); 
+            OutNeutron.Color = (short) (no[repet] % 32768); 
 
             /*	 writes output binary file */
             if (Prob > wei_min) 
-              WriteNeutron(&Neutrons);
+              WriteNeutron(&OutNeutron);
           }
         }/* repet */
+        continue;
 
       /* here continues if neutron gets lost */
       getlost:;
+        WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0] - InNeutron.Position[0]); 
       }
     } /* i */
   }   /* ReadNeutrons*/
@@ -478,7 +481,7 @@ void SetSamplePar(SampleType* pSample)
          diamtr=0.0,height=0.0, width=0.0,
          norm=0.0,  muAbs =0.0, scale_f2=1.0;
   VtSmplGeom geom=VT_NO_GEOM;
-  VectorType DirSample={0.0,0.0,1.0}; // sample orientation
+  VectorType DirSample={0.0,0.0,0.0}; // sample orientation
 
   InitSample(pSample);
 
@@ -546,10 +549,14 @@ void SetSamplePar(SampleType* pSample)
     }
   }
 
-  // checks if geometry was given
-  if (eGeom==VT_NO_GEOM)
-    Error2("Sample geometry could not be identified", sGeom);
-
+  // sets sample orientation and checks if a valid geometry is given
+  switch (eGeom)
+  { case VT_CUBE  : DirSample[0]=1.0; break;
+    case VT_CYL   : DirSample[2]=1.0; break;
+    case VT_SPHERE:                   break;
+    default       : Error2("Sample geometry missing or not implemented", sGeom);
+  }
+  
   /* converts degs in radian etc. */
   AnglOmega   *= M_PI/180.;
   AnglChi     *= M_PI/180.;
@@ -565,7 +572,7 @@ void SetSamplePar(SampleType* pSample)
 
   // fills data structures
 	RotBackVector(RotMatrixOmega, DirSample);
-  RotBackVector(RotMatrixChi,   DirSample);
+  RotVector    (RotMatrixChi,   DirSample);
   RotBackVector(RotMatrixPhi,   DirSample);
   FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2],  DirSample[0], DirSample[1], DirSample[2], Diameter, Height, Width, 0.0);
 
@@ -658,43 +665,9 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&stSample);
+    SetSampleGeometry(&stSample, Degrees(-AnglChi));
   }
 }
-
-	
-/*******************************************************/
-/** Co-ordinate transformation to output frame        **/
-/*******************************************************/
-void OutputTransform(VectorType Pos, VectorType Dir)
-{
-	/* computes neutron variables in the initial frame */
-	RotVector(RotMatrixPhi, Dir);
-	RotVector(RotMatrixChi, Dir);
-	RotVector(RotMatrixOmega, Dir);
-	
-	RotVector(RotMatrixPhi, Pos);
-	RotVector(RotMatrixChi, Pos);
-	RotVector(RotMatrixOmega, Pos);
-	
-	AddVector(Pos, PosSample);
-
-	/* computes neutron variables in the output frame */
-	SubVector(Pos, PosSample);
-	RotVector(RotMatrixOut, Pos);
-	RotVector(RotMatrixOut, Dir);
-
-	/* translates neutron variables for output - X'=0. 
-	{
-	VectorType Path ;
-	*tof = *tof - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA_PT(wl);
-	CopyVector(Dir, Path);
-	MultiplyByScalar(Path, - Pos[0]/ Dir[0] );
-	AddVector(Pos, Path);  
-	}			Path = displacement vector 
-	*/
-
-} /* End OutputTransformations()*/
 
 
 /*******************************************************************/
@@ -723,3 +696,50 @@ double	dSpreadGaussian(double rdelta)
   return (double) exp(argd);
 
 }/* End dSpreadGaussian */
+
+
+/************************************************************/
+/** Co-ordinate transformations from sample to input frame **/
+/**                         and from input to output frame **/
+/************************************************************/
+void TransformIn2Smpl(VectorType pos, VectorType dir)
+{
+  /* computes neutron variables in the sample frame */
+  SubVector(pos, PosSample);
+
+  RotBackVector(RotMatrixOmega, pos);
+  RotBackVector(RotMatrixChi,   pos);
+  RotBackVector(RotMatrixPhi,   pos);
+	
+  RotBackVector(RotMatrixOmega, dir);
+  RotBackVector(RotMatrixChi,   dir);
+  RotBackVector(RotMatrixPhi,   dir);
+
+  return;
+}
+
+void TransformSmpl2In(VectorType pos, VectorType dir)
+{
+  /* computes neutron variables in the initial frame */
+	RotVector(RotMatrixPhi,   dir);
+	RotVector(RotMatrixChi,   dir);
+	RotVector(RotMatrixOmega, dir);
+	
+	RotVector(RotMatrixPhi,   pos);
+	RotVector(RotMatrixChi,   pos);
+	RotVector(RotMatrixOmega, pos);
+  	
+	AddVector(pos, PosSample);
+
+  return;
+}
+
+void TransformIn2Out(VectorType pos, VectorType dir)
+{
+  /* computes neutron variables in the output frame */
+  SubVector(pos, PosSample) ;
+  RotVector(RotMatrixOut, pos) ;
+  RotVector(RotMatrixOut, dir) ;
+
+  return;
+} 

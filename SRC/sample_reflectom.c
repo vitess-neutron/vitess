@@ -19,6 +19,7 @@
 /*                                functions, offspecular scattering added                    */
 /* 3.2  Nov  2019  K. Lieutenant  tidy up, global variable, visualization , length <-> width */
 /* 3.3  May  2022  K. Lieutenant  substrate, neutrons passing by, attenuation                */
+/* 3.4  Sep  2023  K. Lieutenant  substrate visualization                                    */
 /*********************************************************************************************/
 
 #include <string.h>
@@ -68,7 +69,8 @@ double PosSmpl[3]={0.0,0.0,0.0},// file -x -y -z  [cm]   center position X of th
 
 // Variables determined from input parameters or trajectory data
 FILE	*pReflFile=NULL;        //       pointer on file for theoretical spectrum 
-SampleType stSample;          //       sample geometry
+SampleType stSample,          //       sample geometry
+           stSubstr;          //       substrate geometry
 long   nLinesRefl=0,          //       number of lines in reflectivity file  
        nQinPoints=0;          //       number of lines in a specular reflectivity file or number of Qin points in a offspecular reflectivity file.  
 double *pTabQ,                //       pointer on table of Q-values                   
@@ -109,22 +111,22 @@ int main(int argc, char **argv)
              bHitSub =FALSE;       // flag: substrate is hit
   VectorType vPath={0.0,0.0,0.0}, vDirIn={1.0, 0.0, 0.0}, vDirOut={0.0,0.0,0.0},
              ISP1 ={0.0,0.0,0.0}, ISP2  ={0.0,0.0,0.0}; 
-  Neutron    Neutrons, NeutronT;
+  Neutron    ReflNeutron, TrnsNeutron, InNeutron;
   Neutron    parentNeutron;     // Neutron needed to store the location of the intersection 
                                 // point for offspecular/incoherent scattering
-  int   resultScattering=0;
-  short doReflection=0, doOffspecular=0, doIncoherent=0;
+  short bScat=0;
+  short doCoherent=0, doOffspecular=0, doIncoherent=0;
 
   // initialisation
   // --------------
-  InitNeutron(&Neutrons);  InitNeutron(&parentNeutron);
-  InitNeutron(&NeutronT);
+  InitNeutron(&ReflNeutron);  InitNeutron(&parentNeutron);
+  InitNeutron(&TrnsNeutron);  InitNeutron(&InNeutron);
   InitRotMatrix(RotMatrixRefl);
 
   _eModule = MCN_SMPL_REFL;
 
   Init   (argc, argv, _eModule);
-  PrintModuleName(_eModule, "3.3");
+  PrintModuleName(_eModule, "3.3a");
   OwnInit(argc, argv);
   MsgInit();
 
@@ -157,8 +159,8 @@ int main(int argc, char **argv)
   DECLARE_ABORT;
 
   doOffspecular = bOffSpec && (eOption==VT_SAMPLE);
-  doReflection = 1 && (!doOffspecular);
-  doIncoherent = bIncoh && (eOption==VT_SAMPLE);
+  doCoherent    = TRUE     && (!doOffspecular);
+  doIncoherent  = bIncoh   && (eOption==VT_SAMPLE);
   
   // loop over all trajectories
   // --------------------------
@@ -168,8 +170,6 @@ int main(int argc, char **argv)
     /* Loop over all neutrons read */
     for(i=0; i<NumNeutGot; i++)
     {
-      double mod;
-
       CHECK;
 
       // Only write out event if EOB line is found, otherwise process trajectory
@@ -179,80 +179,77 @@ int main(int argc, char **argv)
       }
       else
       { 
-        mod = sqrt(  sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[1]) + sq(InputNeutrons[i].Vector[2]));	  
-
-        /* copies input data to output data */
-        CopyNeutron(&InputNeutrons[i], &Neutrons);
-	  
-        Neutrons.Vector[0] = Neutrons.Vector[0]/mod;
-        Neutrons.Vector[1] = Neutrons.Vector[1]/mod;
-        Neutrons.Vector[2] = Neutrons.Vector[2]/mod;
-
-        // Save the neutron with primary direction and weight for transmission and visualization
-        CopyNeutron(&Neutrons, &NeutronT);	  	  
+        /* copies and normalizes input data for neutron reflection, transmission and visualization */
+        CopyNeutron(&InputNeutrons[i], &InNeutron);
+        NormVector(InNeutron.Vector);
+        CopyNeutron(&InNeutron, &ReflNeutron);	  	  
+        CopyNeutron(&InNeutron, &TrnsNeutron);	  	  
 	  
         ProbIn  = InputNeutrons[i].Probability ;
         ProbOut = 0.0;	      
 	      
         /* checks if neutron hits the surface of the sample */
-        bHitSmpl = FindISPs(ISP1, ISP2, &Neutrons, FALSE);
+        bHitSmpl = FindISPs(ISP1, ISP2, &ReflNeutron, FALSE);
 	  
         if (bHitSmpl == TRUE) /* neutron hits the sample surface */
         {
           /* moment of arriving at the sample plane (x=0.0), new position */
-          dist = (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0];
-          tof  = dist / V_FROM_LAMBDA(Neutrons.Wavelength);
-          Neutrons.Time +=  tof;
-          CopyVector(Neutrons.Vector, vPath) ;
+          dist = (0.0 - ReflNeutron.Position[0]) / ReflNeutron.Vector[0];
+          tof  = dist / V_FROM_LAMBDA(ReflNeutron.Wavelength);
+          ReflNeutron.Time +=  tof;
+          CopyVector(ReflNeutron.Vector, vPath) ;
           MultiplyByScalar(vPath, dist);
-          AddVector  (Neutrons.Position, vPath) ; /* vPath = displacement vector */
+          AddVector  (ReflNeutron.Position, vPath) ; /* vPath = displacement vector */
 	  
           // Save the neutron with primary direction and weight for offspecular scattering
-          CopyNeutron(&Neutrons, &parentNeutron);	  	  
+          CopyNeutron(&ReflNeutron, &parentNeutron);	  	  
 	    
           // Here, the specular reflection case is treated
-          if (doReflection) 
+          if (doCoherent) 
           {
-            resultScattering = ScatterSpecular(arg, &InputNeutrons[i], &Neutrons);
-            if (resultScattering != 0)
+            bScat = ScatterSpecular(arg, &InNeutron, &ReflNeutron);
+            if (bScat != 0)
             {	    
               // Here, the incoherent scattering is treated
               if (doIncoherent) 
               {
-                Neutrons = InputNeutrons[i];
+                ReflNeutron = InNeutron;
                 /* checks if neutron hits the surface of the sample and gives global variables in	the frame of sample */
-                CheckRefl(&Neutrons, 1) ;
+                CheckRefl(&ReflNeutron, 1) ;
 
                 /* moment of arriving at the sample plane (x=0.0), new position */
-                Neutrons.Time += (0.0 - Neutrons.Position[0]) / Neutrons.Vector[0] / V_FROM_LAMBDA(Neutrons.Wavelength)/**/ ;
-                CopyVector(Neutrons.Vector, vPath) ;  /* vPath = displacement vector */
+                ReflNeutron.Time += (0.0 - ReflNeutron.Position[0]) / ReflNeutron.Vector[0] / V_FROM_LAMBDA(ReflNeutron.Wavelength)/**/ ;
+                CopyVector(ReflNeutron.Vector, vPath) ;  /* vPath = displacement vector */
 	  
-                MultiplyByScalar(vPath, - Neutrons.Position[0] / Neutrons.Vector[0] ) ;
-                AddVector  (Neutrons.Position, vPath) ;
+                MultiplyByScalar(vPath, - ReflNeutron.Position[0] / ReflNeutron.Vector[0] ) ;
+                AddVector  (ReflNeutron.Position, vPath) ;
 
                 pathlen = DistVector(ISP1, ISP2);
-                ScatterIncoherent(&Neutrons, pathlen);
+                ScatterIncoherent(&ReflNeutron, pathlen);
               }
             }
           }
           // Here, the offspecular scattering is treated
           else if (doOffspecular) 
           {
-            ScatterOffspecular(arg, &InputNeutrons[i], &parentNeutron, &Neutrons);
+            ScatterOffspecular(arg, &InNeutron, &parentNeutron, &ReflNeutron);
           }
         }
         
         // transmitted neutron
         if (bTreatAll == TRUE )
         { 
-          bHitSub = FindSubISPs(&dist1, &dist2, &NeutronT);
+          bHitSub = FindSubISPs(&dist1, &dist2, &TrnsNeutron);
           if (bHitSub==TRUE)
-          { PassThrough(&NeutronT, dist1, VT_MIRR_VACUUM, FALSE);
-            PassThrough(&NeutronT, dist2-dist1,  eSubMat, TRUE);
+          { PassThrough(&TrnsNeutron, dist1, VT_MIRR_VACUUM, FALSE);
+            PassThrough(&TrnsNeutron, dist2-dist1,  eSubMat, TRUE);
           }
           else
-          { PassThrough(&NeutronT, LengthVector(PosSmpl), VT_MIRR_VACUUM, TRUE);
+          { PassThrough(&TrnsNeutron, LengthVector(PosSmpl), VT_MIRR_VACUUM, TRUE);
           }
+        }
+        else
+        { WriteDIAP(&InNeutron, VT_OUTSIDE, PosSmpl[0] - InNeutron.Position[0]); 
         }
       }
     }  // end loop trajectories
@@ -293,6 +290,7 @@ void OwnInit(int argc, char *argv[])
   InitRotMatrix(RotMatrixOut);
   InitRotMatrix(RotMatOffSpec);
   InitSample(&stSample);
+  InitSample(&stSubstr);
 
   /*    INPUT  */
   while(argc>1)
@@ -461,6 +459,7 @@ void  CalcAndWritePar()
     exit(0);
   }
 
+  // fills the structure to visualize the sample
   stSample.Type = VT_CUBE;
   stSample.Position[0] = PosSmpl[0];
   stSample.Position[1] = PosSmpl[1];
@@ -486,6 +485,16 @@ void  CalcAndWritePar()
   {
     Error2("wrong value for rotation axis:", sAxis);
   }
+
+  // fills the structure to visualize the substrate
+  memcpy(&stSubstr, &stSample, sizeof(SampleType));
+  stSample.Position[0] = PosSub[0];
+  stSample.Position[1] = PosSub[1];
+  stSample.Position[2] = PosSub[2];
+  if (eSmplAxis==VT_ROT_Y)
+    stSample.SG.Cube.height = DimSub[0];
+  else if (eSmplAxis==VT_ROT_Z)
+    stSample.SG.Cube.width  = DimSub[0];
 
   return;
 }/* End OwnInit */
@@ -757,7 +766,28 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&stSample);
+    stGeometry.nCuboids = 2; 
+    stGeometry.pCuboid = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+      
+    stGeometry.pCuboid[0].Length    = BlowUp * stSample.SG.Cube.thickness; 
+    stGeometry.pCuboid[0].Width     = BlowUp * stSample.SG.Cube.width;
+    stGeometry.pCuboid[0].Height    = BlowUp * stSample.SG.Cube.height;
+    stGeometry.pCuboid[0].vCntr[0]  = stSample.Position[0];
+    stGeometry.pCuboid[0].vCntr[1]  = stSample.Position[1];
+    stGeometry.pCuboid[0].vCntr[2]  = stSample.Position[2];
+    stGeometry.pCuboid[0].vNormal[0]= stSample.Direction[0];
+    stGeometry.pCuboid[0].vNormal[1]= stSample.Direction[1];
+    stGeometry.pCuboid[0].vNormal[2]= stSample.Direction[2];
+      
+    stGeometry.pCuboid[1].Length    = BlowUp * stSubstr.SG.Cube.thickness; 
+    stGeometry.pCuboid[1].Width     = BlowUp * stSubstr.SG.Cube.width;
+    stGeometry.pCuboid[1].Height    = BlowUp * stSubstr.SG.Cube.height;
+    stGeometry.pCuboid[1].vCntr[0]  = stSubstr.Position[0];
+    stGeometry.pCuboid[1].vCntr[1]  = stSubstr.Position[1];
+    stGeometry.pCuboid[1].vCntr[2]  = stSubstr.Position[2];
+    stGeometry.pCuboid[1].vNormal[0]= stSubstr.Direction[0];
+    stGeometry.pCuboid[1].vNormal[1]= stSubstr.Direction[1];
+    stGeometry.pCuboid[1].vNormal[2]= stSubstr.Direction[2];
   }
 }
 
@@ -840,7 +870,7 @@ short	CheckRefl(Neutron* pNeutron, short int treatingReflection)
 }/* End CheckRefl */
 
 /**************************************************************************************************************/
-/* controls, if neutron is hits sample or substrate, tranfers into that frame and returns intersection points */
+/* controls, if neutron hits sample or substrate, tranfers into that frame and returns intersection points */
 /**************************************************************************************************************/
 short	FindISPs(VectorType ISP1, VectorType ISP2, Neutron* pNeutron, short bSubstrate)
 {
@@ -1408,7 +1438,7 @@ int FindQf(double Qin, int mQf, double* Qf, double* refl)
 /* Determines the direction of the neutron at the scattering location */
 /* such that the direction vector matches the requires Q_f            */
 /**********************************************************************/
-void ScatterByQf(Neutron* ParentNeutron, Neutron* Neutrons, double dQin, double dQf)
+void ScatterByQf(Neutron* ParentNeutron, Neutron* Neutron, double dQin, double dQf)
 {
   VectorType nDir;  
   long double vDiff0;
@@ -1456,9 +1486,9 @@ void ScatterByQf(Neutron* ParentNeutron, Neutron* Neutrons, double dQin, double 
 
   }
 
-  for (i=0; i < 3; i++) Neutrons->Vector[i] = nDir[i];
+  for (i=0; i < 3; i++) Neutron->Vector[i] = nDir[i];
 
-  //  fprintf(LogFilePtr,"Direction in sample frame after re-orientation: %f %f %f %f %f\n", Neutrons->Vector[0], Neutrons->Vector[1], Neutrons->Vector[2], dQin, dQf);
+  //  fprintf(LogFilePtr,"Direction in sample frame after re-orientation: %f %f %f %f %f\n", Neutron->Vector[0], Neutron->Vector[1], Neutron->Vector[2], dQin, dQf);
 
   return;
 }

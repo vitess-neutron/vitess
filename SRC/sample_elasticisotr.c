@@ -42,8 +42,8 @@ void  SetSamplePar   ();                                // Reads sample paramete
 void  CalcAndWritePar(SampleType *pSample);             // Calculates arrays from input parameters and writes to log file
 void  SetGeometry    (char* sColor);                    // Fills the structure stGeometry for visualization
 void  TransformIn2Smpl(VectorType pos, VectorType dir); // Co-ordinate transformation from input frame to sample frame
-void  TransformSmpl2In(VectorType Pos, VectorType Dir); // Co-ordinate transformation from sample frame to input frame
-void  TransformIn2Out (VectorType Pos, VectorType Dir); // Co-ordinate transformation from input frame to output frame
+void  TransformSmpl2In(VectorType pos, VectorType dir); // Co-ordinate transformation from sample frame to input frame
+void  TransformIn2Out (VectorType pos, VectorType dir); // Co-ordinate transformation from input frame to output frame
 
 
 /******************************/
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
  _eModule = MCN_SMPL_EL_ISO;
 
   Init   (argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.8a");
+  PrintModuleName(_eModule, "1.8b");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -136,8 +136,8 @@ int main(int argc, char **argv)
         {
           MaxPathLengthHol = PathLengthHol = 0.0;
             
+          NormVectorX( InputNeutrons[i].Vector);
           CopyNeutron(&InputNeutrons[i], &InNeutron);
-          InputNeutrons[i].Vector[0] = sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
         
           /* translates and rotates into frame of the sample  */
           TransformIn2Smpl(InputNeutrons[i].Position, InputNeutrons[i].Vector) ;
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
               CopyVector (Pos1v, ScatNeut.Position);
               ScatNeut.Probability=Prob;
 
-              WriteOwnIAP(&ScatNeut, VT_SCATTERED, RotMatrixSample, PosSample);
+              WriteScatIAP(&ScatNeut, VT_SCATTERED, RotMatrixSample, PosSample);
             }
 
             /* scattering: new neutron variables*/ 
@@ -350,12 +350,12 @@ int main(int argc, char **argv)
             WriteNeutron(&OutNeutron) ;
 
           getlost2:
-            WriteDIAP(&InNeutron, VT_ABSORBED, PosSample[0]);
+            WriteDIAP(&InNeutron, VT_ABSORBED, PosSample[0] - InNeutron.Position[0]);
           }  /*repetition*/
               /* here continues if neutron gets lost */
               
         getlost:
-          WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0]);
+          WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0] - InNeutron.Position[0]);
         }
         else  // neutron passes if: iColor >= 0 and iColor != neutron
         {
@@ -587,10 +587,6 @@ void SetSamplePar()
   if ((PosSample[0] < DimSample[0])||(PosSample[0] < DimSample[1])||(PosSample[0] < DimSample[2])) 
     Warning("Distance to sample is smaller than at least one sample dimension"); 
 
-  // check if geometry was given
-  if (eGeom==VT_NO_GEOM)
-    Error2("Sample geometry could not be identified", sGeom);
-
   /* converts degs in radian etc. */
   AnglSmplHor  *= M_PI/180. ;
   AnglSmplVert *= M_PI/180. ;
@@ -611,7 +607,16 @@ void SetSamplePar()
 void  CalcAndWritePar(SampleType* pSample)
 {
   double scattered_dir[3];
-  VectorType DirSample={0.0,0.0,1.0}; // sample orientation
+  VectorType DirSample={0.0,0.0,0.0}; // sample orientation
+
+  // sets sample dimension and orientation and checks if a valid geometry is given
+  switch (eGeom)
+  { case VT_CYL    :
+    case VT_HOL_CYL: DirSample[2]=1.0; break;
+    case VT_CUBE   : DirSample[0]=1.0; break;
+    case VT_SPHERE :                   break;
+    default        : Error("Sample geometry missing");
+  }
 
   /* computes global reference values */
   scattered_dir[0]= (double) cos(ScatMain[2]*M_PI/180.) * (double) cos(ScatMain[1]*M_PI/180.) ;
@@ -662,7 +667,7 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&stSample);
+    SetSampleGeometry(&stSample, 0.0);
   }
 }
 
@@ -693,6 +698,6 @@ void TransformIn2Out(VectorType pos, VectorType dir)
   RotVector(RotMatrixOut, pos) ;
   RotVector(RotMatrixOut, dir) ;
 
-} /* End OutputTransform() */
+} 
 
 

@@ -102,11 +102,12 @@ int main(int argc, char **argv)
              Pos1v ={0.0,0.0,0.0}, Pos2v=  {0.0,0.0,0.0}, Pos3v={0.0,0.0,0.0}, Pos4v={0.0,0.0,0.0},   
              propag={0.0,0.0,0.0}, propag1={0.0,0.0,0.0},                              // propagation vectors e.g. from entry to point of scattering to calculate TOF
              Pos   ={0.0,0.0,0.0}, Dir=    {0.0,0.0,0.0}, Pos_final={0.0,0.0,0.0};
-  Neutron	   Neutrons ;
+  Neutron	   InNeutron, OutNeutron;
 
   // initialisation
   // --------------
-  InitNeutron(&Neutrons);
+  InitNeutron(&OutNeutron);
+  InitNeutron(&InNeutron);
 
   _eModule = MCN_SMPL_INELAST;
 
@@ -128,9 +129,9 @@ int main(int argc, char **argv)
 
   // Loop over all trajectories
   // --------------------------
-  while ((ReadNeutrons())!= 0)
+  while (ReadNeutrons() != 0)
   {
-    for (i=0;i<NumNeutGot ;i++)
+    for (i=0; i<NumNeutGot; i++)
     { 
       CHECK;
 
@@ -141,8 +142,9 @@ int main(int argc, char **argv)
       }
       else
       { 
-        MaxPathLengthHol = PathLengthHol = 0.; 
-        InputNeutrons[i].Vector[0]		= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+        MaxPathLengthHol = PathLengthHol = 0.0; 
+        NormVectorX(InputNeutrons[i].Vector);
+        CopyNeutron(&InputNeutrons[i], &InNeutron);
 
         /* translates and rotates into frame of the sample  */
         SubVector(InputNeutrons[i].Position, PosSample) ;
@@ -253,7 +255,7 @@ int main(int argc, char **argv)
             CopyVector (Pos1v, ScatNeut.Position);
             ScatNeut.Probability=Prob;
 
-            WriteWWP(&ScatNeut, VT_SCATTERED);
+            WriteScatIAP(&ScatNeut, VT_SCATTERED, RotMatrixSample, PosSample);
           }
 
           /* S(q,w) scattering: new neutron variables*/ 
@@ -342,23 +344,24 @@ int main(int argc, char **argv)
             goto getlost2 ;
 
           /* transmit coordinates which were not changed, the rest overwrite below */
-          Neutrons = InputNeutrons[i]; 
-          Neutrons.Time = TOF ;
-          Neutrons.Wavelength = WL ;
-          Neutrons.Probability = Prob/Repetition ;
+          OutNeutron = InputNeutrons[i]; 
+          OutNeutron.Time = TOF ;
+          OutNeutron.Wavelength = WL ;
+          OutNeutron.Probability = Prob/Repetition ;
 
-          CopyVector(Pos2v, Neutrons.Position) ;
-          CopyVector(Dir, Neutrons.Vector) ;
+          CopyVector(Pos2v, OutNeutron.Position) ;
+          CopyVector(Dir, OutNeutron.Vector) ;
 
           /* writes output binary file */
-          WriteNeutron(&Neutrons) ;
+          WriteNeutron(&OutNeutron) ;
 
-          getlost2: ;
-
+        getlost2: ;
         }/*repetition*/
-        /* here continues if neutron gets lost */
+        continue;
 
-	  getlost: ;
+        /* here continues if neutron gets lost */
+      getlost:
+        WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0] - InNeutron.Position[0]); 
       }
     }
   }
@@ -642,10 +645,6 @@ void SetSamplePar()
     }
   }
 
-  // checks if geometry was given
-  if (eGeom==VT_NO_GEOM)
-    Error2("Sample geometry could not be identified", sGeom);
-
   /* sets default values if frame for output not user defined */
   if (eFrame==VT_FRAME_STD)
   {
@@ -676,7 +675,16 @@ void  CalcAndWritePar(SampleType* pSample)
   double scattered_dir[3];
   double	wl, wl_scattered, q_length, scattering_angle, energy_transfer ;
   VectorType	k_scattered ;
-  VectorType  DirSample={0.0,0.0,1.0}; // sample orientation
+  VectorType  DirSample={0.0,0.0,0.0}; // sample orientation
+
+  // sets sample dimension and orientation and checks if a valid geometry is given
+  switch (eGeom)
+  { case VT_CYL    :
+    case VT_HOL_CYL: DirSample[2]=1.0; break;
+    case VT_CUBE   : DirSample[0]=1.0; break;
+    case VT_SPHERE :                   break;
+    default        : Error("Sample geometry missing");
+  }
 
   if (eGeom==VT_HOL_CYL)
   {
@@ -779,7 +787,7 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&stSample);
+    SetSampleGeometry(&stSample, 0.0);
   }
 }
 

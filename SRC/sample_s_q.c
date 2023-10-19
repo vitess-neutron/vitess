@@ -11,6 +11,7 @@
 /* 1.3  Apr 2020  K. Lieutenant   new central visualization parameters                        */
 /* 1.4  Apr 2020  K. Lieutenant   modulation of sample response                               */
 /* 1.5  Aug 2021  K. Lieutenant  option: parameters from input instead of from file           */
+/* 1.5a Sep 2023  K. Lieutenant  correction: par. for spherical sample, visualisation improved*/
 /**********************************************************************************************/
 
 #include <string.h>
@@ -110,16 +111,18 @@ int main(int argc, char *argv[])
   long       i=0,         /* counting variable of the neutrons */
              nisp=0,      /* number of intersection points to come */
              NeutCount=0;
+  Neutron    InNeutron;
 
   // initialisation
   // --------------
+  InitNeutron(&InNeutron);
   InitRotMatrix(RotMatrixSmpl); InitVector(InISP[0]); 
   InitRotMatrix(RotMatrixNeut); InitVector(InISP[1]),
 
   _eModule = MCN_SMPL_S_Q;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.5");
+  PrintModuleName(_eModule, "1.5a");
   OwnInit   (argc, argv);
 
   InitSample  (&stSample);
@@ -174,6 +177,7 @@ int main(int argc, char *argv[])
       else
       { 
         /* First, shift the origin of the system to the center of the sample */
+        CopyNeutron(&InputNeutrons[i], &InNeutron);
         SubVector(InputNeutrons[i].Position, stSample.Position);
 
         /* Test if the Neutron hits the stSample */
@@ -286,6 +290,10 @@ int main(int argc, char *argv[])
         else if (bTreatAll==TRUE)
         {	
           WriteNeutron(&InputNeutrons[i]);
+        }
+        else
+        {
+          WriteDIAP(&InNeutron, VT_OUTSIDE, Xpos - InNeutron.Position[0]);
         }
       }
     }
@@ -523,12 +531,13 @@ void SetSamplePar(SampleType *pSample)
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeomS); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
+      eGeo = SmplGeom_Txt2ID (sGeomS);
+      if (eGeo!=VT_SPHERE)
+      { if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);}
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          &sFct);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sStrFileNameF); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muCoh, &muAbs); 
 
-      eGeo = SmplGeom_Txt2ID (sGeomS);
       if (eGeo==VT_NO_GEOM)
         Error2("Sample geometry could not be identified", sGeomS);
       eFct = (VtDataSrc) sFct[0];
@@ -692,6 +701,6 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-     SetSampleGeometry(&stSample);
+     SetSampleGeometry(&stSample, 0.0);
   }
 }

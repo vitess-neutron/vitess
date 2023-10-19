@@ -1,25 +1,25 @@
-/**********************************************************************************************/
-/*  VITESS module sample_sans                                                                 */
-/* This program  simulates the coherent elastic  diffraction of neutrons at a SANS sample.    */
-/*                                                                                            */
-/* The free non-commercial use of these routines is granted providing due credit is given to  */
-/* the authors.                                                                               */
-/*                                                                                            */
-/* 1.0      1999  F. Streffer                                                                 */
-/* 1.1  May 2001  K. Lieutenant  adding ellipsoids, cylinders, parallelepipeds                */
-/* 1.2  Jun 2001  K. Lieutenant  absolute current values, input data for Q ignored,           */
-/*                                  SOFTABORT                                                 */
-/* 1.3  Nov 2001  K. Lieutenant  corrections in NeutronIntersectsCylinder                     */
-/* 1.4  Jan 2002  K. Lieutenant  reorganisation                                               */
-/* 1.5  Feb 2002  K. Lieutenant  correction detector coverage,                                */
-/*                                deletion of Q-range, adding of incoher. scattering          */
-/* 1.6  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                 */
-/* 1.7  Feb 2004  K. Lieutenant  'FullParName', 'message' & 'ERROR' included; output extended */
-/* 1.8  Nov 2012  K. Lieutenant  size distribution of spheres                                 */
-/* 1.9  Oct 2013  K. Lieutenant  only theta_max variable                                      */
-/* 1.10 Apr 2020  K. Lieutenant  new central visualization parameters                         */
-/* 1.11 Oct 2021  K. Lieutenant  option: parameters from input instead of from file           */
-/**********************************************************************************************/
+/***********************************************************************************************/
+/*  VITESS module sample_sans                                                                  */
+/* This program  simulates the coherent elastic  diffraction of neutrons at a SANS sample.     */
+/*                                                                                             */
+/* The free non-commercial use of these routines is granted providing due credit is given to   */
+/* the authors.                                                                                */
+/*                                                                                             */
+/* 1.0       1999  F. Streffer                                                                 */
+/* 1.1   May 2001  K. Lieutenant  adding ellipsoids, cylinders, parallelepipeds                */
+/* 1.2   Jun 2001  K. Lieutenant  absolute current values, input data for Q ignored, SOFTABORT */
+/* 1.3   Nov 2001  K. Lieutenant  corrections in NeutronIntersectsCylinder                     */
+/* 1.4   Jan 2002  K. Lieutenant  reorganisation                                               */
+/* 1.5   Feb 2002  K. Lieutenant  correction detector coverage,                                */
+/*                                deletion of Q-range, adding of incoher. scattering           */
+/* 1.6   Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                 */
+/* 1.7   Feb 2004  K. Lieutenant  'FullParName', 'message' & 'ERROR' included; output extended */
+/* 1.8   Nov 2012  K. Lieutenant  size distribution of spheres                                 */
+/* 1.9   Oct 2013  K. Lieutenant  only theta_max variable                                      */
+/* 1.10  Apr 2020  K. Lieutenant  new central visualization parameters                         */
+/* 1.11  Oct 2021  K. Lieutenant  option: parameters from input instead of from file           */
+/* 1.11a Sep 2023  K. Lieutenant  correction: par. for spherical sample, visualisation improved*/
+/***********************************************************************************************/
 
 #include <string.h>
 
@@ -137,9 +137,11 @@ int main(int argc, char *argv[])
   long       i=0,                 /* counting variable of the neutrons */
              nisp=0,              /* number of intersection points to come */
              NeutCount=0;
+  Neutron    InNeutron;
 
   // initialisation
   // --------------
+  InitNeutron(&InNeutron);
   InitVector(InISP[0]); InitVector(InISP[1]),
   InitRotMatrix(RotMatrixSmpl);
   InitRotMatrix(RotMatrixNeut);
@@ -147,7 +149,7 @@ int main(int argc, char *argv[])
   _eModule = MCN_SMPL_SANS;
   
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.11");
+  PrintModuleName(_eModule, "1.11a");
   OwnInit(argc, argv);
 
   /* Go and get the geometry of the sample and the scattering objects */
@@ -182,6 +184,7 @@ int main(int argc, char *argv[])
       else
       { 
         /* First, shift the origin of the system to the center of the sample */
+        CopyNeutron(&InputNeutrons[i], &InNeutron);
         SubVector(InputNeutrons[i].Position, stSample.Position);
 
         /* Test if the Neutron hits the Sample */
@@ -310,14 +313,17 @@ int main(int argc, char *argv[])
               /* Scattering probability */
               ScProb  = Lbf*MuInc * sin(OutTheta) / GenNeutrons;
 
-              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, ScProb,
-              OutTheta, OutPhi, &stSample, OneMatrix,  RotMatrixSmpl);
+              ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacInc, ScProb, OutTheta, OutPhi, &stSample, OneMatrix,  RotMatrixSmpl);
             }
           }
         }
         else if (bTreatAll==TRUE)
         {	
           WriteNeutron(&InputNeutrons[i]);
+        }
+        else
+        {
+          WriteDIAP(&InNeutron, VT_OUTSIDE, Xpos - InNeutron.Position[0]);
         }
       }
     }
@@ -543,13 +549,14 @@ void SetSamplePar(SampleType* pSample)
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeomS); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
+      geomS = SmplGeom_Txt2ID (sGeomS);
+      if (geomS!=VT_SPHERE)
+      { if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);}
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%c %lf %lf %lf", &cGeomP, &sizeA, &sizeB, &sizeC);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &rho1,  &rho2,  &frac);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muTot, &muAbs); 
 
       geomP = PtclGeom_Char2ID(cGeomP);
-      geomS = SmplGeom_Txt2ID (sGeomS);
 
       fclose(pFile);
 
@@ -645,7 +652,7 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&stSample);
+    SetSampleGeometry(&stSample,  0.0);
   }
 }
 

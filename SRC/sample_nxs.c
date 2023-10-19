@@ -1,51 +1,52 @@
-/************************************************************************************************/
-/*  VITESS module sample_nxs                                                                    */
-/*                                                                                              */
-/* This program simulates coherent and incoherent scattering, absorption and transmission based */
-/* on the calculation of wavelength-dependent neutron cross sections and the unit cell          */
-/* definition, i.e. the crystallographic structure, of the sample.                              */
-/*                                                                                              */
-/* DETAILS: The module was originally developed for McStas and is now translated to VITESS. As  */
-/*          a result the same input files can be used for both programs.                        */
-/*          The sample module calls the neutron cross section functions from the nxs library,   */
-/*          which needs to be linked for compilation. Moreover, the module includes input file  */
-/*          reading routines (read_table-lib) from the McStas software, that must also be       */
-/*          included.                                                                           */
-/*          The sample module can be used with different modes (using the bTransOnly switch):   */
-/*          If bTransOnly=True (YES), then all neutrons intersecting with the sample will be    */
-/*          transmitted to the forward flight direction. Then, the neutron weight is changed by */
-/*          the exponential attenuation. Therefore, the total neutron cross section is used:    */
-/*             I/I_0 = p_transmit = exp( -sigma_total * N * thickness )                         */
-/*          No scattering or absorption will be performed.                                      */
-/*                                                                                              */
-/*          If bTransOnly=False (NO), then the calculated scattering and absorption cross       */
-/*          sections will be used as probabilities to determine whether a neutron should be     */
-/*          transmitted, absorbed or scattered (coherently or incoherently).                    */
-/*                                                                                              */
-/*                                                                                              */
-/*  The sample module makes use of the SgInfo library, whose free usage is granted by the       */
-/*  following notice:                                                                           */
-/*                                                                                              */
-/*  Copyright Notice:                                                                           */
-/*  Space Group Info (c) 1994-96 Ralf W. Grosse-Kunstleve                                       */
-/*  Permission to use and distribute this software and its documentation for noncommercial      */
-/*  use and without fee is hereby granted, provided that the above copyright notice appears     */
-/*  in all copies and that both that copyright notice and this permission notice appear in      */
-/*  the supporting documentation. It is not allowed to sell this software in any way. This      */
-/*  software is not in the public domain.                                                       */
-/*                                                                                              */
-/*                                                                                              */
-/* The free non-commercial use of these routines is granted providing due credit is given to    */
-/* the authors.                                                                                 */
-/*                                                                                              */
-/* 1.0  Nov 2011  M. Boin    1st official release                                               */
-/*                           Transmission, absorption, coherent and incoherent scattering       */
-/*                           implemented.                                                       */
-/* 1.0a May 2012  A. Houben  Color is also set for coherently scattered neutrons                */
-/* 1.1  Oct 2014  M. Boin    Updated nxs library and removed dependence from read_table-lib.h   */
-/* 1.2  Apr 2020  K. Lieutenant  visualisation and new central visualization parameters         */
-/* 1.3  Oct 2021  K. Lieutenant  option: parameters from input instead of from file             */
-/************************************************************************************************/
+/**************************************************************************************************/
+/*  VITESS module sample_nxs                                                                      */
+/*                                                                                                */
+/* This program simulates coherent and incoherent scattering, absorption and transmission based   */
+/* on the calculation of wavelength-dependent neutron cross sections and the unit cell            */
+/* definition, i.e. the crystallographic structure, of the sample.                                */
+/*                                                                                                */
+/* DETAILS: The module was originally developed for McStas and is now translated to VITESS. As    */
+/*          a result the same input files can be used for both programs.                          */
+/*          The sample module calls the neutron cross section functions from the nxs library,     */
+/*          which needs to be linked for compilation. Moreover, the module includes input file    */
+/*          reading routines (read_table-lib) from the McStas software, that must also be         */
+/*          included.                                                                             */
+/*          The sample module can be used with different modes (using the bTransOnly switch):     */
+/*          If bTransOnly=True (YES), then all neutrons intersecting with the sample will be      */
+/*          transmitted to the forward flight direction. Then, the neutron weight is changed by   */
+/*          the exponential attenuation. Therefore, the total neutron cross section is used:      */
+/*             I/I_0 = p_transmit = exp( -sigma_total * N * thickness )                           */
+/*          No scattering or absorption will be performed.                                        */
+/*                                                                                                */
+/*          If bTransOnly=False (NO), then the calculated scattering and absorption cross         */
+/*          sections will be used as probabilities to determine whether a neutron should be       */
+/*          transmitted, absorbed or scattered (coherently or incoherently).                      */
+/*                                                                                                */
+/*                                                                                                */
+/*  The sample module makes use of the SgInfo library, whose free usage is granted by the         */
+/*  following notice:                                                                             */
+/*                                                                                                */
+/*  Copyright Notice:                                                                             */
+/*  Space Group Info (c) 1994-96 Ralf W. Grosse-Kunstleve                                         */
+/*  Permission to use and distribute this software and its documentation for noncommercial        */
+/*  use and without fee is hereby granted, provided that the above copyright notice appears       */
+/*  in all copies and that both that copyright notice and this permission notice appear in        */
+/*  the supporting documentation. It is not allowed to sell this software in any way. This        */
+/*  software is not in the public domain.                                                         */
+/*                                                                                                */
+/*                                                                                                */
+/* The free non-commercial use of these routines is granted providing due credit is given to      */
+/* the authors.                                                                                   */
+/*                                                                                                */
+/* 1.0  Nov 2011  M. Boin        1st official release                                             */
+/*                               Transmission, absorption, coherent and incoherent scattering     */
+/*                               implemented.                                                     */
+/* 1.0a May 2012  A. Houben      Color is also set for coherently scattered neutrons              */
+/* 1.1  Oct 2014  M. Boin        Updated nxs library and removed dependence from read_table-lib.h */
+/* 1.2  Apr 2020  K. Lieutenant  visualisation and new central visualization parameters           */
+/* 1.3  Oct 2021  K. Lieutenant  option: parameters from input instead of from file               */
+/* 1.3a Sep 2023  K. Lieutenant  correction: par. for spherical sample, visualisation improved    */
+/**************************************************************************************************/
 
 #include <string.h>
 #include <math.h>
@@ -140,16 +141,18 @@ int main(int argc, char *argv[])
   int        numAtoms  = 0;
   int        nxs_init_success = 0;
   VectorType InISP[2]={{0.0,0.0,0.0},{0.0,0.0,0.0}};             /* neutron intersection before scattering */
-  
+  Neutron    InNeutron;
+
   // initialisation
   // --------------
+  InitNeutron(&InNeutron);
   InitRotMatrix(RotMatrixSmpl);
   InitRotMatrix(RotMatrixNeut);
 
   _eModule = MCN_SMPL_NXS;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
 
   /* Go and get the sample geometry and name of nxs parameter file */
@@ -252,6 +255,7 @@ int main(int argc, char *argv[])
       else
       { 
         /* First, shift the origin of the system to the middle of the sample   */
+        CopyNeutron(&InputNeutrons[i], &InNeutron);
         SubVector(InputNeutrons[i].Position, Sample.Position);
 
         /* Do anything to be done for the Scattering */
@@ -388,6 +392,10 @@ int main(int argc, char *argv[])
         else if (bTreatAll==TRUE)
         {
           WriteNeutron(&InputNeutrons[i]);
+        }
+        else
+        {
+          WriteDIAP(&InNeutron, VT_OUTSIDE, Xpos - InNeutron.Position[0]);
         }
       }
     }
@@ -591,7 +599,9 @@ void SetSamplePar(SampleType *pSample)
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
-      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
+      geom = SmplGeom_Txt2ID(sGeom);
+      if (geom!=VT_SPHERE)
+      { if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);}
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sNxsFileNameF); 
 
       geom = SmplGeom_Txt2ID(sGeom);
@@ -645,6 +655,6 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&Sample);
+    SetSampleGeometry(&Sample, 0.0);
   }
 }

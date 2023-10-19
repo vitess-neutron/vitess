@@ -114,8 +114,10 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
 
 
 // Set sample geometry for visualisation
-void SetSampleGeometry(SampleType *Sample)
+void SetSampleGeometry(SampleType *Sample, double CubeRotAngle)
 {
+  NormVector(Sample->Direction);
+
   switch(Sample->Type) 
   {
     case VT_CUBE:
@@ -131,6 +133,7 @@ void SetSampleGeometry(SampleType *Sample)
       stGeometry.pCuboid[0].vNormal[0]= Sample->Direction[0];
       stGeometry.pCuboid[0].vNormal[1]= Sample->Direction[1];
       stGeometry.pCuboid[0].vNormal[2]= Sample->Direction[2];
+      stGeometry.pCuboid[0].rotAngle  = CubeRotAngle;
       break;
       
     case VT_CYL:
@@ -252,38 +255,40 @@ int ReadTilComment(char* pBuffer, FILE* pSampleFile)
 /* RotMatrixSmpl: is a matrix that rotates the sample              */
 /*                in its position (from the (1,0,0) direction      */
 /*******************************************************************/
-void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
+void ProcessNeutronToEnd(Neutron *pNeut, VectorType SP, double Ls,
                         double DetFac, double ScProb, double ScTheta,
-                        double ScPhi, SampleType *Sample,
+                        double ScPhi, SampleType *pSample,
                         double RotMatrixNeut[3][3], double RotMatrixSmpl[3][3])
 {
   Neutron    OutNeut;
-  double     Las, t, Atten, Lbs;
+  double     Las=0.0, t=0.0, Atten=0.0, Lbs=0.0,
+             NoRotMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
   VectorType OutISP[2];
   long       nisp;
 
   /* Determine the flight length of the neutron before scattering */
-  Lbs = DistVector(Neut->Position, SP); /*including the distance to the sample*/
+  Lbs = DistVector(pNeut->Position, SP); /*including the distance to the sample*/
 
   /* initialize output data of the neutron */
-  memcpy(&OutNeut, Neut, sizeof(Neutron));
+  CopyNeutron(pNeut, &OutNeut);
 
   /* put the neutron to the scattering point */
-  CopyVector(SP,OutNeut.Position);
+  CopyVector(SP, OutNeut.Position);
+
+  /* write intersection point for visualization */
+  WriteScatIAP(&OutNeut, VT_SCATTERED, NoRotMatrix, pSample->Position);
 
   /* calculate the new direction in the neutron frame */
   OutNeut.Vector[0]= cos(ScTheta);
   OutNeut.Vector[1]= sin(ScTheta)*cos(ScPhi);
   OutNeut.Vector[2]= sin(ScTheta)*sin(ScPhi);
 
-  /* bring the direction to the original co-ordinate system and write intersection point */
+  /* bring the direction to the co-ordinate system of the component */
   RotBackVector(RotMatrixNeut, OutNeut.Vector);
-
-  WriteIAP(&OutNeut, VT_SCATTERED);
 
   /* ok the neutron is at SP and has its new Direction */
   /* find the intersections with the sample walls      */
-  if(NeutronIntersectsSample(&OutNeut, Sample, RotMatrixSmpl, OutISP, &nisp, VT_INSIDE)) 
+  if(NeutronIntersectsSample(&OutNeut, pSample, RotMatrixSmpl, OutISP, &nisp, VT_INSIDE)) 
   {
     /* Distance between SP and OutISP, Length atfter scattering */
     Las = DistVector(SP, OutISP[1]);
@@ -301,8 +306,8 @@ void ProcessNeutronToEnd(Neutron *Neut, VectorType SP, double Ls,
     Atten = exp(-(Las+Ls)*(MuTot + MuAbs*OutNeut.Wavelength/1.798));
 
     /* now put all together  */
-    OutNeut.Time        = Neut->Time+t;
-    OutNeut.Probability = Neut->Probability*DetFac*Atten*ScProb;
+    OutNeut.Time        = pNeut->Time + t;
+    OutNeut.Probability = pNeut->Probability*DetFac*Atten*ScProb;
 
     /* write the Neutron to the output file   */
     WriteNeutron(&OutNeut);
@@ -556,22 +561,22 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
 
 
 
-/******************************************************************************************************/
-/** transfers from neutron from 'sample frame' to 'incoming frame' before writing interseciton point **/
-/******************************************************************************************************/
-void WriteOwnIAP(Neutron* pNeutrSmpl, VtReason eReason, double RotMatrixSmpl[3][3], VectorType PosSmpl)
+/***********************************************************************************************************/
+/** transfers neutron from 'sample frame' (SF) to 'incoming frame' (IF) before writing intersection point **/
+/***********************************************************************************************************/
+void WriteScatIAP(Neutron* pNeutrSF, VtReason eReason, double RotMatrixSmpl[3][3], VectorType PosSmpl)
 {
   if (bVisTraj==TRUE)
   {
-    Neutron NeutrIn;
+    Neutron NeutrIF;
 
-    CopyNeutron(pNeutrSmpl, &NeutrIn);
+    CopyNeutron(pNeutrSF, &NeutrIF);
 
     /* computes neutron variables in the initial frame */
-    RotBackVector(RotMatrixSmpl, NeutrIn.Position) ;
-    RotBackVector(RotMatrixSmpl, NeutrIn.Vector) ;
-    AddVector(NeutrIn.Position, PosSmpl);
+    RotBackVector(RotMatrixSmpl, NeutrIF.Position) ;
+    RotBackVector(RotMatrixSmpl, NeutrIF.Vector) ;
+    AddVector(NeutrIF.Position, PosSmpl);
 
-    WriteWWP(&NeutrIn, eReason);
+    WriteWWP(&NeutrIF, eReason);
   }
 }

@@ -1,25 +1,26 @@
-/*************************************************************************************************/
-/*  VITESS module sample_powder                                                                  */
-/*                                                                                               */
-/* This program simulates the elastic coherent diffraction and incoherent scattering             */
-/* of neutrons at a powder sample.                                                               */
-/*                                                                                               */
-/* The free non-commercial use of these routines is granted providing due credit is given to     */
-/* the authors.                                                                                  */
-/*                                                                                               */
-/* 1.0  Jan 1999  F. Streffer                                                                    */
-/* 1.1  Nov 2001  K. Lieutenant  absolute current values, SOFTABORT, corrections in              */
-/*                               NeutronIntersectsSphere                                         */
-/* 1.2  Jan 2002  K. Lieutenant  reorganisation                                                  */
-/* 1.3  Jul 2002  K. Lieutenant  corr.: UCV reading; check: output dir. in [theta_min,theta_max] */
-/* 1.4  Jan 2004  K. Lieutenant  changes for 'instrument.dat', FullName() for struct.fac.file    */
-/* 1.5  Feb 2004  K. Lieutenant  'FullParName', 'message' and 'ERROR' included; output extended  */
-/* 1.6  Nov 2008  K. Lieutenant  Corr. inc. scat., colour, treat neutrons not hitting the sample */
-/* 1.7  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced           */
-/* 1.8  Nov 2015  K. Lieutenant  phi angle of cone separated from phi detector angle             */
-/* 1.9  Apr 2020  K. Lieutenant  new central visualization parameters                            */
-/* 1.10 Aug 2021  K. Lieutenant  option: parameters from input instead of from file              */
-/*************************************************************************************************/
+/**************************************************************************************************/
+/*  VITESS module sample_powder                                                                   */
+/*                                                                                                */
+/* This program simulates the elastic coherent diffraction and incoherent scattering              */
+/* of neutrons at a powder sample.                                                                */
+/*                                                                                                */
+/* The free non-commercial use of these routines is granted providing due credit is given to      */
+/* the authors.                                                                                   */
+/*                                                                                                */
+/* 1.0   Jan 1999  F. Streffer                                                                    */
+/* 1.1   Nov 2001  K. Lieutenant  absolute current values, SOFTABORT, corrections in              */
+/*                               NeutronIntersectsSphere                                          */
+/* 1.2   Jan 2002  K. Lieutenant  reorganisation                                                  */
+/* 1.3   Jul 2002  K. Lieutenant  corr.: UCV reading; check: output dir. in [theta_min,theta_max] */
+/* 1.4   Jan 2004  K. Lieutenant  changes for 'instrument.dat', FullName() for struct.fac.file    */
+/* 1.5   Feb 2004  K. Lieutenant  'FullParName', 'message' and 'ERROR' included; output extended  */
+/* 1.6   Nov 2008  K. Lieutenant  Corr. inc. scat., colour, treat neutrons not hitting the sample */
+/* 1.7   Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced           */
+/* 1.8   Nov 2015  K. Lieutenant  phi angle of cone separated from phi detector angle             */
+/* 1.9   Apr 2020  K. Lieutenant  new central visualization parameters                            */
+/* 1.10  Aug 2021  K. Lieutenant  option: parameters from input instead of from file              */
+/* 1.10a Sep 2023  K. Lieutenant  correction: par. for spherical sample, visualisation improved   */
+/**************************************************************************************************/
 
 #include <string.h>
 
@@ -110,16 +111,18 @@ int main(int argc, char *argv[])
   DoublePair *StrucFac=NULL;
   VectorType SP={0.0,0.0,0.0},                       /* position of scattering event                        */
              InISP[2]={{0.0,0.0,0.0},{0.0,0.0,0.0}}; /* neutron intersection with sample before scattering */
+  Neutron    InNeutron;
 
   // initialisation
   // --------------
+  InitNeutron(&InNeutron);
   InitRotMatrix(RotMatrixSmpl);
   InitRotMatrix(RotMatrixNeut);
 
   _eModule = MCN_SMPL_POWDER;
   
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.10");
+  PrintModuleName(_eModule, "1.10a");
   OwnInit   (argc, argv);
 
   InitSample  (&stSample);
@@ -170,6 +173,7 @@ int main(int argc, char *argv[])
       else
       { 
         /* First, shift the origin of the system to the middle of the sample   */
+        CopyNeutron(&InputNeutrons[i], &InNeutron);
         SubVector(InputNeutrons[i].Position, stSample.Position);
 
         /* Do anything to be done for the Scattering */
@@ -267,6 +271,10 @@ int main(int argc, char *argv[])
         else if (bTreatAll==TRUE)
         {	
           WriteNeutron(&InputNeutrons[i]);
+        }
+        else
+        {
+          WriteDIAP(&InNeutron, VT_OUTSIDE, Xpos - InNeutron.Position[0]);
         }
       }
     }
@@ -500,13 +508,13 @@ void  SetSamplePar(SampleType* pSample)
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);
+      geom = SmplGeom_Txt2ID(sGeom);
+      if (geom!=VT_SPHERE)
+      { if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);}
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sStrFileNameF); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muTot, &muAbs); 
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf",         &ucv);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%d %d %d %d %d %lf", &col_d, &col_f, &col_f2, &col_m, &col_dw, &scale_f2);
-
-      geom = SmplGeom_Txt2ID(sGeom);
 
       fclose(pFile);
 
@@ -572,6 +580,6 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    SetSampleGeometry(&stSample);
+    SetSampleGeometry(&stSample, 0.0);
   }
 }
