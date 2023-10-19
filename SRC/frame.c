@@ -285,16 +285,16 @@ void OwnCleanup()
 /*******************************************************/
 void SetGeometry(char* sColor)
 {
-  // Visualisation 
+  // Visualization 
   if (bVisInstr)
-  { 
+  { /*
     double sy = sin(Radians(AnglAroundY)),
-           sz = sin(Radians(AnglAroundZ));
+           sz = sin(Radians(AnglAroundZ)); */
 
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
-
+    /*
     stGeometry.nRectangles = 2;
     stGeometry.pRectangle  = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
     stGeometry.pRectangle[0].Width    = 20.0;
@@ -314,7 +314,7 @@ void SetGeometry(char* sColor)
     stGeometry.pRectangle[1].vCntr[2] = Translate1[2];
     stGeometry.pRectangle[1].vNormal[0] = sqrt(1.0 - sq(sy) -sq(sz));
     stGeometry.pRectangle[1].vNormal[1] = sz;
-    stGeometry.pRectangle[1].vNormal[2] = sy;
+    stGeometry.pRectangle[1].vNormal[2] = sy; */
   }
   return;
 }
