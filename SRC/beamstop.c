@@ -6,10 +6,11 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.0  Apr 2011  K. Lieutenant   initial version                                            */
-/* 1.1  Jul 2019  K. Lieutenant   length compression for visualization                       */
-/* 1.2  Jul 2021  K. Lieutenant   general changes for VITESS 3.5                             */
-/* 1.3  Mar 2023  K. Lieutenant   function and visualization corrected                       */
+/* 1.0  Apr 2011  K. Lieutenant  initial version                                             */
+/* 1.1  Jul 2019  K. Lieutenant  length compression for visualization                        */
+/* 1.2  Jul 2021  K. Lieutenant  general changes for VITESS 3.5                              */
+/* 1.3  Mar 2023  K. Lieutenant  function and visualization corrected                        */
+/* 1.4  Sep 2023  K. Lieutenant  correction: Cleanup(0,0,0,0,0), no writeout with propagation*/
 /*********************************************************************************************/
 
 #include "convert.h"
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_BEAMSTOP;
 
   Init(argc,argv, _eModule);
-	PrintModuleName(_eModule, "1.3");
+	PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
         if (bOnBeamstop)
         { 
           if (bProp)
-          { WriteNeutron(&InputNeutrons[i]);
+          { // WriteNeutron(&InputNeutrons[i]);
             WriteIAP(&TestNeutron, VT_ABSORBED);
           }
         }
@@ -159,8 +160,12 @@ my_exit:
   else
     Error("Unknown beamstop shape");
   
+   // write geometry data for visualization
   SetGeometry("blue");
-  Cleanup(DistMove,0.0,0.0, 0.0,0.0);	
+
+  /* Do the general cleanup */
+  // the origin of the co-ordinate system remains at the sample  
+  Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
   return(0);
 }
