@@ -513,21 +513,35 @@ double LengthVector(const VectorType Vec)
 }
 
 
-/* 'NormVector' changes the vector length to 1  */
+/* 'NormVector' and 'NormVectorX' change the vector length to 1,
+/* the former by changing the length of all components by the same fraction, the latter by adapting the x component   */
 short NormVector(VectorType Vector)
 {
-  long   i;
-  double dLen = LengthVector(Vector);
+  int    i=0;
+  double len = LengthVector(Vector);
 
-  if (dLen==0.0)
-    return FALSE;
-
-  for(i=0;i<3;i++)
-    Vector[i] /= dLen;
-
-  return TRUE;
+  if (len <= 0.0)
+  { return FALSE;
+  }
+  else
+  { for (i=0; i < 3; i++)
+      Vector[i] /= len;
+    return TRUE;
+  }
 }
 
+short NormVectorX(VectorType Vector)
+{
+  double qsum = sq(Vector[1]) + sq(Vector[2]);
+
+  if (qsum > 1.0)
+  { return FALSE;
+  }
+  else
+  { Vector[0] = sqrt(1.0 - qsum);
+    return TRUE;
+  }
+}
 
 /* 'DistVector' calculates the distance between the points described by Vec1 and Vec2  */
 double DistVector(const VectorType Vec1, const VectorType Vec2)

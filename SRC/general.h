@@ -116,6 +116,7 @@ double ScalarProduct (const VectorType Vec1, const VectorType Vec2);
 double AngleVectors  (const VectorType v1, const VectorType v2);
 double Area            (const VectorType v1, const VectorType v2);
 short  NormVector      (VectorType Vector);
+short  NormVectorX     (VectorType Vector);
 void   AddVector       (VectorType Value,  const VectorType Add);
 void   SubVector       (VectorType Value,  const VectorType Sub);
 void   MultiplyByScalar(VectorType Vector, const double Scalar);
