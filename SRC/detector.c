@@ -438,7 +438,7 @@ my_exit:
 
   /* Do the general cleanup */
   // the origin of the co-ordinate system remains at the sample  
-    Cleanup(0.0,0.0,0.0, 0.0,0.0);
+  Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
   return 0;
 }

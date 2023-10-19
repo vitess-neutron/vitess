@@ -3295,8 +3295,8 @@ set sscESET {
   {thick float "" {"thickness\nor diameter [cm]" "rectangular sample dimension in x direction (sample frame)"} gt0 "" 1}
   {hei float "" {"height [cm]" "rectangular sample dimension in y direction (sample frame)"} ge0 "" 1}
   {wid float "" {"width [cm]" "rectangular sample dimension in Z direction (sample frame)"} ge0 "" 1}
-  {oh float "" {"output angle\nhorizontal [deg]" "a frame rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output"}}
-  {ov float "" {"output angle\nvertical [deg]"}}
+  {oh float "" {"output angle\nhorizontal [deg]" "a frame rotation about the Z axis (in a horizontal plane) and then one about the (new) Y axis defines a new orientation for the neutrons written to the output"}}
+  {ov float "" {"output angle\nvertical [deg]" "a frame rotation about the Z axis (in a horizontal plane) and then one about the (new) Y axis defines a new orientation for the neutrons written to the output"}}
   {"Structure file format" header}
   {ch int  0 {"h\ncolumn" "h column number in the structure factor file (see HelpFile)."} ge0}
   {ck int  0 {"k\ncolumn" "k column number in the structure factor file (see HelpFile)."} ge0}
@@ -3348,8 +3348,8 @@ set ineESET {
   {y1 float 0 {"Y [cm]" "position of the sample centre"}}
   {z1 float 0 {"Z [cm]" "position of the sample centre"}}
   {}
-  {hoff float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample in horizontal (first rotation) direction"}}
-  {voff float 0 {"offset angle\nvert. [deg]" "rotation of the sample in vertical direction"}}
+  {hoff float 0 {"offset angle\nhoriz. [deg]" "rotation angle of the sample about the z-axis in a horizontal plane (first rotation) to define its orientation"}}
+  {voff float 0 {"offset angle\nvert. [deg]" "rotation angle of the sample about the (new) y-axis in a vertical direction (second rotation) to define its orientation"}}
   {}
   {cyl radio cylinder {"sample\ngeometry" "geometry of the sample: cylinder, hollow cylinder sphere or cuboid"} {cylinder hollow-cylinder sphere rectangular} {cyl holcyl ball cub}}
   {}
@@ -3364,11 +3364,11 @@ set ineESET {
   {lai float 6.27 {"lambda\ninitial[A]*" "components of the initial main wavevector, absolute value converted to lambda"} gt0}
   {ahi float 0 {"angle horiz\ninitial[deg]*"}}
   {avi float 0 {"angle vert\ninitial[deg]*"}}
-  {x2 float 50 {"X' [cm]" "position of the output frame in the original frame"}}
-  {y2 float 0 {"Y' [cm]" "position of the output frame in the original frame"}}
-  {z2 float 0 {"Z' [cm]" "position of the output frame in the original frame"}}
-  {ha float 0 {"horiz. angle\n[deg]" "rotation angle of the output frame in horizontal (first rotation) direction (0, 0 means parallel to original X i.e. beam"}}
-  {va float 0 {"vert. angle\n[deg]" "rotation angle of the output frame in vertical direction (0, 0 means parallel to original X i.e. beam"}}
+  {x2 float 50 {"X' [cm]" "position of the output frame in the original frame along the beam axis"}}
+  {y2 float  0 {"Y' [cm]" "horizontal position of the output frame in the original frame (to the left)"}}
+  {z2 float  0 {"Z' [cm]" "vertical position of the output frame in the original frame"}}
+  {ha float 0 {"horiz. angle\n[deg]" "rotation angle of the output frame about the z-axis in horizontal (first rotation) plane\nrotation (0, 0) means along the original beam axix (x axis)"}}
+  {va float 0 {"vert. angle\n[deg]" "rotation angle of the output frame about the (new) y-axis in a vertical direction (second rotation)\nrotation (0, 0) means along the original beam axix (x axis)"}}
 }
 
 
@@ -3453,14 +3453,14 @@ set isoESET {
   {thrad float 3 {"thickness or\ndiameter [cm]" "thickness or diameter of sample"} gt0 "" 1}
   {hei float 0 {"height [cm]" "height of sample"} ge0 "" 1}
   {wid float 0 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option"} ge0 "" 1}
-  {oh float 0 {"offset angle\nhoriz. [deg]" "rotation of the sample about the z-axis in a horizontal plane (first rotation)"}}
-  {ov float 0 {"offset angle\nvert.  [deg]" "rotation of the sample about the (new) y-axis in a vertical direction (second rotation)"}}
+  {oh float 0 {"offset angle\nhoriz. [deg]" "rotation angle of the sample about the z-axis in a horizontal plane (first rotation) to define its orientation"}}
+  {ov float 0 {"offset angle\nvert.  [deg]" "rotation angle of the sample about the (new) y-axis in a vertical direction (second rotation) to define its orientation"}}
   {"Output Frame" header}
-  {x2 float 0 {"X' [cm]"}}
-  {y2 float 0 {"Y' [cm]"}}
-  {z2 float 0 {"Z' [cm]"}}
-  {ha float 0 {"horiz.\nangle [deg]"}}
-  {va float 0 {"vert.\nangle [deg]"}}
+  {x2 float 0 {"X' [cm]" "position of the output frame in the original frame along the beam axis"}}
+  {y2 float 0 {"Y' [cm]" "horizontal position of the output frame in the original frame (to the left)"}}
+  {z2 float 0 {"Z' [cm]" "vertical position of the output frame in the original frame"}}
+  {ha float 0 {"horiz.\nangle [deg]" "rotation angle of the output frame about the z-axis in horizontal (first rotation) plane\nrotation (0, 0) means along the original beam axix (x axis)"}}
+  {va float 0 {"vert.\nangle [deg]"  "rotation angle of the output frame about the (new) y-axis in a vertical direction (second rotation)\nrotation (0, 0) means along the original beam axix (x axis)"}}
 }
 
 

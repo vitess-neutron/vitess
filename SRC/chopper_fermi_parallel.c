@@ -182,7 +182,7 @@ void processNeutron (int i, int thread_i)
     // ---------------------------------------------------------------
     if (IntersectionWithCylinder(ShdwCyl, Pos, Dir, PosIn, PosOut)==0)
     {
-      WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0]);  // trajectory ends
+      WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] - InNeutron.Position[0]);  // trajectory ends
     }
     else
     {
@@ -193,22 +193,22 @@ void processNeutron (int i, int thread_i)
     
 
  /* if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1) 
-    { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] - diameter/2.0);
+    { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] - diameter/2.0 - InNeutron.Position[0]);
       return;
     }
     if (pos[2] >= height/2.   || pos[2] <= - height/2. ||
         pos[1] >= diameter/2. || pos[1] <= - diameter/2.)
-    { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] - diameter/2.0);
+    { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] - diameter/2.0 - InNeutron.Position[0]);
       return;
     }
 
     if (PlaneLineIntersect(Pos, Dir, n, diameter/2., pos) != 1)
-    { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] + diameter/2.0);
+    { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] + diameter/2.0 - InNeutron.Position[0]);
       return;
     }
     if( pos[2] >= height/2.   || pos[2] <= - height/2. ||
         pos[1] >= diameter/2. || pos[1]<= - diameter/2.)	
-    { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] + diameter/2.0);
+    { WriteDIAP(&InputNeutrons[i], VT_OUT_OF_WND, pos_chp[0] + diameter/2.0 - InNeutron.Position[0]);
       return;
     }*/
 
@@ -232,19 +232,19 @@ void processNeutron (int i, int thread_i)
       if (phase0 > 0 && omega > 0) 
       {
         if (! inPhase(GatesNumber, phase0 - coef_pi*M_PI, WL, Dir, Pos))
-        { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0]);
+        { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
           return;
         }
       } 
       else if (phase0 < 0 && omega < 0) 
       {
         if (! inPhase(GatesNumber, phase0 + coef_pi*M_PI, WL, Dir, Pos))
-        { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0]);
+        { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
           return;
         }
       } 
       else
-      { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0]);
+      { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
         return;
       }
     }

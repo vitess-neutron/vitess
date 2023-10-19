@@ -1017,7 +1017,7 @@ short PropagateX(Neutron* pNeutron, double DistX)
     short      rc=FALSE;
 
     if (pNeutron->Vector[0] > 0.0)
-    { PathLen = DistX/pNeutron->Vector[0];
+    { PathLen = DistX / pNeutron->Vector[0];
       CopyVector(pNeutron->Vector, vPath) ;
       MultiplyByScalar(vPath, PathLen);
       AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
@@ -1079,8 +1079,9 @@ void WriteEOB()
 /* 'WriteInstrData()' writes position of each component in a global co-ord system */
 /* 'ReadInstrData()'  reads these data                                            */
 /* 'WriteGeomData()   writes data to draw the instrument                          */
-/*  WriteIAP()        writes an intersection point to the traj. file if wanted    */
-/*  WriteWWP()        writes an intersection point to the trajectory file         */
+/*  WriteWWP()        writes an interaction point to the trajectory file          */
+/*  WriteIAP()        writes an interaction point to the traj. file if wanted     */
+/*  WriteDIAP()       writes interaction point to the traj. file after propagation*/
 /* 'WriteSimData()'   writes data that other modules may need                     */
 /*                    (meas.time, wavelength, frequency)                          */
 /* 'ReadSimData()'    reads these data                                            */
