@@ -5,109 +5,109 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 
-mon2_pos:        
+mon2_pos:
   - category:  "monitor"
 
   - sMonFile:          #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position"
-      type:    "file" 
+      type:    "file"
       plottable: true
-      descr:   "monitor file"  
+      descr:   "monitor file"
       tooltip: "monitor output file containing intensity as a function of y- and z-position"
       default: "sample.pos"
-      prefix:  "-O"  
-   
-  - Title_Par: 
-      type:    "title" 
+      prefix:  "-O"
+
+  - Title_Par:
+      type:    "title"
       default: "Ranges"
   - MinY:              #     -w  "min. y-value [cm]"        "left edge position of the monitored area"
-      type:    "float" 
+      type:    "float"
       descr:   "min. y-value [cm]"
       tooltip: "left edge position of the monitored area"
       default: -5.0
-      column:  0                     
-      prefix:  "-w"  
+      column:  0
+      prefix:  "-w"
   - MaxY:              #     -W  "max. y-value [cm]"        "right edge position of the monitored area"
-      type:    "float" 
-      descr:   "max. y-value [cm]" 
+      type:    "float"
+      descr:   "max. y-value [cm]"
       tooltip: "right edge position of the monitored area"
       default: 5.0
-      column:  1                     
-      prefix:  "-W"  
+      column:  1
+      prefix:  "-W"
   - nBinsY  :          # >=1 -y  "number of y-bins"         "number of monitor channels in horizontal direction"
-      type:   "int" 
+      type:   "int"
       descr:   "number of y-bins"
       tooltip: "number of monitor channels in horizontal direction"
-      default: 50 
-      min:     1 
-      column:  2                     
-      prefix:  "-y"  
+      default: 50
+      min:     1
+      column:  2
+      prefix:  "-y"
 
   - MinZ:              #     -h  "min. z-value [cm]"        "bottom position of the monitored area"
-      type:   "float" 
-      descr:   "min. z-value [cm]" 
+      type:   "float"
+      descr:   "min. z-value [cm]"
       tooltip: "bottom position of the monitored area"
-      default: -5.0 
-      column:  0                     
-      prefix:  "-h"  
+      default: -5.0
+      column:  0
+      prefix:  "-h"
   - MaxZ:              #     -H  "max. z-value [cm]"        "top position of the monitored area"
-      type:    "float" 
-      descr:   "max. z-value [cm]"  
+      type:    "float"
+      descr:   "max. z-value [cm]"
       tooltip: "top position of the monitored area"
-      default: 5.0  
-      column:  1                     
-      prefix:  "-H"  
+      default: 5.0
+      column:  1
+      prefix:  "-H"
   - nBinsZ  :          # >=1 -z  "number of z-bins"         "number of monitor channels in vertical direction"
-      type:    "int" 
-      descr:   "number of z-bins"  
+      type:    "int"
+      descr:   "number of z-bins"
       tooltip: "number of monitor channels in vertical direction"
-      default: 50 
+      default: 50
       min:     1
-      column:  2                     
-      prefix:  "-z"  
+      column:  2
+      prefix:  "-z"
 
-  - Title_Opt: 
-      type:    "title" 
+  - Title_Opt:
+      type:    "title"
       default: "Options"
   - bProbWeight :      #     -p  "probability weight"       "Display  : YES: Beam intensity   NO: number of trajectories"
-      type:    "switch" 
-      descr:   "probability weight" 
+      type:    "switch"
+      descr:   "probability weight"
       tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
       default:  yes
-      column:  0                     
-      prefix:  "-p"  
+      column:  0
+      prefix:  "-p"
   - bExcl:             #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
-      type:    "switch" 
-      descr:   "exclusive counts" 
+      type:    "switch"
+      descr:   "exclusive counts"
       tooltip: "yes: only trajctories meeting the monitor conditions are written \nno : all trajctories are written"
       default:  no
-      column:  1                     
-      prefix:  "-e"  
+      column:  1
+      prefix:  "-e"
   - eFormat :          #     -F    VtFormat2D Format2D_Txt2ID(const char* sText)
-      type:    "combo" 
-      descr:   "file format" 
+      type:    "combo"
+      descr:   "file format"
       tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
       enum:     "VtFormat2D"
-      options: ["MATRIX","XYZ","MATR_CMPT","MXYZ_CMPT"]
+      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT"]
       default:  "MATRIX"
-      column:  2                     
-      prefix:  "-F"  
+      column:  2
+      prefix:  "-F"
 
-  - Title_Filter: 
-      type:    "title" 
+  - Title_Filter:
+      type:    "title"
       default: "Filter selection"
   - FilterMinLambda:   #     -l  "filter lambda min [Ang]"  "minimal wavelength to be taken into account"
-      type:    "float" 
+      type:    "float"
       descr:   "filter lambda min [Ang]"
       tooltip: "minimal wavelength to be taken into account"
-      column:  0                     
-      prefix:  "-l"  
+      column:  0
+      prefix:  "-l"
   - FilterMaxLambda:   #     -L  "filter lambda max [Ang]"  "maximal wavelength to be taken into account"
-      type:    "float" 
+      type:    "float"
       descr:   "filter lambda max [Ang]"
       tooltip: "maximal wavelength to be taken into account"
-      column:  1                     
-      prefix:  "-L"  
+      column:  1
+      prefix:  "-L"
 

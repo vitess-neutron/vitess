@@ -8,92 +8,92 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 frame:      # source module that will be executed
-  - Title_1 : 
-      type:    "title" 
+  - Title_1 :
+      type:    "title"
       default: "Transformation"
   - eSequence:              # -S    VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
-      type:    "combo"  
+      type:    "combo"
       descr:   "sequence"
       tooltip: "sequence of Rotation, Translation, and Mirroring"
       enum:    "VtTfmnSeq"
-      options: ["RTM","RMT","TRM","TMR","MTR","MRT"]
+      options: ["VT_RTM","VT_RMT","VT_TRM","VT_TMR","VT_MTR","VT_MRT"]
       default: "RTM"
-      column:  0                     
-      prefix:  "-S"     
- 
-  - Title_2 : 
-      type:    "title" 
+      column:  0
+      prefix:  "-S"
+
+  - Title_2 :
+      type:    "title"
       default: "Rotation"
   - RotX    :               # -A   0.0  [deg]  rotation angle about x-axis
-      type:    "float" 
-      descr:   "rot. angle [deg] about x axis" 
+      type:    "float"
+      descr:   "rot. angle [deg] about x axis"
       tooltip: "rotation angle about Z FIRST rotation [deg]\nNOTE: 90deg means X+  rotated on Y+"
       default: 0.0
-      column:  0                     
-      prefix:  "-A"     
+      column:  0
+      prefix:  "-A"
   - RotY    :               # -V   0.0  [deg]  rotation angle about y-axis
-      type:    "float" 
+      type:    "float"
       descr:   "rot. angle [deg] about y axis"
-      tooltip: "rotation angle about Y SECOND rotation [deg]\nNOTE: 90deg means X+ rotated on Z+" 
+      tooltip: "rotation angle about Y SECOND rotation [deg]\nNOTE: 90deg means X+ rotated on Z+"
       default: 0.0
-      column:  1                     
-      prefix:  "-V"     
+      column:  1
+      prefix:  "-V"
   - RotZ    :               # -H   0.0  [deg]  rotation angle about z-axis
-      type:    "float" 
+      type:    "float"
       descr:   "rot. angle [deg] about z axis"
       tooltip: "rotation angle about X (beam axis) THIRD rotation [deg]\nNOTE: 90deg means Y+  rotated on Z+"
       default: 0.0
-      column:  2                     
-      prefix:  "-H"     
- 
-  - Title_3 : 
-      type:    "title" 
+      column:  2
+      prefix:  "-H"
+
+  - Title_3 :
+      type:    "title"
       default: "Translation"
   - TranslX  :               # -x   0.0   [cm]  x-component of the translation vector
-      type:    "float" 
+      type:    "float"
       descr:   "x [cm]"
-      tooltip: "x component of translation vector [cm]" 
+      tooltip: "x component of translation vector [cm]"
       default: 0.0
-      column:  0                     
-      prefix:  "-x"     
+      column:  0
+      prefix:  "-x"
   - TranslY  :               # -y   0.0   [cm]  y-component of the translation vector
-      type:    "float" 
+      type:    "float"
       descr:   "y [cm]"
       tooltip: "y component of translation vector [cm]"
       default: 0.0
-      column:  1                    
-      prefix:  "-y"     
-  - TranslZ  :               # -z   0.0   [cm]  z-component of the translation vector 
-      type:    "float" 
+      column:  1
+      prefix:  "-y"
+  - TranslZ  :               # -z   0.0   [cm]  z-component of the translation vector
+      type:    "float"
       descr:   "z [cm]"
-      tooltip: "z component of translation vector [cm]" 
+      tooltip: "z component of translation vector [cm]"
       default: 0.0
-      column:  2                    
-      prefix:  "-z"     
- 
-  - Title_4 : 
-      type:    "title" 
+      column:  2
+      prefix:  "-z"
+
+  - Title_4 :
+      type:    "title"
       default: "Mirror"
-  - bMirrX   :               # -i  NO     [-]   flag: mirror at yz-plane            
-      type:    "switch" 
+  - bMirrX   :               # -i  NO     [-]   flag: mirror at yz-plane
+      type:    "switch"
       descr:   "mirror at yz plane"
       tooltip: "mirror x axis (plane yz)"
       default: no
-      column:  0                     
-      prefix:  "-i"     
-  - bMirrY   :               # -j  NO     [-]   flag: mirror at xz-plane 
-      type:    "switch" 
+      column:  0
+      prefix:  "-i"
+  - bMirrY   :               # -j  NO     [-]   flag: mirror at xz-plane
+      type:    "switch"
       descr:   "mirror at xz plane"
       default: "NO"
       tooltip: "mirror y axis (plane xz)"
       default: no
-      column:  1                     
-      prefix:  "-j"     
+      column:  1
+      prefix:  "-j"
   - bMirrZ   :               # -k  NO     [-]   flag: mirror at xy-plane
-      type:    "switch" 
+      type:    "switch"
       descr:   "mirror at xy plane"
       tooltip: "mirror z axis (plane xy)"
       default: no
-      column:  2                     
-      prefix:  "-k"   
- 
+      column:  2
+      prefix:  "-k"
+

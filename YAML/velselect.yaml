@@ -5,111 +5,111 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 velselect:
-  - Title_Geom: 
-      type:    "title" 
+  - Title_Geom:
+      type:    "title"
       default: "Geometry"
   - WndWidth:            # -W    5.0  [cm]   width of entrance and exit window
-      type:    "float" 
-      descr:   "window width [cm]"  
+      type:    "float"
+      descr:   "window width [cm]"
       tooltip: "Width of entrance and exit window of the selector [cm]"
       default: 5.0
       min:     0.00001
-      column:  0                     
-      prefix:  "-W" 
+      column:  0
+      prefix:  "-W"
   - WndHeight:           # -H    5.0  [cm]   height of entrance and exit window
-      type:    "float" 
-      descr:   "window height [cm]"  
+      type:    "float"
+      descr:   "window height [cm]"
       tooltip: "Height of entrance and exit window of the selector [cm]"
       default: 5.0
       min:     0.00001
-      column:  1                     
-      prefix:  "-H" 
+      column:  1
+      prefix:  "-H"
 
-  - Length:              # -l   25.0  [cm]   length of the velocity selector 
-      type:    "float" 
-      descr:   "length of velselect [cm]"  
+  - Length:              # -l   25.0  [cm]   length of the velocity selector
+      type:    "float"
+      descr:   "length of velselect [cm]"
       tooltip: "Length of velocity selector [cm]"
       default: 25.0
       min:     0.00001
-      column:  0                     
-      prefix:  "-l" 
-  - RadiusOut:           # -r   14.5  [cm]   outer radius of the velocity selector 
-      type:    "float" 
+      column:  0
+      prefix:  "-l"
+  - RadiusOut:           # -r   14.5  [cm]   outer radius of the velocity selector
+      type:    "float"
       descr:   "outer radius [cm]"
       tooltip: "Outer radius of the velocity selector"
       min:     0.00001
       default: 14.5
-      column:  1                     
-      prefix:  "-r" 
-  - RadiusIn:            # -i    8.5  [cm]   inner  radius of the velocity selector 
-      type:    "float" 
+      column:  1
+      prefix:  "-r"
+  - RadiusIn:            # -i    8.5  [cm]   inner  radius of the velocity selector
+      type:    "float"
       descr:   "inner radius [cm]"
       tooltip: "Radius of the part of the rotor without absorbing blades"
       min:     0.00001
       default: 8.5
-      column:  2                     
-      prefix:  "-i" 
+      column:  2
+      prefix:  "-i"
 
   - AxlePosY:            # -Y    0.0  [cm]   horizontal position of the axle (in the co-ordinate system of the beamline)
-      type:    "float" 
-      descr:   "horizontal axle position [cm]"  
+      type:    "float"
+      descr:   "horizontal axle position [cm]"
       tooltip: "Horizontal position of the selector axle (in the co-ordinate system of the beamline)"
       default: 0.0
-      column:  0                     
-      prefix:  "-Y" 
+      column:  0
+      prefix:  "-Y"
   - AxlePosZ:            # -Z  -11.5  [cm]   vertical position of the axle (in the co-ordinate system of the beamline)
-      type:    "float" 
-      descr:   "vertical axle position [cm]"  
+      type:    "float"
+      descr:   "vertical axle position [cm]"
       tooltip: "Vertical position of the selector axle (in the co-ordinate system of the beamline)"
       default: -11.5
-      column:  1                     
-      prefix:  "-Z" 
+      column:  1
+      prefix:  "-Z"
 
-  - Title_Rot: 
-      type:    "title" 
+  - Title_Rot:
+      type:    "title"
       default: "Channels and rotation"
   - Freq:                # -s  250.0  [Hz]   number of velocity selector rotations per second
-      type:    "float" 
-      descr:   "rotations per sec."  
+      type:    "float"
+      descr:   "rotations per sec."
       tooltip: "Number of rotations per second"
-      default: 250.0 
-      column:  0                     
-      prefix:  "-s" 
-  - nChannels:           # -w   72     [-]   number of windows 
-      type:    "int" 
-      descr:   "number of channels" 
+      default: 250.0
+      column:  0
+      prefix:  "-s"
+  - nChannels:           # -w   72     [-]   number of windows
+      type:    "int"
+      descr:   "number of channels"
       tooltip: "Number of velocity selector channels"
-      default: 72    
-      min:     1 
-      column:  1                     
-      prefix:  "-w" 
+      default: 72
+      min:     1
+      column:  1
+      prefix:  "-w"
   - Twist:               # -c   48.3  [deg]  twist of the velocity selector channels
-      type:    "float" 
-      descr:   "twist [deg]"  
+      type:    "float"
+      descr:   "twist [deg]"
       tooltip: "Twist of velocity selector channels "
-      default: 48.3 
-      column:  2                     
-      prefix:  "-c" 
+      default: 48.3
+      column:  2
+      prefix:  "-c"
 
-  - BladeThickn:         # -d    0.04 [cm]   blade thickness   
-      type:    "float" 
-      descr:   "blade thickness [cm]"  
+  - BladeThickn:         # -d    0.04 [cm]   blade thickness
+      type:    "float"
+      descr:   "blade thickness [cm]"
       tooltip: "Thickness of the blades separating the channels of the velocity selector"
       default: 0.04
-      column:  0                     
-      prefix: "-d"  
+      column:  0
+      prefix: "-d"
 
-  - Title_Opt: 
-      type:    "title" 
+  - Title_Opt:
+      type:    "title"
       default: "Options"
-  - bPass:               # -p   YES    [-]   flag: neutrons can pass outside the chopper 
-      type:    "switch" 
+  - bPass:               # -p   YES    [-]   flag: neutrons can pass outside the chopper
+      type:    "switch"
       descr:   "treat neutrons passing by"
       tooltip: "no : neutrons passing outside the rotor are removed\nyes: neutrons passing outside the rotor disc are kept. Warning is given"
       default:  no
-      column:   0                     
-      prefix:  "-p"     
+      column:   0
+      prefix:  "-p"
 

@@ -9,391 +9,391 @@
 # prefix: prefix for parameter in pipe
 guide:
   - category:  "guide"
-  - Title_Shape : 
-      type:    "title" 
-      default: "Shape and size of the guide"                     
-  - eShapeY :                 # -Y    VtGdeShape  GdeShape_Txt2ID(const char* sText)   
-      type:    "combo" 
+  - Title_Shape :
+      type:    "title"
+      default: "Shape and size of the guide"
+  - eShapeY :                 # -Y    VtGdeShape  GdeShape_Txt2ID(const char* sText)
+      type:    "combo"
       descr:   "horizontal shape"
-      tooltip: "shape of the guide in horizontal direction" 
+      tooltip: "shape of the guide in horizontal direction"
       enum:    "VtGdeShape"
       options: ["VT_CONSTANT","VT_LINEAR","VT_CURVED","VT_LIN_CURV","VT_PARABOLIC","VT_ELLIPTIC","VT_FROM_FILE"]
       default:  "VT_CONSTANT"
-      column:  0                     
-      prefix:  "-Y"  
-  - eShapeZ :                 # -Z    VtGdeShape  GdeShape_Txt2ID(const char* sText)       
-      type:    "combo" 
+      column:  0
+      prefix:  "-Y"
+  - eShapeZ :                 # -Z    VtGdeShape  GdeShape_Txt2ID(const char* sText)
+      type:    "combo"
       descr:   "vertical shape"
       tooltip: "shape of the guide in vertical direction"
       enum:    "VtGdeShape"
       options: ["VT_CONSTANT","VT_LINEAR","VT_PARABOLIC","VT_ELLIPTIC","VT_FROM_FILE"]
       default:  "VT_CONSTANT"
-      column:  1                     
-      prefix:  "-Z"  
+      column:  1
+      prefix:  "-Z"
   - sShapeFile:               # -S "guide_shape.dat" [-]   name of the file containing the sizes of the guide, output or input file
-      type:    "file" 
+      type:    "file"
       plottable: true
-      descr:   "guide shape" 
+      descr:   "guide shape"
       tooltip: "name of the file describing geometry (and coating) of the guide (for details see help file)\noutput or input file depending on the shape options"
-      prefix:  "-S"  
-  - EntrWidth:                # -w    0.0  [cm]   width of the guide entrance  
-      type:    "float" 
+      prefix:  "-S"
+  - EntrWidth:                # -w    0.0  [cm]   width of the guide entrance
+      type:    "float"
       descr:   "entrance width [cm]"
-      tooltip: "width of the guide entrance" 
-      min:     0.0001 
-      column:  0                     
-      prefix:  "-w" 
-  - EntrHeight:               # -h    0.0  [cm]   height of the guide entrance           
-      type:    "float" 
+      tooltip: "width of the guide entrance"
+      min:     0.0001
+      column:  0
+      prefix:  "-w"
+  - EntrHeight:               # -h    0.0  [cm]   height of the guide entrance
+      type:    "float"
       descr:   "entrance height [cm]"
-      tooltip: "height of the guide entrance" 
-      min:     0.0001 
-      column:  1                     
-      prefix:  "-h"   
-  - ExitWidth:                # -W    0.0  [cm]   width of the guide exit  
-      type:    "float" 
+      tooltip: "height of the guide entrance"
+      min:     0.0001
+      column:  1
+      prefix:  "-h"
+  - ExitWidth:                # -W    0.0  [cm]   width of the guide exit
+      type:    "float"
       descr:   "exit width [cm]"
       tooltip: "width of the guide exit"
-      min:     0.0001 
-      column:  0                     
-      prefix:  "-W"   
-  - ExitHeight:               # -H    0.0  [cm]   height of the guide exit              
-      type:    "float" 
-      descr:   "exit height [cm]"  
-      tooltip: "height of the guide exit"  
-      min:     0.0001 
-      column:  1                     
-      prefix:  "-H"   
- 
-  - Title_Character: 
-      type:    "title" 
+      min:     0.0001
+      column:  0
+      prefix:  "-W"
+  - ExitHeight:               # -H    0.0  [cm]   height of the guide exit
+      type:    "float"
+      descr:   "exit height [cm]"
+      tooltip: "height of the guide exit"
+      min:     0.0001
+      column:  1
+      prefix:  "-H"
+
+  - Title_Character:
+      type:    "title"
       default: "Guide characteristics"
   - PieceLen:                 # -p    0.0  [cm]   length of 1 piece of the guide
-      type:    "float" 
+      type:    "float"
       descr:   "piece length [cm]"
-      tooltip: "length of 1 piece of the guide" 
+      tooltip: "length of 1 piece of the guide"
       min:     0.0
-      column:  0                    
-      prefix:  "-p"  
+      column:  0
+      prefix:  "-p"
   - nPieces :                 # -N    1     [-]   number of pieces
-      type:    "int" 
+      type:    "int"
       descr:   "number of pieces"
       tooltip: "number of pieces in this guide"
       min:     1
-      column:  1                     
-      prefix:  "-N"  
-  - Radius  :                 # -R    0.0   [m]   radius of a guide that is curved (in horizontal plane)       
-      type:    "float" 
+      column:  1
+      prefix:  "-N"
+  - Radius  :                 # -R    0.0   [m]   radius of a guide that is curved (in horizontal plane)
+      type:    "float"
       descr:   "curvature (radius) [m]"
       tooltip: "radius of a guide that is curved (in horizontal plane)"
-      column:  2                     
-      prefix:  "-R"  
-  - DistFoc2Y :               # -f    0.0  [cm]   pos. of 2nd focal point in horizontal direction (for elliptic shape) 
-      type:    "float" 
+      column:  2
+      prefix:  "-R"
+  - DistFoc2Y :               # -f    0.0  [cm]   pos. of 2nd focal point in horizontal direction (for elliptic shape)
+      type:    "float"
       descr:   "hor. focus dist. of ellipse [cm]"
-      tooltip: "position behind end of the guide of 2nd focal point in horizontal direction (for elliptic shape only)" 
-      min:     0 
-      column:  0                     
-      prefix:  "-f"  
-  - DistFoc2Z :               # -F    0.0  [cm]   pos. of 2nd focal point in vertical direction (for elliptic shape) 
-      type:    "float" 
+      tooltip: "position behind end of the guide of 2nd focal point in horizontal direction (for elliptic shape only)"
+      min:     0
+      column:  0
+      prefix:  "-f"
+  - DistFoc2Z :               # -F    0.0  [cm]   pos. of 2nd focal point in vertical direction (for elliptic shape)
+      type:    "float"
       descr:   "vert. focus dist. of ellipse [cm]"
       tooltip: "position behind end of the guide of 2nd focal point in vertical direction (for elliptic shape only)"
       min:     0.0
-      column:  1                     
-      prefix:  "-F"   
- 
-  - Title_Reflect: 
-      type:    "title" 
+      column:  1
+      prefix:  "-F"
+
+  - Title_Reflect:
+      type:    "title"
       default: "Reflectivity"
-  - m_Left  :                 # -L    1.0   [-]   m-value for left wall 
-      type:    "float" 
+  - m_Left  :                 # -L    1.0   [-]   m-value for left wall
+      type:    "float"
       descr:   "m-value left plane"
       tooltip: "m-value for the reflectivity of the left wall using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflectivity file for the left plane is given"
       min:     0.0
-      column:  0                     
-      prefix:  "-L"  
-  - m_Right :                 # -Q    1.0   [-]   m-value for right wall 
-      type:    "float" 
-      descr:   "right plane"  
-      tooltip: "m-value for the reflectivity of the right wall using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflectivity file for the left plane is given" 
+      column:  0
+      prefix:  "-L"
+  - m_Right :                 # -Q    1.0   [-]   m-value for right wall
+      type:    "float"
+      descr:   "right plane"
+      tooltip: "m-value for the reflectivity of the right wall using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflectivity file for the left plane is given"
       min:     0.0
-      column:  1                     
-      prefix:  "-Q" 
-  - m_TopBottom:              # -G    1.0   [-]   m-value for top and bottom wall 
-      type:    "float" 
-      descr:   "top/bottom plane" 
-      tooltip: "m-value for the reflectivity of the top and bottom wall using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflectivity file for the left plane is given" 
+      column:  1
+      prefix:  "-Q"
+  - m_TopBottom:              # -G    1.0   [-]   m-value for top and bottom wall
+      type:    "float"
+      descr:   "top/bottom plane"
+      tooltip: "m-value for the reflectivity of the top and bottom wall using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles)\nonly used if no reflectivity file for the left plane is given"
       min:     0.0
-      column:  2                     
-      prefix:  "-G"  
+      column:  2
+      prefix:  "-G"
   - sReflLeft:                # -i          [-]   name of the reflectivity file for the left wall
-      type:    "file" 
+      type:    "file"
       plottable: false
       descr:   "file left plane"
       tooltip: "name of the reflectivity file for the left wall\nIt overwrites the m-value given for this plane."
-      prefix:  "-i"  
-  - sReflRight:               # -I          [-]   name of the reflectivity file for the right wall 
-      type:    "file" 
+      prefix:  "-i"
+  - sReflRight:               # -I          [-]   name of the reflectivity file for the right wall
+      type:    "file"
       plottable: false
       descr:   "right plane"
-      tooltip: "name of the reflectivity file for the right wall\nIt overwrites the m-value given for this plane." 
-      prefix:   "-I"  
+      tooltip: "name of the reflectivity file for the right wall\nIt overwrites the m-value given for this plane."
+      prefix:   "-I"
   - sReflTop:                 # -j          [-]   name of the reflectivity file for the top wall
-      type:    "file" 
+      type:    "file"
       plottable: false
       descr:   "top plane"
       tooltip: "name of the reflectivity file for the top wall\nIt overwrites the m-value given for this plane."
       prefix:   "-j"
   - sReflBottom:              # -J          [-]   name of the reflectivity file for the bottom wall
-      type:    "file" 
+      type:    "file"
       plottable: false
       descr:   "bottom plane"
       tooltip: "name of the reflectivity file for the bottom wall\nIf no file name is given here, the file of the top plane is used.\nBoth overwrite the m-value given for this plane."
       prefix:   "-J"
- 
-  - Title_Channel: 
-      type:    "title" 
+
+  - Title_Channel:
+      type:    "title"
       default: "Channel option"
-  - nChannels:                # -b    1     [-]   number of (vertical) channels 
-      type:    "int" 
+  - nChannels:                # -b    1     [-]   number of (vertical) channels
+      type:    "int"
       descr:   "number of channels"
-      tooltip: "number of (vertical) channels" 
+      tooltip: "number of (vertical) channels"
       min:     1
-      column:  0                     
-      prefix:  "-b"  
-  - BladeThickn:              # -s    0.0  [cm]   thickness of the blades dividing the channels         
-      type:    "float" 
+      column:  0
+      prefix:  "-b"
+  - BladeThickn:              # -s    0.0  [cm]   thickness of the blades dividing the channels
+      type:    "float"
       descr:   "blade thickness [cm]"
       tooltip: "thickness of the blades dividing the guide into channels"
       min:     0.0
-      column:  1                     
+      column:  1
       prefix:  "-s"
- 
-  - Title_Special: 
-      type:    "title" 
+
+  - Title_Special:
+      type:    "title"
       default: "Special options"
   - MuScatTotal:              # -M    0.0 [1/cm]  total macroscopic scattering coeff.
-      type:    "float" 
-      descr:   "total scat- tering [1/cm]" 
+      type:    "float"
+      descr:   "total scat- tering [1/cm]"
       tooltip: "total macroscopic scattering cross-section"
       min:     0.0
-      column:  0                     
-      prefix:  "-M"  
-  - MuAbsorb   :              # -m    0.0 [1/cm]  macroscopic absorption coeff. 
-      type:    "float" 
+      column:  0
+      prefix:  "-M"
+  - MuAbsorb   :              # -m    0.0 [1/cm]  macroscopic absorption coeff.
+      type:    "float"
       descr:   "absorption [1/cm]"
       tooltip: "macroscopic absorption cross-section for 1.798 Ang"
       min:     0.0
-      column:  1                     
-      prefix:  "-m" 
-  - iColor :                  # -g   -1     [-]   colour necessary for the trajectory to be regarded   colour -1 means all trajectories are regarded       
-      type:    "int" 
+      column:  1
+      prefix:  "-m"
+  - iColor :                  # -g   -1     [-]   colour necessary for the trajectory to be regarded   colour -1 means all trajectories are regarded
+      type:    "int"
       descr:   "color"
-      tooltip: "color necessary for the trajectory to be treated (-1 means all)\nNot machting neutrons are passed unchanged to the next module."  
+      tooltip: "color necessary for the trajectory to be treated (-1 means all)\nNot machting neutrons are passed unchanged to the next module."
       min:     -1
-      column:  0                     
-      prefix:  "-g" 
+      column:  0
+      prefix:  "-g"
   - AddToColor:               # -A    0     [-]   value added to the color for each reflection
-      type:    "int" 
+      type:    "int"
       descr:   "add to color"
       tooltip: "Value added to the color of the neutron trajectory on each reflection."
-      column:  1                     
-      prefix:  "-A" 
-  - bAbutLoss:                # -a    0     [-]   flag: abutment loss  0: no  1: yes 
-      type:    "switch" 
-      descr:   "abutment loss" 
-      tooltip: "flag: abutment loss  0: no  1: yes neutrons hitting the surface close to the end of a guide (segment) are absorbed" 
+      column:  1
+      prefix:  "-A"
+  - bAbutLoss:                # -a    0     [-]   flag: abutment loss  0: no  1: yes
+      type:    "switch"
+      descr:   "abutment loss"
+      tooltip: "flag: abutment loss  0: no  1: yes neutrons hitting the surface close to the end of a guide (segment) are absorbed"
       default: no
-      column:  0                     
-      prefix:  "-a" 
-  - AbutLen :                 # -l    0.0  [cm]   area around the connection of guide segments, where neutrons are absorbed 
-      type:    "float" 
+      column:  0
+      prefix:  "-a"
+  - AbutLen :                 # -l    0.0  [cm]   area around the connection of guide segments, where neutrons are absorbed
+      type:    "float"
       descr:   "abutment loss area [cm]"
-      tooltip: "length of the area around the connection of guide (segments), where neutrons are absorbed" 
-      column:  1                     
+      tooltip: "length of the area around the connection of guide (segments), where neutrons are absorbed"
+      column:  1
       min:     0.0
-      prefix:  "-l" 
-  - Waviness:                 # -r    0.0  [deg]  maximal deviation from normal of the waviness of the guide surface 
-      type:    "float" 
+      prefix:  "-l"
+  - Waviness:                 # -r    0.0  [deg]  maximal deviation from normal of the waviness of the guide surface
+      type:    "float"
       descr:   "surface waviness [deg]"
-      tooltip: "maximal deviation from normal of the waviness of the guide surface." 
+      tooltip: "maximal deviation from normal of the waviness of the guide surface."
       min:     0.0
-      column:  2                     
-      prefix:  "-r" 
+      column:  2
+      prefix:  "-r"
   - RotPlane:                 # -n    0.0  [deg]  rotation angle to create additional planes
-      type:    "float" 
+      type:    "float"
       descr:   "add. plane angle [deg]"
       tooltip: "rotation angle to create additional planes (see help file for details)"
-      column:  0                     
+      column:  0
       prefix:  "-n"
-  
-  - Title_McplOutput: 
-      type:    "title" 
-      default: "MCPL output" 
-  - sMcplFile :                
-      type:    "file" 
+
+  - Title_McplOutput:
+      type:    "title"
+      default: "MCPL output"
+  - sMcplFile :
+      type:    "file"
       plottable: false
       descr:   "MCPL file"
       tooltip: "name of the file for writing nuclear gamma and neutron events in MCPL format.\n Giving a filename activates this option."
-      prefix:  "-Z"  
- 
-  - Title_Reflection: 
-      type:    "title" 
+      prefix:  "-Z"
+
+  - Title_Reflection:
+      type:    "title"
       default: "Reflection list options"
-  - sListFile:                # -o          [-]   name of the list file for writing each reflection 
-      type:    "file" 
+  - sListFile:                # -o          [-]   name of the list file for writing each reflection
+      type:    "file"
       plottable: false
       descr:   "filename"
-      tooltip: "name of the file for a reflection list.\nGiving a filename activates this option." 
-      prefix:  "-o"   
-  - eListPar :                # -O    VtListPar ListPar_Txt2ID(const char* sText)  
-      type:    "combo" 
-      descr:   "format" 
-      tooltip: "Trajectories to be written out, in each case with or without linefeed\n (see help file for details)" 
+      tooltip: "name of the file for a reflection list.\nGiving a filename activates this option."
+      prefix:  "-o"
+  - eListPar :                # -O    VtListPar ListPar_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "format"
+      tooltip: "Trajectories to be written out, in each case with or without linefeed\n (see help file for details)"
       enum:    "VtListPar"
       options: ["VT_LIST_PASS", "VT_LIST_PASS_LF", "VT_LIST_REFL", "VT_LIST_REFL_LF", "VT_LIST_T1SR", "VT_LIST_T1SR_LF", "VT_LIST_ALL", "VT_LIST_ALL_LF"]
       default:  "VT_LIST_PASS_LF"
-      column:  0                     
+      column:  0
       prefix:  "-O"
-  - eListGeom:                # -v    VtListVbs ListVbs_Txt2ID(const char* sText) 
-      type:    "combo" 
+  - eListGeom:                # -v    VtListVbs ListVbs_Txt2ID(const char* sText)
+      type:    "combo"
       descr:   "geometry list"
       tooltip: "additional trajectories are written at the entry and the exit of the guide ('entry & exit') or each guide piece ('yes')."
       enum:    "VtListVbs"
       options: ["VT_LSTM_NO", "VT_LSTM_YES", "VT_LSTM_EDGE"]
       default:  "VT_LSTM_NO"
-      column:  1                     
-      prefix:  "-v"  
-  - nListMin :                # -e    0     [-]   Minimum number of reflections within the guide for reflection list output 
-      type:    "int" 
-      descr:   "minimum number of reflections" 
-      tooltip: "minimum number of reflections within the guide for reflection list output" 
+      column:  1
+      prefix:  "-v"
+  - nListMin :                # -e    0     [-]   Minimum number of reflections within the guide for reflection list output
+      type:    "int"
+      descr:   "minimum number of reflections"
+      tooltip: "minimum number of reflections within the guide for reflection list output"
       min:     0
-      column:  0                     
-      prefix:  "-e"  
-  - nListMax :                # -E    0     [-]   Maximum number of reflections within the guide for reflection list output 
-      type:    "int" 
-      descr:   "maximum number of reflections" 
-      tooltip: "Maximum number of reflections within the guide for reflection list output" 
+      column:  0
+      prefix:  "-e"
+  - nListMax :                # -E    0     [-]   Maximum number of reflections within the guide for reflection list output
+      type:    "int"
+      descr:   "maximum number of reflections"
+      tooltip: "Maximum number of reflections within the guide for reflection list output"
       min:     0
-      column:  1                     
-      prefix:  "-E"  
-  - nListMinY:                # -c    0     [-]   Minimum number of reflections on the horizontal guide for reflection list output 
-      type:    "int" 
+      column:  1
+      prefix:  "-E"
+  - nListMinY:                # -c    0     [-]   Minimum number of reflections on the horizontal guide for reflection list output
+      type:    "int"
       descr:   "minimum number of horiz. refl."
-      tooltip: "minimum number of reflections on the horizontal guide for reflection list output" 
+      tooltip: "minimum number of reflections on the horizontal guide for reflection list output"
       min:     0
-      column:  0                     
-      prefix:  "-c"  
-  - nListMaxY:                # -C    0     [-]   Maximum number of reflections on the horizontal guide for reflection list output 
-      type:    "int" 
+      column:  0
+      prefix:  "-c"
+  - nListMaxY:                # -C    0     [-]   Maximum number of reflections on the horizontal guide for reflection list output
+      type:    "int"
       descr:   "maximum number of horiz. refl."
-      tooltip: "maximum number of reflections on the horizontal guide for reflection list output" 
+      tooltip: "maximum number of reflections on the horizontal guide for reflection list output"
       min:     0
-      column:  1                     
-      prefix:  "-C" 
-  - nListMinZ:                # -d    0     [-]   Minimum number of reflections on the vertical guide for reflection list output 
-      type:    "int" 
-      descr:   "minimum number of vert. refl." 
-      tooltip: "minimum number of reflections on the vertical guide for reflection list output" 
+      column:  1
+      prefix:  "-C"
+  - nListMinZ:                # -d    0     [-]   Minimum number of reflections on the vertical guide for reflection list output
+      type:    "int"
+      descr:   "minimum number of vert. refl."
+      tooltip: "minimum number of reflections on the vertical guide for reflection list output"
       min:     0
-      column:  0                     
-      prefix:  "-d" 
-  - nListMaxZ:                # -D    0     [-]   Maximum number of reflections on the vertical guide for reflection list output 
-      type:    "int" 
+      column:  0
+      prefix:  "-d"
+  - nListMaxZ:                # -D    0     [-]   Maximum number of reflections on the vertical guide for reflection list output
+      type:    "int"
       descr:   "maximum number of vert. refl."
-      tooltip: "maximum number of reflections on the vertical guide for reflection list output" 
+      tooltip: "maximum number of reflections on the vertical guide for reflection list output"
       min:     0
-      column:  1                     
+      column:  1
       prefix:  "-D"
-  
-  - Title_ReflectPlot: 
-      type:    "title" 
-      default: "Reflection plot options" 
+
+  - Title_ReflectPlot:
+      type:    "title"
+      default: "Reflection plot options"
   - sPlotFile:                # -P          [-]   name of the file for writing each reflection as plot
-      type:    "file" 
+      type:    "file"
       plottable: true
       descr:   "filename"
       tooltip: "Name of the file for a list of reflections for plotting.\nGiving a filename activates this option."
-      prefix:  "-P"  
+      prefix:  "-P"
   - ePlotPar:                 # -B    VtPlotFilt PlotFilt_Txt2ID(const char* sText)
-      type:    "combo" 
-      descr:   "filter" 
+      type:    "combo"
+      descr:   "filter"
       tooltip: "Choose which trajectories will be binned. This option is also affected by the format option above!!!\nall events;\nonly scattered neutrons;\nonly died neutrons."
       enum:    "VtPlotFilt"
       options: ["VT_PLOT_ALL", "VT_PLOT_SCAT", "VT_PLOT_DIED"]
       default:  "VT_PLOT_ALL"
-      column:  0                     
-      prefix:  "-B"  
+      column:  0
+      prefix:  "-B"
   - ePlotX:                   # -t    VtPlotPar PlotPar_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "X values"
       tooltip: "Parameter for the x-axis of the reflection plot"
       enum:    "VtPlotPar"
       options: ["dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
-                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"] 
+                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"]
       default:  "dKeyPositionX"
-      column:  0                     
-      prefix:  "-t"  
+      column:  0
+      prefix:  "-t"
   - ePlotY:                   # -T    VtPlotPar PlotPar_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "Y values"
       tooltip: "Parameter for the y-axis of the reflection plot"
       enum:    "VtPlotPar"
       options: ["dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
-                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"] 
+                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"]
       default:  "dKeym"
-      column:  1                     
-      prefix:  "-T"  
+      column:  1
+      prefix:  "-T"
   - ePlotProb:                # -V    VtPlotPar PlotPar_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "Weight"
       tooltip: "Parameter for the weighting function f(x,y) for reflection plot"
       enum:    "VtPlotPar"
       options: ["KeyNone","dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
-                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"] 
+                "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"]
       default:  "dKeyProbability"
-      column:  2                     
-      prefix:  "-V"  
+      column:  2
+      prefix:  "-V"
   - nPlotX  :                 # -k  100     [-]   number of X bins in reflection plot
-      type:    "int" 
+      type:    "int"
       descr:   "number of x bins"
       tooltip: "Number of bins in the x-interval of the reflection plot"
       min:     1
-      max:     1000 
-      column:  0                     
-      prefix:  "-k"  
+      max:     1000
+      column:  0
+      prefix:  "-k"
   - PlotMinX:                 # -x    0.0  [var]  lower bound of X range in reflection plot
-      type:    "float" 
-      descr:   "minimum X" 
+      type:    "float"
+      descr:   "minimum X"
       tooltip: "Lower bound of the x interval in the reflection plot"
-      column:  1                     
-      prefix:  "-x"  
+      column:  1
+      prefix:  "-x"
   - PlotMaxX:                 # -X   10.0  [var]  upper bound of X range in reflection plot
-      type:    "float" 
+      type:    "float"
       descr:   "maximum X"
       tooltip: "Upper bound of the X interval in the reflection plot"
-      column:  2                     
-      prefix:  "-X"  
-  - nPlotY  :                 # -K  100     [-]   number of Y bins in reflection plot 
-      type:    "int" 
+      column:  2
+      prefix:  "-X"
+  - nPlotY  :                 # -K  100     [-]   number of Y bins in reflection plot
+      type:    "int"
       descr:   "number of bins in y"
-      tooltip: "Number of bins in the y-interval of the reflection plot" 
+      tooltip: "Number of bins in the y-interval of the reflection plot"
       min:     1
-      max:     100 
-      column:  0                     
-      prefix:  "-K"  
+      max:     100
+      column:  0
+      prefix:  "-K"
   - PlotMinY:                 # -u    0.0  [var]  lower bound of Y range in reflection plot
-      type:    "float" 
-      descr:   "minimum Y" 
+      type:    "float"
+      descr:   "minimum Y"
       tooltip: "Lower bound of the y interval in the reflection plot"
-      column:  1                     
-      prefix:  "-u"  
+      column:  1
+      prefix:  "-u"
   - PlotMaxY:                 # -U   10.0  [var]  upper bound of Y range in reflection plot
-      type:    "float" 
+      type:    "float"
       descr:   "maximum Y"
       tooltip: "Upper bound of the y interval in the reflection plot"
-      column:  2                     
-      prefix:  "-U" 
- 
+      column:  2
+      prefix:  "-U"
+

@@ -5,168 +5,168 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 
-monitor1D:                    # source module that will be executed 
+monitor1D:                    # source module that will be executed
   - category:  "monitor"
 
   - sMonFile :                # -O "sample"  common part of the output file names, up to 3 files possible with x-parameter A, B and C
-      type:    "file" 
+      type:    "file"
       plottable: true
-      descr:   "monitor file" 
-      default: "monitor1D.dat" 
+      descr:   "monitor file"
+      default: "monitor1D.dat"
       tooltip: "common part of the output file names, up to 3 files possible with x-parameter A, B and C"
 
-  - Title_Par: 
-      type:    "title" 
+  - Title_Par:
+      type:    "title"
       default: "Parameter and range"
   - ePar:                     # -X   VtMonPar  MonPar_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "1st parameter on x-axis"
       tooltip: "x-axis parameter for the first 1D monitor file"
       enum:    "VtMonPar"
-      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
       default:  "NO_PAR"
-      column:  0                     
-      prefix:  "-X"   
+      column:  0
+      prefix:  "-X"
   - MinPar:                   # -w          minimal x value for the first 1D monitor file
-      type:    "float" 
-      descr:   "min. x value 1st par." 
+      type:    "float"
+      descr:   "min. x value 1st par."
       tooltip: "minimal x value for the first 1D monitor file"
       default: 0.0
-      column:  0                     
-      prefix:  "-w"  
-  - MaxPar:                   # -W  10.0   maximal x value for the first 1D monitor file 
-      type:    "float" 
+      column:  0
+      prefix:  "-w"
+  - MaxPar:                   # -W  10.0   maximal x value for the first 1D monitor file
+      type:    "float"
       descr:   "max. x value 1st par."
       tooltip: "maximal x value for the first 1D monitor file"
       default: 10.0
-      column:  0                     
-      prefix:  "-W"  
-  - nBinPar:                  # -x   100    number of x channels for the first 1D monitor file 
-      type:    "int" 
-      descr:   "number of bins 1st par." 
-      tooltip: "number of x channels for the first 1D monitor file" 
+      column:  0
+      prefix:  "-W"
+  - nBinPar:                  # -x   100    number of x channels for the first 1D monitor file
+      type:    "int"
+      descr:   "number of bins 1st par."
+      tooltip: "number of x channels for the first 1D monitor file"
       default: 100
       min:     1
-      column:  0                     
-      prefix:  "-x"  
+      column:  0
+      prefix:  "-x"
 
-  - Title_Opt: 
-      type:    "title" 
+  - Title_Opt:
+      type:    "title"
       default: "Options"
   - bProbWeight :                 # -p  YES   Display  : YES: Beam intensity   NO: number of trajectories
-      type:    "switch" 
-      descr:   "probability weight" 
+      type:    "switch"
+      descr:   "probability weight"
       tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
       default:  yes
-      column:  0                     
-      prefix:  "-p"  
+      column:  0
+      prefix:  "-p"
   - bExcl:                    # -e  NO    Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
-      type:    "switch" 
-      descr:   "exclusive counts" 
+      type:    "switch"
+      descr:   "exclusive counts"
       tooltip: "yes: only trajectories meeting the monitor conditions are written \nno : all trajectories are written"
       default:  no
-      column:  1                     
-      prefix:  "-e"  
- 
-  - Title_Filter: 
-      type:    "title" 
+      column:  1
+      prefix:  "-e"
+
+  - Title_Filter:
+      type:    "title"
       default: "Filter selection"
   - LambdaMin :               # -l       minimum wavelength to be taken into account [Ang]
-      type:    "float" 
-      descr:   "lambda min [Ang]"  
+      type:    "float"
+      descr:   "lambda min [Ang]"
       tooltip: "minimum wavelength to be taken into account [Ang]"
-      column:  1                     
-      prefix:  "-l"   
+      column:  1
+      prefix:  "-l"
   - LambdaMax :               # -L       maximum wavelength to be taken into account [Ang]
-      type:    "float" 
-      descr:   "lambda max [A]" 
-      tooltip: "maximum wavelength to be taken into account [Ang]" 
-      column:   2                     
-      prefix:  "-L"  
+      type:    "float"
+      descr:   "lambda max [A]"
+      tooltip: "maximum wavelength to be taken into account [Ang]"
+      column:   2
+      prefix:  "-L"
 
   - eFilterPar1 :             # -I VtMonPar  MonPar_Txt2ID(const char* sText)
-      type:    "combo" 
-      descr:   "filter parameter 1"  
+      type:    "combo"
+      descr:   "filter parameter 1"
       tooltip: "filter parameter 1"
       enum:    "VtMonPar"
-      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
       default:  "NO_PAR"
-      column:  0                     
-      prefix:  "-I"  
+      column:  0
+      prefix:  "-I"
   - MinFilterValue1:          # -u        minimum value of filter parameter 1 to be taken into account
-      type:    "float" 
-      descr:   "filter 1 min value" 
+      type:    "float"
+      descr:   "filter 1 min value"
       tooltip: "minimum value of filter parameter 1 to be taken into account"
-      column:  1                     
-      prefix:  "-u"  
-  - MaxFilterValue1:          # -U       maximum value of filter parameter 1 to be taken into account 
-      type:    "float" 
-      descr:   "filter 1 max value" 
-      column:  2                     
-      prefix:  "-U"  
+      column:  1
+      prefix:  "-u"
+  - MaxFilterValue1:          # -U       maximum value of filter parameter 1 to be taken into account
+      type:    "float"
+      descr:   "filter 1 max value"
+      column:  2
+      prefix:  "-U"
 
   - eFilterCombi:             # -C  VtFiltComb FiltComb_Txt2ID(const char* sText)
-      type:    "combo" 
-      descr:   "filter combination" 
+      type:    "combo"
+      descr:   "filter combination"
       tooltip: "filter 1 and 2 combined with AND or OR"
       enum:    "VtFiltComb"
       options: ["AND_AND_AND", "OR_OR_OR"]
       default:  "AND_AND_AND"
-      column:  0                     
-      prefix:  "-C"  
+      column:  0
+      prefix:  "-C"
 
   - eFilterPar2 :             # -J  VtMonPar  MonPar_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "filter parameter 2"
       tooltip: "filter parameter 2"
       enum:    "VtMonPar"
-      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]   
+      options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
       default:  "NO_PAR"
-      column:  0                    
-      prefix:  "-J"  
+      column:  0
+      prefix:  "-J"
   - MinFilterValue2:          # -v        minimum value of parameter 2 to be taken into account
-      type:    "float" 
-      descr:   "filter 2 min value"  
-      tooltip: "minimum value of parameter 2 to be taken into account" 
-      column:  1                     
-      prefix:  "-v"  
+      type:    "float"
+      descr:   "filter 2 min value"
+      tooltip: "minimum value of parameter 2 to be taken into account"
+      column:  1
+      prefix:  "-v"
   - MaxFilterValue2:          # -V        maximum value of parameter 2 to be taken into account
-      type:    "float" 
+      type:    "float"
       tooltip: "maximum value of parameter 2 to be taken into account"
       descr:   "filter 2 max value"
-      column:  2                     
-      prefix:  "-V"  
+      column:  2
+      prefix:  "-V"
 
-  - title_Pol: 
-      type:    "title" 
+  - title_Pol:
+      type:    "title"
       default: "Polarisation analysis"
   - bPolAnalysis :            # -P  NO    YES: polarisation monitored   NO: intensity monitored
-      type:    "switch" 
-      descr:   "Polarisation analysis" 
+      type:    "switch"
+      descr:   "Polarisation analysis"
       tooltip: "yes: polarisation is monitored \nno : intensity is monitored"
       default:  no
-      column:  0                     
-      prefix:  "-P"  
+      column:  0
+      prefix:  "-P"
 
   - PolDirX :                 # -r        x-component of the vector defining the quantization direction
-      type:    "float" 
-      descr:   "direction X" 
+      type:    "float"
+      descr:   "direction X"
       tooltip: "x-component of the vector defining the quantization direction"
-      column:  0                     
-      prefix:  "-r"  
-  - PolDirY :                 # -s        y-component of the vector defining the quantization direction 
-      type:    "float" 
-      descr:   "direction Y" 
+      column:  0
+      prefix:  "-r"
+  - PolDirY :                 # -s        y-component of the vector defining the quantization direction
+      type:    "float"
+      descr:   "direction Y"
       tooltip: "y-component of the vector defining the quantization direction"
-      column:  1                     
-      prefix:  "-s"  
-  - PolDirZ :                 # -t        z-component of the vector defining the quantization direction  
-      type:    "float" 
-      descr:   "direction Z" 
+      column:  1
+      prefix:  "-s"
+  - PolDirZ :                 # -t        z-component of the vector defining the quantization direction
+      type:    "float"
+      descr:   "direction Z"
       tooltip: "z-component of the vector defining the quantization direction"
-      column:  2                     
-      prefix:  "-t"  
+      column:  2
+      prefix:  "-t"
 

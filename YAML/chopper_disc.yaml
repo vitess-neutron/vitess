@@ -5,7 +5,7 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 chopper_disc:
   - category:  "chopper"
@@ -17,98 +17,98 @@ chopper_disc:
       max:    10
       column:  1
       filename: "chopper_wnd.yaml"
-  - sParFile :                  # -S         [-]    parameter file name 
-      type:    "file"    
+  - sParFile :                  # -S         [-]    parameter file name
+      type:    "file"
       plottable: false
       descr:   "chopper file"
       tooltip: "File containing geometry and properties of the chopper disc\nThese parameters are only used if they are not given as direct input parameters."
-      prefix:  "-C"     
+      prefix:  "-C"
 
-  - Rpm     :  
-      type:    "float" 
+  - Rpm     :
+      type:    "float"
       descr:   "speed [rpm]"
-      tooltip: "number of revolutions per minute" 
-      column:   0                     
-      prefix:  "-s"     
-  - Offset  :         
-      type:    "float" 
+      tooltip: "number of revolutions per minute"
+      column:   0
+      prefix:  "-s"
+  - Offset  :
+      type:    "float"
       descr:   "Offset [deg]"
       tooltip: "orientation of the chopper at t=0"
-      column:   1                     
-      prefix:  "-o"     
-  - Distance:       
-      type:    "float" 
+      column:   1
+      prefix:  "-o"
+  - Distance:
+      type:    "float"
       descr:   "distance to prev. module [cm]"
-      tooltip: "distance of the chopper from the end of the previous component" 
-      column:   2                     
-      prefix:  "-l"     
+      tooltip: "distance of the chopper from the end of the previous component"
+      column:   2
+      prefix:  "-l"
 
   - eAbsorbMat:   #  VtAbsMat   AbsMat_Txt2ID(const char* sText)
-      type:    "combo" 
+      type:    "combo"
       descr:   "absorption"
-      tooltip: "absorbing window material" 
+      tooltip: "absorbing window material"
       enum:    "VtAbsMat"
       options: ["VT_ABS_IDEAL","VT_ABS_GD","VT_ABS_B10"]
       default: "VT_ABS_IDEAL"
-      column:   0                     
-      prefix:  "-g"     
-  - bRndTof : 
-      type:    "switch" 
+      column:   0
+      prefix:  "-g"
+  - bRndTof :
+      type:    "switch"
       descr:   "randomize TOF"
       tooltip: "yes: the time of arrival at the chopper is defined by a random choice within the period of the chopper disc, i.e. the real TOF is ignored."
       default: no
-      column:  1                     
-      prefix:  "-r"     
-  - bZeroTime  : 
-      type:    "switch" 
+      column:  1
+      prefix:  "-r"
+  - bZeroTime  :
+      type:    "switch"
       descr:   "set zero time"
-      tooltip: "yes: the chopper defines the zero time \nno : the zero time is defined in the source  (see Help | chopper)" 
+      tooltip: "yes: the chopper defines the zero time \nno : the zero time is defined in the source  (see Help | chopper)"
       default: no
-      column:  2                     
-      prefix:  "-z"     
+      column:  2
+      prefix:  "-z"
 
-  - bPass   : 
-      type:    "switch" 
+  - bPass   :
+      type:    "switch"
       descr:   "treat neutrons passing by"
-      tooltip: "yes: neutrons passing outside the chopper disc are treated \nno : neutrons passing outside are removed" 
+      tooltip: "yes: neutrons passing outside the chopper disc are treated \nno : neutrons passing outside are removed"
       default: yes
-      column:  2                     
-      prefix:  "-p"     
-  - bColor  : 
-      type:    "switch" 
+      column:  2
+      prefix:  "-p"
+  - bColor  :
+      type:    "switch"
       descr:   "set colour"
       tooltip: "yes: colour of the neutrons will be defined by the window that they are passing \nno : colour remains unchanged"
       default: no
-      column:  0                     
-      prefix:  "-c"     
+      column:  0
+      prefix:  "-c"
 
-  - nWnds :  
-      type:    "int" 
+  - nWnds :
+      type:    "int"
       descr:   "number of windows"
-      tooltip: "number of chopper windows" 
+      tooltip: "number of chopper windows"
       default:  1
-      column:   0                     
-      prefix:  "-N"     
-  - Radius  :  
-      type:    "float" 
+      column:   0
+      prefix:  "-N"
+  - Radius  :
+      type:    "float"
       descr:   "radius [cm]"
-      tooltip: "radius of the chopper" 
+      tooltip: "radius of the chopper"
       default:  35.0
-      column:    0                     
-      prefix:  "-R"     
+      column:    0
+      prefix:  "-R"
 
-  - VertPos :    
-      type:    "float" 
+  - VertPos :
+      type:    "float"
       descr:   "vert. position of axle [cm]"
-      tooltip: "z-component of the centre of the chopper (in the coordinate system of the beamline)" 
+      tooltip: "z-component of the centre of the chopper (in the coordinate system of the beamline)"
       default: -30.0
-      column:    1                     
-      prefix:  "-Z"     
-  - HorPos  :       
-      type:    "float" 
+      column:    1
+      prefix:  "-Z"
+  - HorPos  :
+      type:    "float"
       descr:   "hor. position of axle [cm]"
       tooltip: "y-component of the centre of the chopper (in the coordinate system of the beamline)"
       default:  0.0
-      column:   2                     
-      prefix:  "-Y"     
+      column:   2
+      prefix:  "-Y"
 

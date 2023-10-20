@@ -5,61 +5,61 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 beamstop:
-  - Distance:                
-      type:    "float" 
-      descr:   "distance from sample [cm]" 
+  - Distance:
+      type:    "float"
+      descr:   "distance from sample [cm]"
       tooltip: "distance between sample and beamstop"
       default: 0.0
       min:     0.0
-      column:  0                     
-      prefix:  "-d"   
+      column:  0
+      prefix:  "-d"
 
-  - eShape:                 # -R   VtShape  Shape_Txt2ID(const char* sText)  
-      type:    "combo" 
-      descr:   "beamstop shape"  
-      tooltip: "shape of the beamstop" 
+  - eShape:                 # -R   VtShape  Shape_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "beamstop shape"
+      tooltip: "shape of the beamstop"
       enum:    "VtShape"
-      options: ["VT_SQUARE","VT_CIRCLE"]   
-      default: "VT_SQUARE"   
-      column:   0                     
-      prefix:  "-R"   
-  - bProp:                
-      type:    "switch" 
-      descr:   "beam propagation"  
-      tooltip: "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop" 
+      options: ["VT_SQUARE","VT_CIRCLE"]
+      default: "VT_SQUARE"
+      column:   0
+      prefix:  "-R"
+  - bProp:
+      type:    "switch"
+      descr:   "beam propagation"
+      tooltip: "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop"
       default: no
-      column:  1                     
-      prefix:  "-p"   
+      column:  1
+      prefix:  "-p"
 
-  - Title_cir: 
-      type:    "co-ordinates of a circular beamstop"
-      default: "circular beamstop coordinates" 
-  - Radius  :                 # -r    0.0  [cm]  radius of circular beamstop                             
-      type:    "float" 
-      descr:   "radius [cm]" 
+  - Title_cir:
+      type:    "title"
+      default: "circular beamstop coordinates"
+  - Radius  :                 # -r    0.0  [cm]  radius of circular beamstop
+      type:    "float"
+      descr:   "radius [cm]"
       tooltip: "radius of circular beamstop"
       min:     0.0
-      column:  0                     
-      prefix:  "-r"   
+      column:  0
+      prefix:  "-r"
 
-  - Title_rect : 
+  - Title_rect :
       type:    "title"
-      default: "co-ordinates of a rectangular beamstop" 
-  - Width   :               
-      type:    "float" 
-      descr:   "max. y [cm]" 
+      default: "co-ordinates of a rectangular beamstop"
+  - Width   :
+      type:    "float"
+      descr:   "max. y [cm]"
       tooltip: "Width of a rectangular beamstop"
       min:     0.0
-      column:  0                     
-      prefix:  "-W" 
-  - Height  :                        
-      type:    "float" 
-      descr:   "max. z [cm]" 
-      tooltip: "Height of a rectangular beamstop" 
+      column:  0
+      prefix:  "-W"
+  - Height  :
+      type:    "float"
+      descr:   "max. z [cm]"
+      tooltip: "Height of a rectangular beamstop"
       min:     0.0
-      column:  1                     
-      prefix:  "-H"   
+      column:  1
+      prefix:  "-H"
 

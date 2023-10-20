@@ -5,172 +5,172 @@
 # default: optional default value for parameter
 # min: optional minimum value
 # max: optional maximum value
-# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 polariser_sm:
-  - Title_Files : 
-      type:    "title" 
+  - Title_Files :
+      type:    "title"
       default: "Reflectivity files"
   - sReflUpFile :                  # -U         [-]    name of the reflectivity file for the spin-up neutrons
-      type:    "file"     
+      type:    "file"
       plottable: false
       descr:   "Spin-up file"
       tooltip: "reflectivity file for the spin-up neutrons"
-      prefix:  "-U"     
+      prefix:  "-U"
   - sReflDownFile:                  # -D         [-]    name of the reflectivity file for the spin-down neutrons
-      type:    "file"     
+      type:    "file"
       plottable: false
       descr:   "spin-down file"
       tooltip: "reflectivity file for the spin-down neutrons"
-      prefix:  "-D"     
+      prefix:  "-D"
 
-  - Title_Pos : 
-      type:    "title" 
+  - Title_Pos :
+      type:    "title"
       default: "Center position and orientation"
   - CntrPosX    :                  # -a    0.0  [cm]   x-position of the center of the polarizer
-      type:    "float"    
+      type:    "float"
       descr:   "position X [cm]"
-      column:  0       
+      column:  0
       tooltip: "x-position of the center of the polarizer"
-      prefix:  "-a"     
+      prefix:  "-a"
   - CntrPosY    :                  # -b    0.0  [cm]   y-position of the center of the polarizer
-      type:    "float"   
+      type:    "float"
       descr:   "position Y [cm]"
-      column:  1      
+      column:  1
       tooltip: "y-position of the center of the polarizer"
-      prefix:  "-b"     
+      prefix:  "-b"
   - CntrPosZ    :                  # -c    0.0  [cm]   z-position of the center of the polarizer
-      type:    "float"    
+      type:    "float"
       descr:   "position Z [cm]"
-      column:  2        
+      column:  2
       tooltip: "z-position of the center of the polarizer"
-      prefix:  "-c"     
+      prefix:  "-c"
 
   - AngleVert:                  # -V    0.0 [deg]   vertical (second) rotation angle of the polarizer
-      type:    "float"     
+      type:    "float"
       descr:   "vertical offset [deg]"
-      default: 1.0 
-      column:  1       
+      default: 1.0
+      column:  1
       tooltip: "vertical (second) rotation angle of the polarizer"
-      prefix:  "-V"     
+      prefix:  "-V"
 
-  - Title_Out : 
-      type:    "title" 
+  - Title_Out :
+      type:    "title"
       default: "Output frame"
   - FrameOutX    :                  # -R    0.0  [cm]  position of the new origin  (in the co-ordinate of the old origin)
-      type:    "float"   
+      type:    "float"
       descr:   "output X [cm]"
-      default: 100.0 
-      column:  0       
+      default: 100.0
+      column:  0
       tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
-      prefix:  "-R"     
+      prefix:  "-R"
   - FrameOutY    :                  # -E    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
-      type:    "int"    
+      type:    "int"
       descr:   "output Y [cm]"
-      default: 0 
-      column:  1       
-      tooltip: "position of the new origin  (in the co-ordinate of the old origin)" 
-      prefix:  "-E"     
-  - FrameOutZ    :                  # -G    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
-      type:    "int"     
-      descr:   "output Z [cm]"
-      default: 0 
-      column:  2       
+      default: 0
+      column:  1
       tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
-      prefix:  "-G"     
+      prefix:  "-E"
+  - FrameOutZ    :                  # -G    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
+      type:    "int"
+      descr:   "output Z [cm]"
+      default: 0
+      column:  2
+      tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
+      prefix:  "-G"
   - FrameOutHor  :                  # -h    0.0 [deg]   horizontal angle of the output frame, relative to input orientation
-      type:    "float"    
+      type:    "float"
       descr:   "horiz. rotation angle [deg]"
-      column:  0       
+      column:  0
       tooltip: "horizontal angle of the output frame, relative to input orientation"
-      prefix:  "-h"     
-  - FrameOutVert :                  # -v    0.0 [deg]   vertical angle of the output frame, relative to input orientation  
-      type:    "float"     
+      prefix:  "-h"
+  - FrameOutVert :                  # -v    0.0 [deg]   vertical angle of the output frame, relative to input orientation
+      type:    "float"
       descr:   "vert. rotation angle [deg]"
-      column:  1       
+      column:  1
       tooltip: "vertical angle of the output frame, relative to input orientation"
-      prefix:  "-v"     
+      prefix:  "-v"
 
   - Title_Geom:
-      type:    "title"     
+      type:    "title"
       default: "Size and Geometry of the polariser"
-  - Depth   :                  # 0.0  [cm]   x-component of the size of the polarizer 
-      type:    "float"     
+  - Depth   :                  # 0.0  [cm]   x-component of the size of the polarizer
+      type:    "float"
       descr:   "dimension X [cm]"
       tooltip: "x-component of the size of the polarizer"
       min:     0.001
-      prefix:  "-d"     
-      column:  0        
-  - Width   :                  # 0.0  [cm]   y-component of the size of the polarizer 
-      type:    "float"    
+      prefix:  "-d"
+      column:  0
+  - Width   :                  # 0.0  [cm]   y-component of the size of the polarizer
+      type:    "float"
       descr:   "dimension Y [cm]"
       tooltip: "y-component of the size of the polarizer"
       min:     0.001
-      prefix:  "-w"     
-      column:  1        
-  - Height  :                  # 0.0  [cm]   z-component of the size of the polarizer 
-      type:    "float"     
+      prefix:  "-w"
+      column:  1
+  - Height  :                  # 0.0  [cm]   z-component of the size of the polarizer
+      type:    "float"
       descr:   "dimension Z [cm]"
       tooltip: "z-component of the size of the polarizer"
       min:     0.001
-      column:  2        
-      prefix:  "-h"     
+      column:  2
+      prefix:  "-h"
   - nChannels:                  # 0    [-]    number of channels
-      type:    "int"    
+      type:    "int"
       descr:   "number of channels"
       tooltip: "number of channels"
       min:     1
-      prefix:  "-n"     
-      column:  0      
+      prefix:  "-n"
+      column:  0
   - Thickness:                 # 0.0  [cm]   thickness of the blades dividing the channels
-      type:    "float" 
+      type:    "float"
       descr:   "wall width [cm]"
       tooltip: "thickness of the blades dividing the channels"
       min:     0.001
-      prefix:  "-T"     
-      column:  1 
-      
-  - Title_Field : 
-      type:    "title" 
+      prefix:  "-T"
+      column:  1
+
+  - Title_Field :
+      type:    "title"
       default: "Guide field"
   - GuideFieldX :                  # 0.0  [Oe]   strength of the magnetic guide field
-      type:    "float"   
-      descr:   "guide field X [Oe]" 
+      type:    "float"
+      descr:   "guide field X [Oe]"
       tooltip: "strength of the magnetic guide field"
-      prefix:  "-x"     
-      column:  0    
+      prefix:  "-x"
+      column:  0
   - GuideFieldY :                  # 0.0  [Oe]   strength of the magnetic guide field
-      type:    "float"   
-      descr:   "guide field Y [Oe]" 
+      type:    "float"
+      descr:   "guide field Y [Oe]"
       tooltip: "strength of the magnetic guide field"
-      prefix:  "-y"     
-      column:  1     
+      prefix:  "-y"
+      column:  1
   - GuideFieldZ :                  # 0.0  [Oe]   strength of the magnetic guide field
-      type:    "float"  
-      descr:   "guide field Z [Oe]" 
+      type:    "float"
+      descr:   "guide field Z [Oe]"
       tooltip: "strength of the magnetic guide field"
-      prefix:  "-z"     
-      column:  2       
+      prefix:  "-z"
+      column:  2
 
-  - Title_Dir : 
-      type:    "title" 
+  - Title_Dir :
+      type:    "title"
       default: "Analysis direction"
   - AnalysisDirX :                  # 0.0  [-]   analysis direction of the polarizer
-      type:    "float"   
+      type:    "float"
       descr:   "analysis dir. X"
       tooltip: "analysis direction of the polarizer"
-      prefix:  "-X"     
-      column:  0       
+      prefix:  "-X"
+      column:  0
   - AnalysisDirY :                  # 0.0  [-]   analysis direction of the polarizer
-      type:    "float"   
+      type:    "float"
       descr:   "analysis dir. Y"
       tooltip: "analysis direction of the polarizer"
-      prefix:  "-Y"     
-      column:  1       
+      prefix:  "-Y"
+      column:  1
   - AnalysisDirZ :                  # 0.0  [-]   analysis direction of the polarizer
-      type:    "float"   
+      type:    "float"
       descr:   "analysis dir. Z"
       tooltip: "analysis direction of the polarizer"
-      prefix:  "-Z"     
-      column:  2       
+      prefix:  "-Z"
+      column:  2
 

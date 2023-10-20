@@ -4,88 +4,88 @@
 #default: Value for title, values for selection list, optional default values
 #min: minimum value optional
 #max: maximum value optional
-#column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns 
+#column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 #prefix: prefix for parameter in pipe
 collimator_radial:
   - category:  "collimator"
 
-  - AngleCntr :               
-      type: "float" 
-      descr:  "center [deg]"  
+  - AngleCntr :
+      type: "float"
+      descr:  "center [deg]"
       tooltip: "Direction to the center of the collimator\n0 deg: beam direction before sample, 90 deg: to the left"
       default:   90.0
       min:     -180.0
       max:      180.0
-      column:  0                     
-      prefix: "-a"   
-  - AngleWidth:       
-      type: "float" 
-      descr:  "width [deg]"  
+      column:  0
+      prefix: "-a"
+  - AngleWidth:
+      type: "float"
+      descr:  "width [deg]"
       tooltip: "Angular range of the radial collimator"
       default:  160.0
       min:        0.0
       max:      360.0
-      column:  1                     
-      prefix: "-w"   
-  - OscWidth:                
-      type: "float" 
-      descr:  "oscillation to width  [deg]" 
+      column:  1
+      prefix: "-w"
+  - OscWidth:
+      type: "float"
+      descr:  "oscillation to width  [deg]"
       tooltip: "Angular width of the oscillation\noscillation width = 0.0 means: no oscillation regarded"
       default:    9.0
       min:        0.0
-      min:      360.0
-      column:  2                     
-      prefix: "-o"   
+      max:      360.0
+      column:  2
+      prefix: "-o"
 
-  - EntrHeight:               
-      type: "float" 
-      descr:  "entrance\height [cm]"  
+  - EntrHeight:
+      type: "float"
+      descr:  "entrance height [cm]"
       tooltip: "Height of the entrance of the radial collimator"
       default: 10.0
       min:      0.0001
-      column:  0                     
-      prefix: "-h"   
-  - ExitHeight:       
-      type: "float" 
-      descr:  "exit height [cm]"  
+      column:  0
+      prefix: "-h"
+  - ExitHeight:
+      type: "float"
+      descr:  "exit height [cm]"
       tooltip: "Height of the exit of the radial collimator"
       default: 12.0
       min:      0.0001
-      column:  1                     
-      prefix: "-H"   
+      column:  1
+      prefix: "-H"
 
-  - Distance:                
-      type: "float" 
-      descr:  "distance[cm]" 
+  - Distance:
+      type: "float"
+      descr:  "distance[cm]"
       tooltip: "Distance from sample center to the collimator entrance"
       default: 10.0
       min:      0.0
-      column:   0                     
-      prefix: "-d"   
-  - Length:                
-      type: "float" 
-      descr:  "length [cm]" 
+      column:   0
+      prefix: "-d"
+  - Length:
+      type: "float"
+      descr:  "length [cm]"
       tooltip: "Length of the collimator channels"
       default: 20.0
       min:      0.0
-      column:  1                     
-      prefix: "-l"   
+      column:  1
+      prefix: "-l"
 
-  - nChannels:      
-      type:    "int" 
-      descr:   "number of channels" 
+  - nChannels:
+      type:    "int"
+      descr:   "number of channels"
       tooltip: "Number of the collimator channels"
-      default: 40    
-      min:      1 
-      column:   0                     
-      prefix:  "-n" 
-  - BladeThickn:   
-      type:    "float" 
-      descr:   "wall thickness [cm]"  
+      default: 40
+      min:      1
+      column:   0
+      prefix:  "-n"
+  - BladeThickn:
+      type:    "float"
+      descr:   "wall thickness [cm]"
       tooltip: "Thickness of the blades separating two channels of the collimator"
       default: 0.01
-      min:     0.0 
-      column:  1                     
-      prefix: "-s"  
+      min:     0.0
+      column:  1
+      prefix: "-s"
 
 
