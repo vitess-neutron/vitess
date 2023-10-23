@@ -153,9 +153,12 @@ void processNeutron (int i, int thread_i)
   VectorType Pos={0.0,0.0,0.0},   Dir={0.0,0.0,0.0}, Path={0.0,0.0,0.0},
              PosIn={0.0,0.0,0.0}, PosOut={0.0,0.0,0.0},    // intersection points with the shadowing cylinder
              pos1 ={0.0,0.0,0.0}, pos2={0.0,0.0,0.0};      // intersection points with the collimation stack, no used
-  Neutron neutron;
+  Neutron	   InNeutron, OutNeutron;
 
-  InitNeutron(&neutron);
+  // initialisation
+  // --------------
+  InitNeutron(&InNeutron);
+  InitNeutron(&OutNeutron);
 
   if (IsEOB(&(InputNeutrons[i]))==TRUE)
   {
@@ -163,6 +166,7 @@ void processNeutron (int i, int thread_i)
   }
   else
   { 
+    CopyNeutron(&InputNeutrons[i], &InNeutron);
     TOF = InputNeutrons[i].Time;
     WL  = InputNeutrons[i].Wavelength;
 
@@ -252,23 +256,23 @@ void processNeutron (int i, int thread_i)
 
     /* Output matters */
     /* transmit coordinates which were not changed, the rest overwrite below */
-    neutron = InputNeutrons[i];
+    OutNeutron = InputNeutrons[i];
 
     /* translates neutron variables for output - X'= 0. . */
-    neutron.Time = TOF + (- Pos[0]) / Dir[0] / V_FROM_LAMBDA(WL);
+    OutNeutron.Time = TOF + (- Pos[0]) / Dir[0] / V_FROM_LAMBDA(WL);
 			
     if (zerotime==1)
     {
-      neutron.Time = fabs(fmod(neutron.Time + Phase/omega + coef_pi*M_PI/omega/2., coef_pi*M_PI/omega))
+      OutNeutron.Time = fabs(fmod(OutNeutron.Time + Phase/omega + coef_pi*M_PI/omega/2., coef_pi*M_PI/omega))
                      - coef_pi*M_PI/2./omega ;
     }
 
     CopyVector(Dir, Path);
     MultiplyByScalar(Path, (- Pos[0])/ Dir[0] );
     AddVector(Pos, Path);                             /* Path = displacement vector */		
-    CopyVector(Pos, neutron.Position);
+    CopyVector(Pos, OutNeutron.Position);
 
-    WriteNeutronParallel(&neutron, thread_i);
+    WriteNeutronParallel(&OutNeutron, thread_i);
   }
 }
 
