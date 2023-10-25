@@ -8,7 +8,7 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 
-mon1_z:
+monitor1:
   - category:  "monitor"
 
   - sMonFile:                 # -O    [-]   monitor output file containing intensity as a function of the chosen parameter

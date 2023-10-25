@@ -11,12 +11,13 @@
 monitor1D:                    # source module that will be executed
   - category:  "monitor"
 
-  - sMonFile :                # -O "sample"  common part of the output file names, up to 3 files possible with x-parameter A, B and C
+  - sMonFile :                # -O  1D output file name
       type:    "file"
       plottable: true
       descr:   "monitor file"
+      tooltip: "name of the 1D monitor output file"
       default: "monitor1D.dat"
-      tooltip: "common part of the output file names, up to 3 files possible with x-parameter A, B and C"
+      prefix:  "-O"
 
   - Title_Par:
       type:    "title"

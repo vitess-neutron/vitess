@@ -7,6 +7,7 @@
 # max: optional maximum value
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
+
 detector:
   - Title_bas:
       type:    "title"
@@ -112,7 +113,7 @@ detector:
   - Distance:
       type:    "float"
       descr:   "distance [cm]"
-      tooltip: "Distance of the centre of the detector to the origin (0,0,0), i.e. the sample center\nIn case of a cylindrical detector this is the inner cylinder radius."
+      tooltip: "Distance from the centre of the detector surface to the origin (0,0,0), i.e. the sample center\nIn case of a cylindrical detector this is the inner cylinder radius."
       min:     0.0001
       default: 100.0
       column:  2
@@ -154,7 +155,7 @@ detector:
       min:     1
       column:  0
       prefix:  "-r"
-  - nColors:
+  - nColumns:
       type:    "int"
       descr:   "number of columns"
       tooltip: "Number of columns partitioning the detector width (vert. tubes or digitalization bins)"

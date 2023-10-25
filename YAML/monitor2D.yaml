@@ -11,12 +11,13 @@
 monitor2D:                    # source module that will be executed
   - category:  "monitor"
 
-  - sMonFile :                # -O "sample"  common part of the output file names, up to 3 files possible with x-parameter A, B and C
+  - sMonFile :                # -O  2D output file name
       type:    "file"
       plottable: true
       descr:   "monitor file"
-      default: "monitor1D.dat"
-      tooltip: "common part of the output file names, up to 3 files possible with x-parameter A, B and C"
+      tooltip: "name of the 2D monitor output file"
+      default: "monitor2D.dat"
+      prefix:  "-O"
 
   - ePar1  :                 # -X   VtMonPar  MonPar_Txt2ID(const char* sText)
       type:    "combo"
@@ -102,9 +103,9 @@ monitor2D:                    # source module that will be executed
   - eFormat :              #     -F    VtFormat2D Format2D_Txt2ID(const char* sText)
       type:    "combo"
       descr:   "file format"
-      tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
+      tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits. \ninteger: integer numbers rounded from calculated intensity"
       enum:     "VtFormat2D"
-      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT"]
+      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
       default:  "MATRIX"
       column:  2
       prefix:  "-F"

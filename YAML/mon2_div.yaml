@@ -87,9 +87,9 @@ mon2_div:
   - eFormat :              #     -F   VtFormat2D Format2D_Txt2ID(const char* sText)
       type:    "combo"
       descr:   "file format"
-      tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits."
+      tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits. \ninteger: integer numbers rounded from calculated intensity"
       enum:     "VtFormat2D"
-      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT"]
+      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
       default:  "MATRIX"
       column:  2
       prefix:  "-F"

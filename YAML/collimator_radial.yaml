@@ -6,6 +6,7 @@
 #max: maximum value optional
 #column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 #prefix: prefix for parameter in pipe
+
 collimator_radial:
   - category:  "collimator"
 

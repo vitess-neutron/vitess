@@ -8,7 +8,7 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 
-source_isis:
+source:
   - category:  "source"
   - eSrcKind:                          # -K    VtSrcKind SrcKind_Txt2ID(const char* sText)     SRC_SIMPLE  SRC_CWS  SRC_PULSED  SRC_ISIS  SRC_ESS
       type:    combo                   # This shall not be selected, but defined by the chosen module
