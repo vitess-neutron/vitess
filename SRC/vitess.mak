@@ -26,6 +26,7 @@ LDLIBS = $(LDLIBS) libg2.lib
 !endif
 
 
+# Vitess modules to build
 ALL = ascii2bin.exe \
 beamstop.exe \
 bender.exe \
@@ -33,6 +34,7 @@ capture_flux.exe \
 cas_v40.exe \
 chop_phases.exe \
 chopper_disc.exe \
+chopper_fermi.exe \
 chopper_fermi_parallel.exe \
 collimator.exe \
 collimator_radial.exe \
@@ -45,6 +47,7 @@ eval_elast2.exe \
 eval_inelast.exe \
 eval_sans.exe \
 filter.exe \
+filter2D.exe \
 flipper_coil.exe \
 flipper_gradient.exe \
 fom.exe \
@@ -53,6 +56,7 @@ gener_batch.exe \
 gener_bispectral.exe \
 gener_pipe.exe \
 grid.exe \
+guide.exe \
 guide_elliptic.exe \
 guide_parallel.exe \
 guide_shape.exe \
@@ -61,6 +65,8 @@ lenses.exe \
 merge_spectra.exe \
 mirror_coating.exe \
 mirror_elliptical.exe \
+mon1_brl.exe \
+mon1_pol.exe \
 mon2_div.exe \
 mon2_kdiv.exe \
 mon2_pos.exe \
@@ -96,6 +102,7 @@ sample_sans.exe \
 sample_singcryst.exe \
 sesans_field.exe \
 slit.exe \
+sm_ensemble.exe \
 sm_ensemble_parallel.exe \
 sortiap.exe \
 source.exe \
@@ -106,11 +113,13 @@ spin_reset.exe \
 standard_deviation.exe \
 surface_file.exe \
 velselect.exe \
+window.exe \
 writeout.exe
 !ifndef NOG2
 ALL = $(ALL) visual.exe
 !endif
 
+# objects used by multiple modules
 COMMON = init.obj \
 general.obj \
 convert.obj \
@@ -132,7 +141,7 @@ sswread.obj
 COMMON = $(COMMON) cpgplot.obj
 !endif
 
-
+# general make targets
 all: vitess.lib $(ALL)
 
 clean:
@@ -141,11 +150,11 @@ clean:
 install: $(ALL)
 	copy /Y *.exe ..\MODULES\\
 
-
 vitess.lib: $(COMMON)
 	lib /OUT:vitess.lib $(COMMON)
 
 
+# additional dependencies
 bender.exe: bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c
 
 chopper_disc.exe: chopper_disc.c bender_inter_data.c
@@ -176,12 +185,33 @@ sample_s_q.exe: sample_s_q.c sq_calc.c
 
 source.exe: source.c src_modchar.c source_csns.c source_ess.c
 
-spacewindow.exe: spacewindow.c bender_inter_data.c
+window.exe: window.c bender_inter_data.c
 
 spacewindow_multiple.exe: spacewindow_multiple.c bender_inter_data.c
 
 
-.SUFFIXES: .c .cpp. obj
+# keep old module names for compatibility
+chopper_fermi_parallel.exe: chopper_fermi.exe
+	copy "$**" "$@"
+
+guide_parallel.exe: guide.exe
+	copy "$**" "$@"
+
+mon_brilliance.exe: mon1_brl.exe
+	copy "$**" "$@"
+
+monitorpol_1d.exe: mon1_pol.exe
+	copy "$**" "$@"
+
+sm_ensemble_parallel.exe: sm_ensemble.exe
+	copy "$**" "$@"
+
+spacewindow.exe: window.exe
+	copy "$**" "$@"
+
+
+# suffix rules
+.SUFFIXES: .c .cpp. obj .exe
 
 .c.obj:
 	$(CC) $(CPPFLAGS) $(CFLAGS) /c /Fo$@ $**
