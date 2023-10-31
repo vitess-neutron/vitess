@@ -192,7 +192,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
       }
       break;
 
-    case MATR_CMPT: 
+    case MATR_CMPT:
       for (i = 0; i < nBinsX; i++)
         PrintFloat((BinPosX[i] + BinPosX[i+1]) / 2.0);
       Newline;
@@ -211,7 +211,26 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
       }
       break;
 
-    case XYZ_CMPT: 
+    case MATR_INT:
+      for (i = 0; i < nBinsX; i++)
+        PrintFloat((BinPosX[i] + BinPosX[i+1]) / 2.0);
+      Newline;
+
+      for (j = 0; j < nBinsY; j++) 
+      {
+        PrintItem("%5.3f ", (BinPosY[j] + BinPosY[j+1]) / 2.0);
+        for (i = 0; i < nBinsX; i++)
+        {
+          if (bWeight==TRUE)
+            PrintInt("%ld ", (long)(floor(fNorm*IntXY[i][j]+0.5)))
+          else
+            PrintInt("%ld ", (long)(fNorm*nTrajXY[i][j]))
+        }
+        Newline;
+      }
+      break;
+
+    case XYZ_CMPT:
       for (j = 0; j < nBinsY; j++) 
       {
         double error, binc;

@@ -67,6 +67,7 @@ fom \
 frame \
 gener_batch \
 gener_bispectral \
+gener_hkl \
 gener_pipe \
 grid \
 guide_elliptic \
@@ -110,6 +111,7 @@ sample_reflectom \
 sample_s_q \
 sample_sans \
 sample_singcryst \
+screen \
 sesans_field \
 slit \
 sm_ensemble_parallel \

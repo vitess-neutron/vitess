@@ -136,6 +136,7 @@ typedef enum
 	MCN_BEAMSTOP     = 520,
 	MCN_SMPL_ENVIRO  = 530,
 	MCN_DETECTOR     = 540,
+	MCN_SCREEN       = 550,
 	MCN_WRITEOUT     = 590,
 	MCN_SMPL_EL_ISO  = 610,
 	MCN_SMPL_INELAST = 620,
@@ -175,6 +176,7 @@ typedef enum
 	MCN_TOOL_DIR_VIEW= 1050,
 	MCN_TOOL_GEN_BAT = 1055,
 	MCN_TOOL_GEN_COAT= 1060,
+	MCN_TOOL_GEN_HKL = 1065,
 	MCN_TOOL_GEN_EXTR= 1070,
 	MCN_TOOL_GEN_SURF= 1080,
 	MCN_TOOL_STD_DEV = 1090,
@@ -867,7 +869,8 @@ typedef enum
   MATRIX       = 0,
   XYZ          = 1,
   MATR_CMPT    = 2,
-  XYZ_CMPT     = 3
+  XYZ_CMPT     = 3,
+  MATR_INT     = 4
 }
 VtFormat2D;
 

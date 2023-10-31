@@ -288,7 +288,7 @@ proc controlMenu {w} {
       {c "Define Instrument Digest" genDigest}
 
   set clist {ascii2bin
-    define_direction direct_view guide_shape mirror_coating surface_file gener_bispectral
+    define_direction direct_view guide_shape mirror_coating surface_file gener_hkl gener_bispectral
     standard_deviation rvitess lattice_dist 
   }
   set htmlist $clist
@@ -297,7 +297,7 @@ proc controlMenu {w} {
 
   set nlist {"Convert Ascii to Binary"
     "Define Direction"
-    "Direct View" "Guide Shape" "Generate Reflectivity Files" "Generate Surface Files" "Generate Extraction System"
+    "Direct View" "Guide Shape" "Generate Reflectivity Files" "Generate Surface Files" "Complete hkl Lines" "Generate Extraction System"
     "Standard Deviation" "Read and Visualise Output"
     "Lattice Distances" 
     "Cryst. Analyzer Spectrom."
@@ -328,7 +328,7 @@ proc controlMenu {w} {
       {c "Instrument Digest"  {showHelpItem digest.html}} \
       {c "External commands"  {showHelpItem External-Commands}} \
       {c "Ray tracing"        {showHelpItem raytracing.html}} \
-      {c Visualization        {showHelpItem visula.html}} \
+      {c Visualization        {showHelpItem visualization.html}} \
       {c Optimization         {showHelpItem Optimization.pdf}} \
       {m Tools me} s \
       {c Xcontrol             {showHelpItem XControl}} s \
@@ -703,7 +703,7 @@ proc showBeef {w} {
 
   # This is the place where main GUI elements are created.
   # Global setups like sizes and limits are set here.
-  set t "VITESS 3.5"
+  set t "VITESS 3.6"
   set maxModule 100
   set DummyEntry "--inactive--"
 

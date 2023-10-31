@@ -31,7 +31,10 @@
     - The modules <b>monitorpol_pos</b> allows to plot polarization as a function of hor. and vert. pos (x - y)  in a 2D plot<br />
     <br />
     - The module <b>mon_brilliance</b> plots the brilliance (in n/(cm<sup>2</sup>s&Aring; sterad)) in a given time, position, wavelength and divergenz range in a 1D plot<br /> &ensp;
-    The variable parameter can be: time, wavelength, y- or z-position, diy-y, div-z or div_rad (=div-y-z) or energy.<br />
+    The variable parameter can be: time, wavelength, y- or z-position, diy-y, div-z or div_rad (=div-y-z) or energy. <br />
+    <br />
+    - Additionally, the intensity distribution on a banana shaped (or rectangular) detector can be monitored by the module <b>screen</b>, which is described in the detector help file. 
+    <br />
   </p>
   <p>
     As practically all monitor functions are available using the generic monitors <b>monitor1D</b> or <b>monitor2D</b> or the brilliance monitor, all other monitors are practically obsolete.
@@ -251,7 +254,8 @@
         <td>file format </td>
         <td>
           Choose between matrix style and the 'xyz' representation (readable by gnuplot and other analysis software). <br />
-          'compact' means shorter header and fewer digits.
+          'compact' means a shorter header and fewer digits in the written float numbers of the simulated count rate values <br />
+          'integer' means that integer numbers, rounded from the simulated count rate values, are written to the matrix
         </td>
         <td>'matrix', 'xyz', 'matrix_compact', 'xyz_compact' </td>
         <td>-F </td>/td>
@@ -559,8 +563,12 @@
         <td>-e</td>
       </tr>
       <tr>
-        <td>file format: only for 2-dim monitors </td>
-        <td> Choose between matrix style (VITESS format) and the 'xyz' representation readable by gnuplot and other analysis software.</td>
+        <td>file format</td>
+        <td>
+          Choose between matrix style and the 'xyz' representation (readable by gnuplot and other analysis software). <br />
+          'compact' means a shorter header and fewer digits in the written float numbers of the simulated count rate values <br />
+          'integer' means that integer numbers, rounded from the simulated count rate values, are written to the matrix
+        </td>
         <td></td>
         <td>-F </td>
       </tr>

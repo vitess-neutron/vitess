@@ -159,7 +159,7 @@ proc makeModuleSets {} {
     {beamstop {} beamstop}
     {chopper {chopper_disc chopper_fermi_str chopper_fermi_cur} {chopper_disc chopper_fermi_str chopper_fermi_cur}}
     {collimator {collimator collimator_radial collimator_soller} collimator}
-    {detector {} detector}
+    {detector {detector screen} {detector screen}}
     {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
     {external_command}
     {filter {filter filter2D} {filter filter2D}}
@@ -672,6 +672,29 @@ foreach s {long_pulsed ESS_LPTS ESS_2012 HBS} {
     return [source_cwsCheckErr $app]
   }
 }
+
+
+### Screen
+###
+set screenESET {
+    {"Basic parameters" header}
+    {scr_file mon2editablefile screen.pos {"monitor file" "name of the 2D monitor output file" "" O}}
+    {scr_geom radio flat {"geometry" "Geometry of the screen, rectangular or cylindrical (about vertical axis)" "" G}	{flat cylindrical} {2 1}}
+    {scr_format radio matrix {"file\nformat" "file format for the 2D output\nthe xyz output format is not properly treated by internal VITESS graphic tools" "" F} {matrix xyz "matrix compact" "xyz compact" "matrix integer"} {0 1 2 3 4}}
+    {}
+    {"Screen size" header}
+    {scr_hei float 10 {"height [cm]" "Total height of the screen" "" h} gt0 "" 1}
+    {scr_wid float 10 { "width [cm]" "Full width of a flat screen" "" w} ge0 ""}
+    {scr_dist float 100 {"distance [cm]" "Distance from the screen to the origin (0,0,0), i.e. the sample center\nIn case of a cylindrical screen, this is the cylinder radius." "" D} gt0 "" 1}
+    {scr_min float -175 {"min. angle [deg]" "Lower limit of the angular range covered by a cylindrical screen" "" a} -180 180}
+    {scr_max float  175 {"max. angle [deg]" "Upper limit of the angular range covered by a cylindrical screen" "" A} -180 180}
+    {}
+    {"Cell sizes" header}
+    {scr_row int 1 { "number\nof rows" "Number of channels partitioning the screen height = number of vertical bins in the 2D monitor" "" z} 1 100000 1}
+    {src_col int 1 { "number\nof columns" "Number of channels partitioning the screen width = number of horizontal bins in the 2D monitor" "" y} 1 100000 1}
+    {}
+}
+
 
 ### Detector
 ###
@@ -2367,7 +2390,7 @@ set pA {
 set FA {
   {fileformat radio matrix {
     "file\nformat" "file format for the 2D output\nthe xyz output format is not properly treated by internal VITESS graphic tools" "" F}
-    {matrix xyz "matrix compact" "xyz compact"} {0 1 2 3}}
+    {matrix xyz "matrix compact" "xyz compact" "matrix integer"} {0 1 2 3 4}}
 }
 
 set tA {
@@ -3260,7 +3283,7 @@ set sample_singcrystESET {
   {parfile pareditablefile sample_singcryst.par {
     "parameter file" "" "" P} r ssc 1}
   {sfactfile pareditablefile singcryst_structuref.dat {
-    "structure\nfactor file" "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program." "" S} r}
+    "structure\nfactor file" "This file contains information to determine the scattering probability for each reflection. The program expects a complete list of h k l reflections (see 'Help|sample'). It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program." "" S} r}
   {spac radio Lorentzian {"d-spacing\ndistribution" "d-spacing probability distribution with maximum at the nominal value" "" o}
     {Lorentzian Gaussian} {1 2}}
   {spread float 0.0001 {"d-spacing\nspread [-]" "FWHM/d-spacing, the relative 'thickness' of the Ewald sphere" "" d}}

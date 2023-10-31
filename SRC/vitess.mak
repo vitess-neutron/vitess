@@ -51,6 +51,7 @@ fom.exe \
 frame.exe \
 gener_batch.exe \
 gener_bispectral.exe \
+gener_hkl.exe \
 gener_pipe.exe \
 grid.exe \
 guide_elliptic.exe \
@@ -94,6 +95,7 @@ sample_reflectom.exe \
 sample_s_q.exe \
 sample_sans.exe \
 sample_singcryst.exe \
+screen.exe \
 sesans_field.exe \
 slit.exe \
 sm_ensemble_parallel.exe \
