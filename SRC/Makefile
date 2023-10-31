@@ -42,6 +42,7 @@ ifdef DEBUG
 CFLAGS += -g -O0 -DDEBUG=1
 endif
 
+# Vitess modules to build
 ALL = ascii2bin \
 beamstop \
 bender \
@@ -49,6 +50,7 @@ capture_flux \
 cas_v40 \
 chop_phases \
 chopper_disc \
+chopper_fermi \
 chopper_fermi_parallel \
 collimator \
 collimator_radial \
@@ -61,6 +63,7 @@ eval_elast2 \
 eval_inelast \
 eval_sans \
 filter \
+filter2D \
 flipper_coil \
 flipper_gradient \
 fom \
@@ -70,6 +73,7 @@ gener_bispectral \
 gener_hkl \
 gener_pipe \
 grid \
+guide \
 guide_elliptic \
 guide_parallel \
 guide_shape \
@@ -78,6 +82,8 @@ lenses \
 merge_spectra \
 mirror_coating \
 mirror_elliptical \
+mon1_brl \
+mon1_pol \
 mon2_div \
 mon2_kdiv \
 mon2_pos \
@@ -114,6 +120,7 @@ sample_singcryst \
 screen \
 sesans_field \
 slit \
+sm_ensemble \
 sm_ensemble_parallel \
 sortiap \
 source \
@@ -124,11 +131,13 @@ spin_reset \
 standard_deviation \
 surface_file \
 velselect \
+window \
 writeout
 ifndef NOG2
 ALL += visual
 endif
 
+# objects used by multiple modules
 COMMON = init.o \
 general.o \
 convert.o \
@@ -149,6 +158,7 @@ ifndef NOG2
 COMMON += cpgplot.o
 endif
 
+# general make targets
 .PHONY: all
 all: $(ALL)
 
@@ -165,6 +175,7 @@ install: $(ALL)
 	done
 
 
+# build libraries
 $(G2PATH)/libg2.a:
 	cd $(G2PATH); ./configure $(G2OPTS)
 	$(MAKE) -C "$(G2PATH)" all
@@ -181,6 +192,8 @@ endif
 
 $(ALL): | libvitess.a $(GSLPATH)/libgslran.a
 
+
+# additional dependencies
 init.o: CPPFLAGS+=-DVVERS='"$(FULLVERSION)"'
 
 bender: bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c
@@ -215,12 +228,33 @@ sample_s_q: sample_s_q.c sq_calc.c
 
 source: source.c src_modchar.c source_csns.c source_ess.c
 
-spacewindow: spacewindow.c bender_inter_data.c
+window: window.c bender_inter_data.c
 
 spacewindow_multiple: spacewindow_multiple.c bender_inter_data.c
 
 
-.SUFFIXES: .c .cpp .o
+# keep old module names for compatibility
+chopper_fermi_parallel: chopper_fermi
+	cp $^ $@
+
+guide_parallel: guide
+	cp $^ $@
+
+mon_brilliance: mon1_brl
+	cp $^ $@
+
+monitorpol_1d: mon1_pol
+	cp $^ $@
+
+sm_ensemble_parallel: sm_ensemble
+	cp $^ $@
+
+spacewindow: window
+	cp $^ $@
+
+
+# suffix rules
+.SUFFIXES: .c .cpp .o .exe
 
 .c.o:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
