@@ -54,6 +54,7 @@ int    iH=1;
 int main(int argc, char* argv[])
 {
 	int    h=0, k=0, l=0,      // h k l value
+         iHKL=0,             // index of reflection
          nHKL=0;             // number of reflections 
   double Value[40];
 	char   sInFileName [50]="",
@@ -81,7 +82,7 @@ int main(int argc, char* argv[])
 		{	
       nHKL = LinesInFile(pInFile);
 
-      for (int i=0; i < nHKL; i++)
+      for (iHKL=0; iHKL < nHKL; iHKL++)
       {
         ReadLine(pInFile, sLine, sizeof(sLine));
         GenerFormat(sLine);
