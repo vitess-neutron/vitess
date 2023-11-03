@@ -83,6 +83,7 @@ void  WriteSimData    (double  dTimeMeas, double dLmbdWant,  double  dFreq, doub
 short ReadSimData     (double* pTimeMeas, double* pLmbdWant, double* pFreq, double* pTraj, long* pBunches);
 void  WriteGeomData   (VectorType vBegPos, double Length);
 long  ReadNumBnch     (void);
+double ReadMeasTime   (void);
 
 void DefineColors     (FILE* pGeomFile);
 void DrawLine         (FILE* pGeomFile, const char* pDescr, VectorType RelPosB,  VectorType RelPosE);

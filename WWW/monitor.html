@@ -33,7 +33,9 @@
     - The module <b>mon_brilliance</b> plots the brilliance (in n/(cm<sup>2</sup>s&Aring; sterad)) in a given time, position, wavelength and divergenz range in a 1D plot<br /> &ensp;
     The variable parameter can be: time, wavelength, y- or z-position, diy-y, div-z or div_rad (=div-y-z) or energy. <br />
     <br />
-    - Additionally, the intensity distribution on a banana shaped (or rectangular) detector can be monitored by the module <b>screen</b>, which is described in the detector help file. 
+    - Additionally, the intensity distribution on a banana shaped (or rectangular) detector can be shown by the module <b>screen</b>, which is described in the detector help file.
+    In contrast to the monitors, it propagates the neutrons to the defined area first before monitoring the distribution, 
+    while all monitors take all neutron parameters as they are obtained by the previous module.
     <br />
   </p>
   <p>
@@ -96,34 +98,22 @@
       </tr>
 
       <tr>
-        <td valign="top">1st, 2nd, 3rd parameter on x-axis</td>
-        <td valign="top">up to 3 files can be generated simultaneously by choosing up to 3 parametersy <br>the names are generated from the given file name.</td>
+        <td valign="top">parameter on x-axis</td>
+        <td valign="top">the intensity or polarisation is shown as a function of this parameter</td>
         <td valign="top">see parameter list</td>
-        <td valign="top">-X, -Y, Z</td>
+        <td valign="top">-X</td>
       </tr>
       <tr>
-        <td>1st minimal, maximal x-value</b> </td>
+        <td>minimal, maximal x-value</b> </td>
         <td>values defining the parameter range to be monitored on the 1st x-axis.</td>
         <td>  </td>
         <td>-w, -W</td>
       </tr>
       <tr>
-        <td>minimal, maximal y-value</b> </td>
-        <td>values defining the parameter range to be monitored on the 2nd x-axis..</td>
-        <td>  </td>
-        <td>-f, -F</td>
-      </tr>
-      <tr>
-        <td>minimal, maximal y-value</b> </td>
-        <td>values defining the parameter range to be monitored on the 3rd x-axis..</td>
-        <td>  </td>
-        <td>-g, -G</td>
-      </tr>
-      <tr>
-        <td valign="top">1st, 2nd, 3rd number of x-bins</td>
-        <td valign="top">Number of the monitor channels on the x-axis for the 1st, 2nd, 3rd parameter.</td>
+        <td valign="top">number of x-bins</td>
+        <td valign="top">Number of the monitor channels on the x-axis</td>
         <td valign="top">&gt;0<br>default 100</td>
-        <td valign="top">-x, -y, -z </td>
+        <td valign="top">-x</td>
       </tr>
 
       <tr>
@@ -255,7 +245,8 @@
         <td>
           Choose between matrix style and the 'xyz' representation (readable by gnuplot and other analysis software). <br />
           'compact' means a shorter header and fewer digits in the written float numbers of the simulated count rate values <br />
-          'integer' means that integer numbers, rounded from the simulated count rate values, are written to the matrix
+          'integer' means that detector counts are written to the matrix, they are obtained by multiplying the count rate and the measurement time given in the source module.
+          If no value is given, 60 s are assumed. Note that the g2 program cannot handle integer values properly.
         </td>
         <td>'matrix', 'xyz', 'matrix_compact', 'xyz_compact' </td>
         <td>-F </td>/td>
@@ -567,7 +558,8 @@
         <td>
           Choose between matrix style and the 'xyz' representation (readable by gnuplot and other analysis software). <br />
           'compact' means a shorter header and fewer digits in the written float numbers of the simulated count rate values <br />
-          'integer' means that integer numbers, rounded from the simulated count rate values, are written to the matrix
+          'integer' means that detector counts are written to the matrix, they are obtained by multiplying the count rate and the measurement time given in the source module.
+          If no value is given, 60 s are assumed. Note that the g2 program cannot handle integer values properly.
         </td>
         <td></td>
         <td>-F </td>

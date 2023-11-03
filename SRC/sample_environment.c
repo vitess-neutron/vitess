@@ -421,32 +421,7 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    /* stGeometry.pHolCyl  = (VtHolCyl*) calloc(1, sizeof(VtHolCyl));    Why not?
-    stGeometry.nHolCyls = 1;                                             Or even better SetSampleGeometry(&stEnvironment)
-	      
-    stGeometry.pHolCyl[0].Radius     = stEnvironment.SG.HCyl.r_out; 
-    stGeometry.pHolCyl[0].InnerRadius= stEnvironment.SG.HCyl.r_in / stEnvironment.SG.HCyl.r_out;  ???
-    stGeometry.pHolCyl[0].Length     = stEnvironment.SG.HCyl.h_out;
-    stGeometry.pHolCyl[0].vCntr[0]   = 0.0;
-    stGeometry.pHolCyl[0].vCntr[1]   = 0.0;
-    stGeometry.pHolCyl[0].vCntr[2]   = 0.0;
-    stGeometry.pHolCyl[0].vSymAxis[0]= 0.0;
-    stGeometry.pHolCyl[0].vSymAxis[1]= 0.0;
-    stGeometry.pHolCyl[0].vSymAxis[2]= 1.0;
-    stGeometry.pHolCyl  = (VtHolCyl*) calloc(1, sizeof(VtHolCyl));
-    stGeometry.nHolCyls = 1; */
-	      
-    stGeometry.pCylinder  = (VtCylinder*) calloc(1, sizeof(VtCylinder));
-    stGeometry.nCylinders = 1; 
-	      
-    stGeometry.pCylinder[0].Radius     = BlowUp * stEnvironment.SG.HCyl.r_out; 
-    stGeometry.pCylinder[0].Length     = BlowUp * stEnvironment.SG.HCyl.h_out;
-    stGeometry.pCylinder[0].vCntr[0]   = 0.0;
-    stGeometry.pCylinder[0].vCntr[1]   = 0.0;
-    stGeometry.pCylinder[0].vCntr[2]   = 0.0;
-    stGeometry.pCylinder[0].vSymAxis[0]= 0.0;
-    stGeometry.pCylinder[0].vSymAxis[1]= 0.0;
-    stGeometry.pCylinder[0].vSymAxis[2]= 1.0;
+    SetSampleGeometry(&stEnvironment, 0.0);
   }
 }
 

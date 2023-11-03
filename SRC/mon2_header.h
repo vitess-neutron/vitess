@@ -33,7 +33,6 @@ int  WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,          
                     double** IntXY, double** IntXYError, long** nTrajXY);  
 
 void printFloatItem(double v, FILE*f);                                                   // Writes one float value to the 2D monitor file
-void OutFmt2Txt    (VtFormat2D eFormat);                                                 // converts 2D output format to text
 
 #ifdef __cplusplus
 } /* extern "C" */

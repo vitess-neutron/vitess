@@ -20,10 +20,10 @@
   <br /><br />
   <h2><font size="+1"> VITESS Module 'screen' to monitor intensity distribution on a cylindrical or flat detector </font></h2>
   <p>
-    The module <b>screen</b> monitors the neutrons arriving on a infinitely thin detector surface for 2 simple geometries: <br />
+    The module <b>screen</b> monitors the spatial distribution of neutrons arriving on a infinitely thin detector surface for 2 simple geometries: <br />
     (a) a rectangular shaped detector centered around the beam direction <br />
     (b) a banana shaped or cylindric detector with vertical symmetry axis, vertically centered around the beam axis. <br />
-    The <b> screen</b> gives directly an output file of the intensity distribution over the detector, i.e. a monitor function is included.
+    The <b>screen</b> gives directly an output file of the intensity distribution over the detector, i.e. a monitor function is included.
   </p>
 
   <h4> Input parameters </h4>
@@ -48,10 +48,15 @@
         <td> -G </td>
       </tr>
       <tr>
-        <td> distance <br> [cm] </td>
-        <td> Distance from the center of the detector area to the origin (0,0,0), i.e. the sample center. In case of a cylindrical detector, this is the cylinder radius.  </td>
-        <td>  &gt; 0, e.g. 100</td>
-        <td> -D </td>
+        <td>file format</td>
+        <td>
+          Choose between matrix style and the 'xyz' representation (readable by gnuplot and other analysis software). <br />
+          'compact' means a shorter header and fewer digits in the written float numbers of the simulated count rate values <br />
+          'integer' means that detector counts are written to the matrix, they are obtained by multiplying the count rate and the measurement time given in the source module.
+          If no value is given, 60 s are assumed. Note that the g2 program cannot handle integer values properly.
+        </td>
+        <td></td>
+        <td>-F </td>
       </tr>
 
       <tr>
@@ -67,7 +72,13 @@
         <td> -w </td>
       </tr>
       <tr>
-        <td> AngleMin, AngleMax <br> [deg] </td>
+        <td> distance <br> [cm] </td>
+        <td> Distance from the center of the detector area to the origin (0,0,0), i.e. the sample center. In case of a cylindrical detector, this is the cylinder radius.  </td>
+        <td>  &gt; 0, e.g. 100</td>
+        <td> -D </td>
+      </tr>
+      <tr>
+        <td> min. angle, max. angle<br> [deg] </td>
         <td> Angular range covered by a cylindrical or banana shaped detector (Not used for the rectangular detector geometry). </td>
         <td> -180° , 180° </td>
         <td> -a, -A </td>

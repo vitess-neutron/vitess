@@ -198,7 +198,8 @@ my_exit:
   SetGeometry("blue");                      
 
   // print intensity, write instrument.inf, free memory
-  Cleanup(Distance, 0.0, 0.0, 0.0, 0.0);    
+  // the origin of the co-ordinate system remains at the sample  
+  Cleanup(0.0,0.0,0.0, 0.0,0.0);    
 
   return(0);
 }

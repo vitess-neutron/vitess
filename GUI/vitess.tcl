@@ -680,7 +680,7 @@ set screenESET {
     {"Basic parameters" header}
     {scr_file mon2editablefile screen.pos {"monitor file" "name of the 2D monitor output file" "" O}}
     {scr_geom radio flat {"geometry" "Geometry of the screen, rectangular or cylindrical (about vertical axis)" "" G}	{flat cylindrical} {2 1}}
-    {scr_format radio matrix {"file\nformat" "file format for the 2D output\nthe xyz output format is not properly treated by internal VITESS graphic tools" "" F} {matrix xyz "matrix compact" "xyz compact" "matrix integer"} {0 1 2 3 4}}
+    {scr_format radio matrix {"file\nformat" "file format for the 2D output: matrix or 'xyz' representation using float or integer values of different length\nfor details see 'Help|detector'" "" F} {matrix xyz "matrix compact" "xyz compact" "matrix integer"} {0 1 2 3 4}}
     {}
     {"Screen size" header}
     {scr_hei float 10 {"height [cm]" "Total height of the screen" "" h} gt0 "" 1}
@@ -2389,7 +2389,7 @@ set pA {
 
 set FA {
   {fileformat radio matrix {
-    "file\nformat" "file format for the 2D output\nthe xyz output format is not properly treated by internal VITESS graphic tools" "" F}
+    "file\nformat" "file format for the 2D output: matrix or 'xyz' representation using float or integer values of different length\nfor details see 'Help|monitor'" "" F}
     {matrix xyz "matrix compact" "xyz compact" "matrix integer"} {0 1 2 3 4}}
 }
 

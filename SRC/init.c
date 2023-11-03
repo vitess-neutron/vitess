@@ -1596,6 +1596,20 @@ long ReadNumBnch(void)
   return nBnch;
 }
 
+double ReadMeasTime(void)
+{
+  double TimeMeas=60.0,       // measuring time  [s]  */
+         LmbdWant= 0.0,       // desired wavelength   */
+         Freq    = 0.0,       // source frequency     */
+         nTraj   = 0.0;       /* number of trajectories started per bunch  */
+  long   nBnch  =  1;         // number of bunches started 
+
+  if (ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBnch)==FALSE || TimeMeas==0.0)
+    TimeMeas = 60.0;
+
+  return TimeMeas;
+}
+
 
 void DrawLine(FILE* pGeomFile, const char* pDescr, VectorType vAbsPosB, VectorType vAbsPosE)
 {

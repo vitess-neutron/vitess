@@ -9,6 +9,7 @@
 
 #include "mon2_header.h"
 #include "init.h"
+#include "convert.h"
 
 
 /******************************/
@@ -23,7 +24,7 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-static char sFormat   [16]="";             // text describing the 2D output format
+// static char   sFormat[16]="";             // text describing the 2D output format
 
 
 /*********************************************************/
@@ -65,10 +66,11 @@ void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCo
 void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight, 
                    int nBinsX, const char* sAxisTitleX, int nBinsY, const char* sAxisTitleY) 
 {
-  OutFmt2Txt(eFormat);  // fills static string 'sFormat'
+  char   sFormat [16]="";             // text describing the 2D output format
 
-  fprintf(fMonitor,"#Monitor 2D %s, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sType,
-          sFormat,
+  Format2D_ID2Txt(sFormat, eFormat);  // fills static string 'sFormat'
+
+  fprintf(fMonitor,"#Monitor 2D %s, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sType, sFormat,
           bWeight==FALSE ? "(events)" : "(weight)",
           nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
 
@@ -78,11 +80,12 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
       fputs("# Data y        F(x,y) \n              ", fMonitor);
       break;
 
-    case XYZ:
-      // fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
-      fputs("#x  y  z\n", fMonitor);
+    case MATR_CMPT:
+    case MATR_INT:
+      fputs("# Data y   F(x,y)\n          ", fMonitor);
       break;
 
+    case XYZ:
     case XYZ_CMPT: 
       fputs("#x  y  z\n", fMonitor);
       break;
@@ -95,13 +98,16 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short 
 void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sFctType, short bWeight, long iBnch, long nBnch, double IntMon, long nTrjMon, 
                    int nBinsX, const char* sAxisTitleX, int nBinsY, const char* sAxisTitleY) 
 {
-  char sEvents [11]="", sDate[11], sTime[9],
-       sOutType[12]="Monitor";
+  char   sEvents [11]="", sDate[11], sTime[9],
+         sFormat [16]="",             // text describing the 2D output format
+         sOutType[12]="Monitor";
+  double MeasTime    =1.0;            // measurement time
 
   OutputBufferFlush(0);
   GetActDate(sDate, DATE_STD);
   GetActTime(sTime);
-  OutFmt2Txt(eFormat);  // fills static string 'sFormat'
+  Format2D_ID2Txt(sFormat, eFormat);  // fills static string 'sFormat'
+
   if (bWeight==FALSE)
     strcpy(sEvents," (events)");
   if (bEval==TRUE)
@@ -109,8 +115,15 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
 
   fprintf(fMonitor, "# 2D %s %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sOutType, sFctType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
-  fprintf(fMonitor, "# Total Intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(-1), NumNeutWritten - (double)NumEobWritten);
-  fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld  (incl. filters and eval. time)\n", IntMon, nTrjMon);
+  if (eFormat==MATR_INT)
+  { MeasTime = ReadMeasTime();
+    fprintf(fMonitor, "# Total counts   : %10.3e n   Trajectories:%11.0f  in %8.1f s\n",                                MeasTime*GetTotInt(-1), NumNeutWritten - (double)NumEobWritten, MeasTime);
+    fprintf(fMonitor, "# Within binning : %10.3e n   Trajectories:%11ld  in %8.1f s  (incl. filters and eval. time)\n", MeasTime*IntMon,        nTrjMon, MeasTime);
+  }
+  else
+  { fprintf(fMonitor, "# Total Intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(-1), NumNeutWritten - (double)NumEobWritten);
+    fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld  (incl. filters and eval. time)\n", IntMon, nTrjMon);
+  }
   fprintf(fMonitor, "# Bunches: %ld of %ld written\n", iBnch, nBnch);
 
   switch (eFormat)
@@ -120,16 +133,12 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
       break;
 
     case MATR_CMPT:
+    case MATR_INT:
       fputs("# Data y   F(x,y)\n          ", fMonitor);
       break;
 
     case XYZ:
-      // fputs("# Data x          y        F(x,y)     DeltaF(x,y)   events\n", fMonitor);
-      fputs("#x  y  z\n", fMonitor);
-      break;
-
     case XYZ_CMPT: 
-      // fputs("# Data x   y F(x,y) error  events\n", fMonitor);
       fputs("#x  y  z\n", fMonitor);
       break;
   }
@@ -156,7 +165,8 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
                    double** IntXY, double** IntXYError, long** nTrajXY) 
 {
   int    i=0, j=0, c=0;
-  double x=0.0, y=0.0;
+  double x=0.0, y=0.0,
+         MeasTime=1.0;       // measurement time
 
   switch (eFormat)
   {
@@ -199,7 +209,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
 
       for (j = 0; j < nBinsY; j++) 
       {
-        PrintItem("%5.3f ", (BinPosY[j] + BinPosY[j+1]) / 2.0);
+        PrintItem("%5.1f ", (BinPosY[j] + BinPosY[j+1]) / 2.0);
         for (i = 0; i < nBinsX; i++)
         {
           if (bWeight==TRUE)
@@ -212,19 +222,20 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
       break;
 
     case MATR_INT:
+      MeasTime = ReadMeasTime();
       for (i = 0; i < nBinsX; i++)
-        PrintFloat((BinPosX[i] + BinPosX[i+1]) / 2.0);
+        PrintItem("%6.1f ", (BinPosX[i] + BinPosX[i+1]) / 2.0);
       Newline;
 
       for (j = 0; j < nBinsY; j++) 
       {
-        PrintItem("%5.3f ", (BinPosY[j] + BinPosY[j+1]) / 2.0);
+        PrintItem("%6.1f ", (BinPosY[j] + BinPosY[j+1]) / 2.0);
         for (i = 0; i < nBinsX; i++)
         {
           if (bWeight==TRUE)
-            PrintInt("%ld ", (long)(floor(fNorm*IntXY[i][j]+0.5)))
+            fprintf(fMonitor, " %6ld", (long)(floor(MeasTime*fNorm*IntXY[i][j]+0.5)));
           else
-            PrintInt("%ld ", (long)(fNorm*nTrajXY[i][j]))
+            PrintInt(" %6ld", (long)(fNorm*nTrajXY[i][j]))
         }
         Newline;
       }
@@ -279,23 +290,6 @@ void printFloatItem(double v, FILE*f)
   buf[k+1] = 0;
   fputs(buf,f);
   fputc(' ',f);
-}
-
-
-/****************************************************/
-/* 'OutFmt2Txt': converts 2D output format to text  */
-/****************************************************/
-void OutFmt2Txt(VtFormat2D eFormat)
-{
-  switch (eFormat)
-  {
-    case MATRIX   : strcpy(sFormat, "matrix");         break;
-    case XYZ      : strcpy(sFormat, "xyz");            break;
-    case MATR_CMPT: strcpy(sFormat, "matrix compact"); break;
-    case XYZ_CMPT : strcpy(sFormat, "xyz compact");    break;
-    default       : Error("unknown value for 2D output format"); 
-  }
-  return;
 }
 
 
