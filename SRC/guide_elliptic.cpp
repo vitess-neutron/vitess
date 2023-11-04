@@ -469,6 +469,10 @@ void OwnCleanup()
 /*******************************************************/
 void SetGeometryData(char* sColor)
 {
+  int    nPieces    = 25;    //      number of pieces and
+  double PieceLenM  =  0.5,  //  [m] length of one piece
+         PieceLenCM = 50.0;  // [cm]   to approximate visualization
+
   // Geometry data
   if (bVisInstr) 
   {
@@ -476,7 +480,7 @@ void SetGeometryData(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    if (shapeHor==2 && shapeVer==2 && vertOffset == 0)  
+    /* if (shapeHor==2 && shapeVer==2 && vertOffset == 0)  
     {      
       stGeometry.pEllipsoid = (VtEllipsoid*) calloc(1, sizeof(VtEllipsoid));
       stGeometry.nEllipsoids = 1;
@@ -494,7 +498,8 @@ void SetGeometryData(char* sColor)
       stGeometry.pEllipsoid[0].Xlow   = startPoint*100.;
       stGeometry.pEllipsoid[0].Xhigh  = endPoint*100.;
     }
-    else if (shapeHor < 2 && shapeVer < 2) 
+    else */
+    if (shapeHor < 2 && shapeVer < 2) 
     {
       stGeometry.pHull = (VtHull*) calloc(1, sizeof(VtHull));
       stGeometry.nHulls = 1;
@@ -515,12 +520,16 @@ void SetGeometryData(char* sColor)
     }
     else 
     {
-      stGeometry.nHulls = (int)(lengthGuide*100.) / 50 + 1;
-      stGeometry.pHull = (VtHull*) calloc(stGeometry.nHulls, sizeof(VtHull));
+      nPieces    = 25;
+      PieceLenM  = lengthGuide / nPieces;
+      PieceLenCM = 100.0*PieceLenM;
+
+      stGeometry.nHulls = nPieces;
+      stGeometry.pHull  = (VtHull*) calloc(stGeometry.nHulls, sizeof(VtHull));
 
       for (int i = 0; i < (stGeometry.nHulls - 1); i++) 
       {
-        stGeometry.pHull[i].vCntr[0] = i*50. + 25.;
+        stGeometry.pHull[i].vCntr[0] = i*PieceLenCM + PieceLenCM/2.0;
         stGeometry.pHull[i].vCntr[1] = 0.;
         stGeometry.pHull[i].vCntr[2] = 0.;
 
@@ -528,14 +537,14 @@ void SetGeometryData(char* sColor)
         stGeometry.pHull[i].vNormal[1] = 0.;
         stGeometry.pHull[i].vNormal[2] = 0.;	
 
-        stGeometry.pHull[i].Length    = 50.;
-        stGeometry.pHull[i].WidthIn   = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*i, 1);
-        stGeometry.pHull[i].WidthOut  = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*(i+1.), 1);
-        stGeometry.pHull[i].HeightIn  = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*i, 2);
-        stGeometry.pHull[i].HeightOut = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*(i+1.), 2);
+        stGeometry.pHull[i].Length    = PieceLenCM;
+        stGeometry.pHull[i].WidthIn   = BlowUp * 200.*CalculateGuidePoint(startPoint + PieceLenM* i,     1);
+        stGeometry.pHull[i].WidthOut  = BlowUp * 200.*CalculateGuidePoint(startPoint + PieceLenM*(i+1.), 1);
+        stGeometry.pHull[i].HeightIn  = BlowUp * 200.*CalculateGuidePoint(startPoint + PieceLenM* i,     2);
+        stGeometry.pHull[i].HeightOut = BlowUp * 200.*CalculateGuidePoint(startPoint + PieceLenM*(i+1.), 2);
       }
 
-      double remainingDist = double ((int)(lengthGuide*100.) % 50);
+    /*  double remainingDist = double ((int)(lengthGuide*100.) % 50);
       if (remainingDist == 0) 
       {
         stGeometry.nHulls--;
@@ -555,7 +564,7 @@ void SetGeometryData(char* sColor)
         stGeometry.pHull[stGeometry.nHulls - 1].WidthOut  = BlowUp * 200.*CalculateGuidePoint(endPoint, 1);
         stGeometry.pHull[stGeometry.nHulls - 1].HeightIn  = BlowUp * 200.*CalculateGuidePoint(startPoint + 0.5*(stGeometry.nHulls - 1), 2);
         stGeometry.pHull[stGeometry.nHulls - 1].HeightOut = BlowUp * 200.*CalculateGuidePoint(endPoint, 2);
-      }
+      } */
     }
   }
     

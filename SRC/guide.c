@@ -1205,7 +1205,7 @@ void processNeutron(int neutron_i, int thread_i)
   double dXpce = GdXpce;
   // double dDelY = GdDelY;
   double dDelZ = GdDelZ;
-  int i, k;
+  int i, l;
 
   myneutron = InputNeutrons + neutron_i;
 
@@ -1227,9 +1227,9 @@ void processNeutron(int neutron_i, int thread_i)
       CopyVector(BegPosM, BegPosSThread[thread_i]);
       for (i=0; i<3; i++)
       {
-        for (k=0; k<3;k++)
+        for (l=0; l<3; l++)
         {
-          RotMatrixSThread[thread_i*3+i][k] = RotMatrixM[i][k];
+          RotMatrixSThread[thread_i*3+i][l] = RotMatrixM[i][l];
         }
       }
       FillRMatrixZY(RotMatrixSThread[3*thread_i], 0, 0);  //TMP solution because RotMatrixM is not initialized.
@@ -1239,7 +1239,7 @@ void processNeutron(int neutron_i, int thread_i)
     // ---------------------------------------------------------------------
     if (fabs(myneutron->Position[1]) > GuideEntrWidth/2.0 ||
         fabs(myneutron->Position[2]) > GuideEntrHeight/2.0)
-    { WriteIAP(myneutron, VT_OUTSIDE);
+    { // WriteIAP(myneutron, VT_OUTSIDE);
       return;
     }
 
@@ -1492,8 +1492,8 @@ void processNeutron(int neutron_i, int thread_i)
     
       if (eReflVbs != VT_LSTM_NO && j == 0)
         WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwInit, 0., 0.);
-      if (j == 0)
-        WriteIAP(myneutron, VT_ENTERED); 
+      //if (j == 0)
+      //  WriteIAP(myneutron, VT_ENTERED); 
     
       // donkey work routine
       TimeOF1 = PathThroughGuideGravOrder1(thread_i, myneutron, guide, &pPieces[j], PRefOut, j);
