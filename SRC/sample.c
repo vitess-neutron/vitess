@@ -560,23 +560,3 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
 }
 
 
-
-/***********************************************************************************************************/
-/** transfers neutron from 'sample frame' (SF) to 'incoming frame' (IF) before writing intersection point **/
-/***********************************************************************************************************/
-void WriteScatIAP(Neutron* pNeutrSF, VtReason eReason, double RotMatrixSmpl[3][3], VectorType PosSmpl)
-{
-  if (bVisTraj==TRUE)
-  {
-    Neutron NeutrIF;
-
-    CopyNeutron(pNeutrSF, &NeutrIF);
-
-    /* computes neutron variables in the initial frame */
-    RotBackVector(RotMatrixSmpl, NeutrIF.Position) ;
-    RotBackVector(RotMatrixSmpl, NeutrIF.Vector) ;
-    AddVector(NeutrIF.Position, PosSmpl);
-
-    WriteWWP(&NeutrIF, eReason);
-  }
-}

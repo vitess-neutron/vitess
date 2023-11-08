@@ -72,11 +72,12 @@ void WriteNeutron     (Neutron* OutNeutron);
 void WriteEOB         ();
 void ChangeNeutronID  (Neutron* n);
 
-short PropagateX      (Neutron* pNeutron, double DistX);                                 // Propagates the neutron to a plane in a certain distance along the x-axis
+short PropagateX      (Neutron* pNeutron, double DistX);                                                // Propagates the neutron to a plane in a certain distance along the x-axis
+void  WriteDIAP       (Neutron* pNeutron, VtReason eReason, double DistX);                              // Propagates the neutron by DelX before writing interaction ppoint for visualization
+void  WriteScatIAP    (Neutron* pNeutrSF, VtReason eReason, double RotMatrixSF[3][3], VectorType PosS); // Transfers neutron from 'sample frame' (SF) back to 'incoming frame' (IF) before writing intersection point
+void  WriteIAP        (Neutron* pNeutron, VtReason eReason);                                            // Writes interaction point if 'trajectory visualization' is chosen
+void  WriteWWP        (Neutron* pNeutron, VtReason eReason);                                            // Writes interaction point
 
-void  WriteDIAP       (Neutron* pNeutron, VtReason eReason, double DistX);
-void  WriteIAP        (Neutron* pNeutron, VtReason eReason);
-void  WriteWWP        (Neutron* pNeutron, VtReason eReason);
 void  WriteInstrData  (VectorType EndPos);
 long  ReadInstrData   (long    iModuleNo, VectorType EndPos, double* pLength, double* pRotZ, double* pRotY, const char* pInstrFile);
 void  WriteSimData    (double  dTimeMeas, double dLmbdWant,  double  dFreq, double  nTraj, long  nBunches);

@@ -42,6 +42,4 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
 
 int ReadStructureFile(const char* sStructFile, int tag, DoublePair* structFactorLookup[]);
 
-void WriteScatIAP(Neutron* pNeutrSmpl, VtReason eReason, double RotMatrixSmpl[3][3], VectorType PosSmpl);
-
 #endif

@@ -1010,22 +1010,6 @@ void ChangeNeutronID(Neutron* n)
 }
 
 
-short PropagateX(Neutron* pNeutron, double DistX)
-{ 
-    VectorType vPath;
-    double     PathLen=0.0;
-    short      rc=FALSE;
-
-    if (pNeutron->Vector[0] > 0.0)
-    { PathLen = DistX / pNeutron->Vector[0];
-      CopyVector(pNeutron->Vector, vPath) ;
-      MultiplyByScalar(vPath, PathLen);
-      AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
-      rc=TRUE;
-    }
-    return rc;
-}
-
 /*******************************************************************/
 /* WriteNeutron writes a neutron to the neutron ouput buffer       */
 /* OuputNeutrons and flushes the buffer to the output file if the  */
@@ -1076,87 +1060,28 @@ void WriteEOB()
 
 
 /**********************************************************************************/
-/* 'WriteInstrData()' writes position of each component in a global co-ord system */
-/* 'ReadInstrData()'  reads these data                                            */
-/* 'WriteGeomData()   writes data to draw the instrument                          */
-/*  WriteWWP()        writes an interaction point to the trajectory file          */
-/*  WriteIAP()        writes an interaction point to the traj. file if wanted     */
-/*  WriteDIAP()       writes interaction point to the traj. file after propagation*/
-/* 'WriteSimData()'   writes data that other modules may need                     */
-/*                    (meas.time, wavelength, frequency)                          */
-/* 'ReadSimData()'    reads these data                                            */
+/*  PropagateX()     Propagates neutron to a plane in a distance along the x-axis */
+/*  WriteDIAP()      writes interaction point to the traj. file after propagation */
+/*  WriteScatIAP()   transfers neutron from 'sample frame' (SF)                   */
+/*                    to 'incoming frame' (IF) before writing intersection point  */
+/*  WriteIAP()       writes an interaction point to the traj. file if wanted      */
+/*  WriteWWP()       writes an interaction point to the trajectory file           */
 /**********************************************************************************/
-void WriteInstrData(VectorType Pos)
-{
-  FILE*  pFile=NULL;
-  char   *pBuffer;
-  long   iModId=iModuleId;
-  int    m=0, mFst=0;
 
+short PropagateX(Neutron* pNeutron, double DistX)
+{ 
+    VectorType vPath;
+    double     PathLen=0.0;
+    short      rc=FALSE;
 
-  if (nModuleNo==0)  // if 'instrument.inf' does not exist
-  {
-    // 'source' module writes header with line number '0', 'read_in' with 'iModuleId'=1 
-    if (_eModule==MCN_SOURCE)
-      iModId=0;
-    else
-      nModuleNo++;
-    pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
-    fprintf(pFile,
-            "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
-            "# ------------------------------------------------------------------------------------\n");
-  } 
-  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN) 
-  {
-    // first module of 2nd, 3rd ... part copy content from old to new instrument.inf file
-    char *inp;
-    pBuffer = inp = (char*) malloc(CHAR_BUF_XS*(nModuleNo+3+NUM_EOP));
-    pFile = OpenInputFile(sInstrInfIn, FALSE, "r");
-    if (pFile) 
-    {
-      if  (eFirstMod==MCN_READ_IN) mFst=1;
-      for (m=mFst; m<nModuleNo; m++) 
-      {
-        if (fgets (inp, CHAR_BUF_XS-1, pFile)) 
-        {
-          if (memcmp(inp, "EOP", 3)==0 || memcmp(inp, "#", 1)==0)
-            m--;
-          inp += CHAR_BUF_XS;
-        }
-      }
-      fclose(pFile);
+    if (pNeutron->Vector[0] > 0.0)
+    { PathLen = DistX / pNeutron->Vector[0];
+      CopyVector(pNeutron->Vector, vPath) ;
+      MultiplyByScalar(vPath, PathLen);
+      AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
+      rc=TRUE;
     }
-    pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
-    if (pFile) {
-      char *p = pBuffer;
-      while (p != inp) {
-        fputs(p, pFile);
-        p += CHAR_BUF_XS;
-      }
-      fputs("EOP\n", pFile);
-    }
-    free(pBuffer);
-    pBuffer=0;
-  } 
-  else 
-  {
-    // for each other module: open file to append a line
-    pFile = OpenOutputFile(sInstrInfOut, FALSE, "a");
-  }
-
-  // each module appends a line
-  if (pFile) 
-  {
-    char cNF=' ';
-    if (bOldFrame) cNF='F';
-    fprintf(pFile, "%3ld %3d %-18.18s %9.5f %9.5f %9.5f %9.5f  %8.3f %8.3f %c\n",
-                   iModId, _eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
-                   180.0/M_PI*RotZ, 180.0/M_PI*RotY, cNF);
-    /* mark end of actual part */
-    if (OutputFilePtr!=NULL && OutputFilePtr!=stdout && nModuleNo > 0)
-      fputs("EOP\n", pFile);
-    fclose(pFile);
-  }
+    return rc;
 }
 
 void WriteDIAP(Neutron* pNeutron, VtReason eReason, double DistX)
@@ -1169,6 +1094,23 @@ void WriteDIAP(Neutron* pNeutron, VtReason eReason, double DistX)
     PropagateX(&ScatNeutr, DistX);
 
     WriteWWP(&ScatNeutr, eReason);
+  }
+}
+
+void WriteScatIAP(Neutron* pNeutrSF, VtReason eReason, double RotMatrixSmpl[3][3], VectorType PosSmpl)
+{
+  if (bVisTraj==TRUE)
+  {
+    Neutron NeutrIF;
+
+    CopyNeutron(pNeutrSF, &NeutrIF);
+
+    /* computes neutron variables in the initial frame */
+    RotBackVector(RotMatrixSmpl, NeutrIF.Position) ;
+    RotBackVector(RotMatrixSmpl, NeutrIF.Vector) ;
+    AddVector(NeutrIF.Position, PosSmpl);
+
+    WriteWWP(&NeutrIF, eReason);
   }
 }
 
@@ -1233,6 +1175,18 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
   fprintf(TrajFilePtr, "%c%c%010lu %5d %8.5f %11.3e %10.5f %10.5f %10.5f  %2d %2d \n",
                        Wwp.id.IDGrp[0], Wwp.id.IDGrp[1], Wwp.id.IDNo, Wwp.color, Wwp.lambda, Wwp.weight, Wwp.pos[0], Wwp.pos[1], Wwp.pos[2], Wwp.spin, Wwp.reason);
 }
+
+
+/**********************************************************************************/
+/* 'WriteGeomData()   writes data to draw the instrument                          */
+/* 'WriteInstrData()' writes position of each component in a global co-ord system */
+/* 'ReadInstrData()'  reads these data        (from instrumne.inf)                */
+/* 'WriteSimData()'   writes data that other modules may need                     */
+/*                    (meas.time, wavelength, frequency, no. of bunches)          */
+/* 'ReadSimData()'    reads these data        (from simulation.inf)               */
+/* 'ReadNumBnch()'    reads number of bunches (from simulation.inf)               */
+/* 'ReadSimData()'    reads meas.time         (from simulation.inf)               */
+/**********************************************************************************/
 
 void WriteGeomData(VectorType vBegPos, double Length)
 {
@@ -1445,6 +1399,80 @@ void WriteGeomData(VectorType vBegPos, double Length)
     }
 
     fclose(pGeomFile);
+  }
+}
+
+
+void WriteInstrData(VectorType Pos)
+{
+  FILE*  pFile=NULL;
+  char   *pBuffer;
+  long   iModId=iModuleId;
+  int    m=0, mFst=0;
+
+
+  if (nModuleNo==0)  // if 'instrument.inf' does not exist
+  {
+    // 'source' module writes header with line number '0', 'read_in' with 'iModuleId'=1 
+    if (_eModule==MCN_SOURCE)
+      iModId=0;
+    else
+      nModuleNo++;
+    pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
+    fprintf(pFile,
+            "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
+            "# ------------------------------------------------------------------------------------\n");
+  } 
+  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN) 
+  {
+    // first module of 2nd, 3rd ... part copy content from old to new instrument.inf file
+    char *inp;
+    pBuffer = inp = (char*) malloc(CHAR_BUF_XS*(nModuleNo+3+NUM_EOP));
+    pFile = OpenInputFile(sInstrInfIn, FALSE, "r");
+    if (pFile) 
+    {
+      if  (eFirstMod==MCN_READ_IN) mFst=1;
+      for (m=mFst; m<nModuleNo; m++) 
+      {
+        if (fgets (inp, CHAR_BUF_XS-1, pFile)) 
+        {
+          if (memcmp(inp, "EOP", 3)==0 || memcmp(inp, "#", 1)==0)
+            m--;
+          inp += CHAR_BUF_XS;
+        }
+      }
+      fclose(pFile);
+    }
+    pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
+    if (pFile) {
+      char *p = pBuffer;
+      while (p != inp) {
+        fputs(p, pFile);
+        p += CHAR_BUF_XS;
+      }
+      fputs("EOP\n", pFile);
+    }
+    free(pBuffer);
+    pBuffer=0;
+  } 
+  else 
+  {
+    // for each other module: open file to append a line
+    pFile = OpenOutputFile(sInstrInfOut, FALSE, "a");
+  }
+
+  // each module appends a line
+  if (pFile) 
+  {
+    char cNF=' ';
+    if (bOldFrame) cNF='F';
+    fprintf(pFile, "%3ld %3d %-18.18s %9.5f %9.5f %9.5f %9.5f  %8.3f %8.3f %c\n",
+                   iModId, _eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
+                   180.0/M_PI*RotZ, 180.0/M_PI*RotY, cNF);
+    /* mark end of actual part */
+    if (OutputFilePtr!=NULL && OutputFilePtr!=stdout && nModuleNo > 0)
+      fputs("EOP\n", pFile);
+    fclose(pFile);
   }
 }
 

@@ -3,9 +3,10 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0 Nov 2004  K. Lieutenant  initial version                                             */
-/* 1.1 Apr 2020  K. Lieutenant  new central visualization parameters                        */
-/* 1.2 Mar 2023  K. Lieutenant  visualization                                               */
+/* 1.0  Nov 2004  K. Lieutenant  initial version                                            */
+/* 1.1  Apr 2020  K. Lieutenant  new central visualization parameters                       */
+/* 1.2  Mar 2023  K. Lieutenant  visualization                                              */
+/* 1.2a Nov 2023  K. Lieutenant  visualization corrected                                    */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -74,21 +75,23 @@ int main(int argc, char **argv)
              Spin={0,0,0},              //   spin of neutron under consideration 
              Path={0,0,0},              // displacement vector
              vItsPnt={0,0,0};           // intersection point of trajectory with mirror
-  Neutron    Neutrons ;
+  Neutron    OutNeutron,                // outgoing neutron
+             ScatNeut;                  // neutron parameters for trajectory visualization
 
   // initialisation
   // --------------
   _eModule=MCN_MIRROR_POL;
 
 	Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.2");
+  PrintModuleName(_eModule, "1.2a");
 	OwnInit(argc, argv);
 
   bVisInstalled = TRUE;    // needs to be done still
   if (bVisInstr) 
     bBlowUp = TRUE;
 
-  InitNeutron(&Neutrons);
+  InitNeutron(&OutNeutron);
+  InitNeutron(&ScatNeut);
   /* transfers guide_field into frame in which guide field is along x-axis */
   // RotVector(RotMatrixField, guide_field) ; 
 
@@ -109,10 +112,10 @@ int main(int argc, char **argv)
       }
       else
       { 
-        Neutrons = InputNeutrons[i]; 
-        CopyVector(Neutrons.Position, Pos) ;
-        CopyVector(Neutrons.Vector, Dir) ;
-        CopyVector(Neutrons.Spin, Spin) ; 
+        CopyNeutron(&InputNeutrons[i], &OutNeutron);
+        CopyVector(OutNeutron.Position, Pos);
+        CopyVector(OutNeutron.Vector, Dir);
+        CopyVector(OutNeutron.Spin, Spin);
 
         /* translates into frame of the mirror */
         SubVector(Pos, PosSM) ;
@@ -132,7 +135,7 @@ int main(int argc, char **argv)
         {
           /* calculate inclination angle, reflectivity for spin up and down neutrons */
           dIncl      = fabs(asin(Dir[3-nD])); 
-          datanumber = (int) floor(dIncl * 180./M_PI * 1000./Neutrons.Wavelength + 0.5); 
+          datanumber = (int) floor(dIncl * 180./M_PI * 1000./OutNeutron.Wavelength + 0.5); 
           if (datanumber > nDataMax) 
           {	
             aUU      = 0.0;
@@ -148,31 +151,45 @@ int main(int argc, char **argv)
 
           /* TOF until intersection point with mirror,  
           new position, direction, spin orientation, change in count rate */
-          TOFip = (vItsPnt[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(Neutrons.Wavelength) ;
+          TOFip = (vItsPnt[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(OutNeutron.Wavelength) ;
           CopyVector(vItsPnt, Pos);
+
+          /* point of interaction for trajectory visualization */
+          if (bVisTraj==TRUE)
+          { CopyNeutron(&InputNeutrons[i], &ScatNeut);
+            CopyVector (vItsPnt, ScatNeut.Position);
+            ScatNeut.Time += TOFip;
+          }
+
           if (bTransm)
           {	
             if (aUU == 1.0 && aDD == 1.0)
             { 
+              WriteScatIAP(&ScatNeut, VT_ABSORBED, RotMatrixSM, PosSM);
               goto getlost;
             }
             else	
             { 
-              Neutrons.Probability *= (1.0 - ProbRefl);
               the  =  2.0 * atan2((1.0-aDD)*tan(the/2.0), (1.0-aUU));
+              OutNeutron.Probability *= (1.0 - ProbRefl);
+              ScatNeut.Probability   *= (1.0 - ProbRefl);
+              WriteScatIAP(&ScatNeut, VT_TRANSMITTED, RotMatrixSM, PosSM);
             }
           }
           else
           {
             if (aUU == 0.0 && aDD == 0.0)
             {	
+              WriteScatIAP(&ScatNeut, VT_ABSORBED, RotMatrixSM, PosSM);
               goto getlost;
             }
             else	
             {	
-              Neutrons.Probability *= ProbRefl;
               Dir[3-nD] *= -1.0;			
               the  =  2.0 * atan2(aDD*tan(the/2.0), aUU);
+              OutNeutron.Probability *= ProbRefl;
+              ScatNeut.Probability   *= (1.0 - ProbRefl);
+              WriteScatIAP(&ScatNeut, VT_REFLECTED, RotMatrixSM, PosSM);
             }
           }
         } 
@@ -181,7 +198,7 @@ int main(int argc, char **argv)
           goto getlost;                      
         }
 
-        if (Neutrons.Probability <= wei_min) goto getlost ;
+        if (OutNeutron.Probability <= wei_min) goto getlost ;
 
         /* translates back to cartesian representation of spin */
         SphericalToCartesian(Spin, &the, &phi);
@@ -200,7 +217,7 @@ int main(int argc, char **argv)
         RotVector(RotMatrixOut, Spin) ;
 
         /* translates neutrons to output plane (x'=0) */
-        TOFprec = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(Neutrons.Wavelength) ;
+        TOFprec = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(OutNeutron.Wavelength) ;
         CopyVector(Dir, Path) ;
         MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
         AddVector(Pos, Path) ;  
@@ -217,13 +234,19 @@ int main(int argc, char **argv)
         // RotBackVector  (RotMatrixField, Spin) ;
 
         /* transmit coordinates which were not changed, the rest overwrite below */
-        Neutrons.Time += (TOFip+TOFprec);
-        CopyVector(Pos,  Neutrons.Position) ;
-        CopyVector(Dir,  Neutrons.Vector) ;
-        CopyVector(Spin, Neutrons.Spin) ;
+        OutNeutron.Time += (TOFip+TOFprec);
+        CopyVector(Pos,  OutNeutron.Position) ;
+        CopyVector(Dir,  OutNeutron.Vector) ;
+        CopyVector(Spin, OutNeutron.Spin) ;
 
         /* writes output binary file */
-        WriteNeutron(&Neutrons) ;
+        WriteNeutron(&OutNeutron) ;
+
+        /* point of exit for trajectory visualization */
+        if (bVisTraj==TRUE)
+        { CopyNeutron(&OutNeutron, &ScatNeut);
+          WriteScatIAP(&ScatNeut, VT_EXITED, RotMatrixOut, TranslOut);
+        }
 
       getlost:;
       }
@@ -455,26 +478,33 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    stGeometry.nRectangles = 1;
-    stGeometry.pRectangle = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+    stGeometry.nHulls = 1;
+    stGeometry.pHull = calloc(stGeometry.nHulls, sizeof(VtHull));
 
-    stGeometry.pRectangle[0].Width     = DimSM[0];
-    stGeometry.pRectangle[0].Height    = Size*BlowUp;
-    stGeometry.pRectangle[0].rotAngle  = 0.0;
-    stGeometry.pRectangle[0].vCntr[0]  = PosSM[0];
-    stGeometry.pRectangle[0].vCntr[1]  = PosSM[1];
-    stGeometry.pRectangle[0].vCntr[2]  = PosSM[2];
-    stGeometry.pRectangle[0].vNormal[0]= -sin(AngleSMVert)-sin(AngleSMHor);
     if (nD==1)  // nearly horizontal mirror causing vertical inclination
     { 
-      stGeometry.pRectangle[0].vNormal[1] = 0.0;
-      stGeometry.pRectangle[0].vNormal[2] = cos(AngleSMVert);
+      stGeometry.pHull[0].vNormal[0] = cos(AngleSMVert);
+      stGeometry.pHull[0].vNormal[1] = 0.0;
+      stGeometry.pHull[0].vNormal[2] = sin(AngleSMVert);
+      stGeometry.pHull[0].Length     = DimSM[0];
+      stGeometry.pHull[0].WidthIn    = Size*BlowUp;
+      stGeometry.pHull[0].HeightIn   = 0.1;
     }
     else
     { 
-      stGeometry.pRectangle[0].vNormal[1] = cos(AngleSMHor);
-      stGeometry.pRectangle[0].vNormal[2] = 0.0;
+      stGeometry.pHull[0].vNormal[0] = cos(AngleSMHor);
+      stGeometry.pHull[0].vNormal[1] = sin(AngleSMHor);
+      stGeometry.pHull[0].vNormal[2] = 0.0;
+      stGeometry.pHull[0].Length     = DimSM[0];
+      stGeometry.pHull[0].WidthIn    = 0.1;
+      stGeometry.pHull[0].HeightIn   = Size*BlowUp;
     }
+    stGeometry.pHull[0].WidthOut  = stGeometry.pHull[0].WidthIn;
+    stGeometry.pHull[0].HeightOut = stGeometry.pHull[0].HeightIn;
+    stGeometry.pHull[0].rotAngle  = 0.0;
+    stGeometry.pHull[0].vCntr[0]  = PosSM[0];
+    stGeometry.pHull[0].vCntr[1]  = PosSM[1];
+    stGeometry.pHull[0].vCntr[2]  = PosSM[2];
   }
 }
 
