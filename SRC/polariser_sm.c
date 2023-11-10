@@ -85,12 +85,13 @@ int main(int argc, char **argv)
              PhaseShift=0.0, 
              NumberPrecessions = 0.0,
              TotNumPrec=0.0,
-             IntegralIntensity = 0.0;
+             IntegralIntensity = 0.0,
+             Refl=0.0;                // reflectivity at the supermirror
   double     LarmorMatrix[3][3];
   VectorType Pos, Dir, SpinVector, 
              Path, n,                 // displacement vector*/
              postop, posbot;          // position of intersection with polarizer cuboid (postop: position along axis > 0, posbot: position < 0) 
-  Neutron		 OutNeutron, ReflNeutron;
+  Neutron		 OutNeutron, ReflNeutron, ScatNeutron;
 
   // initialization
   // --------------
@@ -113,6 +114,7 @@ int main(int argc, char **argv)
 
   InitNeutron(&OutNeutron);
   InitNeutron(&ReflNeutron);
+  InitNeutron(&ScatNeutron);
   Init3x3Matrix(LarmorMatrix);
 
   DECLARE_ABORT;
@@ -184,63 +186,135 @@ int main(int argc, char **argv)
           if ((PlaneLineIntersect(Pos, Dir, n, + WidthCh/2., postop) == TRUE)&&(postop[0] > (Pos[0]+0.1))&&(fabs(postop[0]) < DimSM[0]/2.)&&(Dir[2] > 0.))
           {
             /* polarizing */
-	          szog= fabs((double) asin(Dir[2])); 
+	          szog= fabs(asin(Dir[2])); 
 
             datanumber = (int) (szog *180./M_PI * 1000./WL); 
-            if (datanumber > 1000) goto getlost; 
+            if (datanumber > 1000)
+            { aUU = 0.0;
+              aDD = 0.0;
+            }
+            else 
+            { aUU = sqrt(rupdata  [datanumber]);
+              aDD = sqrt(rdowndata[datanumber]);
+            }
 
-            aUU = sqrt(rupdata  [datanumber]);
-            aDD = sqrt(rdowndata[datanumber]);
+            if (aUU == 0.0 && aDD == 0.0)
+            {
+              /* point of absorption for trajectory visualization */
+              if (bVisTraj==TRUE)
+              { CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+                CopyVector (postop, ScatNeutron.Position);
+                ScatNeutron.Position[2]+=shift;
+                WriteScatIAP(&ScatNeutron, VT_ABSORBED, RotMatrixSM, PosSM);
+              }
+              goto getlost;
+            }
+            else
+            {			
+              thenew = 2. * (double) atan(aDD/ aUU *(double) tan(the/2.));
+              phinew = phi /* + Phipol */;
 
-            if ((aUU == 0.0) && (aDD == 0.0)) goto getlost;
-			
-            thenew = 2. * (double) atan(aDD/ aUU *(double) tan(the/2.));
-            phinew = phi /* + Phipol */;
+              Refl  = sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
+              Prob *= Refl;
 
-            Prob *= sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
+              TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
-            TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+              CopyVector(postop, Pos);
+              Dir[2] *= -1; r=1;				/*ps(i+1); ps(m); ps(+77);goto getlost;ps(the);*/
+              the = thenew; phi = phinew;
 
-            CopyVector(postop, Pos);
-            Dir[2] *= -1; r=1;				/*ps(i+1); ps(m); ps(+77);goto getlost;ps(the);*/
-            the = thenew; phi = phinew;
-
-            goto contin;  
+              /* point of reflection for trajectory visualization */
+              if (bVisTraj==TRUE)
+              { CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+                CopyVector (postop, ScatNeutron.Position);
+                ScatNeutron.Position[2]+=shift;
+                ScatNeutron.Time += TOFprec;
+                ScatNeutron.Probability *= (1.0 - Refl);
+                WriteScatIAP(&ScatNeutron, VT_REFLECTED, RotMatrixSM, PosSM);
+              }
+              goto contin;  
+            }
           } 
 
           if ((PlaneLineIntersect(Pos, Dir, n, - WidthCh/2., posbot) == TRUE)&&(posbot[0] > (Pos[0]+0.1))&&(fabs(posbot[0]) < DimSM[0]/2.)&&(Dir[2] < 0.))
           {
             /* polarizing */
-            szog= fabs((double) asin(Dir[2]));
+            szog= fabs(asin(Dir[2]));
 
             datanumber = (int) (szog *180./M_PI * 1000./WL);
-            if (datanumber > 1000) goto getlost;  
+            if (datanumber > 1000)
+            { aUU = 0.0;
+              aDD = 0.0;
+            }
+            else 
+            { aUU = rupdata  [datanumber];
+              aDD = rdowndata[datanumber];
+            }
 
-            aUU = rupdata  [datanumber];
-            aDD = rdowndata[datanumber];
+            if (aUU == 0.0 && aDD == 0.0)
+            {
+              /* point of absorption for trajectory visualization */
+              if (bVisTraj==TRUE)
+              { CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+                CopyVector (posbot, ScatNeutron.Position);
+                ScatNeutron.Position[2]+=shift;
+                WriteScatIAP(&ScatNeutron, VT_ABSORBED, RotMatrixSM, PosSM);
+              }
+              goto getlost;
+            }
+            else
+            {			
+              thenew = 2.0 * (double) atan(aDD/ aUU *(double) tan(the/2.));
+              phinew = phi /* + Phipol */;
+              the = thenew; phi = phinew;
 
-            if ((aUU == 0.)&&(aDD == 0.)) goto getlost;
-			
-            thenew = 2.0 * (double) atan(aDD/ aUU *(double) tan(the/2.));
-            phinew = phi /* + Phipol */;
+              Refl  = sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
+              Prob *= Refl;
 
-            Prob *= sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
+              TOFprec += (posbot[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
-            TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
+              CopyVector(posbot, Pos);
+              Dir[2] *= -1; r=1;			
 
-            CopyVector(posbot, Pos);
-            Dir[2] *= -1; r=1;			
-            the = thenew; phi = phinew;
-
-            goto contin;  
+              /* point of reflection for trajectory visualization */
+              if (bVisTraj==TRUE)
+              { CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+                CopyVector (posbot, ScatNeutron.Position);
+                ScatNeutron.Position[2]+=shift;
+                ScatNeutron.Time += TOFprec;
+                ScatNeutron.Probability *= (1.0 - Refl);
+                WriteScatIAP(&ScatNeutron, VT_REFLECTED, RotMatrixSM, PosSM);
+              }
+              goto contin;  
+            }
           }
 
         contin:;	
           /* absorption on the sides */
           n[1]=1.0; n[0]=n[2]=0.0; 
 	
-          if ((PlaneLineIntersect(Pos, Dir, n, + DimSM[1]/2, postop) == TRUE) && (Dir[1] > 0.) && (postop[0] > Pos[0])&&(fabs(postop[0]) < DimSM[0]/2.)) {goto getlost;} 
-	        if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[1]/2, posbot) == TRUE) && (Dir[1] < 0.) && (posbot[0] > Pos[0])&&(fabs(posbot[0]) < DimSM[0]/2.)) {goto getlost;} 
+          if ((PlaneLineIntersect(Pos, Dir, n, + DimSM[1]/2, postop) == TRUE) && (Dir[1] > 0.) && (postop[0] > Pos[0])&&(fabs(postop[0]) < DimSM[0]/2.))
+          {
+            /* point of absorption for trajectory visualization */
+            if (bVisTraj==TRUE)
+            { CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+              CopyVector (postop, ScatNeutron.Position);
+              ScatNeutron.Position[2]+=shift;
+              WriteScatIAP(&ScatNeutron, VT_ABSORBED, RotMatrixSM, PosSM);
+            }
+            goto getlost;
+          } 
+	        
+          if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[1]/2, posbot) == TRUE) && (Dir[1] < 0.) && (posbot[0] > Pos[0])&&(fabs(posbot[0]) < DimSM[0]/2.))
+          {
+            /* point of absorption for trajectory visualization */
+            if (bVisTraj==TRUE)
+            { CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+              CopyVector (posbot, ScatNeutron.Position);
+              WriteScatIAP(&ScatNeutron, VT_ABSORBED, RotMatrixSM, PosSM);
+            }
+            goto getlost;
+          } 
 	
           if (r==0) goto leave; /* cannot be reflected anymore */
         }
@@ -309,6 +383,12 @@ int main(int argc, char **argv)
 
         /* writes output binary file */
         WriteNeutron(&OutNeutron);
+
+        /* point of exit for trajectory visualization */
+        if (bVisTraj==TRUE)
+        { CopyNeutron(&OutNeutron, &ScatNeutron);
+          WriteScatIAP(&ScatNeutron, VT_EXITED, RotMatrixOut, TranslOut);
+        }
 
       getlost: ;
       }
@@ -477,20 +557,23 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    stGeometry.nRectangles = NoCh + 1;
-    stGeometry.pRectangle = calloc(stGeometry.nRectangles, sizeof(VtRectangle));
+    stGeometry.nHulls = NoCh + 1;
+    stGeometry.pHull = calloc(stGeometry.nHulls, sizeof(VtHull));
 
     for (iM=0; iM <= NoCh; iM++)
     {
-      stGeometry.pRectangle[iM].Height    = DimSM[1]*BlowUp;
-      stGeometry.pRectangle[iM].Width     = DimSM[0];
-      stGeometry.pRectangle[iM].rotAngle  = 0.0;
-      stGeometry.pRectangle[iM].vCntr[0]  = PosSM[0] - (DimSM[2]/2.0 - iM*DistMirr) * sin(AngleSMVert);
-      stGeometry.pRectangle[iM].vCntr[1]  = PosSM[1];
-      stGeometry.pRectangle[iM].vCntr[2]  = PosSM[2] + (DimSM[2]/2.0 - iM*DistMirr) * cos(AngleSMVert);
-      stGeometry.pRectangle[iM].vNormal[0]= -sin(AngleSMVert);
-      stGeometry.pRectangle[iM].vNormal[1]=  0.0;
-      stGeometry.pRectangle[iM].vNormal[2]=  cos(AngleSMVert);
+      stGeometry.pHull[iM].Length    = DimSM[0];
+      stGeometry.pHull[iM].WidthIn   = DimSM[1]*BlowUp;
+      stGeometry.pHull[iM].HeightIn  = 0.2;
+      stGeometry.pHull[iM].WidthOut  = stGeometry.pHull[0].WidthIn;
+      stGeometry.pHull[iM].HeightOut = stGeometry.pHull[0].HeightIn;
+      stGeometry.pHull[iM].rotAngle  = 0.0;
+      stGeometry.pHull[iM].vCntr[0]  = PosSM[0] - (DimSM[2]/2.0 - iM*DistMirr) * sin(AngleSMVert);
+      stGeometry.pHull[iM].vCntr[1]  = PosSM[1];
+      stGeometry.pHull[iM].vCntr[2]  = PosSM[2] + (DimSM[2]/2.0 - iM*DistMirr) * cos(AngleSMVert);
+      stGeometry.pHull[iM].vNormal[0]= cos(AngleSMVert);
+      stGeometry.pHull[iM].vNormal[1]= 0.0;
+      stGeometry.pHull[iM].vNormal[2]= sin(AngleSMVert);
     }
   }
 }
