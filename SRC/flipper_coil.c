@@ -9,6 +9,7 @@
 /* 1.3  JUL 2004  G. Zsigmond    corrections for tilted flipper option                      */
 /* 1.4  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.5  Mar 2023  K. Lieutenant  visualization                                              */
+/* 1.6  Nov 2023  K. Lieutenant  improvements in visualization and field array              */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -26,7 +27,9 @@
 /** Definitions, structures, enums **/
 /************************************/
 #define	STRING_BUFFER 50
-#define	FLD_SIZE	   100
+#define	FLD_SIZE_X	 999
+#define	FLD_SIZE_Y	   3
+#define	FLD_SIZE_Z	   3
 
 
 /******************************/
@@ -38,10 +41,10 @@ void    SetGeometry(char* sColor);         // Fills the structure stGeometry for
 void    InitArrays();                      // Initializes the arrays 'domain_field_F' and 'PosDomain_F' 
 
 /* copy matrix/vector to 3D array of matrices/vectors or back */
-void		CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE][FLD_SIZE][FLD_SIZE], double Result[3][3]) ;
-void		CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FLD_SIZE][FLD_SIZE][FLD_SIZE]) ;
-void		CopyVectorsToVector3 (long i, long j, long k, double Vector[3][FLD_SIZE][FLD_SIZE][FLD_SIZE], double Result[3]) ;
-void		CopyVectorToVectors3 (long i, long j, long k, double Vector[3], double Result[3][FLD_SIZE][FLD_SIZE][FLD_SIZE]) ;
+void		CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3][3]) ;
+void		CopyVectorsToVector3 (long i, long j, long k, double Vector[3]   [FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3]) ;
+void		CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z]) ;
+void		CopyVectorToVectors3 (long i, long j, long k, double Vector[3],    double Result[3]   [FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z]) ;
 /* Intersection with rectangular object */
 long		IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2, long *wall_1, long *wall_2) ;
 
@@ -67,8 +70,8 @@ VectorType  TranslOut;                  // -p -r -s  [cm]  position of the new o
 long        ind_x=0, ind_y=0,   ind_z=0,                     //  [-]   indices of magnetic field elements in x-, y- and z-direction
                      ind_y_max, ind_z_max;                   //  [-]   max. number of magnetic field elements in x-, y- and z-direction
 VectorType  SizeDomain;
-double      domain_field_F[3][FLD_SIZE][FLD_SIZE][FLD_SIZE], //        arrays of strengths, positions and sizes 
-            PosDomain_F   [3][FLD_SIZE][FLD_SIZE][FLD_SIZE], //         of magnetic field elements
+double      domain_field_F[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //        arrays of strengths, positions and sizes 
+            PosDomain_F   [3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //         of magnetic field elements
             RotMatrixMain [3][3];                            //  [deg]  Matrix to rotate the magnetic field
 
 
@@ -93,14 +96,14 @@ int main(int argc, char **argv)
              Path,                 /* displacement vector*/
              Pos1, Pos2, 
              PosDomain, domain_field;
-  Neutron		 Neutrons ;
+  Neutron		 OutNeutron, ScatNeutron;
 
   // initialisation
   // --------------
   _eModule=MCN_FLIP_COIL;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.5");
+  PrintModuleName(_eModule, "1.6");
   OwnInit(argc, argv);
 
   Init3x3Matrix(RotMatrixField);
@@ -110,7 +113,8 @@ int main(int argc, char **argv)
   InitVector(Pos2);
   InitVector(PosDomain);
   InitVector(domain_field);
-  InitNeutron(&Neutrons);
+  InitNeutron(&OutNeutron);
+  InitNeutron(&ScatNeutron);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
@@ -133,6 +137,8 @@ int main(int argc, char **argv)
       else
       { 
         /*InputNeutrons[i].Position[0]	= 0.0 ;*/
+        InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+
         TOF  = InputNeutrons[i].Time;
         WL   = InputNeutrons[i].Wavelength;
         Prob = InputNeutrons[i].Probability;
@@ -140,8 +146,6 @@ int main(int argc, char **argv)
         CopyVector(InputNeutrons[i].Position, Pos) ;
         CopyVector(InputNeutrons[i].Vector,   Dir) ;
         CopyVector(InputNeutrons[i].Spin,     SpinVector) ;
-
-        InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
 
         /* translates into frame of the main field and rotates coordinates  */
         SubVector(Pos, PosMain) ;
@@ -256,6 +260,15 @@ int main(int argc, char **argv)
         RotBackVector(RotMatrixMain, Dir ) ;
         RotBackVector(RotMatrixMain, SpinVector) ;
 
+        // write exit point for visualization
+        if (bVisTraj==TRUE)
+        { CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+          CopyVector (Pos,        ScatNeutron.Position);
+          CopyVector (SpinVector, ScatNeutron.Spin);
+          ScatNeutron.Time = TOF;
+          WriteIAP(&ScatNeutron, VT_EXITED);
+        }
+
         IntegralIntensity += Prob ;
         NumOut++ ;
 
@@ -278,15 +291,15 @@ int main(int argc, char **argv)
         AddVector(Pos, Path) ;  TOF += TOF3 ;
 
         /* transmit coordinates which were not changed, the rest overwrite below */
-        Neutrons = InputNeutrons[i];
+        OutNeutron = InputNeutrons[i];
 
-        Neutrons.Time = TOF ;
+        OutNeutron.Time = TOF ;
 
-        CopyVector(Pos, Neutrons.Position) ;
-        CopyVector(SpinVector, Neutrons.Spin) ;
+        CopyVector(Pos, OutNeutron.Position) ;
+        CopyVector(SpinVector, OutNeutron.Spin) ;
 
         /* writes output binary file */
-        WriteNeutron(&Neutrons) ;
+        WriteNeutron(&OutNeutron) ;
 
       getlost: ;
       }
@@ -305,7 +318,7 @@ my_exit:
   fprintf(LogFilePtr," \n") ;
 
   /* write geometry file */
-  SetGeometry("magenta");
+  SetGeometry("orange");
   
   /* Do module specific cleanups */
   OwnCleanup(); 
@@ -323,6 +336,7 @@ my_exit:
 void OwnInit(int argc, char *argv[])
 {
   VectorType field_cart ;
+  char       sBuffer[CHAR_BUF_XS]="";
 
   field_guide[0]  = field_guide[1]  = field_guide[2]  = 0.0;
   InitVector(PosMain);
@@ -332,7 +346,9 @@ void OwnInit(int argc, char *argv[])
   Init3x3Matrix(RotMatrixMain);
 
   /* Flipper */
-  ind_x_max = 98; ind_y_max = ind_z_max = 2 ;
+  ind_x_max = FLD_SIZE_X-1; 
+  ind_y_max = FLD_SIZE_Y-1;
+  ind_z_max = FLD_SIZE_Z-1;
 
   while(argc>1)
   {
@@ -371,7 +387,14 @@ void OwnInit(int argc, char *argv[])
 
       case 'N':
         sscanf(&argv[1][2], "%ld", &ind_x_max) ;
-        if((ind_x_max/2. - floor(ind_x_max/2.)) > 0.) {	ind_x_max += 1 ; fprintf(LogFilePtr,"\nWARNING: Number of domains must be even! Set %ld. \n", ind_x_max) ;}
+        if (ind_x_max >= FLD_SIZE_X)
+        { sprintf(sBuffer, "number of domains too large.  Input: %ld   Maximmum is %ld", ind_x_max, FLD_SIZE_X-1);
+          Error(sBuffer);
+        }
+        if ((ind_x_max/2. - floor(ind_x_max/2.)) > 0.) 
+        {	ind_x_max += 1 ; 
+          fprintf(LogFilePtr,"\nWARNING: Number of domains must be even! Set to %ld. \n", ind_x_max) ;
+        }
         if(ind_x_max > 100) {	ind_x_max = 100 ; fprintf(LogFilePtr,"\nWARNING: Number of domains must be < 102 ! Set %ld. \n", ind_x_max) ;}
         break;
 
@@ -417,9 +440,9 @@ void OwnInit(int argc, char *argv[])
   { for(ind_y=1;ind_y<(ind_y_max+1);ind_y++) 
     { for(ind_z=1;ind_z<(ind_z_max+1);ind_z++) 
       {
-			  PosDomain_F[0][ind_x][ind_y][ind_z] = ((ind_x -1)-(ind_x_max /2 - 0.5)) * SizeDomain[0] ;
-			  PosDomain_F[1][ind_x][ind_y][ind_z] = ((ind_y -1)-(ind_y_max /2 - 0.5)) * SizeDomain[1] ;
-			  PosDomain_F[2][ind_x][ind_y][ind_z] = ((ind_z -1)-(ind_z_max /2 - 0.5)) * SizeDomain[2] ;
+			  PosDomain_F[0][ind_x][ind_y][ind_z] = ((ind_x -1L)-(ind_x_max /2 - 0.5)) * SizeDomain[0] ;
+			  PosDomain_F[1][ind_x][ind_y][ind_z] = ((ind_y -1L)-(ind_y_max /2 - 0.5)) * SizeDomain[1] ;
+			  PosDomain_F[2][ind_x][ind_y][ind_z] = ((ind_z -1L)-(ind_z_max /2 - 0.5)) * SizeDomain[2] ;
 
 			  /* Flipper  */
 			  if (PosDomain_F[0][ind_x][ind_y][ind_z] < (double) (- (ind_x_max/2 * SizeDomain[0] - wall_thickness)))
@@ -471,6 +494,8 @@ void OwnCleanup()
 /*******************************************************/
 void SetGeometry(char* sColor)
 {
+  int iX=0;
+
   /* Geometry data */
   if (bVisInstr)
   { 
@@ -478,18 +503,21 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    stGeometry.nCuboids = 1; 
+    stGeometry.nCuboids = ind_x_max; 
     stGeometry.pCuboid  = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
-      
-    stGeometry.pCuboid[0].Length    = depth; 
-    stGeometry.pCuboid[0].Width     = BlowUp * width;
-    stGeometry.pCuboid[0].Height    = BlowUp * height;
-    stGeometry.pCuboid[0].vCntr[0]  = PosMain[0];
-    stGeometry.pCuboid[0].vCntr[1]  = PosMain[1];
-    stGeometry.pCuboid[0].vCntr[2]  = PosMain[2];
-    stGeometry.pCuboid[0].vNormal[0]= 1.0;
-    stGeometry.pCuboid[0].vNormal[1]= 0.0;
-    stGeometry.pCuboid[0].vNormal[2]= 0.0;
+
+    for (iX=1; iX <= ind_x_max; iX++)
+    { 
+      stGeometry.pCuboid[iX-1].Length    = depth/ind_x_max; 
+      stGeometry.pCuboid[iX-1].Width     = BlowUp * width;
+      stGeometry.pCuboid[iX-1].Height    = BlowUp * height;
+      stGeometry.pCuboid[iX-1].vCntr[0]  = PosMain[0] + PosDomain_F[0][iX][1][1];
+      stGeometry.pCuboid[iX-1].vCntr[1]  = PosMain[1];
+      stGeometry.pCuboid[iX-1].vCntr[2]  = PosMain[2];
+      stGeometry.pCuboid[iX-1].vNormal[0]= 1.0;
+      stGeometry.pCuboid[iX-1].vNormal[1]= 0.0;
+      stGeometry.pCuboid[iX-1].vNormal[2]= 0.0;
+    }
   }
 }
 
@@ -502,9 +530,9 @@ void InitArrays()
   int i,j,k,l;
 
   for (i=0; i < 3; i++)
-  { for (j=0; j < FLD_SIZE; j++)
-    { for (k=0; k < FLD_SIZE; k++)
-      { for (l=0; l < FLD_SIZE; l++)
+  { for (j=0; j < FLD_SIZE_X; j++)
+    { for (k=0; k < FLD_SIZE_Y; k++)
+      { for (l=0; l < FLD_SIZE_Z; l++)
         { domain_field_F[i][j][k][l] = 0.0;  
           PosDomain_F   [i][j][k][l] = 0.0;  
         }
@@ -519,7 +547,7 @@ void InitArrays()
 /******************************************************************/
 /** copies matrix/vector to 3D array of matrices/vectors or back **/
 /******************************************************************/
-void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE][FLD_SIZE][FLD_SIZE], double Result[3][3])
+void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3][3])
 {
   long m, l ;
 	
@@ -532,7 +560,7 @@ void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE
   }
 }
 
-void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FLD_SIZE][FLD_SIZE][FLD_SIZE])
+void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z])
 {
   long m, l ;
 	
@@ -545,7 +573,7 @@ void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double M
   }
 }
 
-void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FLD_SIZE][FLD_SIZE][FLD_SIZE], double Result[3])
+void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3])
 {
   long l ;
 
@@ -555,7 +583,7 @@ void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FLD_SIZE][FLD
   }
 }
 
-void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FLD_SIZE][FLD_SIZE][FLD_SIZE])
+void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z])
 {
   long l ;
 

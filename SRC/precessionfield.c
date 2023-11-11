@@ -62,7 +62,7 @@ int main(int argc, char **argv)
   double     IntegralIntensity=0.0;
   VectorType SpinVector, domain_field;
   VectorType Path, Pos, Dir, Pos1, Pos2, PosDomain, DimDomain;
-  Neutron    Neutrons;
+  Neutron    OutNeutron, ScatNeutron;
   double     RotMatrixField[3][3],  // Matrix to rotate a neutron into the quantization direction of the magnetic field
              LarmorMatrix  [3][3];
 
@@ -83,7 +83,8 @@ int main(int argc, char **argv)
   InitVector(Pos1); InitVector(Pos2);      InitVector(domain_field);
   InitVector(Path); InitVector(PosDomain); InitVector(DimDomain);  
 
-  InitNeutron(&Neutrons); 
+  InitNeutron(&OutNeutron); 
+  InitNeutron(&ScatNeutron); 
 
   Init3x3Matrix(RotMatrixField);
   Init3x3Matrix(LarmorMatrix);
@@ -107,6 +108,7 @@ int main(int argc, char **argv)
       else
       { 
         /*InputNeutrons[i].Position[0]	= 0. ;*/
+        InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
 
         TOF = InputNeutrons[i].Time ;
         WL  = InputNeutrons[i].Wavelength ;
@@ -115,8 +117,6 @@ int main(int argc, char **argv)
         CopyVector(InputNeutrons[i].Position, Pos) ;
         CopyVector(InputNeutrons[i].Vector, Dir) ;
         CopyVector(InputNeutrons[i].Spin, SpinVector) ; 
-
-        InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
 
         /* translates into frame of the main field and rotates coordinates  */
         SubVector(Pos, PosMain) ;
@@ -226,8 +226,16 @@ int main(int argc, char **argv)
         RotBackVector(RotMatrixMain, Dir ) ; 
         RotBackVector(RotMatrixMain, SpinVector) ; 
 
-        IntegralIntensity += Prob ;
+        // write exit point for visualization
+        if (bVisTraj==TRUE)
+        { CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+          CopyVector (Pos,        ScatNeutron.Position);
+          CopyVector (SpinVector, ScatNeutron.Spin);
+          ScatNeutron.Time = TOF;
+          WriteIAP(&ScatNeutron, VT_EXITED);
+        }
 
+        IntegralIntensity += Prob ;
         NumOut++ ;
 
         /* computes neutron variables in the output frame */ 
@@ -243,15 +251,15 @@ int main(int argc, char **argv)
         /*jumpwrite :; goto jumpwrite ;*/
 
         /* transmit coordinates which were not changed, the rest overwrite below */
-        Neutrons = InputNeutrons[i]; 
-        Neutrons.Time = TOF ;
+        OutNeutron = InputNeutrons[i]; 
+        OutNeutron.Time = TOF ;
 
-        CopyVector(Pos, Neutrons.Position) ;
-        CopyVector(Dir, Neutrons.Vector) ;
-        CopyVector(SpinVector, Neutrons.Spin) ;
+        CopyVector(Pos, OutNeutron.Position) ;
+        CopyVector(Dir, OutNeutron.Vector) ;
+        CopyVector(SpinVector, OutNeutron.Spin) ;
 
         /* writes output binary file */
-        WriteNeutron(&Neutrons) ;
+        WriteNeutron(&OutNeutron) ;
 
       getlost: ;
       }
