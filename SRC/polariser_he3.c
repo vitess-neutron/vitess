@@ -284,7 +284,7 @@ my_exit:
   if (nTraj3 > 0) fprintf(LogFilePtr,"                              after polarizer : %7.2lf\n\n", nTotPrec3/nTraj3);
 
   /* write geometry file */
-  SetGeometry("magenta");
+  SetGeometry("orange");
   
   /* Do module specific cleanups */
   OwnCleanup();

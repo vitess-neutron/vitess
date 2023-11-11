@@ -561,7 +561,7 @@ my_exit:
   WriteFiles(indp);
 
   /* write geometry file */
-  SetGeometry("magenta");
+  SetGeometry("orange");
   
   /* Do module specific cleanups */
   OwnCleanup(); 

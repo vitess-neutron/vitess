@@ -735,7 +735,7 @@ my_exit:
   }
 
   /* write geometry file */
-  SetGeometry("yellow");
+  SetGeometry("orange");
   
   /* Do module specific cleanups */
   OwnCleanup(); 

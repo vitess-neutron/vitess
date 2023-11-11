@@ -401,7 +401,7 @@ my_exit:
   fprintf(LogFilePtr,"av. precession number: %9.2f:\n", TotNumPrec/NumOut);
 
   /* write geometry file */
-  SetGeometry("magenta");
+  SetGeometry("orange");
   
   /* Do module specific cleanups */
   OwnCleanup(); 

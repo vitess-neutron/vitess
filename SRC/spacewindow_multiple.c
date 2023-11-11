@@ -276,7 +276,7 @@ my_exit:
   }
 
   // fills the structure stGeometry for visualization
-  SetGeometry("blue", NumberOfHoles);
+  SetGeometry("grey", NumberOfHoles);
 
   Cleanup(Max(ThicknessO, ThicknessI)+Distance, 0.0, 0.0, 0.0, 0.0);
 	

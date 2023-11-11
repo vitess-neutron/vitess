@@ -195,7 +195,7 @@ my_exit:
   }
 
   // write geometry data for visualization
-  SetGeometry("blue");                      
+  SetGeometry("cyan");                      
 
   // print intensity, write instrument.inf, free memory
   // the origin of the co-ordinate system remains at the sample  

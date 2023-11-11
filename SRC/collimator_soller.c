@@ -167,7 +167,7 @@ my_exit:
   else
     fprintf(LogFilePtr, "Soller collimator along the beam axis of %6.2f deg FWHM\n", HorCollDiv);
 
-  SetGeometry("blue");
+  SetGeometry("grey");
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 

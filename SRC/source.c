@@ -857,7 +857,7 @@ int main(int argc, char *argv[])
    fprintf(LogFilePtr,"\nnumber of trajectories started         : %11.0f = %ld x %ld\n", NumberOfNeutrons, nBunches, nNeutBnch);
 
   /* write geometry file */
-   SetGeometry("yellow");
+   SetGeometry("light_blue");
 
    /* Do module specific cleanups */
    OwnCleanup();

@@ -161,7 +161,7 @@ my_exit:
     Error("Unknown beamstop shape");
   
    // write geometry data for visualization
-  SetGeometry("blue");
+  SetGeometry("grey");
 
   /* Do the general cleanup */
   // the origin of the co-ordinate system remains at the sample  

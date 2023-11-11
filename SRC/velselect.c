@@ -225,7 +225,7 @@ my_exit:
   PrintMessage(SELECT_NO_BLADES, "", ON);
   
   /* write geometry data for visualization */
-  SetGeometry("grey");                       
+  SetGeometry("blue");                       
 
   /* print intensity, write instrument.inf, free memory */
   Cleanup(Length,0.0,0.0, 0.0,0.0);

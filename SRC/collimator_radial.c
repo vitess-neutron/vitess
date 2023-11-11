@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, "%6.2f cm long, %7.2f cm from the sample \n", Length, Distance);
 
   // Instrument visualization
-  SetGeometry("blue");
+  SetGeometry("grey");
 
   /* Do the general cleanup */
   /* Theta = M_PI/180.0*AngCentre;

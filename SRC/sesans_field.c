@@ -228,7 +228,7 @@ int main(int argc, char **argv)
     fprintf(LogFilePtr,"Average number of precessions  : %9.2lf\n", TotNumPrec/NumOut);
 
   /* write geometry file */
-  SetGeometry("light_blue");
+  SetGeometry("yellow");
   
   /* Do module specific cleanups */
   OwnCleanup(); 

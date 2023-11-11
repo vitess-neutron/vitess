@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 my_exit:
 	fprintf(LogFilePtr, "Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", Width, Height, DistMove);
 
-  SetGeometry("blue");                       // write geometry data for visualization
+  SetGeometry("grey");                       // write geometry data for visualization
   Cleanup(DistMove, 0.0, 0.0, 0.0, 0.0);     // print intensity, write instrument.inf, free memory
 
   return(0);

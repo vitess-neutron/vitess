@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
     DeltaY = 0.0;
   }
 
-  SetGeometry("yellow");                         // write geometry data for visualization
+  SetGeometry("green");                         // write geometry data for visualization
   OwnCleanup();
   Cleanup(DeltaX,DeltaY,0.0, beta_ges, 0.0);
 

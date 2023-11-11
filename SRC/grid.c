@@ -289,7 +289,7 @@ my_exit:
   PrintMessage(WNDO_L_RANGE_TOO_SMALL, sTransFileName, ON);
   PrintMessage(WND_CROSS_TALK, "", ON);
 
-  SetGeometry("blue", NumberOfHoles);
+  SetGeometry("grey", NumberOfHoles);
   Cleanup((Thickness+Distance), 0.0, 0.0, 0.0, 0.0);
 
   return(0);

@@ -257,7 +257,7 @@ int main(int argc, char **argv)
 // -------------------------------------------------------------------------
 my_exit:
   /* write geometry file */
-  SetGeometry("magenta");
+  SetGeometry("orange");
 
   /* Do module specific cleanup */
   OwnCleanup(); 

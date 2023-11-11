@@ -280,7 +280,7 @@ int main(int argc, char **argv)
                       "struct. factor file: %s\n",         MuInc, MuTot, MuAbs, UCV, sStrFileName);
 
   /* write geometry file */
-  SetGeometry("cyan");
+  SetGeometry("magenta");
   
   /* Do module specific cleanups */
   OwnCleanup(pStrucFac);

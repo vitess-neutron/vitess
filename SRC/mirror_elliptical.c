@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 #endif
 
   /* write geometry file */
-  SetGeometry("magenta");
+  SetGeometry("green");
 
   /* Do the general cleanup */
   Cleanup(TransOut[0], TransOut[1], TransOut[2], 0.0, 0.0);

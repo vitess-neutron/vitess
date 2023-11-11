@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 	fprintf(LogFilePtr, "Channel width  : %6.3f -> %5.3f cm \n", ChanWin, ChanWout);
   fprintf(LogFilePtr, "\n");
    
-  SetGeometry("blue");
+  SetGeometry("grey");
 
   Cleanup(Length,0.0,0.0, 0.0,0.0);
 

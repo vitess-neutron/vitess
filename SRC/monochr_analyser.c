@@ -310,7 +310,7 @@ int main(int argc, char **argv)
 
  my_exit:
   /* write geometry file */
-  SetGeometry("white");
+  SetGeometry("blue");
   
   /* Do module specific cleanups */
   OwnCleanup();
