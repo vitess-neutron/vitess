@@ -1106,8 +1106,9 @@ void WriteScatIAP(Neutron* pNeutrSF, VtReason eReason, double RotMatrixSmpl[3][3
     CopyNeutron(pNeutrSF, &NeutrIF);
 
     /* computes neutron variables in the initial frame */
-    RotBackVector(RotMatrixSmpl, NeutrIF.Position) ;
-    RotBackVector(RotMatrixSmpl, NeutrIF.Vector) ;
+    RotBackVector(RotMatrixSmpl, NeutrIF.Position);
+    RotBackVector(RotMatrixSmpl, NeutrIF.Vector);
+    RotBackVector(RotMatrixSmpl, NeutrIF.Spin);
     AddVector(NeutrIF.Position, PosSmpl);
 
     WriteWWP(&NeutrIF, eReason);
