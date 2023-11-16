@@ -198,13 +198,13 @@ typedef enum
   VT_OUTSIDE    = 1,    // guide
   VT_OUT_OF_WND = 2,    // slit
   VT_PASSED     = 3,    // chopper, slit
-  VT_ENTERED    = 4,    // guide
+  VT_ENTERED    = 4,    // guide, field, component
   VT_TRANSIT    = 5,    // from one guide segment to the next
   VT_TRANSMITTED= 6,    // mirror, window, channel wall
   VT_REFLECTED  = 7,    // guide or mirror surface
   VT_SCATTERED  = 8,    // sample
   VT_ABSORBED   = 9,    // chopper, guide, collimator
-  VT_EXITED     =10,    // guide
+  VT_EXITED     =10,    // guide, field, component
   VT_DETECTED   =15,    // detector
   VT_FILTERED   =20,    // filter and others
   VT_NO_DATA    =99,    // window, bender etc.

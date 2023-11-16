@@ -8,6 +8,7 @@
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.4  Feb 2023  K. Lieutenant  correction length and diameter; improved log file output   */
+/* 1.4a Nov 2023  K. Lieutenant  improved visualization                                     */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -93,14 +94,14 @@ int main(int argc, char **argv)
   VectorType Path;     /* Path = displacement vector */
   VectorType pos, dir;	
   VectorType V;	
-  Neutron    Neutrons;
+  Neutron    OutNeutron, ScatNeutron;
 
   // initialization
   // --------------
   _eModule=MCN_POL_HE3;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
+  PrintModuleName(_eModule, "1.4a");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
   InitVector(SpinVector);
   InitVector(Path);   InitVector(V);
 
-  InitNeutron(&Neutrons);
+  InitNeutron(&OutNeutron); InitNeutron(&ScatNeutron);
   Init3x3Matrix(LarmorMatrix);
 
   DECLARE_ABORT;
@@ -134,16 +135,16 @@ int main(int argc, char **argv)
       else
       { 
         /*InputNeutrons[i].Position[0]	= 0.;*/
-        TOF = InputNeutrons[i].Time;
-        WL = InputNeutrons[i].Wavelength;
+        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
+
+        TOF  = InputNeutrons[i].Time;
+        WL   = InputNeutrons[i].Wavelength;
         Prob = InputNeutrons[i].Probability;
         TotIntensityIn += Prob;
 
         CopyVector(InputNeutrons[i].Position, Pos);
         CopyVector(InputNeutrons[i].Vector, Dir);
         CopyVector(InputNeutrons[i].Spin, SpinVector); 
-
-        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
         /* compute polarization and transmission location corresponding to the wavelength */
         datanumber = (int) (WL * 100.); 
@@ -212,6 +213,15 @@ int main(int argc, char **argv)
         /* translates into original frame */
         AddVector(Pos, PosMain); 
 
+        /* Write point of exit from field */
+        if (bVisTraj)        
+        { 
+          CopyNeutron(&InputNeutrons[i], &ScatNeutron);
+          CopyVector(Pos, ScatNeutron.Position);
+          CopyVector(SpinVector, ScatNeutron.Spin);
+          WriteWWP(&ScatNeutron, VT_EXITED);    // direction and TOF not needed
+        }
+
         /* computes neutron variables in the output frame */
         SubVector(Pos, TranslOut);
         RotVector(RotMatrixOut, Pos);
@@ -254,15 +264,18 @@ int main(int argc, char **argv)
         NumOut++;							/*goto jumpwrite;	jumpwrite :;*/
 
         /* transmit coordinates which were not changed, the rest overwrite below */
-        Neutrons = InputNeutrons[i]; 
-        Neutrons.Time = TOF+TOF3;
-        Neutrons.Probability = Prob;
+        OutNeutron = InputNeutrons[i]; 
+        OutNeutron.Time = TOF+TOF3;
+        OutNeutron.Probability = Prob;
 
-        CopyVector(Pos, Neutrons.Position);
-        CopyVector(SpinVector, Neutrons.Spin);
+        CopyVector(Pos, OutNeutron.Position);
+        CopyVector(SpinVector, OutNeutron.Spin);
 
         /* writes output binary file */ 
-        WriteNeutron(&Neutrons);
+        WriteNeutron(&OutNeutron);
+
+        /* point of exit for trajectory visualization */
+        WriteScatIAP(&OutNeutron, VT_EXITED, RotMatrixOut, TranslOut);
 
       getlost:;
       }
@@ -313,10 +326,10 @@ void OwnInit(int argc, char *argv[])
   InitVector(field_pol);
   InitVector(guide_field_pol);
 
-  Init3x3Matrix(RotMatrixMain);
-  Init3x3Matrix(RotMatrixOut);
-  Init3x3Matrix(RotMatrixG_Field);
-  Init3x3Matrix(RotMatrixGM_Field);
+  InitRotMatrix(RotMatrixMain);
+  InitRotMatrix(RotMatrixOut);
+  InitRotMatrix(RotMatrixG_Field);
+  InitRotMatrix(RotMatrixGM_Field);
 
   for (j=0; j < FLD_SIZE; j++)
   { aPolData[j] = 0.0;

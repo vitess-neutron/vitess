@@ -67,12 +67,13 @@ long        ind_x_max;                  // -N        [-]   number of 'boxes' alo
 VectorType  TranslOut;                  // -p -r -s  [cm]  position of the new origin  (in the co-ordinate of the old origin)
 
 // Variables determined from input parameters or trajectory data
-long        ind_x=0, ind_y=0,   ind_z=0,                     //  [-]   indices of magnetic field elements in x-, y- and z-direction
-                     ind_y_max, ind_z_max;                   //  [-]   max. number of magnetic field elements in x-, y- and z-direction
+long        ind_x=0, ind_y=0,   ind_z=0,                           //  [-]   indices of magnetic field elements in x-, y- and z-direction
+                     ind_y_max, ind_z_max;                         //  [-]   max. number of magnetic field elements in x-, y- and z-direction
 VectorType  SizeDomain;
 double      domain_field_F[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //        arrays of strengths, positions and sizes 
             PosDomain_F   [3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //         of magnetic field elements
-            RotMatrixMain [3][3];                            //  [deg]  Matrix to rotate the magnetic field
+            RotMatrixOut  [3][3],                                  //  [-]   rotation matrix to tranform into the output frame  
+            RotMatrixMain [3][3];                                  // [deg]  Matrix to rotate the magnetic field
 
 
 /******************************/
@@ -106,8 +107,9 @@ int main(int argc, char **argv)
   PrintModuleName(_eModule, "1.6");
   OwnInit(argc, argv);
 
-  Init3x3Matrix(RotMatrixField);
-  Init3x3Matrix(LarmorMatrix);
+  InitRotMatrix(RotMatrixField);
+  InitRotMatrix(LarmorMatrix);
+  InitRotMatrix(RotMatrixOut);
   InitVector(Path);
   InitVector(Pos1);
   InitVector(Pos2);
@@ -266,7 +268,7 @@ int main(int argc, char **argv)
           CopyVector (Pos,        ScatNeutron.Position);
           CopyVector (SpinVector, ScatNeutron.Spin);
           ScatNeutron.Time = TOF;
-          WriteIAP(&ScatNeutron, VT_EXITED);
+          WriteWWP(&ScatNeutron, VT_EXITED);
         }
 
         IntegralIntensity += Prob ;
@@ -300,6 +302,9 @@ int main(int argc, char **argv)
 
         /* writes output binary file */
         WriteNeutron(&OutNeutron) ;
+
+        /* write point of module exit for trajectory visualization */
+        WriteScatIAP(&OutNeutron, VT_EXITED, RotMatrixOut, TranslOut);
 
       getlost: ;
       }

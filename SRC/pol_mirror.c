@@ -243,10 +243,7 @@ int main(int argc, char **argv)
         WriteNeutron(&OutNeutron) ;
 
         /* point of exit for trajectory visualization */
-        if (bVisTraj==TRUE)
-        { CopyNeutron(&OutNeutron, &ScatNeut);
-          WriteScatIAP(&ScatNeut, VT_EXITED, RotMatrixOut, TranslOut);
-        }
+        WriteScatIAP(&OutNeutron, VT_EXITED, RotMatrixOut, TranslOut);
 
       getlost:;
       }

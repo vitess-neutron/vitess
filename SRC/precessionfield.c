@@ -48,7 +48,8 @@ double      domain_field_F[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], // arra
 FILE*  FieldMapFile=NULL;                     //     [-]   pointer to magnetic field map file 
 long   ind_x=0, ind_y=0, ind_z=0,             //     [-]   indices of magnetic field elements in x-, y- and z-direction
        ind_x_max=2, ind_y_max=2, ind_z_max=2; //     [-]   max. number of magnetic field elements in x-, y- and z-direction
-double RotMatrixMain[3][3];                   //    [deg]  Matrix to rotate the magnetic field
+double RotMatrixMain[3][3],                   //    [deg]  Matrix to rotate the magnetic field
+       RotMatrixOut [3][3];                   //     [-]   rotation matrix to tranform into the output frame  (currently not used)
 
 
 /******************************/
@@ -70,6 +71,16 @@ int main(int argc, char **argv)
   // --------------
   _eModule=MCN_FIELD_PREC;
 
+  // local variables
+  InitVector(Pos);  InitVector(Dir);       InitVector(SpinVector);
+  InitVector(Pos1); InitVector(Pos2);      InitVector(domain_field);
+  InitVector(Path); InitVector(PosDomain); InitVector(DimDomain);  
+
+  InitNeutron(&OutNeutron);     InitNeutron(&ScatNeutron); 
+
+  InitRotMatrix(RotMatrixOut);  InitRotMatrix(RotMatrixField);
+  InitRotMatrix(LarmorMatrix);
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.06a");
   OwnInit(argc, argv);
@@ -77,17 +88,6 @@ int main(int argc, char **argv)
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp     = TRUE;
-
-  // local variables
-  InitVector(Pos);  InitVector(Dir);       InitVector(SpinVector);
-  InitVector(Pos1); InitVector(Pos2);      InitVector(domain_field);
-  InitVector(Path); InitVector(PosDomain); InitVector(DimDomain);  
-
-  InitNeutron(&OutNeutron); 
-  InitNeutron(&ScatNeutron); 
-
-  Init3x3Matrix(RotMatrixField);
-  Init3x3Matrix(LarmorMatrix);
 
   DECLARE_ABORT;
 
@@ -232,7 +232,7 @@ int main(int argc, char **argv)
           CopyVector (Pos,        ScatNeutron.Position);
           CopyVector (SpinVector, ScatNeutron.Spin);
           ScatNeutron.Time = TOF;
-          WriteIAP(&ScatNeutron, VT_EXITED);
+          WriteWWP(&ScatNeutron, VT_EXITED);
         }
 
         IntegralIntensity += Prob ;
@@ -260,6 +260,9 @@ int main(int argc, char **argv)
 
         /* writes output binary file */
         WriteNeutron(&OutNeutron) ;
+
+        /* point of exit for trajectory visualization */
+        WriteScatIAP(&OutNeutron, VT_EXITED, RotMatrixOut, TranslOut);
 
       getlost: ;
       }

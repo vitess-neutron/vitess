@@ -428,10 +428,10 @@ void OwnInit(int argc, char *argv[])
   InitVector(guide_field);
   InitVector(analysis_dir);
 
-  Init3x3Matrix(RotMatrixSM);
-  Init3x3Matrix(RotMatrixField);
-  Init3x3Matrix(RotMatrixOut);
-  Init3x3Matrix(RotMatrixAnalysis);
+  InitRotMatrix(RotMatrixSM);
+  InitRotMatrix(RotMatrixField);
+  InitRotMatrix(RotMatrixOut);
+  InitRotMatrix(RotMatrixAnalysis);
 
   for (j=0; j < FLD_SIZE; j++)
   {

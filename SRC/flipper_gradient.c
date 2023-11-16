@@ -14,6 +14,7 @@
 /* 1.2  Feb 2004  R. Manoshin    flipper inclination -  bug solved                          */
 /* 1.3  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.4  Mar 2023  K. Lieutenant  Visualization                                              */
+/* 1.4a Nov 2023  K. Lieutenant improved visualization                                                                  */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -71,8 +72,9 @@ FILE*      fmonitp=NULL;               //           [-]   pointer to output file
 long       ind_x=0, ind_y=0, ind_z=0;  //           [-]   indices of magnetic field elements in x-, y- and z-direction
 double     Omega=0.0, OmegaInit=0.0,   //        [rad/ms] angular frequency
            phi0=0.0;                   //          [rad]  Rotating magnetic field FieldValue*sin(Omega*t + phi0); initial and current value
-double     PeriodInit;                 //           [ms]  Period of rectangular pulse field 
-double     RotMatrixMain[3][3];        //                 Matrix for the horizontal rotation of the flipper
+double     PeriodInit,                 //           [ms]  Period of rectangular pulse field 
+           RotMatrixOut [3][3],        //           [-]   rotation matrix to tranform into the output frame  
+           RotMatrixMain[3][3];        //                 Matrix for the horizontal rotation of the flipper
 
 /* For random amplitude and frequency of rotating (pulse) field */	
 double FieldValueA=0.0, FieldValueB=0.0;                 // Internal variables
@@ -107,8 +109,8 @@ int main(int argc, char **argv)
           FldX[FIELD_SIZE_FL], FldY[FIELD_SIZE_FL], FldZ[FIELD_SIZE_FL], FldM[FIELD_SIZE_FL];
   double  RotMatrixField[3][3], LarmorMatrix[3][3];
   VectorType Pos, Dir, SpinVector, Pos1, Pos2, domain_field, PosDomain, DimDomain;
-  Neutron	Neutrons, NeutronAdd1, NeutronAdd2;
-  Plane   EndPoint1,   EndPoint2;
+  Neutron	OutNeutron, VisNeutron, NeutronAdd1, NeutronAdd2;
+  Plane   EndPoint1,  EndPoint2;
 
   /* Variables for rotation */
   double     TimeR=0.0, Rroty=0.0, Rrotz=0.0, RRSM=0.0;
@@ -120,44 +122,34 @@ int main(int argc, char **argv)
   // --------------
   _eModule=MCN_FLIP_GRAD;
 
+  // local variables
+  InitVector(Pos1); InitVector(Pos2); InitVector(domain_field);
+  InitVector(PosDomain);              InitVector(DimDomain);  
+  InitVector(Pos);  InitVector(Dir);  InitVector(SpinVector);
+  InitVector(RR);   InitVector(RR1);  InitVector(RRS);
+  InitRotMatrix(RotMatrixField); InitRotMatrix(RotMatrixOut);
+  InitRotMatrix(LarmorMatrix);
+  InitNeutron(&OutNeutron);      InitNeutron(&NeutronAdd1);
+  InitNeutron(&VisNeutron);      InitNeutron(&NeutronAdd2); 
+  for (k=0; k < 3; k++)
+    FieldValue0[k] = 0.0; 
+  for(ind_x = 1; ind_x < FIELD_SIZE_FL; ind_x++) 
+  { PolX[ind_x] = 0.0; PolY[ind_x] = 0.0; PolZ[ind_x] = 0.0; ProbM[ind_x] = 0.0;
+    FldX[ind_x] = 0.0; FldY[ind_x] = 0.0; FldZ[ind_x] = 0.0; FldM [ind_x] = 0.0;
+  }
+
+  // input parameters
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
+  PrintModuleName(_eModule, "1.4a");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp = TRUE;
 
-  // local variables
-  for(ind_x = 1; ind_x < FIELD_SIZE_FL; ind_x++) 
-  {
-    PolX[ind_x] = 0.0;
-    PolY[ind_x] = 0.0;
-    PolZ[ind_x] = 0.0;
-    ProbM[ind_x]= 0.0;
-    FldX[ind_x] = 0.0;
-    FldY[ind_x] = 0.0;
-    FldZ[ind_x] = 0.0;
-    FldM[ind_x] = 0.0;
-  }
-
-  for (k=0; k < 3; k++)
-    FieldValue0[k] = 0.0; 
-	
-  InitVector(Pos1); InitVector(Pos2); InitVector(domain_field);
-  InitVector(PosDomain);              InitVector(DimDomain);  
-  InitVector(Pos);  InitVector(Dir);  InitVector(SpinVector);
-  InitVector(RR);   InitVector(RR1);  InitVector(RRS);
-
-  InitNeutron(&Neutrons); 
-  InitNeutron(&NeutronAdd1); 
-  InitNeutron(&NeutronAdd2); 
-
   FieldValue = FieldValueInit;	
   Period     = PeriodInit;
 
-  Init3x3Matrix(RotMatrixField);
-  Init3x3Matrix(LarmorMatrix);
   FillRotMatrixZY(RotMatrixMain, 0.0, AnglMainHoriz);
 	
   EndPoint1.A = cos(AnglMainHoriz);
@@ -187,6 +179,7 @@ int main(int argc, char **argv)
       else
       { 
         /*InputNeutrons[i].Position[0]	= 0.0;*/
+        InputNeutrons[i].Vector[0]	= (double) sqrt(fabs(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])));
         TOF  = InputNeutrons[i].Time;
         WL   = InputNeutrons[i].Wavelength;
         Prob = InputNeutrons[i].Probability;
@@ -196,11 +189,9 @@ int main(int argc, char **argv)
         CopyVector(InputNeutrons[i].Spin, SpinVector); 
 	
         /* Check incorrect neutrons */
-        if ((Dir[0] <= 0.0)||(WL == 0.0)) goto getlost;
-        /* improve calculations, renormalize */
-        InputNeutrons[i].Vector[0]	= (double) sqrt(fabs(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])));
+        if (WL == 0.0) goto getlost;
 
-        /* Move neutron in the precession volume */
+        /* Move neutron to the beginning of the precession volume */
         NeutronAdd1.Position[0] = Pos[0];
         NeutronAdd1.Position[1] = Pos[1];
         NeutronAdd1.Position[2] = Pos[2];
@@ -212,8 +203,16 @@ int main(int argc, char **argv)
         NeutronAdd1.Wavelength = WL;
 	
         TOF1 = NeutronPlaneIntersection1(&NeutronAdd1, EndPoint1);	
-		
         if (TOF1 < 0.0) goto getlost;
+
+        // Write field entry point for visualization
+        if (bVisTraj)        
+        { 
+          CopyNeutron(&InputNeutrons[i],  &VisNeutron);
+          CopyVector(NeutronAdd1.Position, VisNeutron.Position);
+          CopyVector(NeutronAdd1.Spin,     VisNeutron.Spin);
+          WriteWWP(&VisNeutron, VT_ENTERED);    // direction and TOF not needed
+        }
 	
         Pos[0] = NeutronAdd1.Position[0];
         Pos[1] = NeutronAdd1.Position[1];
@@ -223,8 +222,8 @@ int main(int argc, char **argv)
 	
         TOF = TOF + TOF1;
 
-        SubVector(Pos, PosMain);				
-        RotVector(RotMatrixMain, Pos ); 
+        /* translates into frame of the main field and rotates coordinates  */
+        SubVector(Pos, PosMain);        RotVector(RotMatrixMain, Pos ); 
         RotVector(RotMatrixMain, Dir ); 
 
         /* looks for first domain if dimension of domain changes only along X axis */
@@ -232,13 +231,13 @@ int main(int argc, char **argv)
         DimDomain[1] = width/ind_y_max; 
         DimDomain[2] = height/ind_z_max; 
 
-        ind_y = (long) floor(Pos[1] / DimDomain[1]) + 1 + ind_y_max/2;
-        if ((ind_y <= 0)||(ind_y > ind_y_max)) goto getlost;
-
-        ind_z = (long) floor(Pos[2] / DimDomain[2]) + 1 + ind_z_max/2;
-        if ((ind_z <= 0)||(ind_z > ind_z_max)) goto getlost;
-
         ind_x = 1; 
+        ind_y = (long) floor(Pos[1] / DimDomain[1]) + 1 + ind_y_max/2;
+        ind_z = (long) floor(Pos[2] / DimDomain[2]) + 1 + ind_z_max/2;
+
+        if (ind_y <= 0 || ind_y > ind_y_max) goto getlost;
+        if (ind_z <= 0 || ind_z > ind_z_max) goto getlost;
+
 
         /******************** starts to scan ******************************/
         NumberPrecessions = 0.0;
@@ -634,23 +633,31 @@ int main(int argc, char **argv)
 
           /*goto newdomain;*/
         }
-      exitfield:
 
+      exitfield:
         /*******************************************************************************/
         NumberPrecessionssum =  NumberPrecessionssum + NumberPrecessions;
 
         if (Number_NOP != 0.0)
-        {
           NumberPrecessionsave =  NumberPrecessionsave + NumberPrecessions/Number_NOP;
-        }
 
         /* Output matters */
         IntegralIntensity += Prob;
         NumOut++;
 
-        //	fprintf(LogFilePtr,"BBBBB PRECESSION Pos before rota  X =  %f   Y =  %f   Z =  %f  \n", Pos[0], Pos[1], Pos[2]);	        RotBackVector(RotMatrixMain, Pos ); 
-        RotBackVector(RotMatrixMain, Dir ); 
-        AddVector(Pos, PosMain);	
+        /* translates back into initial frame   */
+        RotBackVector(RotMatrixMain, Pos); 
+        RotBackVector(RotMatrixMain, Dir); 
+        AddVector(Pos, PosMain);
+        /* Write point of exit from field */
+        if (bVisTraj)        
+        { 
+          CopyNeutron(&InputNeutrons[i], &VisNeutron);
+          CopyVector(Pos, VisNeutron.Position);
+          CopyVector(SpinVector, VisNeutron.Spin);
+          WriteWWP(&VisNeutron, VT_EXITED);    // direction and TOF not needed
+        }
+	
         /* computes neutron variables in the output frame */ 
         SubVector(Pos, TranslOut);
 
@@ -675,21 +682,24 @@ int main(int argc, char **argv)
 		
         TOF = TOF + TOF3;
 
-        Neutrons.ID.IDGrp[0]=InputNeutrons[i].ID.IDGrp[0];
-        Neutrons.ID.IDGrp[1]=InputNeutrons[i].ID.IDGrp[1];
-        Neutrons.ID.IDNo=InputNeutrons[i].ID.IDNo;
-        Neutrons.Debug=InputNeutrons[i].Debug;
+        OutNeutron.ID.IDGrp[0]=InputNeutrons[i].ID.IDGrp[0];
+        OutNeutron.ID.IDGrp[1]=InputNeutrons[i].ID.IDGrp[1];
+        OutNeutron.ID.IDNo=InputNeutrons[i].ID.IDNo;
+        OutNeutron.Debug=InputNeutrons[i].Debug;
 
-        Neutrons.Time        = TOF;
-        Neutrons.Wavelength  = WL;
-        Neutrons.Probability = Prob;
+        OutNeutron.Time        = TOF;
+        OutNeutron.Wavelength  = WL;
+        OutNeutron.Probability = Prob;
 
-        CopyVector(Pos, Neutrons.Position);
-        CopyVector(Dir, Neutrons.Vector);
-        CopyVector(SpinVector, Neutrons.Spin);
+        CopyVector(Pos, OutNeutron.Position);
+        CopyVector(Dir, OutNeutron.Vector);
+        CopyVector(SpinVector, OutNeutron.Spin);
 
         /* writes output binary file */
-        WriteNeutron(&Neutrons);
+        WriteNeutron(&OutNeutron);
+
+        /* write point of module exit for trajectory visualization */
+        WriteScatIAP(&OutNeutron, VT_EXITED, RotMatrixOut, TranslOut);
 
       getlost:;
       }
