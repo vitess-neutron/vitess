@@ -11,6 +11,7 @@
 /* 1.00  Jun 2003  S. Manoshin    initial version                                            */
 /* 1.22  Dec 2007  S. Manoshin    Add air attenuation of flux for travel before collimator   */
 /* 1.23  Apr 2020  K. Lieutenant  tidy up, new central visualization parameters              */
+/* 1.24  Nov 2023  K. Lieutenant  visualization and checks improved                          */
 /*********************************************************************************************/
 
 #include "softabort.h"
@@ -56,7 +57,7 @@ double Xmin=0.0, Xmax=0.0,          //           ranges relative to center
        mu1, mu2,                    //           additional variable for air attenuation calculations
        rdatalup[1000],              //           reflectvitiy table for spin-up neutrons
        rdataldo[1000];              //           reflectvitiy table for spin-down neutrons
-double RotMatMirr[3][3];       //           Rotation matrix corresponding to axis and angle of mirror rotation
+double RotMatMirr  [3][3];          //           Rotation matrix corresponding to axis and angle of mirror rotation
 MirrorSecond MyMirror;              //           mirror data obtained from input parameters
 
 #ifdef VT_GRAPH
@@ -78,10 +79,11 @@ void  CalcEdges(VectorType A, VectorType B, // calculates edges and center point
 /******************************/
 int main(int argc, char *argv[])
 {
-  long	i;
-  int reflp;
+  long	i=0;
+  int   reflp=0;
 
-  double TimeOF1;
+  double TimeOF1=0.0,
+         RotMatrixOut[3][3];          //  [-]      rotation matrix to tranform into the output frame (not used here)
 
   VectorType   Pos, Dir;
   Neutron      Output;
@@ -90,8 +92,11 @@ int main(int argc, char *argv[])
   // --------------
   _eModule=MCN_MIRROR_ELLI;
 
+  InitRotMatrix(RotMatrixOut);
+  InitNeutron  (&Output);
+
 	Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.23");
+  PrintModuleName(_eModule, "1.24");
 	OwnInit(argc, argv);
 
   bVisInstalled = TRUE;    // needs to be done still
@@ -106,7 +111,7 @@ int main(int argc, char *argv[])
   // --------------------------
   while(ReadNeutrons()) 
   {
-    for(i=0; i<NumNeutGot; i++)
+    for (i=0; i < NumNeutGot; i++)
     {
       CHECK
 	
@@ -186,13 +191,12 @@ int main(int argc, char *argv[])
         /****************************************************************************************/
         /* Count this as a success.                                                             */
         /****************************************************************************************/
-        if (keyExcl == 0)
-        {
+        if (keyExcl == 0 || reflp == 1) 
+        {  
           WriteNeutron(&Output);
-        }
-        else
-        {
-          if (reflp == 1) WriteNeutron(&Output);
+
+          /* point of exit for trajectory visualization */
+          WriteScatIAP(&Output, VT_EXITED, RotMatrixOut, TransOut);
         }
       }
     }
@@ -368,6 +372,8 @@ void  CalcAndWritePar()
     Error("halfaxis B of elliptic mirror <= 0.0!!! Correct option -b");
   if (halfaxis[2] <= 0.0)
     Error("halfaxis C of elliptic mirror <= 0.0!!! Correct option -c");
+  if (halfaxis[0] > 0.0 && PosMain[0] >= halfaxis[0] )
+    Error("calculation only works correctly, if the neutron is already inside the ellipsoid, when it enters this module");
 
   if (keyreflect == 0)
     fprintf(LogFilePtr,"The reflectivity of the mirror is choosen according refl. files\n");
@@ -375,19 +381,19 @@ void  CalcAndWritePar()
     fprintf(LogFilePtr,"The ideal reflectivity of mirror!\n");
 
   if(keyExcl == 0)
-    fprintf(LogFilePtr,"All neutrons are going later in the next module\n");
+    fprintf(LogFilePtr,"All neutrons are propagated to the next module\n");
   else
-    fprintf(LogFilePtr,"Only reflected neutrons are going later in the next module\n");
+    fprintf(LogFilePtr,"Only reflected neutrons are propagated to  the next module\n");
 
-  if(keypol == 1)
-    fprintf(LogFilePtr,"The dependance of reflectivity from polarization of neutron is enabled\n");
-  else
-    fprintf(LogFilePtr,"The dependance of reflectivity from polarization of neutron is disabled\n");
+  if(keypol == 0)
+    fprintf(LogFilePtr,"Polarization not treated, spin-up reflectivity for all neutrons\n");
+  // else
+  //  fprintf(LogFilePtr,"The dependance of reflectivity from polarization of neutron is enabled\n");
 
   if(surfacerough == 0.0)
-    fprintf(LogFilePtr,"The reflected surface is an ideal mirror\n");
+    fprintf(LogFilePtr,"The reflecting surface is assumed to be perfectly flat\n");
   else
-    fprintf(LogFilePtr,"The reflected surface is rough\n");
+    fprintf(LogFilePtr,"The reflecting surface is rough\n");
 
   fprintf(LogFilePtr,"Minimal weight for tracing neutron   %e\n", wei_min);
 
@@ -400,7 +406,7 @@ void  CalcAndWritePar()
 	
     /* Warning! Datas adapted for central Russia conditions */
     /* Nitrogen Oxygen N_2 and O_2, T=293K (20DegC) p=101.3kPa (1atm)  */
-    /* Hydrogen H_2, Himidity = 55% - default, p=2.344kPa (20degC) */					
+    /* Hydrogen H_2, Humidity = 55% - default, p=2.344kPa (20degC) */
 	
     mu1 = 4.6137 + 0.4241 + (0.52302*humidity/0.55); /* scattring N_2, O_2, H_2 */
     mu2 = 0.42378 + 0.000011+ (0.00118*humidity/0.55);  /* absorption N_2, O_2, H_2 */	
@@ -591,7 +597,7 @@ void SetGeometry(char* sColor)
              beta=0.0,               // [rad]  vert. deviation of the direction to the mirror center from y axis
              zeta=0.0,               // [rad]  half axis of the cylinder slice
              x   =0.0,               // [ ]    cos(zeta)
-             l   =0.0,               // [cm]   length of the mirror (straight line)      
+             l   =0.0,               // [cm]   half length of the mirror (straight line)      
              d   =0.0,               // [cm]   distance between straight line and mirror surface      
              Rcyl=0.0,               // [cm]   radius of the cylinder
              Hcyl=0.0;               // [cm]   height of the cylinder
@@ -655,30 +661,34 @@ void CalcEdges(VectorType A, VectorType B, VectorType C, VectorType D, VectorTyp
   // front end 
   A[0] = Xmax;                                                                              // cut ellipsoid at max. x-value
   C[0] = Xmax;
-  if (Ymin > 0.0) {A[1] = Ymin;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
-                   C[1] = Ymin;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
-  if (Ymax < 0.0) {A[1] = Ymax;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if hor. range is complete on the right side, cut ellipsoid here and calculate z-positions 
-                   C[1] = Ymax;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
-  if (Zmin > 0.0) {A[1] = Ymin;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if vert range is complete on the upper side, cut ellipsoid here and calculate z-positions 
-                   C[1] = Ymin;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
-  if (Zmax < 0.0) {A[1] = Ymax;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
-                   C[1] = Ymax;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
-  else            {A[1] = 0.0;   A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));      // otherwise assume vertical cut in the middle
-                   C[1] = 0.0;   C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
+  if      (Ymin > 0.0) {A[2] = Zmax;  A[1] =  b * sqrt(1.0 - sq(A[0]/a) - sq(A[2]/c));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
+                        C[2] = Zmin;  C[1] =  b * sqrt(1.0 - sq(C[0]/a) - sq(C[2]/c));}
+  else if (Ymax < 0.0) {A[2] = Zmax;  A[1] = -b * sqrt(1.0 - sq(A[0]/a) - sq(A[2]/c));     // if hor. range is complete on the right side, cut ellipsoid here and calculate z-positions 
+                        C[2] = Zmin;  C[1] = -b * sqrt(1.0 - sq(C[0]/a) - sq(C[2]/c));}
+
+  else if (Zmin > 0.0) {A[1] = Ymax;  A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if vert range is complete on the upper side, cut ellipsoid here and calculate z-positions 
+                        C[1] = Ymin;  C[2] =  c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
+  else if (Zmax < 0.0) {A[1] = Ymax;  A[2] = -c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
+                        C[1] = Ymin;  C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
+
+  else                 {A[1] = 0.0;   A[2] =  c * sqrt(1.0 - sq(A[0]/a) - sq(A[1]/b));      // otherwise assume vertical cut in the middle
+                        C[1] = 0.0;   C[2] = -c * sqrt(1.0 - sq(C[0]/a) - sq(C[1]/b));}
 
   // back end 
   B[0] = Xmin;                                                                              // cut ellipsoid at min. x-value   
   D[0] = Xmin;
-  if (Ymin > 0.0) {B[1] = Ymin;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
-                   D[1] = Ymin;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
-  if (Ymax < 0.0) {B[1] = Ymax;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if hor. range is complete on the right side, cut ellipsoid here and calculate z-positions 
-                   D[1] = Ymax;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
-  if (Zmin > 0.0) {B[1] = Ymin;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if vert range is complete on the upper side, cut ellipsoid here and calculate z-positions 
-                   D[1] = Ymin;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
-  if (Zmax < 0.0) {B[1] = Ymax;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
-                   D[1] = Ymax;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
-  else            {B[1] = 0.0;   B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));      // otherwise assume vertical cut in the middle
-                   D[1] = 0.0;   D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
+  if      (Ymin > 0.0) {B[2] = Zmax;  B[1] =  b * sqrt(1.0 - sq(B[0]/a) - sq(B[2]/c));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
+                        D[2] = Zmin;  D[1] =  b * sqrt(1.0 - sq(D[0]/a) - sq(D[2]/c));}
+  else if (Ymax < 0.0) {B[2] = Zmax;  B[1] = -b * sqrt(1.0 - sq(B[0]/a) - sq(B[2]/c));     // if hor. range is complete on the right side, cut ellipsoid here and calculate z-positions 
+                        D[2] = Zmin;  D[1] = -b * sqrt(1.0 - sq(D[0]/a) - sq(D[2]/c));}
+
+  else if (Zmin > 0.0) {B[1] = Ymax;  B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if vert range is complete on the upper side, cut ellipsoid here and calculate z-positions 
+                        D[1] = Ymin;  D[2] =  c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
+  else if (Zmax < 0.0) {B[1] = Ymax;  B[2] = -c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));     // if hor. range is complete on the left side, cut ellipsoid here and calculate z-positions 
+                        D[1] = Ymin;  D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
+
+  else                 {B[1] = 0.0;   B[2] =  c * sqrt(1.0 - sq(B[0]/a) - sq(B[1]/b));      // otherwise assume vertical cut in the middle
+                        D[1] = 0.0;   D[2] = -c * sqrt(1.0 - sq(D[0]/a) - sq(D[1]/b));}
 
   // determine center on the ABCD plane (Y) and on the mirror surface
   Y[0] = 0.25*(A[0] + B[0] + C[0] + D[0]);
@@ -686,11 +696,20 @@ void CalcEdges(VectorType A, VectorType B, VectorType C, VectorType D, VectorTyp
   Y[2] = 0.25*(A[2] + B[2] + C[2] + D[2]);
 
   Z[0] = Y[0];
-  Z[2] = Y[2];
-  if (Z[2] < 0.0)
-    Z[1] = -b * sqrt(1.0 - sq(Z[0]/a) - sq(Z[2]/c));
+  if (Ymin > 0.0 || Ymax < 0.0)
+  { Z[2] = Y[2];
+    if (Z[2] < 0.0)
+      Z[1] = -b * sqrt(1.0 - sq(Z[0]/a) - sq(Z[2]/c));
+    else
+      Z[1] =  b * sqrt(1.0 - sq(Z[0]/a) - sq(Z[2]/c));
+  }
   else
-    Z[1] =  b * sqrt(1.0 - sq(Z[0]/a) - sq(Z[2]/c));
+  { Z[1] = Y[1];
+    if (Z[1] < 0.0)
+      Z[2] = -c * sqrt(1.0 - sq(Z[0]/a) - sq(Z[1]/c));
+    else
+      Z[2] =  c * sqrt(1.0 - sq(Z[0]/a) - sq(Z[1]/c));
+  }
 
   return;
 }

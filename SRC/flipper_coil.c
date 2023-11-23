@@ -72,7 +72,7 @@ long        ind_x=0, ind_y=0,   ind_z=0,                           //  [-]   ind
 VectorType  SizeDomain;
 double      domain_field_F[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //        arrays of strengths, positions and sizes 
             PosDomain_F   [3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //         of magnetic field elements
-            RotMatrixOut  [3][3],                                  //  [-]   rotation matrix to tranform into the output frame  
+            RotMatrixOut  [3][3],                                  //  [-]   rotation matrix to tranform into the output frame (not used here) 
             RotMatrixMain [3][3];                                  // [deg]  Matrix to rotate the magnetic field
 
 

@@ -22,10 +22,13 @@ double  PathThroughMirrorGravOrder2(Neutron *ThisNeutron, MirrorSecond MyMirror,
   double  AP, BP, CP, DOTP, FP, VelocityReal;
   double signl, mutotal, prob;
   /* KL: new variable */
-  double stepp, temp;
+  double stepp, temp,
+         OneMatrix[3][3];
   /* Local copy of neutrons for cylce.. */
   Neutron TempNeutron, NearestNeutron;
   VectorType Pos, Dir;
+
+  InitRotMatrix(OneMatrix);
 
 
 #ifdef VT_GRAPH
@@ -160,6 +163,8 @@ double  PathThroughMirrorGravOrder2(Neutron *ThisNeutron, MirrorSecond MyMirror,
       CopyNeutron(&TempNeutron, &NearestNeutron);
       TimeOFmin = TimeOF;
       ThisCollision = i;
+      if (ThisCollision==0)  // neutrons exiting the mirror will be written in the main() program
+        WriteScatIAP(&NearestNeutron, VT_REFLECTED, OneMatrix, PosMain);
     }
 
     /* protect against cycling */
