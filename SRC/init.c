@@ -1372,8 +1372,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
 
         DrawCylSlice(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir,
 		                            stGeometry.pCylSlice[k].Radius, stGeometry.pCylSlice[k].Width,
-		                            stGeometry.pCylSlice[k].Height, stGeometry.pCylSlice[k].Phi, stGeometry.pCylSlice[k].OpenAngle);
-
+		                            stGeometry.pCylSlice[k].Height, stGeometry.pCylSlice[k].Phi+Degrees(RotZ), stGeometry.pCylSlice[k].OpenAngle);
       }
     }
     else if (bVisInstalled==MISSING)
