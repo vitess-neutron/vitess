@@ -58,7 +58,8 @@ sample_reflectom:
       descr:   "reflection angle [deg]"
       tooltip: "The sample is rotated by this angle around the 'axis of rotation'. zero means: parallel to x-axis,i.e. surface normal in z-direction;\n(small) positive angles cause flight directions after reflection with positive y or z components resp."
       default: 1.0
-      min    : 0.0
+      min    : -90.0
+      max    : 90.0
       column:  0
       prefix:  "-a"
 
