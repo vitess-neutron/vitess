@@ -8,6 +8,7 @@
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.4  Mar 2023  K. Lieutenant  correction: reading par. and refl. files and minor changes */
+/* 1.5  Nov 2023  K. Lieutenant  interaction visualization corrected                                    */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -91,14 +92,14 @@ int main(int argc, char **argv)
   VectorType Pos, Dir, SpinVector, 
              Path, n,                 // displacement vector*/
              postop, posbot;          // position of intersection with polarizer cuboid (postop: position along axis > 0, posbot: position < 0) 
-  Neutron		 OutNeutron, ReflNeutron, ScatNeutron;
+  Neutron    OutNeutron, ReflNeutron, ScatNeutron;
 
   // initialization
   // --------------
   _eModule=MCN_POL_SM;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
+  PrintModuleName(_eModule, "1.5a");
   OwnInit(argc, argv);
   ReadReflFile(ReflUpFileName,   rupdata);
   ReadReflFile(ReflDownFileName, rdowndata);
@@ -154,7 +155,8 @@ int main(int argc, char **argv)
         CartesianToSpherical(SpinVector, &the, &phi);
 
         /* select channel and shift vertically to its frame */
-        // entrance point, plane vertical to x-axis
+
+        // entrance plane, vertical to x-axis
         n[0]=1.0; n[1]=n[2]=0.0; 
 
         if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[0]/2., posbot) == TRUE)&&(fabs(posbot[1]) < DimSM[1]/2.)&&(fabs(posbot[2]) < DimSM[2]/2.)&&(Dir[0] > 0.))
@@ -183,6 +185,7 @@ int main(int argc, char **argv)
           /* reflection on top/bottom */
           n[2]=1.0; n[0]=n[1]=0.0;	
 
+          // top plane
           if ((PlaneLineIntersect(Pos, Dir, n, + WidthCh/2., postop) == TRUE)&&(postop[0] > (Pos[0]+0.1))&&(fabs(postop[0]) < DimSM[0]/2.)&&(Dir[2] > 0.))
           {
             /* polarizing */
@@ -211,17 +214,17 @@ int main(int argc, char **argv)
             }
             else
             {			
-              thenew = 2. * (double) atan(aDD/ aUU *(double) tan(the/2.));
-              phinew = phi /* + Phipol */;
-
               Refl  = sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
               Prob *= Refl;
+              thenew = 2. * (double) atan(aDD/ aUU *(double) tan(the/2.));
+              phinew = phi /* + Phipol */;
 
               TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
               CopyVector(postop, Pos);
               Dir[2] *= -1; r=1;				/*ps(i+1); ps(m); ps(+77);goto getlost;ps(the);*/
-              the = thenew; phi = phinew;
+              the = thenew; 
+              phi = phinew;
 
               /* point of reflection for trajectory visualization */
               if (bVisTraj==TRUE)
@@ -236,6 +239,7 @@ int main(int argc, char **argv)
             }
           } 
 
+          // bottom plane
           if ((PlaneLineIntersect(Pos, Dir, n, - WidthCh/2., posbot) == TRUE)&&(posbot[0] > (Pos[0]+0.1))&&(fabs(posbot[0]) < DimSM[0]/2.)&&(Dir[2] < 0.))
           {
             /* polarizing */
@@ -264,17 +268,18 @@ int main(int argc, char **argv)
             }
             else
             {			
-              thenew = 2.0 * (double) atan(aDD/ aUU *(double) tan(the/2.));
-              phinew = phi /* + Phipol */;
-              the = thenew; phi = phinew;
-
               Refl  = sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
               Prob *= Refl;
+              thenew = 2.0 * (double) atan(aDD/ aUU *(double) tan(the/2.));
+              phinew = phi /* + Phipol */;
 
               TOFprec += (posbot[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
               CopyVector(posbot, Pos);
               Dir[2] *= -1; r=1;			
+
+              the = thenew; 
+              phi = phinew;
 
               /* point of reflection for trajectory visualization */
               if (bVisTraj==TRUE)
