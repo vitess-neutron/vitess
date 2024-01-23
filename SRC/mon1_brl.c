@@ -9,6 +9,7 @@
 /* 1.2  Feb 2020  K. Lieutenant  new central visualization parameters                        */
 /* 1.3  Mar 2021  K. Lieutenant  update after each bunch                                     */
 /* 1.4  Apr 2022  K. Lieutenant  radial geometry                                             */
+/* 1.4a Nov 2023  K. Lieutenant  correction max. brilliance in UpdateMon                     */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_MON1_BRL;
 
   Init   (argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.4");
+  PrintModuleName(_eModule, "1.4a");
   OwnInit(argc, argv);
   OpenFiles();
     
@@ -613,6 +614,8 @@ void UpdateMon(long iBnch)
          Transmission =1.0,    // brilliance transfer within one bin
          f_norm       =1.0;    // ratio of total to processed bunches after treating current bunch
   long   iBin=0;               // bin index
+
+  BrillMax=0.0;
 
   // opens monitor output file
   pFileMon = OpenOutputFile(MonitorFileName, TRUE, "wt");
