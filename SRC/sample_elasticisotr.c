@@ -14,6 +14,7 @@
 /* 1.6  JAN 2011  K. Lieutenant  option to scatter only neutrons of a special color         */
 /* 1.7  Apr 2020  K. Lieutenant  tidy up and new central visualization parameters           */
 /* 1.8  Oct 2021  K. Lieutenant  option: parameters from input instead of from file         */
+/* 1.9  Jan 2023  K. Lieutenant  scattering probability and visualization corrected         */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -101,7 +102,7 @@ int main(int argc, char **argv)
  _eModule = MCN_SMPL_EL_ISO;
 
   Init   (argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.8b");
+  PrintModuleName(_eModule, "1.9");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -215,24 +216,24 @@ int main(int argc, char **argv)
             CopyVector(InputNeutrons[i].Position, Pos) ;
             CopyVector(InputNeutrons[i].Vector, Dir) ;
 
-            /* scattering position and TOF untill scattering */	
+            /* scattering position and TOF until scattering */	
             SubVector(Pos2v, Pos1v) ;					                         // Pos2v: vector from entry to exit of the path through the sample 
             MaxPathLength = LengthVector(Pos2v) + MaxPathLengthHol ; 
             MultiplyByScalar(Pos2v, MonteCarlo(0.,1.)) ;	             // Pos2v now vector from entry into sample to point of scattering
             PathLength = LengthVector(Pos2v) + PathLengthHol;
             AddVector(Pos1v, Pos2v);                                   // Pos1v now vector to point of scattering
 
-            /* TOF untill scattering */	
+            /* TOF until scattering */	
             CopyVector(Pos1v, propag); 
             SubVector(propag, Pos);         // propag: vector from x=0 position to point of scattering
             TOF += LengthVector(propag) / V_FROM_LAMBDA(WL) ;
 
             CopyVector(Pos1v, Pos) ;						/*scattering position */
 
-            /* attenuation until scattering normalized to maximal path */
-            // Prob *= (double) exp( - PathLength * (AbsorptionC * WL + ScatteringC));
-            Prob *= exp(-PathLength * AbsorptionC * WL);
-            Prob *= PathLength * ScatteringC ; 
+            /* Scattering probability determined by straight line through the sample, attenuation by real path */
+            // Prob *= MaxPathLength * ScatteringC;
+            Prob *= (1.0 - exp(-MaxPathLength * ScatteringC));
+            Prob *= exp(-PathLength * AbsorptionC * WL);       // part 1: entry until point of scattering
 
             /* point of scattering for trajectory visualization */
             if (bVisTraj==TRUE)
@@ -322,9 +323,8 @@ int main(int argc, char **argv)
             if (PathLengthHol != 0.0)
               CopyVector(Pos4v, Pos2v);  /* for hollow cylinder option: set output position to where it crosses the outer cylinder if crossed  */
 
-            // Prob *= (double) exp( - PathLength * (AbsorptionC * WL + ScatteringC));
+            /* attenuation part 2: point of scattering until exit */
             Prob *= exp(-PathLength * AbsorptionC * WL);
-            Prob *= PathLength * ScatteringC ; 
 
           /* Output matters */
             CopyVector(Pos2v, propag); 
