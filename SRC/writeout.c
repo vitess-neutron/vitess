@@ -775,7 +775,7 @@ void OwnCleanup()
 
       if (new_np1==0) {
         //SSW files must at least have 1 history (but can have 0 particles)
-        printf(LogFilePtr, "WARNING: Input MCPL file has 0 useful particles but we are setting number"
+        fprintf(LogFilePtr, "WARNING: Input MCPL file has 0 useful particles but we are setting number"
                            " of histories in new SSW file to 1 to avoid creating an invalid file.\n");
         new_np1 = 1;
       }

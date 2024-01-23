@@ -37,6 +37,9 @@ static VtModType _eModType=0;        // _eModType   : decoupled POISONED, DECOUP
 /*********************************/
 /* global functions              */
 /*********************************/
+char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name 
+char* FullInName      (const char* filename);                       // adds input dir to file name 
+
 
 /**********************************************/
 /* Initialize source and moderator structures */
@@ -542,34 +545,43 @@ short GetEssModDat(ModInfo* pModInfo, const double ModTemp, const double ModHeig
       HeightK = ModHeight;
 
     // open file containing ESS moderator characteristics
-    pFile = OpenPackInpFile("EssModChar.dat", "FILES/moderators/ESS/", TRUE);
+    pFile = OpenPackInpFile("EssModChar.dat", "FILES/moderators/ESS/", FALSE);
+    if (pFile==NULL)
+      pFile = OpenInputFile("EssModChar.dat", FALSE, "r");
 
-    // search for a line with the given temperature and moderator height
-    do
-    {
-      rc=ReadLine(pFile, sLine, sizeof(sLine));
-      if (rc)
-      { sscanf(sLine, "%lf %lf  %lf %lf %lf  %lf %lf %lf  %lf %lf  %lf %lf  %lf", &TempT, &HeightT, 
-                      &Info.I_SD, &Info.alpha_SD, &Info.lambda_SD, &Info.alpha_L, &Info.lambda_L, &Info.expo_L, &Info.I1, &Info.alpha_1, &Info.I2, &Info.alpha_2, &Info.T_real);
-        if (TempT==ModTemp && HeightT==HeightK) bFound=TRUE;
+    if (pFile)
+    { // search for a line with the given temperature and moderator height
+      do
+      {
+        rc=ReadLine(pFile, sLine, sizeof(sLine));
+        if (rc)
+        { sscanf(sLine, "%lf %lf  %lf %lf %lf  %lf %lf %lf  %lf %lf  %lf %lf  %lf", &TempT, &HeightT, 
+                        &Info.I_SD, &Info.alpha_SD, &Info.lambda_SD, &Info.alpha_L, &Info.lambda_L, &Info.expo_L, &Info.I1, &Info.alpha_1, &Info.I2, &Info.alpha_2, &Info.T_real);
+          if (TempT==ModTemp && HeightT==HeightK) bFound=TRUE;
+        }
+      }
+      while (bFound==FALSE && rc==TRUE);
+
+      if (bFound) 
+      { pModInfo->Temp    = Info.T_real;
+        pModInfo->F001    = Info.I1  /50.0/25.0;    // Phi7, Phi8, Schönfeldt
+        pModInfo->F002    = Info.I_SD/50.0/25.0;    // divided by SP source freq. and multiplied by duty cycle
+        pModInfo->F003    = Info.I2  /50.0/25.0;
+        if (TempT > 200.0)                            
+          pModInfo->F001 *= 0.5;                    // factor 0.5 bc. of 2 fct. F(t) for Maxwellian part of thermal spectrum
+        pModInfo->alpha_SD = Info.alpha_SD;
+        pModInfo->kappa_SD = Info.alpha_SD * Info.lambda_SD;
+        pModInfo->alpha_L  = Info.alpha_L;
+        pModInfo->lambda_L = Info.lambda_L;
+        pModInfo->expo_L = Info.expo_L;
+        pModInfo->alpha_1  = Info.alpha_1;
+        pModInfo->alpha_2  = Info.alpha_2;
       }
     }
-    while (bFound==FALSE && rc==TRUE);
-
-    if (bFound) 
-    { pModInfo->Temp    = Info.T_real;
-      pModInfo->F001    = Info.I1  /50.0/25.0;    // Phi7, Phi8, Schönfeldt
-      pModInfo->F002    = Info.I_SD/50.0/25.0;    // divided by SP source freq. and multiplied by duty cycle
-      pModInfo->F003    = Info.I2  /50.0/25.0;
-      if (TempT > 200.0)                            
-        pModInfo->F001 *= 0.5;                    // factor 0.5 bc. of 2 fct. F(t) for Maxwellian part of thermal spectrum
-      pModInfo->alpha_SD = Info.alpha_SD;
-      pModInfo->kappa_SD = Info.alpha_SD * Info.lambda_SD;
-      pModInfo->alpha_L  = Info.alpha_L;
-      pModInfo->lambda_L = Info.lambda_L;
-      pModInfo->expo_L = Info.expo_L;
-      pModInfo->alpha_1  = Info.alpha_1;
-      pModInfo->alpha_2  = Info.alpha_2;
+    else
+    { char sText[CHAR_BUF_XS];
+      sprintf(sText, "Files %s and %s could not be opened", FullInstallName("EssModChar.dat", "FILES/moderators/ESS/"), FullInName("EssModChar.dat"));
+      Error(sText);
     }
   }
   return(bFound);

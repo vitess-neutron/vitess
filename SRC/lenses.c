@@ -676,7 +676,7 @@ void  CalcAndWritePar(int nLenses)
         FocalLength_thin = 1.0/FocalLength_thin/NumberOfLenses;
         FocalLength_thin = FocalLength_thin/WaveCalc/WaveCalc;
       }
-      fprintf(LogFilePtr,"!Focal length of %ld thin spherical lenses: %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength_thin, WaveCalc);
+      fprintf(LogFilePtr,"Focal length of %ld thin spherical lenses: %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength_thin, WaveCalc);
 
       if (Refract_c != 0.0)
       { /* standard formula */
@@ -685,7 +685,7 @@ void  CalcAndWritePar(int nLenses)
         {
           FocalLength = 1.0/FocalLength/NumberOfLenses;
           FocalLength = FocalLength/WaveCalc/WaveCalc;
-          fprintf(LogFilePtr,"!Focal length of %ld spherical lenses     : %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength, WaveCalc);
+          fprintf(LogFilePtr,"Focal length of %ld spherical lenses     : %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength, WaveCalc);
         }
       }
     }
@@ -708,7 +708,7 @@ void  CalcAndWritePar(int nLenses)
         {
           FocalLength = 1.0/FocalLength/NumberOfLenses;
           FocalLength = FocalLength/WaveCalc/WaveCalc;
-          fprintf(LogFilePtr,"!Focal length of %ld parabolic lenses     : %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength, WaveCalc);
+          fprintf(LogFilePtr,"Focal length of %ld parabolic lenses     : %9.3f cm (for %4.1f Angs)\n", NumberOfLenses, FocalLength, WaveCalc);
         }
       }
     }

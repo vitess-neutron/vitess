@@ -415,6 +415,7 @@ int main(int argc, char *argv[])
          pMod->FUAmpMod = TotalFU(pMod->ModTemp, stSrc.nSource, pMod->eModType, stSrc.Power, stSrc.PulsePeriod, stSrc.PulseLength);
 
        pMod->TotFluxMod = 2*M_PI * pMod->FUAmpMod * stSrc.PulseFreq ;
+       if (pMod->TotFluxMod==0.0) goto my_exit; 
       }
       /* case CSNS */
       else if (stSrc.nSource==CSNS)
