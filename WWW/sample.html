@@ -38,25 +38,23 @@
   <br /><br />
   <h2><font size="+1"> VITESS Module 'sample_elasticisotr' for isotropic scattering </font></h2>
   <p>
-    This module simulates a cylindrical, spherical or
-    cuboid sample which scatters isotropically and conforming to a delta-function
-    scattering function at energy 0.
+    This module simulates a sample scattering isotropically and elasticly (conforming to a delta-function at energy 0),
+    which can have the following geometries: cuboid, sphere, cylinder or hollow cylinder.
   </p>
   <p>
-    The probability weight <i>P </i>provided by the former
-    module is multiplied by the factors:
+    The probability weight <i>P </i>provided by the former module is multiplied by the following factors:
   </p>
   <p>
-    <i>P' = </i>(&sigma; &rho;) x (<i>pathlength</i> x <i>attenuation</i>) x (solid_angle/4 &pi;) x <i>P</i>,
+    <i>P'</i> = <i>P</i> x (1 - exp(- &mu;<sub>s</sub> <i>d</i>)) x <i>Attenuation</i> x solid_angle/4&pi;,
   </p>
 
   <p>
-    where (&sigma;&rho;) is the scattering coefficient [cm<sup>-1</sup>] i.e. the scattering cross section &sigma; multiplied with density &rho;.
-    <i>Attenuation</i> means two wavelength and path length dependent exponential factors before
-    and after the scattering: exp(-(&sigma; + &sigma;<sub>absorption</sub>) &rho; x <i>pathlength</i>),
-    where &sigma;<sub>absorption</sub> ~ &lambda;,
-    and the usual tabular value for 1.798 &Aring; has to be converted to 1 &Aring; and used in order to calculate the input value <i>absorption coefficient</i>.
-    The (&sigma;&rho;) scattering coefficient [cm<sup>-1</sup>] contributes to the attenuation ('self-shielding').
+    where &mu;<sub>s</sub> = &sigma;<sub>s</sub> &rho; is the macroscopic scattering coefficient [cm<sup>-1</sup>], 
+    i.e. the scattering cross section &sigma; multiplied by the particle density &rho;.
+    <i>Attenuation</i> means a wavelength and path length (before and after the scattering) dependent exponential factor: 
+    exp(-(&mu;<sub>abs</sub> x <i>pathlength</i>)), where &mu;<sub>abs</sub> ~ &lambda;.
+    And the usual tabulated value for 1.798 &Aring; has to be converted to 1 &Aring; in order to calculate the input value <i>absorption coeff.</i>. <br />
+    Note that there is currently no beam of unscattered neutrons - even if the scattering probability is low.
   </p>
 
   <p>
@@ -1802,7 +1800,8 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
     In this module we can treat the extinction, TDS correction by combining
     a normalisation factor, d-spacing spread or by a reflection dependent coefficient
     multiplying Fhkl<sup class="moz-txt-sup">2</sup> in the structure factor
-    file.
+    file. <br />
+    The program expects a complete list of h k l reflections. (see 'Module Parameters'|'structure factor file' below).
   </p>
 
   <br>
@@ -1831,10 +1830,21 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
           The structure factor file contains information to determine the scattering probability for each reflection.
           It can be given as a .dat, .laz, .lau format or in another format.
           In the latter case the meaning of individual columns must be specified by the 'Structure file format' parameters (see below), otherwise they are set by the program. <br />
-          In VITESS format (.dat), each line contains: h k l  |F<sub>hkl</sub>|² (see FILES folder).
+          In VITESS format (.dat), each line contains: h k l  |F<sub>hkl</sub>|² (see FILES folder). <br />
+          The program expect a complete list, i.e. that is all relevant combination of positive and negative h, k and l values.
+          If this is not the case, the tool 'Complete hkl list' can be used to generate a file with all combination from a file with only positive numbers.
         </td>
         <td>    </td>
         <td> -S </td>
+      </tr>
+      <tr>
+        <td> mark reflection</td>
+        <td>
+          'yes': sets the color of the scattered neutron to the number (ID) of the reflection as taken from the hkl file <br />
+          'no' : leaves the color unchanged
+        </td>
+        <td>'no' 'yes'</td>
+        <td> -c </td>
       </tr>
       <tr>
         <td> d-spacing distribution </td>

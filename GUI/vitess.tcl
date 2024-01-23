@@ -3281,8 +3281,7 @@ proc sample_s_qCheckErr {{app _}} {
 
 set sample_singcrystESET {
   {parfile pareditablefile sample_singcryst.par {"parameter file" "" "" P} r ssc 1}
-  {sfactfile pareditablefile singcryst_structuref.dat {
-    "structure\nfactor file" "This file contains information to determine the scattering probability for each reflection. The program expects a complete list of h k l reflections (see 'Help|sample'). It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program." "" S} r}
+  {sfactfile pareditablefile singcryst_structuref.dat {"structure\nfactor file" "This file contains information to determine the scattering probability for each reflection. The program expects a complete list of h k l reflections (see 'Help|sample'). It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program." "" S} r}
   {mnbrid radio no {"mark\nreflection" "yes: sets the color of the scattered neutron to the number of the reflection\nno : leaves the color unchanged" "" c} {no yes} {0 1}}
   {spac radio Lorentzian {"d-spacing\ndistribution" "d-spacing probability distribution with maximum at the nominal value" "" o} {Lorentzian Gaussian} {1 2}}
   {spread float 0.0001 {"d-spacing\nspread [-]" "FWHM/d-spacing, the relative 'thickness' of the Ewald sphere" "" d}}

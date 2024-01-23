@@ -9,6 +9,7 @@
 /* 1.3  Apr 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.4  Oct 2021  K. Lieutenant  option: parameters from input instead of from file         */
 /* 1.4a Sep 2022  K. Lieutenant  loop over trajectories changed to speed up calculation     */
+/* 1.5  Jan 2024  K. Lieutenant  sample orientation corrected and option to 'color' reflect.*/
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -35,8 +36,8 @@ void   OwnCleanup();                                          // Does module spe
 void   SetSamplePar   (SampleType *pSample);                  // Reads sample parameters and combines with input parameters
 void   ReadStructFile ();                                     // Reads the structure factor file
 void   SetGeometry    (char* sColor);                         // Fills the structure stGeometry for visualization 
-double dSpreadLorentzian(double rdelta);                      // probability of finding a d-spacing in Lorentzian approximation
-double dSpreadGaussian(double rdelta);                        // probability of finding a d-spacing in Gaussian approximation 
+double dSpreadLorentzian(double rdelta);                      // Probability of finding a d-spacing in Lorentzian approximation
+double dSpreadGaussian(double rdelta);                        // Probability of finding a d-spacing in Gaussian approximation 
 void   TransformIn2Smpl(VectorType pos, VectorType dir);      // Co-ordinate transformation from input frame to sample frame
 void   TransformSmpl2In(VectorType pos, VectorType dir);      // Co-ordinate transformation from sample frame to input frame
 void   TransformIn2Out (VectorType pos, VectorType dir);      // Co-ordinate transformation from input frame to output frame
@@ -66,6 +67,7 @@ double     Diameter = 0.0,          // -t       file  [cm]   thickness or diamet
            Width    = 0.0,          // -w       file  [cm]   width of the sample
            AnglOutHoriz=0.0,        // -u       file  [rad]  horizontal angle of the output frame, relative to input orientation
            AnglOutVert =0.0;        // -v       file  [rad]  vertical angle of the output frame, relative to input orientation    
+short      bColorRefl=FALSE;        // -c              [-]   sets color of the scattered neutron to the number of the reflection 
 extern                               
 int        colh, colk, coll,        // -H -K -L file   [-]   columns where the miller indices (h,k,l) are listed
            colF,                    // -F       file   [-]   column where structure factor F is
@@ -114,7 +116,7 @@ int main(int argc, char **argv)
   _eModule = MCN_SMPL_SNGL_X;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.4a");
+  PrintModuleName(_eModule, "1.5");
   OwnInit(argc, argv);
 
   /* Reads sample parameters and combines with input parameters */
@@ -265,7 +267,8 @@ int main(int argc, char **argv)
             CopyVector(Pos2v, OutNeutron.Position);
             CopyVector(Dir, OutNeutron.Vector);
 
-            OutNeutron.Color = (short) (no[repet] % 32768); 
+            if (bColorRefl==TRUE)
+              OutNeutron.Color = (short) (no[repet] % 32768); 
 
             /*	 writes output binary file */
             if (Prob > wei_min) 
@@ -413,6 +416,10 @@ void OwnInit(int argc, char *argv[])
           AnglOutVert  = atof(&argv[i][2]);
           break;
 
+        /* sample position, size and orientation */
+        case 'c':
+          bColorRefl = (short) atoi(&argv[i][2]);
+          break;
         case 'H':
           colh = atof(&argv[i][2]);
           break;

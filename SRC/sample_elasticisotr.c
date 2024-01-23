@@ -233,7 +233,7 @@ int main(int argc, char **argv)
             /* Scattering probability determined by straight line through the sample, attenuation by real path */
             // Prob *= MaxPathLength * ScatteringC;
             Prob *= (1.0 - exp(-MaxPathLength * ScatteringC));
-            Prob *= exp(-PathLength * AbsorptionC * WL);       // part 1: entry until point of scattering
+            Prob *= exp(-PathLength * AbsorptionC * WL);         // attenuation part 1: entry until point of scattering
 
             /* point of scattering for trajectory visualization */
             if (bVisTraj==TRUE)
