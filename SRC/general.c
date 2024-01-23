@@ -749,6 +749,7 @@ FILE * fileOpen(const char *name, const char *mode)
 
   if (! (f = fopen(name, mode))) {
     fprintf(LogFilePtr, "ERROR: Can't open file %s!\n", name);
+    fflush(LogFilePtr);
     exit(-1);
   }
   return f;
@@ -770,6 +771,7 @@ FILE * fileOpen2(const char* sName, const char* sMode, const char* sContent)
 void Error(const char *text)
 {
   fprintf(LogFilePtr, "ERROR: %s!\n", text);
+  fflush(LogFilePtr);
   exit(-1);
 }
 

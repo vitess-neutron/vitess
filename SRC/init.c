@@ -1861,6 +1861,9 @@ static void setInstallDirectory (char *arg)
 #endif
   mp = strstr(arg, "MODULES");
   if (! mp) mp = strstr(arg, "Debug");
+  // if (! mp && strncmp(arg, "V:\\", 3)==0) mp=arg+3;   // Path abbreviation in Windows 
+  // if (! mp && strncmp(arg, "$V/",  3)==0) mp=arg+3;    // Path abbreviation in Linux
+  if (! mp && arg[1]==':' && arg[2]=='\\') mp=arg+3;      // Path abbreviation in Windows 
   if (! mp) return;
   InstallDirLength = (int)((long) mp - (long) arg);
   /* for pointers too big for long integers: */
@@ -1949,12 +1952,13 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
 
 static void TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel)
 {
+  strcpy(pPath, "");
+
   switch (sel)
-  { case PAR_DIR  : strcpy(pPath, ParDir);     break;
-    case INSTL_DIR: strcpy(pPath, InstallDir); break;
-    case IN_DIR   : strcpy(pPath, InputDir);   break;
-    case OUT_DIR  : strcpy(pPath, OutputDir);  break;
-    default       : strcpy(pPath, "");
+  { case PAR_DIR  : if (ParDir    !=NULL) strcpy(pPath, ParDir);     break;
+    case INSTL_DIR: if (InstallDir!=NULL) strcpy(pPath, InstallDir); break;
+    case IN_DIR   : if (InputDir  !=NULL) strcpy(pPath, InputDir);   break;
+    case OUT_DIR  : if (OutputDir !=NULL) strcpy(pPath, OutputDir);  break;
   }
   
   AddSlash(pPath); 
