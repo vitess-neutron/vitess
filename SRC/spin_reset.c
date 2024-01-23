@@ -6,6 +6,7 @@
 /* 0.1  Apr 2008  K. Lieutenant  preliminary version                                         */
 /* 1.0  Jan 2010  K. Lieutenant  first version, containing colour reset                      */
 /* 1.1  Mar 2020  K. Lieutenant  new central visualization parameters                        */
+/* 1.2  Jan 2024  K. Lieutenant  correction: color reset according to description            */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -43,15 +44,15 @@ void OwnCleanup();                        // Does module specific cleanup
 /******************************/
 int main(int argc, char **argv)
 {
-  int   i=0;
-  short iColor=0;           // color set to a trajectory  
+  int    i=0;
+  short  iColor=0;          // color set to a trajectory  
 	double FracPolDir = 0.0;  // fraction of neutrons in polarization direction
 
 	/* Initialize the program according to the parameters given   */
   _eModule = MCN_RESET;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.1");
+  PrintModuleName(_eModule, "1.2");
   OwnInit(argc, argv);    // module specific initialization
  
   bVisInstalled = FALSE;
@@ -96,7 +97,10 @@ int main(int argc, char **argv)
 			  }
 
 			  if (bSetColor)
-			  {	iColor = (short) (i % nColors)+1;
+			  {	if (nColors < 2) 
+            iColor = nColors;
+          else
+            iColor = (short) ceil(MonteCarlo(0.0, (double) nColors));        // (i % nColors)+1;
 				  InputNeutrons[i].Color = iColor;
 			  }
 
@@ -158,7 +162,7 @@ void  OwnInit(int argc, char *argv[])
 		}
 	}
 
-	if(nColors==0)
+	if(nColors < 0)
 		bSetColor=FALSE;
 	else
 		bSetColor=TRUE;
