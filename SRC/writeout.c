@@ -30,6 +30,7 @@
 /* 1.13  Feb 2022  K. Lieutenant   MCNP6 binary output, title, surface; MCNPX format removed */
 /* 1.14  Sep 2022  P. Zakalek      Added writeout of SSW files                               */
 /* 1.14a Feb 2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
+/* 1.15  Jan 2024  K. Lieutenant   order of choosing type of output file corrected           */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -152,7 +153,7 @@ char*          sHeader =NULL;           //             header: parameters of the
 char*          sUnits  =NULL;           //             header: units used in the event file
 short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence 
 bCalcDivZ = FALSE;       //                               or vert. divergence necessary
-char           sVsn[5]="1.14",
+char           sVsn[5]="1.15",
         form[15][15]={"","","","","","","","","","","","","","",""};
 // formats to print data of the different parameters using VITESS
 
@@ -163,9 +164,9 @@ char           sVsn[5]="1.14",
 int main(int argc, char **argv)
 {
   int             i=0,               // index of trajectories
-  nBytesW=0;         // number of bytes written to output file
+  nBytesW=0;                         // number of bytes written to output file
   double          Divy=0.0,
-          Divz=0.0, Div=0.0; // divergence of the current trajectory
+                  Divz=0.0, Div=0.0; // divergence of the current trajectory
   Neutron         OutNeutron;
   McNeutron       OutMcNeutron;
   Mcnp6Neutron    OutMp6Neutron;
@@ -518,12 +519,8 @@ void  OwnInit(int argc, char *argv[])
     { if (ePrgFormat== VT_MCPL_FMT)
       { hOutFile = mcpl_create_outfile(FullParName(sOutFileName));
       }
-      else if (eDatFormat== VT_BINARY)
-      { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wb");
-      }
       else if (ePrgFormat== VT_SSW_FMT)
       {
-
         if (iSurface==0)
           Error("MCPL file contains no userflags so parameter specifying "
                 "resulting SSW surface ID of particles is mandatory (use -s<ID>).");
@@ -590,8 +587,9 @@ void  OwnInit(int argc, char *argv[])
         ssb[0] = 0.0;
 
         assert(iSurface>=0&&iSurface<1000000);
-
-
+      }
+      else if (eDatFormat== VT_BINARY)
+      { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wb");
       }
       else
       { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wt");
