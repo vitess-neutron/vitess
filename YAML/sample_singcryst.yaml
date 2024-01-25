@@ -250,6 +250,7 @@ sample_singcryst:
   - Title:
       type:    "title"
       default: "Structure factor file format"
+      
   - ColumnH   :
       type:    "int"
       descr:   "h column"
@@ -259,14 +260,14 @@ sample_singcryst:
       prefix:  "-H"
   - ColumnK   :
       type:    "int"
-      descr:   "h column"
+      descr:   "k column"
       tooltip: "column of the structure factor file, where the Miller index k is given\nSee also 'Help sample'"
       min:     0
       column:  1
       prefix:  "-K"
   - ColumnL   :
       type:    "int"
-      descr:   "h column"
+      descr:   "l column"
       tooltip: "column of the structure factor file, where the Miller index l is given\nSee also 'Help sample'"
       min:     0
       column:  2
@@ -294,11 +295,18 @@ sample_singcryst:
       column:  2
       prefix:  "-W"
 
+  - bColorRefl:                     # -c  NO     [-]    flag: sets color of the scattered neutron to the number of the reflection
+      type:    "switch"
+      descr:   "Mark reflection"
+      tooltip: "yes: sets the color of the scattered neutron to the number of the reflection\nno : leaves the color unchanged"
+      column:   0
+      default:  no
+      prefix:  "-c"
   - ScaleFact :
       type:    "float"
       descr:   "Scale factor"
       tooltip: "Normalization factor for the structure factor\nSee also HelpFile 'sample.html'"
       default: 1.0
       min:     0.000001
-      column:  0
+      column:  1
       prefix:  "-f"
