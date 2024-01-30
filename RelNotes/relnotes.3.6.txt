@@ -17,7 +17,7 @@ VITESS 3.6 contains 2 new modules:
 - 'filter2D' allows changing the intensity distribution as a function of 2D position or 2D divergence.
 
 The main new features in existing modules are:
-- The source module can now be used for all CANS sources.
+- The source module can now be used for all CANS sources (using 'source_long_pulsed').
 - 'read_in' and 'writout' can now handle binary files (in VITESS or McStas format) or SSW files as used in MCNP (in addition to MCPL files).
 - The guide can be curved and diverging/converging at the same time, and MCPL files can be written containing information of the neutron absorption, which can be used as the basis for subsequent shielding simulations (using MCNP, Geant, ...).
 - The monochromator can rotate about a vertical axis; and monochromators put behind each other are treated correctly now.

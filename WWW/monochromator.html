@@ -29,7 +29,8 @@
       determine the correct normalisation has become obsolete. The new module now handles
       the normalisation of the outgoing neutrons properly if the peak reflectivity,
       i.e. the reflectivity of the monochromator crystal for neutrons of the peak wavelength
-      and negligible divergence, is given </b>. 
+      and negligible divergence, is given
+    </b>.
     The peak reflectivity is usually known from dedicated measurements. Note that a correct normalisation of the outgoing intensity is only
     possible, if realistic, non-zero values for the mosaicity and the d-spread are given. If an ideal crystal
     needs to be simulated, i.e. the mosaicity or d-spread are very close to zero,
@@ -59,10 +60,12 @@
     There are two new features in the new monochromator module: The geometry choice &quot;Transmission&quot; handles a monochromator in transmission geometry.
     The option &quot;transmission treated&quot; creates a transmitted beam in addition to the one reflected by the crystal lattice.
     In this case, <i>N<sub>rep</sub></i>+1, i.e. usually 2, outgoing trajectories are generated for each incoming trajectory (hitting a crystal element),
-    <i>N<sub>rep</sub></i> in the direction of reflection and 1 in the original direction. 
-    <b>Important: In this mode, the global coordinate system is not altered by the 'standard frame generation', but needs to be defined as a 'user defined frame'
-    or changed in a subsequent frame module.</b>
-   <br/>
+    <i>N<sub>rep</sub></i> in the direction of reflection and 1 in the original direction.
+    <b>
+      Important: In this mode, the global coordinate system is not altered by the 'standard frame generation', but needs to be defined as a 'user defined frame'
+      or changed in a subsequent frame module.
+    </b>
+    <br />
     Furthermore, the latest version of the new monochromator module also allows rotation of the monochromator/analyzer about a vertical axis.
   </p>
 
@@ -103,7 +106,7 @@
           <td valign="top" width="33%">1. Crystal_flat:</td>
           <td valign="top" width="67%">
             Simulates a flat rectangular generally (<i>h</i>,<i>k</i>,<i>l</i>)
-            oriented offcut crystal.&nbsp;
+            oriented offcut crystal.
           </td>
           <td>-O1</td>
         </tr>
@@ -185,239 +188,241 @@
   <!-- -------------------------  -->
   <p>
     <font face="Symbol">- </font>MAIN PARAMETERS <br>
-    &nbsp;
     <table border="1" cellpadding="5" width="809">
-      <tr>
-        <td valign="top" width="18%"><b>Parameter</b></td>
-        <td valign="top" width="54%"><b>Physical Symbol, Description</b></td>
-        <td valign="top" width="28%"><b>Range, Examples</b></td>
-        <td><b>Command Option</b></td>
-      </tr>
+      <tbody>
+        <tr>
+          <td valign="top" width="18%"><b>Parameter</b></td>
+          <td valign="top" width="54%"><b>Physical Symbol, Description</b></td>
+          <td valign="top" width="28%"><b>Range, Examples</b></td>
+          <td><b>Command Option</b></td>
+        </tr>
 
-      <tr>
-        <td valign="top" width="18%">repetition
-  <p>[-]</p> </td>
-  <td valign="top" width="54%">If this integer &gt; 1, the trajectory is used multiple times for better statistics.</td>
-  <td valign="top" width="28%">&gt;= 1</td>
-  <td>-A</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">repetition<br>[-]</td>
+          <td valign="top" width="54%">If this integer &gt; 1, the trajectory is used multiple times for better statistics.</td>
+          <td valign="top" width="28%">&gt;= 1</td>
+          <td>-A</td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">mosaic fwhm horizontal, vertical <br>[deg]</td>
+          <td valign="top" width="54%">
+            <i>&xi;<sub>Y</sub></i>, <i>&xi;<sub>Z</sub></i> <br>
+            Horizontal and vertical fwhm components of the 2-dimensional Gaussian  mosaic distribution. <br />
+            If it is set smaller than 0.001, then this minimum value is set automatically.
+          </td>
+          <td valign="top" width="28%">PG(002): 0.2 0.8 deg <br>General: 0.001 1deg </td>
+          <td>-m, -M</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">mosaic fwhm horizontal, vertical <p>[deg]</p></td>
-    <td valign="top" width="54%">
-      <i>&xi;<sub>Y</sub></i>, <i>&xi;<sub>Z</sub></i> <p>
-        Horizontal and vertical fwhm components of the 2-dimensional Gaussian  mosaic distribution. <br />
-        If it is set smaller than 0.001, then this minimum value is set automatically.
-      </p>
-    </td>
-    <td valign="top" width="28%">PG(002): 0.2 0.8 deg <p>General: 0.001 1deg</p> </td>
-    <td>-m, -M</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">d-spread&nbsp;<br>[-]</td>
+          <td valign="top" width="54%">
+            <font face="Symbol">&Delta;</font><i>d </i>/ <i>d</i> <br />
+            Fwhm of the d-spacing distribution function (Lorentzian and Gaussian options) divided by lattice parameter under consideration. It is zero for a perfect crystal.
+          </td>
+          <td valign="top" width="28%">
+            PG(002): 0.2 <font face="Symbol">-</font>  2<font face="Symbol">&acute;</font> 10<sup><font face="Symbol">-</font>3</sup>  <br>
+            Si(111): 0.1 <font face="Symbol">-</font> 2<font face="Symbol">&acute;</font>
+            10<sup><font face="Symbol">-</font>4</sup>
+          </td>
+          <td>-D</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">d-spread&nbsp;<p>[-]</p></td>
-    <td valign="top" width="54%">
-      <font face="Symbol">&Delta;</font><i>d </i>/ <i>d</i>
-      <p>Fwhm of the d-spacing distribution function (Lorentzian and Gaussian options) divided by lattice parameter under consideration. It is zero for a perfect crystal.&nbsp;</p>
-    </td>
-    <td valign="top" width="28%">
-      PG(002): 0.2 <font face="Symbol">-</font>  2<font face="Symbol">&acute;</font> 10<sup><font face="Symbol">-</font>3</sup>
-      <p>
-        Si(111): 0.1 <font face="Symbol">-</font> 2<font face="Symbol">&acute;</font>
-        10<sup><font face="Symbol">-</font>4</sup>
-      </p>
-    </td>
-    <td>-D</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">peak reflectivity<br>[-]</td>
+          <td valign="top" width="54%">
+            <i>R</i><br>(Experimentally determined) peak reflectivity of this monochromator.
+          </td>
+          <td valign="top" width="28%">0 ... 1 <br />default: 1</td>
+          <td>-R</td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">transmission treated <br>[-]</td>
+          <td valign="top" width="54%">
+            If chosen, a tranmitted beam is generated in addition to the reflected beam.<br />
+            Note that 'transmission treated' means that 'standard frame generation' does not change the co-ordinate system.
+          </td>
+          <td valign="top" width="28%">0 or 1</td>
+          <td>-o</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">peak reflectivity<p>[-]</p> </td>
-    <td valign="top" width="54%">
-      <i>R</i>
-      <p>(Experimentally determined) peak reflectivity of this monochromator. </p>
-    </td>
-    <td valign="top" width="28%">0 ... 1 <br />default: 1</td>
-    <td>-R</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">frequency <br>[Hz]</td>
+          <td valign="top" width="54%"><i>f</i> <br>Frequency of the monochromator rotation or oscillation </td>
+          <td valign="top" width="28%">Default: 0.0</td>
+          <td>-f</td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">initial phase <br>[deg]</td>
+          <td valign="top" width="54%">
+            <i>&zeta;<sub>0</sub></i>  <br>
+            Zero time phase of the rotating or oscillating monochromator <br />
+            The phase at time t is calculated as &zeta;= 2 &pi; f t + &zeta<sub>0</sub>; <br />
+            For &zeta;=0, the orientation of surface and reflecting planes are given by &theta; and &psi; (see Table 'File Input Parameters')
+          </td>
+          <td valign="top" width="28%">Default: 0.0</td>
+          <td>-p</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">transmission treated&nbsp; <p>[-]</p> </td>
-    <td valign="top" width="54%">
-      If chosen, a tranmitted beam is generated in addition to the reflected beam.<br />
-      Note that 'transmission treated' means that 'standard frame generation' does not change the co-ordinate system.
-    </td>
-    <td valign="top" width="28%">0 or 1</td>
-    <td>-o</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">total scattering&nbsp; <br>[1/cm]</td>
+          <td valign="top" width="54%">
+            <i>&mu;<sub>tot</sub></i>  <br>
+            Macroscopic total scattering cross-section in the crystal <br />
+            supposed to be wavelength independent
+          </td>
+          <td valign="top" width="28%">0 ... 1</td>
+          <td>-c</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">rot. frequency <p>[1/s]</p> </td>
-    <td valign="top" width="54%"><i>f</i> <p>Rotational frequency of the monochromator about a vertical axis </p> </td>
-    <td valign="top" width="28%">Default: 0.0</td>
-    <td>-f</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">absorption&nbsp; <br>[1/cm]</td>
+          <td valign="top" width="54%">
+            <i>&mu;<sub>abs</sub></i>  <br>
+            Macroscopic absorption cross-section in the crystal for 1.798 &Aring; <br />
+            supposed to be proportional to wavelength
+          </td>
+          <td valign="top" width="28%">0 ... 1</td>
+          <td>-C</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">initial rot. phase <p>[1/s]</p> </td>
-    <td valign="top" width="54%"><i>&zeta;<sub>0</sub></i> 
-      <p> Zero time orientation of the rotating monochromator <br />
-          The orientation at time t is calculated as &zeta;= 2 &pi; f t + &zeta0; <br /> 
-          For &zeta;=0, the orientation of surface and reflecting planes are given by &theta; and &psi; (see Table 'File Input Parameters')</p> </td>
-    <td valign="top" width="28%">Default: 0.0</td>
-    <td>-p</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">geometry&nbsp; <br>[-] </td>
+          <td valign="top" width="54%">
+            <br>
+            'Reflection'  : Monochromator used in reflection geometry <br>
+            'Transmission': Monochromator used in transmission geometry  <br>
+          </td>
+          <td valign="top" width="28%">1: Reflection<br> 2: Transmission</td>
+          <td>-X</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">total scattering&nbsp; <p>[1/cm]</p> </td>
-    <td valign="top" width="54%"> <i>&mu;<sub>tot</sub></i>
-      <p> Macroscopic total scattering cross-section in the crystal <br />
-          supposed to be wavelength independent </p> </td>
-    <td valign="top" width="28%">0 ... 1</td>
-    <td>-c</td>
-  </tr>
-
-  <tr>
-    <td valign="top" width="18%">absorption&nbsp; <p>[1/cm]</p> </td>
-    <td valign="top" width="54%"> <i>&mu;<sub>abs</sub></i>
-      <p> Macroscopic absorption cross-section in the crystal for 1.798 &Aring; <br />
-          supposed to be proportional to wavelength </p> </td>
-    <td valign="top" width="28%">0 ... 1</td>
-    <td>-C</td>
-  </tr>
-
-  <tr>
-    <td valign="top" width="18%">geometry&nbsp; <p>[-]</p> </td>
-    <td valign="top" width="54%">
-      <p>
-        'Reflection'  : Monochromator used in reflection geometry <br>
-        'Transmission': Monochromator used in transmission geometry  <br>
-      </p>
-    </td>
-    <td valign="top" width="28%">1: Reflection<br> 2: Transmission</td>
-    <td>-X</td>
-  </tr>
-
-  <tr>
-    <td>d-distribution</td>
-    <td>Lorentzian (1), Gaussian (2)&nbsp; </td>
-    <td>1, 2</td>
-    <td>-d</td>
-  </tr>
-  </table>
+        <tr>
+          <td>d-distribution</td>
+          <td>Lorentzian (1), Gaussian (2)&nbsp; </td>
+          <td>1, 2</td>
+          <td>-d</td>
+        </tr>
+      </tbody>
+    </table>
   </p>
 
   <!-- ------------------------------  -->
   <!-- TABLE 3: File Input Parameters  -->
   <!-- ------------------------------  -->
   <p>
-  <font face="Symbol">- </font>FILE INPUT PARAMETERS <br>  &nbsp;
-  <table border="1" cellpadding="5" width="809">
-  <tbody>
-  <tr>
-    <td valign="top" width="18%"><b>Parameter</b></td>
-    <td valign="top" width="54%"><b>Physical Symbol, Description</b></td>
-    <td valign="top" width="28%"><b>Range, Examples</b></td>
-  </tr>
+    <font face="Symbol">- </font>FILE INPUT PARAMETERS <br>  &nbsp;
+    <table border="1" cellpadding="5" width="809">
+      <tbody>
+        <tr>
+          <td valign="top" width="18%"><b>Parameter</b></td>
+          <td valign="top" width="54%"><b>Physical Symbol, Description</b></td>
+          <td valign="top" width="28%"><b>Range, Examples</b></td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%"> main position&nbsp;  <p>[cm]</p> </td>
-    <td valign="top" width="54%"> <i>x</i>, <i>y</i>, <i>z</i>
-      <p> Reference point (position) of the center of the monochromator/analyser-system in the frame provided by the former module. </p>
-      <p> The position of each single CE is defined by (<i>x</i>,<i>y</i>,<i>z</i>)<i> +deviation from </i> (<i>x</i>,<i>y</i>,<i>z</i>).
-          The deviation is read from focus data file. </p>
-      <p> For the flat Geometry option, (<i>x</i>,<i>y</i>,<i>z</i>) is simply the center position of the rectangular CE. </p> </td>
-     <td valign="top" width="28%"> <i>x = distance </i>to CE <p><i>y </i>= <i>z </i>= 0.0 </p> </td>
-  </tr>
+        <tr>
+          <td> main position<br>[cm] </td>
+          <td>
+            <i>x</i>, <i>y</i>, <i>z</i> <br />
+            Reference point (position) of the center of the monochromator/analyser-system in the frame provided by the former module. <br />
+            The position of each single CE is defined by (<i>x</i>,<i>y</i>,<i>z</i>)<i> +deviation from </i> (<i>x</i>,<i>y</i>,<i>z</i>).
+            The deviation is read from focus data file. <br />
+            For the flat Geometry option, (<i>x</i>,<i>y</i>,<i>z</i>) is simply the center position of the rectangular CE.
+          </td>
+          <td> <i>x = distance </i>to CE <br><i>y </i>= <i>z </i>= 0.0 </td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%"> thickness, width, height of CE  <p>[cm]</p> </td>
-    <td valign="top" width="54%"> <i>t</i>, <i>w</i>, <i>h</i>
-      <p> Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular CE. For each single CE the dimensions will
-          be (<i>t</i>,<i>w</i>,<i>h</i>)<i>+deviation from</i> (<i>t</i>,<i>w</i>,<i>h</i>) the last being read from focus data file. </p> </td>
-    <td valign="top" width="28%"> <i>t</i> = 0.0 0.5 cm <p><i>w</i> = <i>h</i> = 0.5 20 cm </p> <p>&nbsp;</p> </td>
-  </tr>
+        <tr>
+          <td> thickness, width, height of CE  <br>[cm]</td>
+          <td>
+            <i>t</i>, <i>w</i>, <i>h</i> <br />
+            Thickness, width and height give depth, horizontal and vertical dimensions of the rectangular CE. For each single CE the dimensions will
+            be (<i>t</i>,<i>w</i>,<i>h</i>)<i>+deviation from</i> (<i>t</i>,<i>w</i>,<i>h</i>) the last being read from focus data file.
+          </td>
+          <td> <i>t</i> = 0.0 0.5 cm <br><i>w</i> = <i>h</i> = 0.5 20 cm  </td>
+        </tr>
 
-  <tr>
-    <td> 'crystal offset' angle <br>  horizontal, vertical <p>[deg]</p> </td>
-    <td> <i>&theta;</i>,<i>&psi;</i>: 
-      <p> Offset from backscattering of the crystals determining the Bragg reflection. <br />
-          A rotation first about the Z axis (<i>&theta;</i> ) and then about the (new) Y axis (<i>&psi;</i> ) gives the orientation of the planes of the center of the monochromator/analyzer.
-          The orientation of each single CE is given by (<i>&theta;</i>, <i>&psi;</i>) + deviation from (<i>&theta;</i>, <i>&psi;</i>) the last being read from the focus data file. <br />
-          Zero angles means that diffraction planes are perpendicular to the incoming beam.
-    <td>  <i>&theta;</i> = <i>&psi;</i> = 0.0 exact backscattering; 
-      <p> <i>&theta;</i>: 0 ... 90 deg <br> <i>&psi;</i>;: -90 ... 90 deg </p> </td>
-  </tr>
+        <tr>
+          <td> 'crystal offset' angle <br>  horizontal, vertical <br>[deg]</td>
+          <td>
+            <i>&theta;</i>,<i>&psi;</i>: <br />
+            Offset from backscattering of the crystals determining the Bragg reflection. <br />
+            A rotation first about the Z axis (<i>&theta;</i> ) and then about the (new) Y axis (<i>&psi;</i> ) gives the orientation of the planes of the center of the monochromator/analyzer.
+            The orientation of each single CE is given by (<i>&theta;</i>, <i>&psi;</i>) + deviation from (<i>&theta;</i>, <i>&psi;</i>) the last being read from the focus data file. <br />
+            Zero angles means that diffraction planes are perpendicular to the incoming beam.
+          </td>
+          <td>
+            <i>&theta;</i> = <i>&psi;</i> = 0.0 exact backscattering;     <br>
+            <i>&theta;</i>: 0 ... 90 deg <br> <i>&psi;</i>;: -90 ... 90 deg
+          </td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%"> 'Bragg offset' angle horizontal, vertical <p>[deg]</p> </td>
-    <td valign="top" width="54%">           
-    If the (<i>h,k,l</i>) planes are parallel to the crystal surface, then 'Bragg offset' angles are identical with the 'crystal offset' angles (see previous row).<br />
-    For a focusing geometry this is always assumed. However, for a single monochromator/analyzer crystal the orientation of the reflecting crystal planes can be different from the surface orientation.
-    In this case, the orientation of the planes has to be given as 'Bragg offset', while the 'crystal offset is regarded as the surface orientation.</td>
-    <td valign="top" width="28%"> see previous row  </td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%"> 'Bragg offset' angle horizontal, vertical <br>[deg]</td>
+          <td valign="top" width="54%">
+            If the (<i>h,k,l</i>) planes are parallel to the crystal surface, then 'Bragg offset' angles are identical with the 'crystal offset' angles (see previous row).<br />
+            For a focusing geometry this is always assumed. However, for a single monochromator/analyzer crystal the orientation of the reflecting crystal planes can be different from the surface orientation.
+            In this case, the orientation of the planes has to be given as 'Bragg offset', while the 'crystal offset is regarded as the surface orientation.
+          </td>
+          <td valign="top" width="28%"> see previous row  </td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%"> d-spacing<p>[&Aring;]</p> </td>
-    <td valign="top" width="54%"> <i>d</i>  <p>Lattice distance corresponding to a reflection from a <i>(h,k,l)</i> crystal plane </p> </td>
-    <td valign="top" width="28%">
-      PG(002): 3.332 &Aring;
-      <p> Si(111): 3.135 &Aring; </p>
-      <p> Ge(113): 1.703 &Aring; </p>
-      <p> Cu(220): 1.272 &Aring; </p>
-    </td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%"> d-spacing<br>[&Aring;]</td>
+          <td valign="top" width="54%"> <i>d</i>  <br>Lattice distance corresponding to a reflection from a <i>(h,k,l)</i> crystal plane</td>
+          <td valign="top" width="28%">
+            PG(002): 3.332 &Aring;  <br>
+            Si(111): 3.135 &Aring;  <br>
+            Ge(113): 1.703 &Aring;  <br>
+            Cu(220): 1.272 &Aring;
+          </td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%"> order of reflection <p>[-]</p> </td>
-    <td valign="top" width="54%"> <i>N</i> <p> According to Braggs Law: <i>N</i> <i>&lambda;</i> = 2 <i>d</i> sin &phi;<sub>Br</sub> </p> </td>
-    <td valign="top" width="28%">1, 2, ...</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%"> order of reflection <br>[-]</td>
+          <td valign="top" width="54%"> <i>N</i> <br> According to Braggs Law: <i>N</i> <i>&lambda;</i> = 2 <i>d</i> sin &phi;<sub>Br</sub></td>
+          <td valign="top" width="28%">1, 2, ...</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%"> output frame definition <p>'standard frame generation'<br />'user defined frame'</p> </td>
-    <td valign="top" width="54%">
-      <p>
-        If 'user defined frame' is chosen, all parameters defining the output frame (X', Y', Z', hor. angle, vert. angle) are taken from the input values (see following two rows). <br />
-        If 'standard frame generation' is chosen, these values are generated (and the given values for the output frame ignored).<br />
-        'Standard frame generation' is not useful if the monochromator is rotated. As the orientation is wavelength dependent it only considers the orientation (at t=0). <br />
-        In case of 'transmission treated', the co-ordinate system is not changed. Otherwise, it is moved to the center of the monochromator and directed along the reflected beam. <br />
-        After the co-ordinate transformation, the neutrons are written to the  output file.
-      </p>
-    </td>
-    <td valign="top" width="28%"> one point on the reflected beam axis </td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%"> output frame definition <br>'standard frame generation'<br />'user defined frame'</td>
+          <td valign="top" width="54%">
+            If 'user defined frame' is chosen, all parameters defining the output frame (X', Y', Z', hor. angle, vert. angle) are taken from the input values (see following two rows). <br />
+            If 'standard frame generation' is chosen, these values are generated (and the given values for the output frame ignored).<br />
+            'Standard frame generation' is not useful if the monochromator is rotated. As the orientation is wavelength dependent it only considers the orientation (at t=0). <br />
+            In case of 'transmission treated', the co-ordinate system is not changed. Otherwise, it is moved to the center of the monochromator and directed along the reflected beam. <br />
+            After the co-ordinate transformation, the neutrons are written to the  output file.
+          </td>
+          <td valign="top" width="28%"> one point on the reflected beam axis </td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%"> X', Y', Z' <p>[cm]</p> </td>
-    <td valign="top" width="54%">
-      <i>x'</i>, <i>y'</i>, <i>z'</i>   <p>
-        In 'user defined frame': The position of the output frame  in the original frame. (<i>x'</i>, <i>y'</i>, <i>z'</i>) represents the translation vector
-        applied to shift the origin of the original (input) frame to the new (output) position. <br />
-        In 'standard frame generation' without transmitted beam it is: (<i>x'</i>, <i>y'</i>, <i>z'</i>) = (<i>x</i>, <i>y</i>, <i>z</i>) i.e. main position of the M/A system.
-      </p>
-    </td>
-    <td valign="top" width="28%"> one point on the reflected beam axis </td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%"> X', Y', Z' <br>[cm]</td>
+          <td valign="top" width="54%">
+            <i>x'</i>, <i>y'</i>, <i>z'</i>   <br>
+            In 'user defined frame': The position of the output frame  in the original frame. (<i>x'</i>, <i>y'</i>, <i>z'</i>) represents the translation vector
+            applied to shift the origin of the original (input) frame to the new (output) position. <br />
+            In 'standard frame generation' without transmitted beam it is: (<i>x'</i>, <i>y'</i>, <i>z'</i>) = (<i>x</i>, <i>y</i>, <i>z</i>) i.e. main position of the M/A system.
+          </td>
+          <td valign="top" width="28%"> one point on the reflected beam axis </td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%"> output horizontal, vertical angle <p>[deg]</p> </td>
-    <td valign="top" width="54%">
-      <i>&Theta;</i>, <i>&Psi;</i> <p>
-        In 'user defined output frame', these angles are taken to generate the output frame:
-        After the translation, a <i>&Theta;</i> rotation about the Z axis and then a &Psi; rotation about the (new) Y axis defines a new orientation.
-        If "standard frame generation" is chosen, the output frame is rotated until the new X axis is parallel to the reflected beam.
-      </p>
-    </td>
-    <td valign="top" width="28%">
-      <i>&Theta;</i> = 180 deg, &Psi;= 0.0: exact backscattering; <p>
-        <i>&Theta;</i> = 180 deg, &Psi;= -2 &psi;, <br /> with &psi; being the 'vertical Bragg offset angle' and &theta; = 0.0
-      </p>
-    </td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%"> output horizontal, vertical angle <br>[deg]</td>
+          <td valign="top" width="54%">
+            <i>&Theta;</i>, <i>&Psi;</i> <br>
+            In 'user defined output frame', these angles are taken to generate the output frame:
+            After the translation, a <i>&Theta;</i> rotation about the Z axis and then a &Psi; rotation about the (new) Y axis defines a new orientation.
+            If "standard frame generation" is chosen, the output frame is rotated until the new X axis is parallel to the reflected beam.
+          </td>
+          <td valign="top" width="28%">
+            <i>&Theta;</i> = 180 deg, &Psi;= 0.0: exact backscattering; <br>
+            <i>&Theta;</i> = 180 deg, &Psi;= -2 &psi;, <br /> with &psi; being the 'vertical Bragg offset angle' and &theta; = 0.0
+          </td>
+        </tr>
 
-  </tbody>
-  </table>
+      </tbody>
+    </table>
   </p>
 
   <p>
@@ -437,7 +442,7 @@
   <!-- TABLE 4: Focus Parameters  -->
   <!-- -------------------------  -->
   <p>
-    <font face="Symbol">-</font>FOCUS PARAMETERS <br>    &nbsp;
+    <font face="Symbol">-</font>FOCUS PARAMETERS <br>
     <table border="1" cellpadding="5" width="809">
       <tbody>
         <tr>
@@ -446,125 +451,113 @@
           <td valign="top" width="28%"><b>Range, Examples</b></td>
           <td><b>Command Option</b></td>
         </tr>
+        <tr>
+          <td> focusing option: </td>
+          <td>
+            This parameter defines the focusing geometry. <br>
+            '&lambda;-focusing' builds a shape close to that of a sphere, but identical wavelengths will be focused to a point close to backscattering <br />
+            'Spherical' puts the crystal elements on the surface of a sphere with radius 'radius vert.'  <br>
+            The 'vert. cylinder' option forms a vertical cylinder <br>
+            The 'double focusing' option assumes a flat geometry, in which each element is rotated to give cylindrical focusing with different radii in vert. and hor. direction.
+          </td>
+          <td> 1 constant lambda <br> 2 spherical <br> 3 vert. cylinder <br> 4 double focusing </td>
+          <td>-g</td>
+        </tr>
 
         <tr>
-          <td> focusing option: <br> 1 constant lambda <br> 2 spherical <br> 3 vert. cylinder<br> 4 double focussing </td>
-          <td> This parameter defines the focusing geometry.
-  <p>
-    '&lambda;-focusing' builds a shape close to that of a sphere, but identical wavelengths will be focused to a point close to backscattering <br />
-    'Spherical' puts the crystal elements on the surface of a sphere with radius 'radius vert.'  <br>
-    The 'vert. cylinder' option forms a vertical cylinder <br>
-    The 'double focussing' option assumes a flat geometry, in which each element is rotated to give cylindrical focusing with different radii in vert. and hor. direction.
-  </p> </td>
-  <td>1, 2, 3, 4</td>
-  <td>-g</td>
-  </tr>
+          <td valign="top" width="18%">number of CE<br>horizontal, vertical <br>[-] </td>
+          <td valign="top" width="54%">
+            The number of columns and rows (n<sub>H</sub>, n<sub>V</sub>) of the created CE-matrix. <br>
+            n<sub>H</sub> is not used for the option 'vert. cylinder', where only 1 element per row is assumed
+          </td>
+          <td valign="top" width="28%">2 50</td>
+          <td>-H,-V</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">number of CE<p>horizontal, vertical </p> <p>[-]</p> </td>
-    <td valign="top" width="54%">
-      The number of columns and rows (n<sub>H</sub>, n<sub>V</sub>) of the created CE-matrix. <p>
-        n<sub>H</sub> is not used for the option 'vert. cylinder', where only 1 element per row is assumed
-    </td>
-    <td valign="top" width="28%">2 50</td>
-    <td>-H,-V</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">radius horiz.<br>[cm]</td>
+          <td valign="top" width="54%">
+            Radius of focusing in horizontal direction for a double focusing monochromator.<br />
+            Not used for the other focusing options.
+          </td>
+          <td valign="top" width="28%">200 cm, <br>0 cm to focus only vertically</td>
+          <td>-s</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">radius horiz.<p>[cm]</p> </td>
-    <td valign="top" width="54%">
-      Radius of focusing in horizontal direction for a double focusing monochromator.<br />
-      Not used for the other focusing options.
-    </td>
-    <td valign="top" width="28%">200 cm, <p>0 cm to focus only vertically </p></td>
-    <td>-s</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">radius vert.<br>[cm]</td>
+          <td valign="top" width="54%">
+            &lambda;-focusing: distance from the sample center to the bottom row of the CE-matrix. <br>
+            spherical      : radius of the sphere <br />
+            vert. cylinder : radius of the vertical cylinder <br />
+            double focusing: Radius of focusing in vertical direction
+          </td>
+          <td valign="top" width="28%">200 cm</td>
+          <td>-r</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">radius vert.<p>[cm]</p> </td>
-    <td valign="top" width="54%">
-      &lambda;-focusing: distance from the sample center to the bottom row of the CE-matrix. <br>
-      spherical      : radius of the sphere <br />
-      vert. cylinder : radius of the vertical cylinder <br />
-      double focusing: Radius of focusing in vertical direction
-    </td>
-    <td valign="top" width="28%">200 cm</td>
-    <td>-r</td>
-  </tr>
+        <tr>
+          <td valign="top" width="18%">angle vert.<br>[deg]</td>
+          <td valign="top" width="54%">
+            Angular offset &psi;<sub>0</sub> of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center. <br>
+            It is needed for all geometry options except 'double focussing', where a vertically symmetrical geometry is assumed.
+          </td>
+          <td valign="top" width="28%"><font face="Symbol">-</font>3 deg</td>
+          <td>-a</td>
+        </tr>
 
-  <tr>
-    <td valign="top" width="18%">angle vert.<p>[deg]</p></td>
-    <td valign="top" width="54%">
-      Angular offset &psi;<sub>0</sub> of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center. <br>
-      It is needed for all geometry options except 'double focussing', where a vertically symmetrical geometry is assumed.
+        <tr>
+          <td valign="top" width="18%">gap between columns, rows <br>[cm]</td>
+          <td valign="top" width="54%">
+            The distance between adjacent crystal elements in horizontal and vertical direction <br>
+            horizontal: used for 'spherical' and 'double focusing' <br />
+            vertical  : used for all options except for '&lambda;-focusing'
+          </td>
+          <td valign="top" width="28%">0.05</td>
+          <td>-h,-v</td>
+        </tr>
 
-    </td>
-    <td valign="top" width="28%"><font face="Symbol">-</font>3 deg</td>
-    <td>-a</td>
-  </tr>
-
-  <tr>
-    <td valign="top" width="18%">gap between columns, rows <p>[cm]</p> </td>
-    <td valign="top" width="54%">
-      The distance between adjacent crystal elements in horizontal and vertical direction
-      <p>
-        horizontal: used for 'spherical' and 'double focusing''
-        vertical  : used for all options except for '&lambda;-focusing'
-      </p>
-    </td>
-    <td valign="top" width="28%">0.05</td>
-    <td>-h,-v</td>
-  </tr>
-
-  <tr>
-    <td valign="top" width="18%">orient. dev. hor., vert. </p> <p>[deg]</p> </td>
-    <td valign="top" width="54%">
-      Total range of the deviation &Delta;&theta;, &Delta;&psi; from the theoretical orientation (&theta;, &psi;) of a crystal element in horizontal and vertical direction. <br />
-      The real orientation is determined by a Monte Carlo choice within [&theta; - 1/2&Delta;&theta;, &theta; + 1/2&Delta;&theta;] and [&psi; - 1/2&Delta;&psi;, &psi; + 1/2&Delta;&psi;] resp.
-    </td>
-    <td valign="top" width="28%">0.1</td>
-    <td>-t,-T</td>
-  </tr>
-  </tbody>
-  </table>
-  <br>  &nbsp;
+        <tr>
+          <td valign="top" width="18%">orient. dev. hor., vert. <br>[deg]</td>
+          <td valign="top" width="54%">
+            Total range of the deviation &Delta;&theta;, &Delta;&psi; from the theoretical orientation (&theta;, &psi;) of a crystal element in horizontal and vertical direction. <br />
+            The real orientation is determined by a Monte Carlo choice within [&theta; - 1/2&Delta;&theta;, &theta; + 1/2&Delta;&theta;] and [&psi; - 1/2&Delta;&psi;, &psi; + 1/2&Delta;&psi;] resp.
+          </td>
+          <td valign="top" width="28%">0.1</td>
+          <td>-t,-T</td>
+        </tr>
+      </tbody>
+    </table>
   </p>
 
   <!-- ------------------------- -->
   <!-- TABLE 5: Focus File       -->
   <!-- ------------------------- -->
   <p>
-    Description of the focus file (filename must be given as input): <br>&nbsp;
-    <table border="1" cellpadding="5" width="809">
-      <tbody>
-
-        <tr>
-          <td valign="top" width="18%"><b>File</b></td>
-          <td valign="top" width="54%"><b>Format</b></td>
-          <td valign="top" width="28%"><b>Examples Attached</b></td>
-          <td><b>Command Option</b></td>
-        </tr>
-
-        <tr>
-          <td valign="top" width="18%">focus file</td>
-          <td valign="top" width="54%">
-            First row includes 2 integer numbers: n<sub>H</sub>, n<sub>V</sub>, the number of columns and rows of the created CE-matrix. (H = horizontal, V = vertical.)
-  <p>
-    Next n<sub>H</sub>, n<sub>V</sub> rows are created by two program loops (internal loop: V) computing 8 values representing
-    <i>deviations</i> from the main values for each single CE. These are interpreted by the program as follows:
-  </p>
-  <p> The position    of each single CE is (<i>x</i>,<i>y</i>,<i>z</i>) +   <i>deviation from</i> (<i>x</i>,<i>y</i>,<i>z</i>)   as read from columns 1 - 3. </p>
-  <p> The dimension   of each single CE (thickness, width, height) is (<i>t</i>,<i>w</i>,<i>h</i>) +   <i>deviation from</i> (<i>t</i>,<i>w</i>,<i>h</i>)   as read from columns 4 - 6. </p>
-  <p> The orientation (hor., vert.) of each single CE is (<i>&theta;</i>, <i>&psi;</i>) + <i>deviation from</i> (<i>&theta;</i>, <i>&psi;</i>) as read from columns 7, 8. </p> </td>
-  <td valign="top" width="28%">lamb_foc.dat,</td>
-  <td>-G</td>
+  <font face="Symbol">-</font>    Description of the focus file (filename must be given as input): <br>
+  <table border="1" cellpadding="5" width="809">
+  <tbody>
+  <tr>
+    <td valign="top" width="18%"><b>File</b></td>
+    <td valign="top" width="54%"><b>Format</b></td>
+    <td valign="top" width="28%"><b>Examples Attached</b></td>
+    <td><b>Command Option</b></td>
   </tr>
-
+  <tr>
+    <td valign="top" width="18%">focus file</td>
+    <td valign="top" width="54%">
+      First row includes 2 integer numbers: n<sub>H</sub>, n<sub>V</sub>, the number of columns and rows of the created CE-matrix. (H = horizontal, V = vertical.)
+      Next n<sub>H</sub>, n<sub>V</sub> rows are created by two program loops (internal loop: V) computing 8 values representing
+      <i>deviations</i> from the main values for each single CE. These are interpreted by the program as follows:  <br> 
+      The position    of each single CE is (<i>x</i>,<i>y</i>,<i>z</i>) +   <i>deviation from</i> (<i>x</i>,<i>y</i>,<i>z</i>)   as read from columns 1 - 3. <br> 
+      The dimension   of each single CE (thickness, width, height) is (<i>t</i>,<i>w</i>,<i>h</i>) +   <i>deviation from</i> (<i>t</i>,<i>w</i>,<i>h</i>)   as read from columns 4 - 6.<br> 
+      The orientation (hor., vert.) of each single CE is (<i>&theta;</i>, <i>&psi;</i>) + <i>deviation from</i> (<i>&theta;</i>, <i>&psi;</i>) as read from columns 7, 8. </td>
+    <td valign="top" width="28%">lamb_foc.dat</td>
+    <td>-G</td>
+  </tr>
   </tbody>
   </table>
-  <br>
-  &nbsp; </p>
-
+  </p>
 
   <p><b>Option Crystal_focus_dat</b> </p>
 
@@ -625,10 +618,10 @@
   <a href="vitess.html">Back to VITESS overview</a><br>
   <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
   <p>
-    <!-- hhmts start --><font size="-1">
+    <!-- hhmts start --><font size="1">
       Last modified: Dec 03 15:00:00
       MET 2013
-    </font><font size="-1"></font><font size="-1">, D. Nekrassov</font><!-- hhmts end -->
+    </font><font size="1"></font><font size="1">, D. Nekrassov</font><!-- hhmts end -->
   </p>
   <br>
   <br>
