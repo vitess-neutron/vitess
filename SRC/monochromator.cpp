@@ -14,6 +14,7 @@
 /* 2.1  Jan 2020  K. Lieutenant   tidy up, transmission geom. corrected, attenuation improved*/  
 /* 2.2  Jan 2020  K. Lieutenant   option: rotating monochromator                             */  
 /* 2.3  Apr 2020  K. Lieutenant   adaption to VITESS 4, e.g. file parameters to input param. */  
+/* 2.4  Feb 2024  K. Lieutenant   PST option added                                           */  
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
   // --------------
   _eModule=monochrom.eModule;
 	Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "2.3");
+  PrintModuleName(_eModule, "2.4");
 
   monochrom.OwnInit(argc, argv);
 

@@ -44,9 +44,11 @@ class Monochromator{
                                                    
   VtMonoType    eMonoMode;             // -X        [-]   Monochr. geometry:     1: reflection,      2: transmission,      
   VtMonoArrange eGeomOption;           // -O        [-]   Geometry option:       1: single element   2: geometry calculated  3: geometry from file
+  VtMonoMove    eMonoMove;             // -b        [-]   Monochr. movement:     0: none             1: vert. rotation       2: hor. rotation (PST)   3: hor. oscillation (Doppler)
   int        bTransm;                  // -B        [-]   Treat transmitted beam 1: yes              0: no
   int        nRepete;                  // -A        [-]   Number of times the neutrons is reflected at the monochromator
   double     Freq,                     // -f       [1/s]  Rot. frequency of the monochromator                             
+             RadiusPST,                // -w       [cm]   For PST only: Distance from the chopper axle to the center of the monochromator
              Zeta0;                    // -p       [deg]  zero time orientation of the rotating monochromator             
   double     mosaic_fwhm[2];           // -m -M    [deg]  Horizontal and vertical mosaicity 
   VtDistr    d_spr_option;             // -d        [-]   d-spacing distribution function        1: Lorentzian           2: Gaussian
@@ -133,6 +135,7 @@ class Monochromator{
   void        processNeutron(Neutron* neutron);  
 
   bool        rotateMonochr     (int& kLast, int& lLast, const Neutron* pNeutIn);
+  void        rotateMonoYZ      (Neutron* pNeutIn, Neutron* pNeutRot, double Freq);
   bool        checkCE           (double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut);
   bool        isNeutInCE        (MathVector vPosN, const VectorType SizeCE);
   bool        selectCE          (const Neutron* pNeutIn, Neutron* pNeutInCE, int kStart=0, int lStart=0);

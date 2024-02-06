@@ -22,6 +22,7 @@ Monochromator::Monochromator()
   eFocGeom     = NO_FOCUSING; 
   bTransm      = FALSE;
   eMonoMode    = REFL_MONO;
+  eMonoMove    = VT_MONO_FIX;
   d_spr_option = LORENTZIAN; 
   nRepete      = 1; 
 
@@ -31,6 +32,7 @@ Monochromator::Monochromator()
   mu_scat      = 0.0;
   Reflectivity = 1.0; 
   Freq         = 0.0;
+  RadiusPST    = 0.1;
   Zeta0        = 0.0;
 
   for (int i = 0; i < 2; i++) 
@@ -108,7 +110,8 @@ void Monochromator::OwnInit(int argc, char* argv[])
   double m_cut=M_CUT;
   char   sHV[2][11]={"horizontal", "vertical"},  // mosaic_fwhm
          sTr[2][ 8]={"blocked",    "treated"},   // bTransm
-         sMM[13]="",                             // eMonoMode
+         sMT[13]="",                             // eMonoType
+         sMM[26]="",                             // eMonoMove
          sSO[11]="";                             // d_spr_option
 
   while(argc>1)
@@ -129,18 +132,22 @@ void Monochromator::OwnInit(int argc, char* argv[])
         case 'O':
 	        eGeomOption = (VtMonoArrange) atoi(&argv[1][2]);
 	        break;
-        case 'g':
-	        eFocGeom    = (VtMonoFocus) atoi(&argv[1][2]);
-	        break;
         case 'X':
 	        eMonoMode   = (VtMonoType) atoi(&argv[1][2]);
-	        break;
-        case 'd':
-	        d_spr_option = (VtDistr) atoi(&argv[1][2]);
 	        break;
         case 'B':
 	        sscanf(&argv[1][2], "%d", &bTransm) ;
 	        break;
+        case 'd':
+	        d_spr_option = (VtDistr) atoi(&argv[1][2]);
+	        break;
+        case 'b':
+	        eMonoMove   = (VtMonoMove) atoi(&argv[1][2]);
+	        break;
+        case 'g':
+	        eFocGeom    = (VtMonoFocus) atoi(&argv[1][2]);
+	        break;
+
         case 'A':
 	        sscanf(&argv[1][2], "%d", &nRepete) ;
 	        break;
@@ -149,6 +156,9 @@ void Monochromator::OwnInit(int argc, char* argv[])
 	        break;
         case 'p':
 	        sscanf(&argv[1][2], "%lf", &Zeta0) ;
+	        break;
+        case 'w':
+	        sscanf(&argv[1][2], "%lf", &RadiusPST) ;
 	        break;
 
         case 'D':
@@ -278,6 +288,10 @@ void Monochromator::OwnInit(int argc, char* argv[])
   // Checks for possible  options   (1 crystal element, geometry calculated or from file
   if((eGeomOption != SINGLE_CE) && (eGeomOption != CE_ARRAY_CALC) && (eGeomOption != CE_ARRAY_FILE))
     Error("No valid option for the gemetry of the monochromator system found!!");
+
+  // Option 'vertical cylinder' assumes only 1 column
+  if (eFocGeom==VERT_CYL && NumberCE[0] > 1)
+    Error("Only 1 column allowed for vertical cylinder geometry");
   
   // checks mosaicity   
   for (k=0; k<2; k++) 
@@ -289,11 +303,13 @@ void Monochromator::OwnInit(int argc, char* argv[])
     }
   }
 
-  MonoType_ID2Txt(sMM, eMonoMode);
+  MonoType_ID2Txt(sMT, eMonoMode);
+  MonoMove_ID2Txt(sMM, eMonoMove);
   Distr_ID2Txt   (sSO, d_spr_option);
 
-  fprintf(LogFilePtr, "  Mode: %s,  transmitted beam: %s\n",               sMM, sTr[bTransm]);
-  fprintf(LogFilePtr, "  Rot.freq, initial orient.: %7.2f Hz %9.4f deg\n", Freq, Zeta0);
+  fprintf(LogFilePtr, "  Mode: %s,  transmitted beam: %s\n",               sMT, sTr[bTransm]);
+  if (eMonoMode!=VT_MONO_FIX)
+    fprintf(LogFilePtr, "  %24.24s : %9.4f Hz %9.4f deg\n\n",              sMM, Freq, Zeta0);
   fprintf(LogFilePtr, "  attenuation   (scat, abs): %9.4f, %9.4f 1/cm\n",  mu_scat, mu_abs);
   fprintf(LogFilePtr, "  mosaic spread (hor, vert): %9.4f, %9.4f\n",       mosaic_fwhm[0], mosaic_fwhm[1]);
   fprintf(LogFilePtr, "  d-spread %10s      : %13.4e      \n",             sSO, d_fwhm);
@@ -887,33 +903,49 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
   Neutron NeutInCE,     // data of the incoming neutron          (in the frame of the refl. plane
           NeutCES,      // data of the neutron on the CE surface (in the frame of the module)
           NeutPlCE,     // data of the neutron on the CE plane   (in the frame of the refl. plane)
-          NeutTrans,    // data of the transmitted neutron       (in the frame of the module)
+          NeutPlRCE,    // data of the neutron on the CE plane   (in the frame of the rotating monochromator)
+          NeutReflRCE,  // data of the reflected neutron         (in the frame of the rotating monochromator)
           NeutRefl,     // data of the reflected neutron         (in the frame of the module)
+          NeutTrans,    // data of the transmitted neutron       (in the frame of the module)
           NeutTransOut, // data of the transmitted neutron       (in the output frame = module frame)
           NeutReflOut;  // data of the reflected neutron         (in the output frame)
   
   // init
   InitNeutron(&NeutInCE);   InitNeutron(&NeutCES);
-  InitNeutron(&NeutPlCE);   InitNeutron(&NeutTrans);
-  InitNeutron(&NeutRefl);   InitNeutron(&NeutTransOut);
-  InitNeutron(&NeutReflOut);
+  InitNeutron(&NeutPlCE);   
+  InitNeutron(&NeutPlRCE);  InitNeutron(&NeutReflRCE);
+  InitNeutron(&NeutRefl);   InitNeutron(&NeutReflOut);
+  InitNeutron(&NeutTrans);  InitNeutron(&NeutTransOut);
 
   // Set the vector magnitude to unity
   pNeutIn->Vector[0] = sqrt(1.0 - sq(pNeutIn->Vector[1]) - sq(pNeutIn->Vector[2])) ;
 
-  // rotates monochromator if applicable, selects CE on which the neutron is reflected and returns variables in the frame of CE
-  // 'rotateMonochr()' returns already information which CE is hit
+  // moves monochromator if applicable, selects CE on which the neutron is reflected and returns variables in the frame of CE
+  // 'rotateMonochr()' and 'translateMonoX' return already information which CE is hit
   // 'selectCE()' is needed to calculate the neutron parameters in the CE frame
-  if (Freq != 0.0)
-  { bHit = rotateMonochr(kHit, lHit, pNeutIn);
-    if (bHit) 
-    { bHit = selectCE(pNeutIn, &NeutInCE, kHit, lHit);
-      if (!bHit)                                    // check all CEs if the last rotation step changed the CE 
-        bHit = selectCE(pNeutIn, &NeutInCE, 0, 0);  // which is in fact very unlikely
-    }
-  }
-  else
-  { bHit = selectCE(pNeutIn, &NeutInCE, 0, 0);
+  switch (eMonoMove)
+  { 
+    case VT_MONO_FIX: 
+    case VT_MONO_PST: 
+      bHit = selectCE(pNeutIn, &NeutInCE, 0, 0);
+      break;
+    case VT_MONO_ROT:
+      bHit = rotateMonochr(kHit, lHit, pNeutIn);
+      if (bHit) 
+      { bHit = selectCE(pNeutIn, &NeutInCE, kHit, lHit);
+        if (!bHit)                                    // check all CEs if the last rotation step changed the CE 
+          bHit = selectCE(pNeutIn, &NeutInCE, 0, 0);  // which is in fact very unlikely
+      }
+      break;
+    case VT_MONO_OSC:
+      Error("Oscillating monochromator not yet realized");
+      /*bHit = translateMonoX(kHit, lHit, pNeutIn);
+      if (bHit) 
+      { bHit = selectCE(pNeutIn, &NeutInCE, kHit, lHit);
+        if (!bHit)                                    // check all CEs if the last rotation step changed the CE 
+          bHit = selectCE(pNeutIn, &NeutInCE, 0, 0);  // which is in fact very unlikely
+      }*/
+      break;
   }
 
   if (bHit==false)  // no CE was found
@@ -943,7 +975,7 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
     }
 
     // If a CE was found,  'NeutInCE' contains now position and direction of the incoming neutron in the frame of the reflecting crystal element.
-    // Now 'NeutPlCE' ís calculated which contains the properties of the neutron when arriving at the point of reflection 
+    // Now 'NeutPlCE' is calculated which contains the properties of the neutron when arriving at the point of reflection 
     // (in the frame of the reflecting crystal element)
     DelX = 0.0 - NeutInCE.Position[0];
     V0   = V_FROM_LAMBDA(NeutInCE.Wavelength);
@@ -981,10 +1013,8 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
                pi2_bragg,             // pi/2 - Bragg angle   
                d_rnd = d_spacing;     // randomly varied d-spacing within given range
 
-        // fills structure for reflected neutron
-        CopyNeutron(&NeutPlCE, &NeutRefl);
         // if (iRep > 0) ChangeNeutronID(&NeutRefl);
-        NeutRefl.Probability /= nRepete;
+        NeutPlCE.Probability /= nRepete;
 
          /* random d-spacing */     
         if (d_fwhm > 0) 
@@ -992,16 +1022,28 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
           if (d_spr_option==LORENTZIAN) d_rnd = RandomLorentzian(d_spacing, d_fwhm) ;
           if (d_spr_option==GAUSSIAN)   d_rnd = DistrGauss(d_spacing, d_sigma);  
         }
+
+        if (eMonoMove==VT_MONO_PST)
+          rotateMonoYZ(&NeutPlCE, &NeutPlRCE, Freq);
+        else
+          CopyNeutron(&NeutPlCE, &NeutPlRCE);
                  
         /* computes reflection angle corresponding to random d-spacindg */
-        arg = NeutRefl.Wavelength * iOrd / 2. / d_rnd ;
+        arg = NeutPlRCE.Wavelength * iOrd / 2.0 / d_rnd ;
         if (arg >= 1.05) return;   /* wavelength too large */
         if (arg >= 1.00) continue; /* wavelength for the chosen d-spacing too large */
         pi2_bragg = acos(arg) ;
-    
+
         // Here the reflection probability is calculated
         // and the neutron trajectory changes direction after reflection from a mosaic element.
-        NeutRefl.Probability *= calcReflProbAndDir(NeutRefl.Vector, NeutPlCE.Vector, pi2_bragg);   
+        CopyNeutron(&NeutPlRCE, &NeutReflRCE);
+        NeutReflRCE.Probability *= calcReflProbAndDir(NeutReflRCE.Vector, NeutPlRCE.Vector, pi2_bragg);   
+
+        if (eMonoMove==VT_MONO_PST)
+          rotateMonoYZ(&NeutReflRCE, &NeutRefl, -Freq); 
+        else
+          CopyNeutron(&NeutReflRCE, &NeutRefl);
+
         if (NeutRefl.Probability < wei_min) 
           continue;
 
@@ -1118,10 +1160,63 @@ bool Monochromator::rotateMonochr(int& kLast, int& lLast, const Neutron* pNeutIn
   check_rot:
     DelZeta = fabs(zetaN-zetaO) * 180.0 / M_PI;
   }
+
   while (bHit && DelZeta > DelZetaMax);
 
   return bHit;
 }
+
+void Monochromator::rotateMonoYZ(Neutron* pNeutIn, Neutron* pNeutRot, double freq)
+{
+  VectorType PosCEChop;                            // position of the current CE in the frame of the central CE
+  double y=0.0, z=0.0,                             // position of the neutron in the frame of the central CE
+         vxMF=0.0, vyMF=0.0, vzMF=0.0, vModMF=0.0, // speed of the neutron in the frame of the rotating monochromator
+         v0=0.0,  omega=0.0, angle=0.0, radius=0.0;
+
+  CopyVector(PosCE,       PosCEChop);
+  SubVector (PosCEChop,   PosCE0);
+  RotVector (RotMatrixCE, PosCEChop);           // Vector to current CE is now in the frame of the central CE
+
+  omega  = 2.0 * M_PI *freq; 
+  v0     = V_FROM_LAMBDA(pNeutIn->Wavelength);
+  y      = PosCEChop[1] + pNeutIn->Position[1];
+  z      = RadiusPST + PosCEChop[2] + pNeutIn->Position[2];
+  radius = sqrt(sq(y) + sq(z));
+  angle  = atan2(y, z);
+
+  vxMF   = v0*(pNeutIn->Vector[0]);
+  vyMF   = v0*(pNeutIn->Vector[1]) - omega*radius*cos(angle)/1000.0;   // factor 1000 for cm/s -> cm/ms
+  vzMF   = v0*(pNeutIn->Vector[2]) + omega*radius*sin(angle)/1000.0;
+  vModMF = sqrt(sq(vxMF) + sq(vyMF) + sq(vzMF));
+
+  CopyNeutron(pNeutIn, pNeutRot);
+  pNeutRot->Vector[0]  = vxMF/vModMF;
+  pNeutRot->Vector[1]  = vyMF/vModMF;
+  pNeutRot->Vector[2]  = vzMF/vModMF;
+  pNeutRot->Wavelength = LAMBDA_FROM_V(vModMF);
+}
+
+// void Monochromator::translateMonoX(Neutron* pNeutIn, Neutron* pNeutRot,double freq)
+// {
+//   double omega,
+// 	 vxMF, vyMF, vzMF, V0, vModMF, radiusPST;
+//
+//   CopyNeutron(pNeutIn, pNeutRot);
+//
+//   omega = freq; // 2*M_1_PI*freq;
+//   V0 = V_FROM_LAMBDA(pNeutIn->Wavelength);
+//
+//   vxMF = V0*(pNeutIn->Vector[0]) + omega*(pNeutIn->Position[0]);
+//   vyMF = V0*(pNeutIn->Vector[1]);
+//   vzMF = V0*(pNeutIn->Vector[2]);
+//
+//   vModMF = sqrt(sq(vxMF) + sq(vyMF) + sq(vzMF));
+//
+//   pNeutRot->Vector[0] = vxMF/vModMF;
+//   pNeutRot->Vector[1] = vyMF/vModMF;
+//   pNeutRot->Vector[2] = vzMF/vModMF;
+//   pNeutRot->Wavelength = LAMBDA_FROM_V(vModMF);
+// }
 
 // checks if neutron hits a plane and calculates flight time until arrival   [ms]
 bool Monochromator::checkCE(double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut)
@@ -1949,12 +2044,12 @@ void Monochromator::CopyMatricesToMatrix(int i, int j, std::vector < std::vector
 	if (Matrix[k][l][i].size() >= (j+1))
 	  Result[k][l] = Matrix[k][l][i][j] ;
 	else {
-	  fprintf(LogFilePtr,"Trying to access non-existing matrix elements in CopyMatricesToMatrix! Abort! \n") ;
+	  fprintf(LogFilePtr,"1 Trying to access non-existing matrix elements in CopyMatricesToMatrix! Abort! \n") ;
 	  exit(-1);
 	}
       }
       else {
-	fprintf(LogFilePtr,"Trying to access non-existing matrix elements in CopyMatricesToMatrix! Abort! \n") ;
+	fprintf(LogFilePtr,"2 Trying to access non-existing matrix elements in CopyMatricesToMatrix! Abort! \n") ;
 	exit(-1);
       }
     }
@@ -1988,12 +2083,12 @@ void Monochromator::CopyVectorsToVector(int i, int j, std::vector < std::vector<
       if (Vector[k][i].size() >= (j+1))
 	Result[k] = Vector[k][i][j] ;
       else {
-	  fprintf(LogFilePtr,"Trying to access non-existing matrix elements in CopyVectorsToVector! Abort! \n") ;
+	  fprintf(LogFilePtr,"3 Trying to access non-existing matrix elements in CopyVectorsToVector! Abort! \n") ;
 	  exit(-1);
       }
     }
     else {
-      fprintf(LogFilePtr,"Trying to access non-existing matrix elements in CopyVectorsToVector! Abort! \n") ;
+      fprintf(LogFilePtr,"4 Trying to access non-existing matrix elements in CopyVectorsToVector! Abort! \n") ;
       exit(-1);
     }
   }

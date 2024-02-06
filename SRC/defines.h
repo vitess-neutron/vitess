@@ -632,6 +632,16 @@ typedef enum
 }
 VtMonoType;
 
+// monochromator movement
+typedef enum
+{
+  VT_MONO_FIX = 0,    // no movement
+  VT_MONO_ROT = 1,    // rotation about a vertical axis
+  VT_MONO_PST = 2,    // rotation about a horizontal axis    
+  VT_MONO_OSC = 3,    // horizontal oscillation (for Doppler shift)
+}
+VtMonoMove;
+
 // focusing options
 typedef enum
 {

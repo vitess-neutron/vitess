@@ -1224,6 +1224,30 @@ VtMonoType  MonoType_Txt2ID(const char* sText)
   return eID;
 }
 
+// monochromator movement
+void        MonoMove_ID2Txt(char* sText, const VtMonoMove eID)
+{
+  switch (eID)
+  {
+    case VT_MONO_FIX: strcpy(sText, "no movement"             ); break;
+    case VT_MONO_ROT: strcpy(sText, "rotation vert. axis"     ); break;
+    case VT_MONO_PST: strcpy(sText, "rotation hor. axis (PST)"); break;
+    case VT_MONO_OSC: strcpy(sText, "oscillation"           ); break;
+    default         : strcpy(sText, "no movement"             );
+  }
+}
+VtMonoMove  MonoMove_Txt2ID(const char* sText)
+{
+  VtMonoMove eID=VT_MONO_FIX;
+
+       if (strcmp(sText, "no movement"             )==0) eID=VT_MONO_FIX;
+  else if (strcmp(sText, "rotation vert. axis"     )==0) eID=VT_MONO_ROT;
+  else if (strcmp(sText, "rotation hor. axis (PST)")==0) eID=VT_MONO_PST;
+  else if (strcmp(sText, "oscillation"             )==0) eID=VT_MONO_OSC;
+
+  return eID;
+}
+
 // focusing options
 void        MonoFocus_ID2Txt(char* sText, const VtMonoFocus eID)
 {
@@ -1232,7 +1256,7 @@ void        MonoFocus_ID2Txt(char* sText, const VtMonoFocus eID)
     case CONST_LMBD: strcpy(sText, "constant lambda" ); break;
     case SPHERICAL : strcpy(sText, "spherical"       ); break;
     case VERT_CYL  : strcpy(sText, "vert. cylinder"  ); break;
-    case DBL_FOC   : strcpy(sText, "double focussing"); break;
+    case DBL_FOC   : strcpy(sText, "double focusing");  break;
     default        : strcpy(sText, "");
   }
 }
@@ -1243,7 +1267,8 @@ VtMonoFocus MonoFocus_Txt2ID(const char* sText)
        if (strcmp(sText, "constant lambda" )==0) eID=CONST_LMBD;
   else if (strcmp(sText, "spherical"       )==0) eID=SPHERICAL ;
   else if (strcmp(sText, "vert. cylinder"  )==0) eID=VERT_CYL  ;
-  else if (strcmp(sText, "double focussing")==0) eID=DBL_FOC   ;
+  else if (strcmp(sText, "double focussing")==0 ||
+           strcmp(sText, "double focusing") ==0) eID=DBL_FOC   ;
   
   return eID;
 }

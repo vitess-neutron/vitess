@@ -247,6 +247,18 @@
         </tr>
 
         <tr>
+          <td> movement<br> [-] </td>
+          <td>
+            Type of movement of the monochromator crystal(s):<br />
+            a) no movement<br />
+            b) rotation about a vertical axis<br />
+            c) rotation on a chopper about a horizontal axis parallel to the beam, usually used as phase space transformer (PST)<br />
+            d) oscillation along beam axis used to vary the wavelength via Doppler effect
+          </td>
+          <td> 'no movement'<br />'rotation vert. axis'<br />'rotation hor. axis (PST)'<br />'oscillation'</td>
+          <td>-b</td>
+        </tr>
+        <tr>
           <td valign="top" width="18%">frequency <br>[Hz]</td>
           <td valign="top" width="54%"><i>f</i> <br>Frequency of the monochromator rotation or oscillation </td>
           <td valign="top" width="28%">Default: 0.0</td>
@@ -262,6 +274,12 @@
           </td>
           <td valign="top" width="28%">Default: 0.0</td>
           <td>-p</td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">chopper radius <br>[cm]</td>
+          <td valign="top" width="54%"><i>f</i> <br>For PST only: Distance from the chopper axle to the center of the monochromator (which is mounted on the chopper to work as a phase space transformer - PST) </td>
+          <td valign="top" width="28%">Default: 0.0</td>
+          <td>-w</td>
         </tr>
 
         <tr>

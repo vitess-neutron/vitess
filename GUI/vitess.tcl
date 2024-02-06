@@ -1717,8 +1717,10 @@ set ma_flat_newESET {
   {refl float 1 {"peak\nreflectivity" "(Experimentally determined) peak reflectivity of this monochromator." "" R} gt0 "" 1}
   {reprate int 1 {"repetition"  "If this integer > 1, the trajectory is used multiple times for better statistics." "" A} 1 1000 1}
   {}
-  {mo_freq float 0  {"frequency\n[Hz]" "Rotations per second of the monochromator about a vertical axis" "" f}}
-  {mo_phas float 0  {"initial\nphase [deg]" "orientation of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection" "" p}}
+  {mo_move radio "no movement" {"movement" "Type of movement of the monochromator crystal(s)" "" b} {"no movement" "rotation vert. axis" "rotation hor. axis (PST)" "oscillation"} {0 1 2 3}}
+  {mo_freq float 0 {"frequency\n[Hz]" "Frequency of the monochromator rotation/oscillation" "" f}}
+  {mo_phas float 0 {"initial\nphase [deg]" "Phase of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection" "" p}}
+  {mo_rad float 0  {"chopper\nradius[cm]" "For PST only: Distance from the chopper axle to the center of the monochromator" "" w}}
   {}
   {mo_scat float 0 {"total scat-\ntering [1/cm]" "macroscopic total scattering cross-section of the crystal [1/cm]" "" c} ge0}
   {mo_abs  float 0  {"absorption\n[1/cm]" "macroscopic absorption cross-section of the crystal for 1.798 Ang [1/cm]" "" C} ge0}
@@ -1729,7 +1731,7 @@ set ma_flat_newESET {
 ###   focus initialization
 set ma_focus_newESET [concat [globVal ma_flat_newESET] {
   {focus_file pareditablefile lamb_foc.dat {"focus file" "The focus file defines position and size deviation as well as orientation of each crystal element.\nFor details see Help|Modules M|ma_focus_new.\nIt is output in the option 'ma_focus' and input for ma_focus_dat" "" G} w "" 1}
-  {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
+  {fopt radio "double focusing" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"constant lambda" spherical "vert. cylinder" "double focusing"} {1 2 3 4}}
   {}
   {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the crystal element matrix.\n1 for 'vert. cylinder'" "" H} gt0 "" 1}
   {cevnum int 18 {"number of CE\nvertical" "The number of rows of the crystal element matrix." "" V} gt0 "" 1}

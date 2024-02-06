@@ -61,19 +61,35 @@ monochromator:
 
   - Title_rotation:
       type:    "title"
-      default: "Rotation of the monochromator"
+      default: "Movement of the monochromator"
+  - eMonoMove:          # use:  VtMonoMove MonoMove_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "movement"
+      tooltip: "Type of movement of the monochromator crystal(s)"
+      enum:    "VtMonoMove"
+      options: ["VT_MONO_FIX", "VT_MONO_ROT", "VT_MONO_PST", "VT_MONO_OSC"]
+      default: "VT_MONO_FIX"
+      column:  0
+      prefix:  "-b"
   - Freq:
       type:    "float"
       descr:   "frequency [Hz]"
       tooltip: "Rotations per second of the monochromator about a vertical axis"
-      column:  0
+      column:  1
       prefix:  "-f"
   - Phase:
       type:    "float"
       descr:   "initial phase [deg]"
       tooltip: "orientation of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is defined by the offset of the Bragg reflection"
-      column:  1
+      column:  2
       prefix:  "-p"
+  - Radius:
+      type:    "float"
+      descr:   "chopper radius [cm]"
+      tooltip: "For PST only: Distance from the chopper axle to the center of the monochromator (that is mounted on the chopper to work as a phase space transformer)"
+      column:  0
+      min:     0.1
+      prefix:  "-w"
 
   - Title_properties:
       type:    "title"

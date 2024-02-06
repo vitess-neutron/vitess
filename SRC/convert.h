@@ -148,11 +148,14 @@ VtMonoArrange MonoArrange_Txt2ID(const char* sText);
 void        MonoType_ID2Txt(char* sText, const VtMonoType eID);
 VtMonoType  MonoType_Txt2ID(const char* sText);
 
+void        MonoMove_ID2Txt(char* sText, const VtMonoMove eID);
+VtMonoMove  MonoMove_Txt2ID(const char* sText);
+
 void        MonoFocus_ID2Txt(char* sText, const VtMonoFocus eID);
 VtMonoFocus MonoFocus_Txt2ID(const char* sText);
 
 void        ChnlShape_ID2Txt(char* sText, const VtChnlShape eID);
-VtChnlShape  ChnlShape_Txt2ID(const char* sText);
+VtChnlShape ChnlShape_Txt2ID(const char* sText);
 
 // Samples
 // -------
