@@ -651,11 +651,11 @@ set source_ESS_2012ESET [concat {
     {datvsn radio 2016_Butterfly1 {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
   } $fl $sp [list $al] $smASET $cwsASET]
 
-set al [list modfile pareditablefile HBS_cold3T_D20L100.mod $li w lmo 1]
+set al [list modfile pareditablefile HBS_cold_v7.mod $li w lmo 1]
 set fl [sore1 96 0.208]
 set source_HBSESET [concat $fl [list $al] $smASET $cwsASET]
 
-set al [list modfile pareditablefile HBS_cold3T_D20L100.mod $li w lmo 1]
+set al [list modfile pareditablefile HBS_cold_v7.mod $li w lmo 1]
 set fl [sore1 24 0.833]
 set source_long_pulsedESET [concat $fl [list $al] $smASET $cwsASET]
 
