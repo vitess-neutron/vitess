@@ -65,8 +65,12 @@
       Important: In this mode, the global coordinate system is not altered by the 'standard frame generation', but needs to be defined as a 'user defined frame'
       or changed in a subsequent frame module.
     </b>
-    <br />
-    Furthermore, the latest version of the new monochromator module also allows rotation of the monochromator/analyzer about a vertical axis.
+  </p>
+  <p>
+    The latest version of the new monochromator module also allows different movements of the monochromator/analyzer: 
+    an oscillation of the monochromator on a Doppler drive following a sinus function, 
+    a rotation on a chopper rotating about a horizontal axis to realize a phase space transformer (PST), 
+    and a rotation about the vertical axis.
   </p>
 
 
@@ -259,6 +263,15 @@
           <td>-b</td>
         </tr>
         <tr>
+          <td>randomize TOF<br> [-] </td>
+          <td>
+            no : the time of arrival at the monochromator is given by (the starting time at the source and) the time-of-flight to the monochromator. <br>
+            yes: the time of arrival at the monochromator is defined by a random choice  within the time interval [-T/2,T/2] (<i>T</i>: period of the monochromator rotation or oscillation), i.e. the real TOF is ignored.
+          </td>
+          <td>yes / no <br>default: yes </td>
+          <td> -K </td>
+        </tr>
+        <tr>
           <td valign="top" width="18%">frequency <br>[Hz]</td>
           <td valign="top" width="54%"><i>f</i> <br>Frequency of the monochromator rotation or oscillation </td>
           <td valign="top" width="28%">Default: 0.0</td>
@@ -276,9 +289,28 @@
           <td>-p</td>
         </tr>
         <tr>
-          <td valign="top" width="18%">chopper radius <br>[cm]</td>
-          <td valign="top" width="54%"><i>f</i> <br>For PST only: Distance from the chopper axle to the center of the monochromator (which is mounted on the chopper to work as a phase space transformer - PST) </td>
-          <td valign="top" width="28%">Default: 0.0</td>
+          <td valign="top" width="18%">drive amplitude<br>[cm]</td>
+          <td valign="top" width="54%"><i>A<sub>dop</sub></i> <br>For Doppler drive only: Amplitude of the Doppler drive along x axis (= max. distance from zero position) <br />
+                                       A time depence of x(t) = A<sub>dop</sub> sin(&omega; t) is assumed; the direction is supposed be along the axis or close to it. </td>
+          <td valign="top" width="28%">Default: 0.0<br>typical: 5 to 10 cm</td>
+          <td>-Q</td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">number of areas<br>[-]</td>
+          <td valign="top" width="54%"><i>N<sub>pst</sub></i> <br>For PST only: number of identical areas, where the monochromator is mounted on the chopper </td>
+          <td valign="top" width="28%">Default: 0.0<br>typical: 1 to 3</td>
+          <td>-n</td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">area width<br>[deg]</td>
+          <td valign="top" width="54%"><i>W<sub>pst</sub></i> <br>For PST only: angular range for each area, where the monochromator is mounted on the chopper </td>
+          <td valign="top" width="28%">Default: 0.0<br>typical: 60 to 220 deg</td>
+          <td>-q</td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">chopper radius<br>[cm]</td>
+          <td valign="top" width="54%"><i>R<sub>chop</sub></i> <br>For PST only: distance from the chopper axle to the center of the monochromator</td>
+          <td valign="top" width="28%">Default: 0.0<br>typical: 30 to 60 cm</td>
           <td>-w</td>
         </tr>
 
@@ -294,7 +326,7 @@
         </tr>
 
         <tr>
-          <td valign="top" width="18%">absorption&nbsp; <br>[1/cm]</td>
+          <td valign="top" width="18%">absorption<br>[1/cm]</td>
           <td valign="top" width="54%">
             <i>&mu;<sub>abs</sub></i>  <br>
             Macroscopic absorption cross-section in the crystal for 1.798 &Aring; <br />
@@ -305,7 +337,7 @@
         </tr>
 
         <tr>
-          <td valign="top" width="18%">geometry&nbsp; <br>[-] </td>
+          <td valign="top" width="18%">geometry<br>[-] </td>
           <td valign="top" width="54%">
             <br>
             'Reflection'  : Monochromator used in reflection geometry <br>
@@ -552,29 +584,30 @@
   <!-- TABLE 5: Focus File       -->
   <!-- ------------------------- -->
   <p>
-  <font face="Symbol">-</font>    Description of the focus file (filename must be given as input): <br>
-  <table border="1" cellpadding="5" width="809">
-  <tbody>
-  <tr>
-    <td valign="top" width="18%"><b>File</b></td>
-    <td valign="top" width="54%"><b>Format</b></td>
-    <td valign="top" width="28%"><b>Examples Attached</b></td>
-    <td><b>Command Option</b></td>
-  </tr>
-  <tr>
-    <td valign="top" width="18%">focus file</td>
-    <td valign="top" width="54%">
-      First row includes 2 integer numbers: n<sub>H</sub>, n<sub>V</sub>, the number of columns and rows of the created CE-matrix. (H = horizontal, V = vertical.)
-      Next n<sub>H</sub>, n<sub>V</sub> rows are created by two program loops (internal loop: V) computing 8 values representing
-      <i>deviations</i> from the main values for each single CE. These are interpreted by the program as follows:  <br> 
-      The position    of each single CE is (<i>x</i>,<i>y</i>,<i>z</i>) +   <i>deviation from</i> (<i>x</i>,<i>y</i>,<i>z</i>)   as read from columns 1 - 3. <br> 
-      The dimension   of each single CE (thickness, width, height) is (<i>t</i>,<i>w</i>,<i>h</i>) +   <i>deviation from</i> (<i>t</i>,<i>w</i>,<i>h</i>)   as read from columns 4 - 6.<br> 
-      The orientation (hor., vert.) of each single CE is (<i>&theta;</i>, <i>&psi;</i>) + <i>deviation from</i> (<i>&theta;</i>, <i>&psi;</i>) as read from columns 7, 8. </td>
-    <td valign="top" width="28%">lamb_foc.dat</td>
-    <td>-G</td>
-  </tr>
-  </tbody>
-  </table>
+    <font face="Symbol">-</font>    Description of the focus file (filename must be given as input): <br>
+    <table border="1" cellpadding="5" width="809">
+      <tbody>
+        <tr>
+          <td valign="top" width="18%"><b>File</b></td>
+          <td valign="top" width="54%"><b>Format</b></td>
+          <td valign="top" width="28%"><b>Examples Attached</b></td>
+          <td><b>Command Option</b></td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">focus file</td>
+          <td valign="top" width="54%">
+            First row includes 2 integer numbers: n<sub>H</sub>, n<sub>V</sub>, the number of columns and rows of the created CE-matrix. (H = horizontal, V = vertical.)
+            Next n<sub>H</sub>, n<sub>V</sub> rows are created by two program loops (internal loop: V) computing 8 values representing
+            <i>deviations</i> from the main values for each single CE. These are interpreted by the program as follows:  <br>
+            The position    of each single CE is (<i>x</i>,<i>y</i>,<i>z</i>) +   <i>deviation from</i> (<i>x</i>,<i>y</i>,<i>z</i>)   as read from columns 1 - 3. <br>
+            The dimension   of each single CE (thickness, width, height) is (<i>t</i>,<i>w</i>,<i>h</i>) +   <i>deviation from</i> (<i>t</i>,<i>w</i>,<i>h</i>)   as read from columns 4 - 6.<br>
+            The orientation (hor., vert.) of each single CE is (<i>&theta;</i>, <i>&psi;</i>) + <i>deviation from</i> (<i>&theta;</i>, <i>&psi;</i>) as read from columns 7, 8.
+          </td>
+          <td valign="top" width="28%">lamb_foc.dat</td>
+          <td>-G</td>
+        </tr>
+      </tbody>
+    </table>
   </p>
 
   <p><b>Option Crystal_focus_dat</b> </p>

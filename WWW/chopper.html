@@ -100,14 +100,14 @@
           <tr>
             <td>randomize TOF</td>
             <td>
-              yes: the time of arrival at the chopper is defined by a random choice  within a period of the chopper disc, i.e. the real TOF is ignored.
+              no : the time of arrival at the chopper is given by the starting time at the source and the time-of-flight to the chopper. <br>
+              yes: the time of arrival at the chopper is defined by a random choice within the period of the chopper disc, i.e. the real TOF is ignored.
               The minimal value of the time interval is calculated from the initial offset and the chopper positions to avoid splitting one pulse into two. <br>
-              no : the time of arrival at the chopper is given by starting time at the source and time-of-flight to the chopper.   <br>
               This option is useful for the first chopper of a TOF instrument on a continuous source.
               It can be combined with the option 'set zero time'  <br>
             </td>
-            <td>yes / no</td>
-            <td> -r     </td>
+            <td>yes / no <br>default: no </td>
+            <td> -r </td>
           </tr>
           <tr>
             <td>set zero time</td>
@@ -119,8 +119,8 @@
               This option is useful for time-of-flight instruments on constant wave sources.<br>
               No: nothing happens (default, only option until Vitess 2.3)<br>
             </td>
-            <td>'yes', 'no'</td>
-            <td>    -z     </td>
+            <td>yes / no</td>
+            <td>   -z   </td>
           </tr>
           <tr>
             <td> treat neutrons passing by </td>

@@ -48,7 +48,7 @@ monochromator:
       descr:   "transmission"
       tooltip: "no: neutrons that are not reflected by the crystal lattice are removed\nyes: neutrons that are not reflected will be transmitted and treated in the next module.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged."
       default:  no
-      column:   0
+      column:   1
       prefix:  "-B"
   - nRep:
       type:    "int"
@@ -56,7 +56,7 @@ monochromator:
       tooltip: "Number of trajectories generated per incoming trajectory\nIf greater 1, the trajectory is used multiple times for better statistics."
       min:     1
       default: 1
-      column:  1
+      column:  2
       prefix:  "-A"
 
   - Title_rotation:
@@ -71,23 +71,51 @@ monochromator:
       default: "VT_MONO_FIX"
       column:  0
       prefix:  "-b"
+  - bRndTof :
+      type:    "switch"
+      descr:   "randomize TOF"
+      tooltip: "yes: the time of arrival at the chopper is defined by a random choice within the period of the chopper disc, i.e. the real TOF is ignored."
+      default: yes
+      column:  1
+      prefix:  "-K"
   - Freq:
       type:    "float"
       descr:   "frequency [Hz]"
-      tooltip: "Rotations per second of the monochromator about a vertical axis"
-      column:  1
+      tooltip: "Frequence per second of the monochromator about a vertical axis"
+      column:  0
       prefix:  "-f"
   - Phase:
       type:    "float"
       descr:   "initial phase [deg]"
       tooltip: "orientation of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is defined by the offset of the Bragg reflection"
-      column:  2
+      column:  1
       prefix:  "-p"
-  - Radius:
+  - AmplDoppler:
+      type:    "float"
+      descr:   "drive amplitude[cm]"
+      tooltip: "For Doppler drive only: Amplitude of the Doppler drive oscillation along the x axis"
+      column:  2
+      min:     0.1
+      prefix:  "-Q"
+  - nAreasPST:
+      type:    "int"
+      descr:   "number of areas"
+      tooltip: "For PST only: number of identical areas, where the monochromator is mounted on the chopper"
+      default:  1
+      column:   0
+      prefix:  "-n"
+  - AreaWidthPST:
+      type:    "float"
+      descr:   "area width [deg]"
+      tooltip: "For PST only: angular range for each area, where the monochromator is mounted on the chopper"
+      column:  1
+      min:     0.1
+      prefix:  "-q"
+  - RadiusChop:
       type:    "float"
       descr:   "chopper radius [cm]"
       tooltip: "For PST only: Distance from the chopper axle to the center of the monochromator (that is mounted on the chopper to work as a phase space transformer)"
-      column:  0
+      column:  2
       min:     0.1
       prefix:  "-w"
 

@@ -15,6 +15,7 @@
 /* 2.2  Jan 2020  K. Lieutenant   option: rotating monochromator                             */  
 /* 2.3  Apr 2020  K. Lieutenant   adaption to VITESS 4, e.g. file parameters to input param. */  
 /* 2.4  Feb 2024  K. Lieutenant   PST option added                                           */  
+/* 2.5  Feb 2024  K. Lieutenant   Doppler drive and random TOF options added, windows for PST*/
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
   // --------------
   _eModule=monochrom.eModule;
 	Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "2.4");
+  PrintModuleName(_eModule, "2.5");
 
   monochrom.OwnInit(argc, argv);
 
@@ -47,10 +48,10 @@ int main(int argc, char *argv[])
   if (bVisInstr) 
     bBlowUp     = FALSE;
 
-  /* Reads monochromator parameters and combines with them input parameters */
+  /* Reads monochromator parameters and combines them with input parameters */
    monochrom.setMonochrPar();
 
-  /* Determines the dependent parameters and write out important parameters */
+  /* Determines the dependent parameters and writes out important parameters */
    monochrom.calcAndWritePar();
   
   DECLARE_ABORT;

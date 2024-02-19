@@ -1485,7 +1485,7 @@ set chopper_discESET {
     "ideal: perfect chopper absorption\nGd: imperfect chopper absorption by gadolinium\nBor: imperfect chopper absorption by bor-10" "" g}
     {ideal Gd Bor} {0 1 2}}
   {rnd_tof radio no {
-    "randomize TOF"
+    "randomize\nTOF"
     "yes: the time of arrival at the chopper is defined by a random choice within the period of the chopper disc, i.e. the real TOF is ignored.\nUseful for the first chopper of a TOF instrument on a continuous source" "" r}
     {yes no} {1 0}}
   {time_to_zero radio no {
@@ -1710,26 +1710,34 @@ set ma_flat_newESET {
   {mode radio Reflection {"Geometry" "Choose between 'reflection' and 'transmission' geometry of the monochromator." "" X} {Reflection Transmission} {1 2}}
   {trns radio blocked {"transmission" "Select if the neutrons that are not reflected by the crystal lattice shall be treated.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged." "" B} {blocked treated} {0 1}}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
-  {}
+  {"Crystal parameters" header}
   {shoriz float 0.8 {"mosaic spread\nhoriz. [deg]" "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" m} ge0 "" 1}
   {svert float 0.8  {"mosaic spread\nvert. [deg]" "Vertical fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" M}  ge0 "" 1}
-  {dspread float 0.00005 {"d spread" "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal. " "" D} ge0 "" 1}
+  {dspread float 0.00005 {"d spread" "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal." "" D} ge0 "" 1}
   {refl float 1 {"peak\nreflectivity" "(Experimentally determined) peak reflectivity of this monochromator." "" R} gt0 "" 1}
-  {reprate int 1 {"repetition"  "If this integer > 1, the trajectory is used multiple times for better statistics." "" A} 1 1000 1}
+  {"Rotation and Oscillation" header}
+  {mo_move radio "no movement" {"movement" "Type of movement of the monochromator crystal(s)" "" b} {"no movement" "rotation vert. axis" "rotation hor. axis (PST)" "oscillation (Doppler)"} {0 1 2 3}}
+  {mo_rndt radio yes {"randomize\nTOF" "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored.\nUseful for a PST on a continuous source" "" K} {yes no} {1 0}}
   {}
-  {mo_move radio "no movement" {"movement" "Type of movement of the monochromator crystal(s)" "" b} {"no movement" "rotation vert. axis" "rotation hor. axis (PST)" "oscillation"} {0 1 2 3}}
   {mo_freq float 0 {"frequency\n[Hz]" "Frequency of the monochromator rotation/oscillation" "" f}}
   {mo_phas float 0 {"initial\nphase [deg]" "Phase of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection" "" p}}
-  {mo_rad float 0  {"chopper\nradius[cm]" "For PST only: Distance from the chopper axle to the center of the monochromator" "" w}}
+  {mo_ampl float 0 {"drive\namplitude[cm]" "For Doppler drive only: Amplitude of the Doppler drive along the x axis" "" Q}}
   {}
+  {mo_nwnd float 0 {"number\nof areas" "For PST only: number of identical areas, where the monochromator is mounted on the chopper" "" n}}
+  {mo_wdth float 0 {"area\nwidth [deg]" "For PST only: angular range of each area, where the monochromator is mounted on the chopper" "" q}}
+  {mo_rad float 0  {"chopper\nradius[cm]" "For PST only: distance from the chopper axle to the center of the monochromator" "" w}}
+  {}
+  {"Attenuation and repetition" header}
   {mo_scat float 0 {"total scat-\ntering [1/cm]" "macroscopic total scattering cross-section of the crystal [1/cm]" "" c} ge0}
-  {mo_abs  float 0  {"absorption\n[1/cm]" "macroscopic absorption cross-section of the crystal for 1.798 Ang [1/cm]" "" C} ge0}
+  {mo_abs  float 0 {"absorption\n[1/cm]" "macroscopic absorption cross-section of the crystal for 1.798 Ang [1/cm]" "" C} ge0}
+  {reprate int 1 {"repetition"  "If this integer > 1, the trajectory is used multiple times for better statistics." "" A} 1 1000 1}
   {}
 }
 
 ### New monochromator analyser
 ###   focus initialization
 set ma_focus_newESET [concat [globVal ma_flat_newESET] {
+  {"Focusing" header}
   {focus_file pareditablefile lamb_foc.dat {"focus file" "The focus file defines position and size deviation as well as orientation of each crystal element.\nFor details see Help|Modules M|ma_focus_new.\nIt is output in the option 'ma_focus' and input for ma_focus_dat" "" G} w "" 1}
   {fopt radio "double focusing" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"constant lambda" spherical "vert. cylinder" "double focusing"} {1 2 3 4}}
   {}

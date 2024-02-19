@@ -1232,7 +1232,7 @@ void        MonoMove_ID2Txt(char* sText, const VtMonoMove eID)
     case VT_MONO_FIX: strcpy(sText, "no movement"             ); break;
     case VT_MONO_ROT: strcpy(sText, "rotation vert. axis"     ); break;
     case VT_MONO_PST: strcpy(sText, "rotation hor. axis (PST)"); break;
-    case VT_MONO_OSC: strcpy(sText, "oscillation"           ); break;
+    case VT_MONO_OSC: strcpy(sText, "oscillation (Doppler)"   ); break;
     default         : strcpy(sText, "no movement"             );
   }
 }
@@ -1243,7 +1243,7 @@ VtMonoMove  MonoMove_Txt2ID(const char* sText)
        if (strcmp(sText, "no movement"             )==0) eID=VT_MONO_FIX;
   else if (strcmp(sText, "rotation vert. axis"     )==0) eID=VT_MONO_ROT;
   else if (strcmp(sText, "rotation hor. axis (PST)")==0) eID=VT_MONO_PST;
-  else if (strcmp(sText, "oscillation"             )==0) eID=VT_MONO_OSC;
+  else if (strcmp(sText, "oscillation (Doppler)"   )==0) eID=VT_MONO_OSC;
 
   return eID;
 }

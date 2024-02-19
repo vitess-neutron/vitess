@@ -45,11 +45,15 @@ class Monochromator{
   VtMonoType    eMonoMode;             // -X        [-]   Monochr. geometry:     1: reflection,      2: transmission,      
   VtMonoArrange eGeomOption;           // -O        [-]   Geometry option:       1: single element   2: geometry calculated  3: geometry from file
   VtMonoMove    eMonoMove;             // -b        [-]   Monochr. movement:     0: none             1: vert. rotation       2: hor. rotation (PST)   3: hor. oscillation (Doppler)
-  int        bTransm;                  // -B        [-]   Treat transmitted beam 1: yes              0: no
-  int        nRepete;                  // -A        [-]   Number of times the neutrons is reflected at the monochromator
-  double     Freq,                     // -f       [1/s]  Rot. frequency of the monochromator                             
+  short      bTransm,                  // -B        [-]   Treat transmitted beam 1: yes              0: no
+             bRndTof;                  // -K        [-]   flag: time of arrival is set by a random choice within the period of the monochromator movement
+  double     Freq,                     // -f       [1/s]  Frequency of the monochromator rotation or translation
+             Zeta0,                    // -p       [deg]  zero time orientation of the moving monochromator
+             AmplDop,                  // -Q       [cm]   For Doppler drive only: Amplitude of the Doppler drive along x axis (= max. distance from zero position)
              RadiusPST,                // -w       [cm]   For PST only: Distance from the chopper axle to the center of the monochromator
-             Zeta0;                    // -p       [deg]  zero time orientation of the rotating monochromator             
+             AreaWidthPST;             // -q       [deg]  For PST only: angular range for each area, where the monochromator is mounted on the chopper
+  int        nAreasPST,                // -n        [-]   For PST only: number of identical areas, where the monochromator is mounted on the chopper
+             nRepete;                  // -A        [-]   Number of times the neutrons is reflected at the monochromator
   double     mosaic_fwhm[2];           // -m -M    [deg]  Horizontal and vertical mosaicity 
   VtDistr    d_spr_option;             // -d        [-]   d-spacing distribution function        1: Lorentzian           2: Gaussian
   double     d_fwhm,                   // -D        [-]   relative d-spread del_d/d (fwhm)   (multiplied by d to get del_d after read in)
@@ -73,6 +77,11 @@ class Monochromator{
   VtFrameGen eFrame;                   // -F       [-]    flag: 'user defined frame' 1: yes   0: no
   double     d_spacing;                // -S       [cm]   Distance of the (h,k,l) crystal planes
   int        nOrderRefl;               // -N       [-]    Order of Bragg reflection (usually 1), -1 means all
+
+  // used: a b c d e f g h i j k l m n   p q r s t u v w x y z
+  //       A B C D E F G H     K L M N O P Q R S T U V W X Y Z
+  // free:                             o
+  //                       I J
                                               
   // Monochromator variables from the  geometry file or from calculation
   std::vector < std::vector<double> >         
@@ -102,7 +111,9 @@ class Monochromator{
              braggAngleTot,            //                 total bragg angle (in case braggHor > 0 and braggVer > 0), 
              axisPhi;                  //                 spherical angle Phi of the instrument axis in the Bragg frame, needed for the normalisation procedure
   int        mosRndmDir;               //                 defines direction for normal and random mosaicity: 1: vert. norm, hor. rnd  2: vice versa
-  double     fNorm[3], fRndm[3];       //                 contains parameters for Gaussian distribution of mosaicity
+  double     fNorm[3], fRndm[3],       //                 contains parameters for Gaussian distribution of mosaicity
+             Period,                   //           [ms]  period of the monochromator movement
+             TrndMin, TrndMax;         //                 minimum and maximum value of the randomized arrival time
                                                           
   // Variables of the trajectories                        
   Neutron*   currentNeutron;                              
@@ -110,8 +121,13 @@ class Monochromator{
   double     TOF, Prob;                //                 time of flight, weight
   long       NumOut;                   //                 number of written trajectories
                                                           
-  // Parameters for the monochromator rotation            
-  double     DelZetaMax;               //                 max. difference between rotational angle in last and last but one approximation step
+  // Parameters for the monochromator rotation or oscillation
+  double     DelZetaMax,               //  [deg]          max. difference in rotational angle between last and last but one approximation step
+             DelXmax;                  //  [cm]           max. difference in Doppler drive position between last and last but one approximation step
+  //         vMax;                     // [cm/ms]         max. speed of the Doppler drive or speed of the crystal on PST chopper
+  VectorType rDop,                     //  [cm]           position of the Doppler drive at time of impact (in the frame of module)
+             vDop;                     // [cm/ms]         speed of the Doppler drive at time of impact (in the frame of module)
+
   
 
   // Member functions
@@ -135,6 +151,8 @@ class Monochromator{
   void        processNeutron(Neutron* neutron);  
 
   bool        rotateMonochr     (int& kLast, int& lLast, const Neutron* pNeutIn);
+  bool        translateMonoX    (int& kLast, int& lLast, Neutron* pNeutInM, const Neutron* pNeutIn);
+  void        TranslBackMonoX   (Neutron* pNeutIn, Neutron* pNeutOut);
   void        rotateMonoYZ      (Neutron* pNeutIn, Neutron* pNeutRot, double Freq);
   bool        checkCE           (double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut);
   bool        isNeutInCE        (MathVector vPosN, const VectorType SizeCE);
