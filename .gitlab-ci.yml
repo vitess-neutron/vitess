@@ -100,7 +100,7 @@ compile-darwin:
 
 compile-windows:
   extends: .compile-base
-  image: windows_cpp17:10-vc17
+  image: windows:10-vc17
   tags:
     - libvirt
   variables:

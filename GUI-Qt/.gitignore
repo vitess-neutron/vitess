@@ -1,0 +1,6 @@
+/Vitess-Qt
+/Makefile
+/qrc_resource.cpp
+/ui_*.h
+/.qmake.stash
+/.moc/
