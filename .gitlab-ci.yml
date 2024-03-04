@@ -1,5 +1,5 @@
 variables:
-  VITESS_VERSION: "3.5"
+  VITESS_VERSION: "3.6"
 
 stages:
   - build
@@ -77,6 +77,9 @@ compile-darwin:
   variables:
     OS: Darwin
     ARCH: x86_64
+    DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
+    DARWIN_DATA_USER: "gitlab+deploy-token-92"
+    DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
   before_script:
     - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
     - cd vitess-data
@@ -103,6 +106,9 @@ compile-windows:
   variables:
     OS: Windows10
     ARCH: x86
+    WINDOWS_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-windows-data.git"
+    WINDOWS_DATA_USER: "gitlab+deploy-token-91"
+    WINDOWS_DATA_PASSWORD: "NzWKCpEizPVzMEUSgxGA"
   script:
     - cd /c
     - git clone -b vitess${VITESS_VERSION} https://${WINDOWS_DATA_USER}:${WINDOWS_DATA_PASSWORD}@${WINDOWS_DATA_REPO} vitess-data

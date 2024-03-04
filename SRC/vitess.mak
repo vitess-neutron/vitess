@@ -6,7 +6,7 @@
 # from a Microsoft VS 2017 cmd.exe
 
 VERSION_MAJOR = 3
-VERSION_MINOR = 5
+VERSION_MINOR = 6
 GSLPATH = .\rng
 G2PATH = .\g2-0.72
 
