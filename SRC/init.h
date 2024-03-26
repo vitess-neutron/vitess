@@ -15,46 +15,46 @@
 extern "C" {
 #endif
 
-extern char*    sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
+extern char*         sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
 
-extern McCompID _eModule;       /* ID of the module                */
-extern double   BlowUp;         /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
-extern long     BufferSize;     /* size of the neutron input and ouput buffer */
-extern Neutron* InputNeutrons;  /* input neutron Buffer */
-extern Neutron* OutputNeutrons; /* output neutron buffer */
-extern long     OutNeutPtr;     /* points to the next free position in OutputNeutrons */
-extern long     CompressedSize; /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
-extern VtModGeom stGeometry;    /* data needed to draw a picture of the component represented by the module */
+extern McCompID      _eModule;       /* ID of the module                */
+extern double        BlowUp;         /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
+extern long          BufferSize;     /* size of the neutron input and ouput buffer */
+extern Neutron*      InputNeutrons;  /* input neutron Buffer */
+extern Neutron*      OutputNeutrons; /* output neutron buffer */
+extern long          OutNeutPtr;     /* points to the next free position in OutputNeutrons */
+extern long          CompressedSize; /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
+extern VtModGeom     stGeometry;    /* data needed to draw a picture of the component represented by the module */
+extern unsigned long VRandomSeed;    /* random seed, default 0, set by --Z */
+extern long          NumNeutGot;     /* number of neutrons read in the current batch */
+extern double        NumNeutRead;    /* number of neutrons read in total */
+extern double        NumNeutWritten; /* number of neutrons written in total */
+extern long          NumEobRead;     /* number of 'EndOfBunch' data sets read in total */
+extern long          NumEobWritten;  /* number of trajectories written in total */
 
-extern long     NumNeutGot;     /* number of neutrons read in the current batch */
-extern double   NumNeutRead;    /* number of neutrons read in total */
-extern double   NumNeutWritten; /* number of neutrons written in total */
-extern long     NumEobRead;     /* number of 'EndOfBunch' data sets read in total */
-extern long     NumEobWritten;  /* number of trajectories written in total */
+extern FILE*         InputFilePtr;   /* stream from which the neutrons are read */
+extern FILE*         OutputFilePtr;  /* stream to which the neutrons are written */
+extern FILE*         LogFilePtr;     /* stream to which things are logged */
+extern char*         InputFileName;  /* file to read neutrons */
+extern char*         OutputFileName; /* file to write neutrons */
+extern char*         LogFileName;    /* log filename  */
+extern char*         ParDirectory;   /* parameter directory */
+extern char          sModuleName[MOD_NAME_LEN+1],  /* name of the module        */
+                     sVisDescrpt[MOD_NAME_LEN+9];  /* name in the visualization */
 
-extern FILE*    InputFilePtr;   /* stream from which the neutrons are read */
-extern FILE*    OutputFilePtr;  /* stream to which the neutrons are written */
-extern FILE*    LogFilePtr;     /* stream to which things are logged */
-extern char*    InputFileName;  /* file to read neutrons */
-extern char*    OutputFileName; /* file to write neutrons */
-extern char*    LogFileName;    /* log filename  */
-extern char*    ParDirectory;   /* parameter directory */
-extern char     sModuleName[MOD_NAME_LEN+1],  /* name of the module        */
-                sVisDescrpt[MOD_NAME_LEN+9];  /* name in the visualization */
+extern double        wei_min;        /* Minimal weight for tracing neutron */
+extern long          keygrav;
+extern long          idum;           /* random number specific */
+extern short         bOldFrame,      /* criterion: new co-ordinate system set for current module */
+                     bTest,          /* criterion: test run (without trajectories)   */
+                     bVisInstalled,  /* criterion: visualization routines installed  */
+                     bBlowUp,        /* criterion: width and height extended by factor 'BlowUp' in visualization  */
+                     bVisTraj,       /* criterion: visualization of trajectories     */
+                     bVisInstr;      /* criterion: instrument visualization          */
 
-extern double   wei_min;        /* Minimal weight for tracing neutron */
-extern long     keygrav;
-extern long     idum;           /* random number specific */
-extern short    bOldFrame,      /* criterion: new co-ordinate system set for current module */
-                bTest,          /* criterion: test run (without trajectories)   */
-                bVisInstalled,  /* criterion: visualization routines installed  */
-                bBlowUp,        /* criterion: width and height extended by factor 'BlowUp' in visualization  */
-                bVisTraj,       /* criterion: visualization of trajectories     */
-                bVisInstr;      /* criterion: instrument visualization          */
-
-extern int      NThreads;       /* number of helper threads for execution, set by --T */
-extern double   RotMatrixM[3][3];
-extern double   RotMatrixMX[3][3];
+extern int           NThreads;       /* number of helper threads for execution, set by --T */
+extern double        RotMatrixM[3][3];
+extern double        RotMatrixMX[3][3];
 
 FILE* OpenOutputFile  (const char *sName, short bErrMsg, const char* sMode);              // opens file in the output folder with or without error message
 FILE* OpenInputFile   (const char *sName, short bErrMsg, const char* sMode);              // opens file in the input folder with or without error message

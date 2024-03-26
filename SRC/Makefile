@@ -220,6 +220,8 @@ monochromator: monochromator.cpp monochrclass.cpp
 
 opt_sim: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
 
+read_in: random_sampler.c
+
 sample_nxs: sample_nxs.c nxs.c sgclib.c sgfind.c sghkl.c sgio.c sgsi.c
 
 sample_reflectom: bender_inter_data.c

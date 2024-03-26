@@ -31,6 +31,7 @@
 #include "mcpl.h"
 #include "trace.h"
 #include "sswread.c"
+#include "random_sampler.h"
 
 #define NF_MAX         3
 #define MAX_HEADER  3000
@@ -74,6 +75,7 @@ int          iSurface=MISSING;           // -s        surface ID: if given, only
 short        iDetectColor=-1;            // -C        Only for VITESS format: Read only events with a given color.
 int          nRep=1;                     // -R        Number of times the input is read
 double       maxEv=-1;                   // -M        maximal numver of events read
+int          sample=0;                   // -J        random sample or not
 
 extern char* sInstrInfIn;                // --I       instrument file that is read (default 'instrument.inf')
 extern char* _sTraceFileName;            // -T        name of the file containing the trajectories to be traced or started
@@ -167,43 +169,71 @@ int main(int argc, char **argv)
   }
   else
   { // loop over input files
-    for (m=0; m < NF_MAX; m++)
-    {
-      if (pInFile[m])
+    if (sample == 0){
+      for (m=0; m < NF_MAX; m++)
       {
-        iRep=0;
-        rc=TRUE;
-        while (rc==TRUE)
+        if (pInFile[m])
         {
-          switch (ePrgFormat)
+          iRep=0;
+          rc=TRUE;
+          while (rc==TRUE)
           {
-            case VT_VITESS_FMT: rc=ReadVitessTraj(&InNeutron, &nT, pInFile[m]); break;
-            case VT_MCSTAS_FMT: rc=ReadMcStasTraj(&InNeutron, &nT, pInFile[m]); break;
-              // case VT_MCNPX_FMT : rc=ReadMcnpxTraj (&InNeutron, &nT, pInFile[m]); break;
-            case VT_MCNP6_FMT : rc=ReadMcnp6Traj (&InNeutron, &nT, pInFile[m]); break;
-            default: Error("Data format is not (yet) implemented");
-          }
-          if (nT>=1)
-          {
-            if ((int)maxEv == -1 || NumNeutRead < maxEv) {
-              InNeutron.Probability *= (Weight[m] / nRep);        // reduction of weight if data are read more than once or more than 1 file is read
-              NumNeutRead += nT;
-              WriteNeutron(&InNeutron);
-            } else {
-              rc = VT_EOF;
-            }
-          }
+            switch (ePrgFormat)
+            {
+              case VT_VITESS_FMT: rc=ReadVitessTraj(&InNeutron, &nT, pInFile[m]); break;
+              case VT_MCSTAS_FMT: rc=ReadMcStasTraj(&InNeutron, &nT, pInFile[m]); break;
+                // case VT_MCNPX_FMT : rc=ReadMcnpxTraj (&InNeutron, &nT, pInFile[m]); break;
+              case VT_MCNP6_FMT : rc=ReadMcnp6Traj (&InNeutron, &nT, pInFile[m]); break;
+              default: Error("Data format is not (yet) implemented");
 
-          // if reading was not possible anymore, try to start from beginning if applicable
-          if (rc==FALSE)
-          { iRep++;
-            if (iRep < nRep)
-            { rewind(pInFile[m]);
-              rc=TRUE;
+            }
+            if (nT>=1)
+            {
+              if ((int)maxEv == -1 || NumNeutRead < maxEv) {
+                InNeutron.Probability *= (Weight[m] / nRep);        // reduction of weight if data are read more than once or more than 1 file is read
+                NumNeutRead += nT;
+                WriteNeutron(&InNeutron);
+              } else {
+                rc = VT_EOF;
+              }
+            }
+
+            // if reading was not possible anymore, try to start from beginning if applicable
+            if (rc==FALSE)
+            { iRep++;
+              if (iRep < nRep)
+              { rewind(pInFile[m]);
+                rc=TRUE;
+              }
             }
           }
         }
       }
+    }
+    else{
+      // sample mode
+      fprintf(LogFilePtr, "\nEntering read_in sampling mode\n"); 
+      FILE* sampleFile = tmpfile(); // generate temporary file in which to store sample.
+      randomSampleFile(sInputFileName[0], sampleFile, maxEv); // create and store sample.
+
+      rc = TRUE;
+      while (rc == TRUE){
+        switch (ePrgFormat){
+              case VT_VITESS_FMT: rc = ReadVitessTraj(&InNeutron, &nT, sampleFile); break;
+              case VT_MCSTAS_FMT: rc = ReadMcStasTraj(&InNeutron, &nT, sampleFile); break;
+              case VT_MCNP6_FMT: rc = ReadMcnp6Traj(&InNeutron, &nT, sampleFile); break;
+              default: Error("Data format is not (yet) implemented");
+        }
+        if (rc == FALSE){
+          iRep++;
+          if (iRep < nRep){
+              rewind(sampleFile);
+              rc = TRUE;
+          }
+        }
+        WriteNeutron(&InNeutron);
+      }
+      fclose(sampleFile);
     }
   }
 
@@ -211,7 +241,7 @@ int main(int argc, char **argv)
   OwnCleanup();
 
   // Do the general cleanup
-  Cleanup(0.0,0.0,0.0, 0.0,0.0);
+  Cleanup(0.0,0.0,0.0,0.0,0.0);
   return 0;
 }
 
@@ -282,6 +312,9 @@ void OwnInit(int argc, char *argv[])
           break;
         case 'R':
           nRep = atoi(&argv[i][2]);
+          break;
+        case 'J':
+          sample = (VtSampling) atoi(&argv[i][2]);
           break;
 
         default:

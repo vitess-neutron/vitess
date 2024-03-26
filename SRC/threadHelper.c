@@ -344,7 +344,6 @@ static int createThreadBuffers() {
   if (MCbufSize < 0) {
     // prepare individual random number generators per thread
     int n;
-    extern long int VRandomSeed;
     vit_thread_gsl_rng = (gsl_rng**) malloc(NThreads * sizeof(gsl_rng *));
     for (n=0; n<NThreads; n++) {
       gsl_rng * g;
