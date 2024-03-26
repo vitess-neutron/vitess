@@ -1,11 +1,11 @@
 VITESS 3.6  Release Note
 ------------------------
-VITESS 3.6 is the last version of VITESS 3. Future versions - VITESS 4.x - will have Qt as the GUI, use YAML files to define the module parameters and store the instrument; these files are human readable and thus enable editing the instrument; but a Python based tool to edit the instrument will also be available (and of course the GUI to develop the instrument). 4.0 is currently tested. 
+VITESS 3.6 is the last but one version of VITESS 3. Future versions - VITESS 4.x - will have Qt as the GUI, use YAML files to define the module parameters and store the instrument; these files are human readable and thus enable editing the instrument; but a Python based tool to edit the instrument will also be available (and of course the GUI to develop the instrument). 4.0 is currently tested. 
 
-To have a proper last version of VITESS 3, the defects of former VITESS version have been remedied:
+To have proper last versions of VITESS 3, the defects of former VITESS version have been remedied:
 - The instrument and trajectory visualization exists and works correctly for all modules.
 - The code has been tidied up: structure, functions and parameters are similar in all modules, all input parameters are clearly described and a safe transformation between GUI and kernel parameters was introduced. 
-Version 3.6 has been tested very thoroughly. 
+Version 3.6 has been tested very thoroughly. Unfortunately, these tests showed that the monochromator module does not work properly for more than one layer of monochromator elements behind each other. This will be fixed in a version 3.7, which will be released soon.
 
 Additionally, this version has several new or updated features:
 - Defining the coating by only the m value has been extended and the reflectivity curve has been updated using recents measurements obtained from SwissNeutronics, S-DH and Mirrotron.
@@ -18,11 +18,14 @@ VITESS 3.6 contains 2 new modules:
 
 The main new features in existing modules are:
 - The source module can now be used for all CANS sources (using 'source_long_pulsed').
-- 'read_in' and 'writout' can now handle binary files (in VITESS or McStas format) or SSW files as used in MCNP (in addition to MCPL files).
+- 'read_in' and 'writout' can now handle binary files (in VITESS or McStas format) or SSW files as used in MCNP (in addition to MCPL files and VITESS/McStas ASCII files).
 - The guide can be curved and diverging/converging at the same time, and MCPL files can be written containing information of the neutron absorption, which can be used as the basis for subsequent shielding simulations (using MCNP, Geant, ...).
 - The monochromator can rotate about a vertical axis; and monochromators put behind each other are treated correctly now.
 - The disc chopper can be set to create random flight times of the neutron at the chopper position (which facilitates simulation of TOF instruments on continuous sources).
-- The velocity selector has now windows, where the neutrons can pass.
+- The velocity selector has now windows, where the neutrons have to pass.
 - The reflectometer sample is described now much more realisticly: it contains an absorbing substrate and the unreflected beam is also handled; this enables realistic virtual experiments. (Corresponding extensions will be realized for all samples in upcoming versions.) 
 
-P.S.: VITESS 3.5 was used internally at Forschungszentrum Jülich mainly within the HBS project and was never released. So VITESS 3.6 is practically the successor of VITESS 3.4.
+Note that
+- The modules 'monochr_analyser', the old module to simulate monochromators, and 'visual' are not supported anymore and will be removed in the upcoming version 4 of VITESS
+- VITESS 3.5 was only used internally at Forschungszentrum Jülich (mainly within the HBS project) and never publicly released. So VITESS 3.6 is practically the successor of VITESS 3.4.
+
