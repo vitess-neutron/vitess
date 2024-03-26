@@ -107,7 +107,6 @@ Monochromator::Monochromator()
   
   currentNeutron = NULL;
   TOF    = -1.0; 
-  Prob   = -1.0; 
   NumOut =  0; 
 
   DelZetaMax = DEL_ZETA_MAX;
@@ -129,8 +128,8 @@ void Monochromator::OwnInit(int argc, char* argv[])
 
   while(argc>1)
   {
-		if (argv[1][0]!='+') 
-		{
+    if (argv[1][0]!='+') 
+    {
       switch(argv[1][1])
       {
         // Main Window
@@ -172,7 +171,7 @@ void Monochromator::OwnInit(int argc, char* argv[])
 	        break;
         case 'f':
 	        sscanf(&argv[1][2], "%lf", &Freq) ;
-	        Period = 1000.0/Freq;
+	        if (Freq > 0.0) Period = 1000.0/Freq;
           break;
         case 'p':
 	        sscanf(&argv[1][2], "%lf", &Zeta0) ;
@@ -432,18 +431,15 @@ void Monochromator::setMonochrPar()
 
       // calculates values for output frame, unless transmission is treated
       if (eFrame==VT_FRAME_STD)
-      { if (bTransm==FALSE)  
-        {
-          /* angles corresponding to the output frame: */
+      { 
+        /* angles corresponding to the output frame: */
+        if (bTransm==FALSE)
           AnglesOutputFrame(BraggHor, BraggVert, &OutHor, &OutVert);
-
-          /* shifts output frame origin to center of focussing geometry */
-          CopyVector(PosCE0, Transl) ;
-        }
         else
-        { Transl[0]=Transl[1]=Transl[2]=0.0;
           OutHor=OutVert=0.0;
-        }
+
+        /* shifts output frame origin to center of focussing geometry */
+        CopyVector(PosCE0, Transl);
       }
 
       // initializes vectors to chosen CE element
@@ -1125,15 +1121,15 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
         RotBackVector(RotMatrixCE, Depth) ;
         AddVector    (NeutRefl.Position, Depth) ;
 
-        // fills structure for reflected neutron in output frame
-        CopyNeutron(&NeutRefl, &NeutReflOut);
-
         // trajectory visualization 
-        if (iRep == 0 && Prob > wei_min)
+        if (iRep == 0 && NeutRefl.Probability > wei_min)
         {
           NeutRefl.Probability *= nRepete;
           WriteIAP(&NeutRefl, VT_REFLECTED); 
         }
+
+        // fills structure for reflected neutron in output frame
+        CopyNeutron(&NeutRefl, &NeutReflOut);
 
         // Rotate the Vectors to the output frame 
         if (bTransm==FALSE)
