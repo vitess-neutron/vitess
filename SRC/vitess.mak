@@ -181,6 +181,8 @@ monochromator.exe: monochromator.cpp monochrclass.cpp
 
 opt_sim.exe: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
 
+read_in.exe: read_in.c random_sampler.c
+
 sample_nxs.exe: sample_nxs.c nxs.c sgclib.c sgfind.c sghkl.c sgio.c sgsi.c
 
 sample_s_q.exe: sample_s_q.c sq_calc.c

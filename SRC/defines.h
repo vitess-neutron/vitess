@@ -409,6 +409,14 @@ typedef enum
 }
 VtTrace;
 
+// random sampling
+typedef enum
+{
+  NO_SAMPLING = 0,
+  SAMPLING    = 1
+}
+VtSampling;
+
 // data format of the program
 typedef enum
 { VT_VITESS_FMT = 1,

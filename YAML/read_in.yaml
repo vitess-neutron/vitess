@@ -93,6 +93,15 @@ read_in:       # source module that will be executed
       tooltip: "Maximum number of trajectories that are read."
       column:  1
       prefix:  "-M"
+  - bRandSamp:
+      type:    "combo"
+      descr:   "Sample randomly"
+      tooltip: "Sub-samples a VITESS file by choosing 'max events' neutrons randomly from the input file. The random sample will be saved to ./sampleout.dat. This option requires 'max. trajectories' to be larger than 0."
+      enum:     "VtSampling"
+      options: ["NO_SAMPLING", "SAMPLING"]
+      default:  "NO_SAMPLING"
+      column:  0
+      prefix:  "-J"
   - WeightFact:               # -I    1.0  [-]
       type:    "float"
       descr:   "intensity factor"
