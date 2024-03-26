@@ -18,6 +18,9 @@
 
 #include <ctype.h>
 #include <time.h>
+#ifndef WIN32
+  #include <unistd.h>
+#endif
 
 #ifndef RND_SIMPLE
  #include "gsl/gsl_rng.h"
@@ -746,9 +749,15 @@ void EulerToCartesianZY(VectorType Vector, double *roty, double *rotz)
 FILE * fileOpen(const char *name, const char *mode)
 {
   FILE *f;
+  const char *fmt = "ERROR: Can't open file %s!\n";
+#ifndef WIN32
+  if (isatty(fileno(LogFilePtr))) {
+    fmt = "\033[31mERROR: Can't open file %s!\033[39m\n";
+  }
+#endif
 
   if (! (f = fopen(name, mode))) {
-    fprintf(LogFilePtr, "ERROR: Can't open file %s!\n", name);
+    fprintf(LogFilePtr, fmt, name);
     fflush(LogFilePtr);
     exit(-1);
   }
@@ -758,10 +767,17 @@ FILE * fileOpen(const char *name, const char *mode)
 FILE * fileOpen2(const char* sName, const char* sMode, const char* sContent)
 {
   FILE* fp;
+  const char *fmt = "ERROR: Can't open file %s containing %s!\n";
+#ifndef WIN32
+  if (isatty(fileno(LogFilePtr))) {
+    fmt = "\033[31mERROR: Can't open file %s containing %s!\033[39m\n";
+  }
+#endif
 
   if (! (fp = fopen(sName, sMode))) 
   {
-    fprintf(LogFilePtr, "ERROR: Can't open file %s containing %s!\n", sName, sContent);
+    fprintf(LogFilePtr, fmt, sName, sContent);
+    fflush(LogFilePtr);
     exit(-1);
   }
   return fp;
@@ -770,20 +786,42 @@ FILE * fileOpen2(const char* sName, const char* sMode, const char* sContent)
 
 void Error(const char *text)
 {
-  fprintf(LogFilePtr, "ERROR: %s!\n", text);
+  const char *fmt = "ERROR: %s!\n";
+#ifndef WIN32
+  if (isatty(fileno(LogFilePtr))) {
+    fmt = "\033[31mERROR: %s!\033[39m\n";
+  }
+#endif
+
+  fprintf(LogFilePtr, fmt, text);
   fflush(LogFilePtr);
   exit(-1);
 }
 
 void Error2(const char *text1, const char *text2)
 {
-  fprintf(LogFilePtr, "ERROR: %s! Input: %s\n", text1, text2);
+  const char *fmt = "ERROR: %s! Input: %s\n";
+#ifndef WIN32
+  if (isatty(fileno(LogFilePtr))) {
+    fmt = "\033[31mERROR: %s! Input: %s\n\033[39m\n";
+  }
+#endif
+
+  fprintf(LogFilePtr, fmt, text1, text2);
+  fflush(LogFilePtr);
   exit(-1);
 }
 
 void Warning(const char *text)
 {
-  fprintf(LogFilePtr, "WARNING: %s!\n", text);
+  const char *fmt = "WARNING: %s!\n";
+#ifndef WIN32
+  if (isatty(fileno(LogFilePtr))) {
+    fmt = "\033[33mWARNING: %s!\033[39m\n";
+  }
+#endif
+
+  fprintf(LogFilePtr, fmt, text);
 }
 
 void Note(const char *text)
