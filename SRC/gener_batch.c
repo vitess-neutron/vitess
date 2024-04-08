@@ -9,14 +9,14 @@
 #include <string.h>
 
 #include "gener_fct.h"
+#include "general.h"
 
 // static functions
 void  PrintDate   (FILE* pFile, const char* pDir);
 void  OwnInit(int argc, char *argv[]);
 
 // global and static variables
-char     cSlash        = '/',
-         cQuot         = ' ',         
+char     cQuot         = ' ',         
          cNL           = '\n',         
          cShort        = 'N',
         *pFileNameS,
@@ -205,14 +205,14 @@ end:
 /* Print the actual date and time into the batch file */
 /******************************************************/
 void
-PrintDate(FILE* pFileW, const char* sPDir)
+PrintDate(FILE* pFileW, const char* sOutDir)
 {
 	if (eSystem==VT_WIN_NT || eSystem==VT_WIN_98)
-	{	fprintf(pFileW, "%cdate/T >> %sHistory.txt%c", cNL, sPDir, cNL);
-		fprintf(pFileW, "time/T >> %sHistory.txt%c", sPDir, cNL);
+	{	fprintf(pFileW, "%cdate/T >> %sHistory.txt%c", cNL, sOutDir, cNL);
+		fprintf(pFileW, "time/T >> %sHistory.txt%c", sOutDir, cNL);
 	}
 	else if (eSystem==VT_UNIX || eSystem==VT_LINUX)
-	{	fprintf(pFileW, "%cdate >> %sHistory.txt%c", cNL, sPDir, cNL);
+	{	fprintf(pFileW, "%cdate >> %sHistory.txt%c", cNL, sOutDir, cNL);
 	}
 }
 

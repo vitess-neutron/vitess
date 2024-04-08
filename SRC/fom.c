@@ -6,9 +6,9 @@
 /* 1.1   Apr 2013  Klaus Lieutenant  changes for new optimization concept                */
 /*****************************************************************************************/
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include "init.h"
 #include "opt_defs.h"
@@ -19,7 +19,6 @@
 /*********************************************/
 /* global and static variables               */
 /*********************************************/
-extern FILE*  LogFilePtr=NULL;    // Pointer on file for output of the progress of the fit
 
 static
 char  sFctFile[FN_LEN] = "Fcomm.dat",       // name of the file for the actual fitted values
@@ -53,10 +52,10 @@ short  CheckFilename(char* sFilename);
 /*********************************************/
 int main(int argc, char* argv[])
 {
-	char   sParFileS[99]="",             // name of signal, 
-	       sParFileR[99]="",             //         reference,
-	       sParFileN[99]="",             //         noise,
-	       sParFileW[99]="";             //     and weight  file
+	char   sParFileS[CHAR_BUF_SMALL]="", // name of signal, 
+	       sParFileR[CHAR_BUF_SMALL]="", //         reference,
+	       sParFileN[CHAR_BUF_SMALL]="", //         noise,
+	       sParFileW[CHAR_BUF_SMALL]=""; //     and weight  file
 	int    i=0;                          // index over spectrum elements
 	short  iSpec=0,                      // index counting spectra to evaluate
 	       bAverage;                     // criterion sum (bAverage=0) or average (bAverage=1) in figure of merit
@@ -66,7 +65,8 @@ int main(int argc, char* argv[])
 	       FoM,                          // Figure of merit
 	       Factor,                       // normalization factor for output value: Factor/FoM 
 	       NoiseIntP=1.0;                // integral over noise spectrum to the power of 'dNoisePow'
-	Init   (argc, argv, VT_TOOL);
+
+	Init   (argc, argv, MCN_OPT_FOM);
 	OwnInit(argc, argv);
 
 	pFctFile = fileOpen(sFctFile, "w");
@@ -209,8 +209,8 @@ short ReadSpectrum(const char* sStdFile, const short iSpec, double* pX, double* 
 	FILE*  pFile;
 	char   sBuffer[BUF_LEN], sFilename[256],
 	       sParName[99], sParExt[4];      // name and extension of the file 
-	short  rc=TRUE,
-	       sl,       // length of the string 'sParDir' defining the working directory
+	short  rc=TRUE;
+	int    sl,       // length of the string 'sParDir' defining the working directory
 	       i=0;      // counter of points in spectrum
 
 	sl=strlen(sParDir);
@@ -394,8 +394,8 @@ void OwnCleanup()
 /****************************************/
 short ReadParameter(char* pId, char* sParameter, FILE* pFile)
 {
-	short k, ks=0, ke,    // indices for string 
-	      ret=TRUE;     // return code
+	int   k, ks=0, ke;   // indices for string 
+	short ret=TRUE;      // return code
 	char  sBuffer[BUF_LEN];
 	char* pPtr; 
 

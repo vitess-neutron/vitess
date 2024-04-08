@@ -1,6 +1,8 @@
 #ifndef OPTFCT_F_H
 #define OPTFCT_F_H
 
+#include <stdio.h>
+
 #include "opt_defs.h"
 
 // External function delivering the F(P; T) 

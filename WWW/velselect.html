@@ -6,47 +6,147 @@
   <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
   <title>Module Velselect</title>
 </head>
-  <body>
-<h1>VITESS Module Velselect</h1>
-<p>
-The module <b>velselect</b> simulates a mechanical velocity selector usually
-used for a CWS-SANS instrument. <br>
-The velocity selector front  is parallel to the  yz-plane with distance =0
-from the origin provided by the <br>
- former module. After a neutron has crossed the velocity selector the orientation,
-y and z coordinates <br>
- of the origin are maintained, while x will be set to 0. The subsequent module
-refers therewith to a new <br>
- origin with unaltered y- and z-values at the exit of the velocity selector
- (i.e. the old origin is shifted <br>
- simply along the x-axis according to the length of the velocity selector). 
-<p><br>
-This module will lead to correct results, if and only if all incoming neutrons
-already lie in a (y-z)window <br>
- on the upper half of the velocity selector front , therefore only  the modules
-<b>guide</b>, <b> window </b>  or <b>source</b> can define a <br>
- correct input for the <b>velselect </b> module.<br>
- Input neutrons which are not covered by the vel. selector front are not
-written to the output stream.  </p>
-<p>The following information has to be given as an input:
-<table>
-<tr><td>length of velselect [cm]</td><td>length of velocity selector [cm]</td></tr>
-<tr><td>rotations/sec</td><td> number of rotations per second</td></tr>
-<tr><td>number of channels</td><td> number of velocity selector channels</td></tr>
-<tr><td>curvature</td><td> curvature of velocity selector channels</td></tr>
-<tr><td>radius [cm]</td><td> radius of the velocity selector front</td></tr>
-<tr><td>vert. distance axle to origin [cm]</td><td><br>
- same principle as for the chopper module<br>
- (see in chopper help manual, Fig. 2 and accordant descriptions),<br>
- just interpret the chopper disk as<br>
- the velocity selector front.</td></tr>
-<tr><td>spacer width [cm]</td><td>width of a spacer which separates the channels of the velocity selector.</td></tr>
-</table>
-<p>
-<hr><a href="vitess.html">Back to VITESS overview</a><br>
- <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>
-<p> <font size="-1"> <!-- hhmts start --> Last modified: Tue May  8 17:08:05
-MET DST 2001 <!-- hhmts end --> </font> </p>
-<br>
+  
+<body>
+
+  <h1>VITESS Module Velselect</h1>
+  <p>
+    The module <b>velselect</b> simulates a mechanical velocity selector (usually used for SANS instruments or reflectometers).
+    <br>
+    The velocity selector front is parallel to the  yz-plane with distance =0 from the origin provided by the former module.
+    After a neutron has crossed the velocity selector, the orientation, y and z coordinates of the origin are maintained, while x will be set to 0,
+    (i.e. the old origin is shifted along the x-axis by the length of the velocity selector).
+    <br />
+    This device will only work properly, if the beam is inside the active area between inner and outer radius. The parameters (inner and outer radius, window size and the position of the axle) need to be set accordingly.
+    The velocity selector can now be put at any place relative to the beam.
+    If the old parameter 'vert. distance axle-orig.' is still used, a position of the selector axle below the beam center is assumed.
+    This parameter is still supported for compatibility reasons, but should be replaced by 'vertical axle position' (and 'horizontal axle position').
+    Note that a selector centered below the beamline requires a negative value of 'vertical axle position', while 'vert. distance axle-orig.' is positive for the same situation.
+    <br />
+    Neutrons not hitting entrance or exit window are removed from the simulation.
+    Neutrons hitting inside the inner radius are also removed.
+    Depending on the option chosen, neutrons entering or exiting outside the area of the velocity selector, i.e. outside the outer radius, are either removed or a warning is given. <br />
+    Gravity is currently not treated inside the velocity selector.
+  </p>
+
+  <br />
+  <h4>Parameters for module 'velselect'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+
+      <tr>
+        <td valign="top">window width<br>[cm]</td>
+        <td valign="top">
+          Width of entrance and exit window of the velocity selector <br />
+          The window is supposed to be centered around the beamline.
+        </td>
+        <td valign="top">&gt; 0</td>
+        <td valign="top">-H </td>
+      </tr>
+      <tr>
+        <td valign="top">window height<br>[cm]</td>
+        <td valign="top">Height of entrance and exit window of the velocity selector</td>
+        <td valign="top">&gt; 0</td>
+        <td valign="top">-V </td>
+      </tr>
+
+      <tr>
+        <td valign="top">length of velselect<br>[cm]</td>
+        <td valign="top">Length of the velocity selector</td>
+        <td valign="top">&gt; 0</td>
+        <td valign="top">-l </td>
+      </tr>
+      <tr>
+        <td valign="top">outer\nradius<br>[cm]</td>
+        <td valign="top">Radius of the velocity selector cross-section</td>
+        <td valign="top">&gt; 0   </td>
+        <td valign="top">-r </td>
+      </tr>
+      <tr>
+        <td valign="top">inner\nradius<br>[cm]</td>
+        <td valign="top">
+          radius of the part of the rotor without absorbing blades<br />
+          The blades extend from the inner to the outer radius.
+          The velocity will work here; in the inner part, neutrons will be absorbed.
+        </td>
+        <td valign="top">&gt; 0   </td>
+        <td valign="top">-i </td>
+      </tr>
+
+      <tr>
+        <td valign="top">rotations per sec.</td>
+        <td valign="top">Rotational speed of the selector</td>
+        <td valign="top">&gt; 0</td>
+        <td valign="top">-s </td>
+      </tr>
+      <tr>
+        <td valign="top">number of channels</td>
+        <td valign="top">Number of velocity selector channels = number of blades</td>
+        <td valign="top">&ge; 1</td>
+        <td valign="top">-w </td>
+      </tr>
+      <tr>
+        <td valign="top">curvature<br>[deg]</td>
+        <td valign="top">Twist of the blades along the selector, i.e. difference in orientation between beginning and end</td>
+        <td valign="top">&gt; 0, typ. 45 deg</td>
+        <td valign="top">-c </td>
+      </tr>
+
+      <tr>
+        <td valign="top">spacer width<br>[cm]</td>
+        <td valign="top">Thickness of the blades that separate the channels of the velocity selector.</td>
+        <td valign="top">&gt; 0   </td>
+        <td valign="top">-d </td>
+      </tr>
+
+      <tr>
+        <td valign="top">horizontal axle position<br>[cm]</td>
+        <td valign="top">Horizontal position of the selector axle (in the co-ordinate system of the beamline)</td>
+        <td valign="top">   </td>
+        <td valign="top">-Y </td>
+      </tr>
+      <tr>
+        <td valign="top">vertical axle position<br>[cm]</td>
+        <td valign="top">Vertical position of the selector axle (in the co-ordinate system of the beamline)</td>
+        <td valign="top">e.g. -15 for an axle 15 cm below<br /> the center of the beamline</td>
+        <td valign="top">-Z </td>
+      </tr>
+      <tr>
+        <td valign="top">vert. distance axle to origin<br>[cm]</td>
+        <td valign="top">
+          Obsolete: not supported anymore in version 4, use axle position instead !<br />
+          Distance (along z-axis) between beam axis and the axle of the selector
+          The axle is supposed to be below the beamline  <br />
+          (same principle as for the chopper module, cf. Fig. 2 and accordant description in the chopper help file)
+        </td>
+        <td valign="top">&gt; 0<br><= radius - 0.5*height_of_guide</td>
+        <td valign="top">-o </td>
+      </tr>
+      <tr>
+        <td> treat neutrons passing by </td>
+        <td>
+          Yes: If there are trajectories which do not hit the rotor area, they are written to the output file and considered further on,
+               but a warning is given including the number of those trajectories <br>
+          No: Trajectories found outside the rotor cross-section are removed. (default, only option until Vitess 3.4)
+        </td>
+        <td>yes / no</td>
+        <td> -p     </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+    <a href="vitess.html">Back to VITESS overview</a><br>
+    <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
+  <p>
+      <!-- hhmts start --> Last modified: Tue May  8 17:08:05
+      MET DST 2001 <!-- hhmts end -->
+  </p>
 </body>
 </html>

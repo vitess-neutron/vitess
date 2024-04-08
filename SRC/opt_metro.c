@@ -4,9 +4,9 @@
 /* 1.00   Mar 2004  Klaus Lieutenant  1st version                                         */
 /******************************************************************************************/
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include "general.h"
 #include "opt_fct.h"
@@ -52,7 +52,7 @@ static void  LocalMin   (const VtCheckMode, const double QT,     const double Q0
 /**********************************************************************************/
 /* Metropolis optimization routine                                                */
 /**********************************************************************************/
-short Metropolis()
+short Metropolis(char* sIniFile)
 {
                          /* sets of the parameter set P to be optimized   */
   double P0[NMAX+1],     /* P vector of the last step (or starting value) */
@@ -245,11 +245,11 @@ short Metropolis()
 /*****************************************************************************/
 /* Function to change one of the parameters
    Input : m      :  index of calculation 
-           DelP   :  possible range for the change
+           DP     :  possible range for the change
            eConstr:  control parameter for constraints                       */
 /*****************************************************************************/
 static void  
-ChangePar(const short m,  const double DelP[NMAX+1],  const VtConstr eConstr)
+ChangePar(const short m,  const double DP[NMAX+1],  const VtConstr eConstr)
 {
   short  n,               /* parameter to be changed    */
          j,               /* index for parameter        */
@@ -264,7 +264,7 @@ ChangePar(const short m,  const double DelP[NMAX+1],  const VtConstr eConstr)
     n = (short) floor(MonteCarlo(1.0, nPar+1.0));
     
     /* choice of the size of change */
-    DeltaP = DelP[n] * MonteCarlo(-1.0, 1.0);
+    DeltaP = DP[n] * MonteCarlo(-1.0, 1.0);
     
     /* check change on constraints */
     arP[m][n] += DeltaP;

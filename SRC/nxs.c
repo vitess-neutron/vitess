@@ -1559,11 +1559,14 @@ int nxs_readParameterFile( const char* fileName, NXS_UnitCell *uc, NXS_AtomInfo 
   unsigned int max_keys = sizeof(NXS_keys)/sizeof(NXS_keys[0]);
 
   /* open the parameter file */
-  FILE* file;
-  file = fopen(fileName, "r");
+  FILE* file=NULL;
 
-  *uc = nxs_newUnitCell();
+  if (fileName!=NULL && strlen(fileName) > 0)
+  { 
+    file = fopen(fileName, "r");
 
+    *uc = nxs_newUnitCell();
+  }
   if (!file)
   {
     return NXS_ERROR_READINGFILE;

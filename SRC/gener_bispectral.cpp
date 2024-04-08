@@ -3,8 +3,9 @@
 /*  Generating input file for sm_ensemble module                               */
 /*  describing n mirror plates surrounded by m  guide walls                    */
 /*                                                                             */
-/* 1.0  Dec 2012  C.Zendler  initial version                                   */
-/* 1.1  Oct 2013  C.Zendler  add new file format                               */
+/* 1.0  Dec 2012  C. Zendler     initial version                               */
+/* 1.1  Oct 2013  C. Zendler     add new file format                           */
+/* 1.2  Mar 2020  K. Lieutenant  new central parameters and functions          */
 /*******************************************************************************/
 #include <sstream>
 #include <stdlib.h>
@@ -14,17 +15,27 @@
 #include <vector>
 #include <iostream>
 
-extern "C" {
+extern "C" 
+{
 #include "init.h"
+
+  char*  FullInName(const char* filename);            // returns path\name.ext for input directory   located in init.c
 }
 
 using namespace std;
 
-double GetDouble(const char* pText);
-string GetString(const char* pText);
-void   GetChar(char* pString, const char* pText);
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+double GetDouble(const char* pText);                // Reads double value from stdin  
+string GetString(const char* pText);                // Reads string from stdin  
+void   GetChar(char* pString, const char* pText);   // Reads char string from stdin  
 
 
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char* argv[])
 {
   const double PI=3.1415926535898;
@@ -52,15 +63,14 @@ int main(int argc, char* argv[])
                   newFileFormat=true;                       // new file format: only m_up, m_down needed
   string          helper,                                   // convert yes-no to bool
                   simpleShapeMirr;                          // rectangular vs trapezoidal shape 
-  char            fileName[50]="MyBispectralExtraction.dat",
-                  *pFullFileName;
+  char            fileName[50]="MyBispectralExtraction.dat";
 
   /* output parameters (see sm_ensemble description) */
   vector<double>  Y1, Y2, Y3, Y4, Z1, Z2, Z3, Z4, AngleHV, ThetaCSM, Rcsm, Mud, MuInc;
 
   FILE*   pFile;
 
-  Init(argc, argv, VT_TOOL);
+  Init(argc, argv, MCN_TOOL_GEN_EXTR);
 
   printf("-----------------------------------------------------------------------------\n");
   printf("Generation of an input file for the 'sm_ensemble' module                     \n");
@@ -108,8 +118,8 @@ int main(int argc, char* argv[])
       cout<<"Equidistant mirrors of same length and with same inclination? (y/n): ";
       cin>>helper;
       while( helper!="y" && helper!="n" ){
-	cout<<"ERROR: please choose yes ('y') or no ('n'): ";
-	cin>>helper;
+        cout<<"ERROR: please choose yes ('y') or no ('n'): ";
+        cin>>helper;
       }
       sameAngleMirr=(helper=="y");
     }
@@ -119,90 +129,99 @@ int main(int argc, char* argv[])
       cout<<"Mirror plane (h,v):";
       cin>>helper;
       while( helper!="h" && helper!="v" ){
-	cout<<"ERROR: Please choose horizontal (h) or vertical (v) direction as mirror plane: ";
-	cin>>helper;
+        cout<<"ERROR: Please choose horizontal (h) or vertical (v) direction as mirror plane: ";
+        cin>>helper;
       }
       HorPlane.push_back(helper=="h");
 
       cout<<"Transparent mirrors? (yes/no): ";
       cin>>helper;
       while(helper!="yes" && helper!="y" && helper=="no" && helper=="n"){
-	cout<<"ERROR: please answer 'yes' or 'no'. Transparent means that attenuation in the chosen substrate material is taken into account. If 'no' is chosen, the mirror can only reflect neutrons, non-reflected neutrons are absorbed (as in guide walls)."<<endl;
-	cin>>helper;
+        cout<<"ERROR: please answer 'yes' or 'no'. Transparent means that attenuation in the chosen substrate material is taken into account. If 'no' is chosen, the mirror can only reflect neutrons, non-reflected neutrons are absorbed (as in guide walls)."<<endl;
+        cin>>helper;
       }
       if(helper=="yes" || helper=="y")
-	TransparentMirr.push_back(true);
+        TransparentMirr.push_back(true);
       else 
-	TransparentMirr.push_back(false);
+        TransparentMirr.push_back(false);
       AngleMirr.push_back( GetDouble("Mirror inclinations w.r.t. x-axis (deg): ") );
       LengthMirr.push_back( GetDouble("Mirror lengths (cm): ") ); 
       cout<<"Distance between mirrors (cm): ";
       cin>>DistMirr;
       if( !HorPlane.at(0) )
-	CenterYMirr.push_back( GetDouble("Give smallest y-coordinate of mirror centre (cm): ") );
+        CenterYMirr.push_back( GetDouble("Give smallest y-coordinate of mirror centre (cm): ") );
       else
-	CenterYMirr.push_back( GetDouble("Give smallest z-coordinate of mirror centre (cm): ") );
+        CenterYMirr.push_back( GetDouble("Give smallest z-coordinate of mirror centre (cm): ") );
       double mNumber=GetDouble("Give mirror coatings m: ");
       while( mNumber>7 || mNumber<1 )
-	mNumber=GetDouble("  Please choose m-number between 1 and 7: ") ;
+        mNumber=GetDouble("  Please choose m-number between 1 and 7: ") ;
       CoatingMirr.push_back( mNumber );
       Name.push_back("mirr1");
       CenterMirr.push_back( LengthMirr.at(0)/2 );
       if(TransparentMirr.at(0))
-	DMirr.push_back( GetDouble("Mirror substrate thickness (cm): ") );
+        DMirr.push_back( GetDouble("Mirror substrate thickness (cm): ") );
       else
-	DMirr.push_back( 10 );
+        DMirr.push_back( 10 );
       for(int i=1; i<Nmirr; i++){
-	HorPlane.push_back( HorPlane.at(0) );
-	TransparentMirr.push_back( TransparentMirr.at(0) );
-	AngleMirr.push_back( AngleMirr.at(0) );
-	LengthMirr.push_back( LengthMirr.at(0) );
-	CenterMirr.push_back( LengthMirr.at(i)/2 );
-	CenterYMirr.push_back( CenterYMirr.at(i-1)+DistMirr );
-	CoatingMirr.push_back( CoatingMirr.at(0) );
-	DMirr.push_back( DMirr.at(0) );
-	stringstream ss; ss<<(i+1); string NameIndex=ss.str();
-	Name.push_back( "mirr"+NameIndex );
+        HorPlane.push_back( HorPlane.at(0) );
+        TransparentMirr.push_back( TransparentMirr.at(0) );
+        AngleMirr.push_back( AngleMirr.at(0) );
+        LengthMirr.push_back( LengthMirr.at(0) );
+        CenterMirr.push_back( LengthMirr.at(i)/2 );
+        CenterYMirr.push_back( CenterYMirr.at(i-1)+DistMirr );
+        CoatingMirr.push_back( CoatingMirr.at(0) );
+        DMirr.push_back( DMirr.at(0) );
+        stringstream ss; ss<<(i+1); string NameIndex=ss.str();
+        Name.push_back( "mirr"+NameIndex );
       }
     }
-    else {
-      for(int i=0; i<Nmirr; i++){
-	if(Nmirr>1)cout<<" Parameters for "<<i+1<<". mirror:"<<endl;
-	cout<<"Mirror plane (h,v):";
-	cin>>helper;
-	while( helper!="h" && helper!="v" ){
-	  cout<<"ERROR: Please choose horizontal (h) or vertical (v) direction as mirror plane: ";
-	  cin>>helper;
-	}
-	HorPlane.push_back(helper=="h");
+    else 
+    {
+      for(int i=0; i<Nmirr; i++)
+      {
+        if(Nmirr>1)cout<<" Parameters for "<<i+1<<". mirror:"<<endl;
+        cout<<"Mirror plane (h,v):";
+        cin>>helper;
+        while( helper!="h" && helper!="v" )
+        {
+          cout<<"ERROR: Please choose horizontal (h) or vertical (v) direction as mirror plane: ";
+          cin>>helper;
+        }
+        HorPlane.push_back(helper=="h");
 	
-	cout<<"Transparent mirror? (yes/no): ";
-	cin>>helper;
-	while(helper!="yes" && helper!="y" && helper=="no" && helper=="n"){
-	  cout<<"ERROR: please answer 'yes' or 'no'. Transparent means that attenuation in the chosen substrate material is taken into account. If 'no' is chosen, the mirror can only reflect neutrons, non-reflected neutrons are absorbed (as in guide walls)."<<endl;
-	  cin>>helper;
-	}
-	if(helper=="yes" || helper=="y")
-	  TransparentMirr.push_back(true);
-	else 
-	  TransparentMirr.push_back(false);
-	AngleMirr.push_back( GetDouble("Mirror inclination w.r.t. x-axis (deg): ") );
-	LengthMirr.push_back( GetDouble("Mirror length (cm): ") );
-	CenterMirr.push_back( GetDouble("Mirror centre in x (cm): ") );
-	if( !HorPlane.at(i) )
-	  CenterYMirr.push_back( GetDouble("Mirror centre in y (cm): ") );
-	else
-	  CenterYMirr.push_back( GetDouble("Mirror centre in z (cm): ") );
-	double mNumber=GetDouble("Mirror coating (m-number): ");
-	while( mNumber>7 || mNumber<1 )
-	  mNumber=GetDouble("  Please choose m-number between 1 and 7: ") ;
-	CoatingMirr.push_back( mNumber );
-	if(TransparentMirr.at(i))
-	  DMirr.push_back( GetDouble("Mirror substrate thickness (cm): ") );
-	else
-	  DMirr.push_back( 10 );
-	stringstream ss; ss<<(i+1); string NameIndex=ss.str();
-	Name.push_back( "mirr"+NameIndex );
+        cout<<"Transparent mirror? (yes/no): ";
+        cin>>helper;
+        while(helper!="yes" && helper!="y" && helper=="no" && helper=="n")
+        {
+          cout<<"ERROR: please answer 'yes' or 'no'. Transparent means that attenuation in the chosen substrate material is taken into account. If 'no' is chosen, the mirror can only reflect neutrons, non-reflected neutrons are absorbed (as in guide walls)."<<endl;
+          cin>>helper;
+        }
+        if(helper=="yes" || helper=="y")
+          TransparentMirr.push_back(true);
+        else 
+          TransparentMirr.push_back(false);
+
+        AngleMirr.push_back( GetDouble("Mirror inclination w.r.t. x-axis (deg): ") );
+        LengthMirr.push_back( GetDouble("Mirror length (cm): ") );
+        CenterMirr.push_back( GetDouble("Mirror centre in x (cm): ") );
+        
+        if( !HorPlane.at(i) )
+          CenterYMirr.push_back( GetDouble("Mirror centre in y (cm): ") );
+        else
+          CenterYMirr.push_back( GetDouble("Mirror centre in z (cm): ") );
+        
+        double mNumber=GetDouble("Mirror coating (m-number): ");
+        while( mNumber>7 || mNumber<1 )
+          mNumber=GetDouble("  Please choose m-number between 1 and 7: ") ;
+        CoatingMirr.push_back( mNumber );
+
+        if(TransparentMirr.at(i))
+          DMirr.push_back( GetDouble("Mirror substrate thickness (cm): ") );
+        else
+          DMirr.push_back( 10 );
+
+        stringstream ss; ss<<(i+1); string NameIndex=ss.str();
+        Name.push_back( "mirr"+NameIndex );
       }
     }
     simpleShapeMirr=GetString("Are the mirror plates rectangular? (y/n) ");
@@ -267,11 +286,11 @@ int main(int argc, char* argv[])
     else{ //extrapolate
       int m0=floor(CoatingMirr.at(i));
       if(m0<1)
-	Rcsm.push_back( Rav[0] );
+        Rcsm.push_back( Rav[0] );
       else if(m0>=7)
-	Rcsm.push_back( 0 );
+        Rcsm.push_back( 0 );
       else
-	Rcsm.push_back( Rav[m0-1]-(Rav[m0-1]-Rav[m0])*(CoatingMirr.at(i)-m0) );
+        Rcsm.push_back( Rav[m0-1]-(Rav[m0-1]-Rav[m0])*(CoatingMirr.at(i)-m0) );
     }
   }
 
@@ -280,38 +299,39 @@ int main(int argc, char* argv[])
   // write sm_ensemble input file::  
   ///////////////////////////////////////////////////////////////////////
   
-  pFullFileName = FullParName(fileName);
-  pFile = fopen(pFullFileName, "w");
+  pFile = OpenInputFile(fileName, FALSE, "w");
   
   if (pFile!=NULL){
     fprintf(pFile,"Input file for sm_ensemble, generated with Tool 'Generate Extraction System' v1.1: ");
     
     if(newFileFormat)
-      fprintf(pFile,"new file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z    H/°   V/°    h/°   v/°   d/cm    m_up    m_down   Name \n");
+      fprintf(pFile,"new file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z   H/deg V/deg  h/deg v/deg  d/cm    m_up    m_down   Name \n");
     else
-      fprintf(pFile,"old file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z    H/°   V/°    h/°   v/° Up: th_c th_csm  R_csm  µ*d   µ_inc*d  Down: th_c th_csm  R_csm   µ*d  µ_inc*d   Name \n");
+      fprintf(pFile,"old file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z   H/deg V/deg  h/deg v/deg Up:th_c th_csm  R_csm  µ*d   µ_inc*d  Down: th_c th_csm  R_csm   µ*d  µ_inc*d   Name \n");
 
     for(int i=0; i<Nmirr; i++){
       const char* ctypeName=Name.at(i).c_str();
       int MirrorUsage = (TransparentMirr.at(i)) ? 1 : 2;
-      if( !HorPlane.at(i) ){
-	if(newFileFormat)
-	  fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.2f  0.00  0.00  0.00   %3.3f %3.2f  %3.2f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),DMirr.at(i),CoatingMirr.at(i),CoatingMirr.at(i),ctypeName);
-	else
-	  fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.2f  0.00  0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
+      if( !HorPlane.at(i) )
+      {
+        if(newFileFormat)
+          fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.2f  0.00  0.00  0.00   %3.3f %3.2f  %3.2f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),DMirr.at(i),CoatingMirr.at(i),CoatingMirr.at(i),ctypeName);
+        else
+          fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.2f  0.00  0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
       }
-      else {
-	if(newFileFormat)
-	  fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00   %3.3f %3.2f  %3.2f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),DMirr.at(i),CoatingMirr.at(i),CoatingMirr.at(i),ctypeName);
-	else
-	  fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
+      else 
+      {
+        if(newFileFormat)
+          fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00   %3.3f %3.2f  %3.2f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),DMirr.at(i),CoatingMirr.at(i),CoatingMirr.at(i),ctypeName);
+        else
+          fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
       }
     }
-    printf("\nOutput file has been generated: (%s)", pFullFileName);
+    printf("\nOutput file has been generated: (%s)", FullInName(fileName));
     fclose(pFile);
   }
   else {
-    printf("\nERROR: Output file could not be generated\n(%s)", pFullFileName);
+    printf("\nERROR: Output file could not be generated\n(%s)", FullInName(fileName));
   }
   
   cout<<"\n Type 'exit' to terminate: "<<endl;
@@ -327,6 +347,12 @@ int main(int argc, char* argv[])
 }
 
 
+/*******************************************************/
+/** Reads different types of parameters from stdin    **/
+/**   GetDouble:   Reads double value from stdin      **/
+/**   GetString:   Reads string from stdin            **/
+/**   GetString:   Reads char string from stdin       **/
+/*******************************************************/
 double GetDouble(const char* pText)
 {
   double dValue;
@@ -344,7 +370,6 @@ string GetString(const char* pText)
 
   return sValue;
 }
-
  
 void GetChar(char* pString, const char* pText)
 {

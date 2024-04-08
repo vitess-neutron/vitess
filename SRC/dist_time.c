@@ -14,11 +14,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "defines.h"
 #include "init.h"
 #include "cpgplot.h"
-
-#define TRUE  1
-#define FALSE 0
 
 #define BUF_SIZE 255
 
@@ -36,47 +34,49 @@ static float fMax       (float value1,  float value2);
 static short ReadChopper(int argc, char *argv[]);
 static void  OwnInit    (int argc, char *argv[]);
 
+char* FullParName       (const char* filename);
+
 char  sBuffer[BUF_SIZE+1];
 const char *pTitle="  ",  // title of the plot
-  *pFileName=0,  // Name of plot file
-  *pFullName;    // name of plot file incl. path
+     *pFileName=0,  // Name of plot file
+     *pFullName;    // name of plot file incl. path
 float fTmax=10.0,   // max. time that shall be displayed
-  fTp=1.0,      // pulse length
-  fTPbeg=0.0,   // beginning, center and end of pulse
-  fTPctr,
-  fTPend,
-  fTrep=50.0,   // repetition time of pulses
-  fChopDist,    // Distances: source - (center of double) chopper
-  fChopAngle,   // angle of chopper aperture
-  fChopPhase,   // angle of center of chopper aperture at t=0 relative to guide center
-  fDetDist=20.0;// Distance:  source - detector
+      fTp=1.0,      // pulse length
+      fTPbeg=0.0,   // beginning, center and end of pulse
+      fTPctr,
+      fTPend,
+      fTrep=50.0,   // repetition time of pulses
+      fChopDist,    // Distances: source - (center of double) chopper
+      fChopAngle,   // angle of chopper aperture
+      fChopPhase,   // angle of center of chopper aperture at t=0 relative to guide center
+      fDetDist=20.0;// Distance:  source - detector
 short nFrameMin=1,  // number of first frame
-  nNumWnd=1,    // number of apertures on chopper
-  nNumOpen=1;   // number of chopper openings per cycle of source
-int sleepsecs = 2;  // show graphic display some seconds before closing the graphic window
+      nNumWnd=1,    // number of apertures on chopper
+      nNumOpen=1;   // number of chopper openings per cycle of source
+int   sleepsecs = 2;  // show graphic display some seconds before closing the graphic window
 
 
 int main(int argc, char* argv[])
 {
   float v,
-    fTchop,          /* time between opening of 2 successive apertures */
-    fWBDist=0.0,     /* Distances: source - (center of double) WB chopper  */
-    fTopen,
-    fTclose,         /* opening and closing time of chopper */
-    fWBTchop=0.0,    /* time between opening of 2 successive apertures of the WB-Chopper */
-    fWBTopen=0.0,
-    fWBTclose=0.0,   /* opening and closing time of WB chopper */
-    fVfast, fVslow,  /* velocities of fastest and slowest neutrons able to pass the WB chopper */
-    fT0fast, fT0slow,/* times at which those neutrons start at the moderator */
-    t;               /* starting time (run variable in loop) */
+        fTchop,          /* time between opening of 2 successive apertures */
+        fWBDist=0.0,     /* Distances: source - (center of double) WB chopper  */
+        fTopen,
+        fTclose,         /* opening and closing time of chopper */
+        fWBTchop=0.0,    /* time between opening of 2 successive apertures of the WB-Chopper */
+        fWBTopen=0.0,
+        fWBTclose=0.0,   /* opening and closing time of WB chopper */
+        fVfast, fVslow,  /* velocities of fastest and slowest neutrons able to pass the WB chopper */
+        fT0fast, fT0slow,/* times at which those neutrons start at the moderator */
+        t;               /* starting time (run variable in loop) */
   short nNumFrms=1,  /* number of frames to be displayed */
-    nOption=1,       /* Option: 1: beginning of frame defined by beginning of pulse,
-                        end of frame defined by end of pulse
-                        2: beginning of frame defined by end of pulse and vice versa */
-    bSubFrame=FALSE, /* criterion: frame (to be displayed) defined by multi-aperture choppers */
-    bDrawDet=TRUE,   /* criterion: draw line for detector */
-    nNumChop=0,      /* number of choppers */
-    nFr;             /* running variable in loop over frames */
+        nOption=1,       /* Option: 1: beginning of frame defined by beginning of pulse,
+                            end of frame defined by end of pulse
+                            2: beginning of frame defined by end of pulse and vice versa */
+        bSubFrame=FALSE, /* criterion: frame (to be displayed) defined by multi-aperture choppers */
+        bDrawDet=TRUE,   /* criterion: draw line for detector */
+        nNumChop=0,      /* number of choppers */
+        nFr;             /* running variable in loop over frames */
   const char *GraphDev;
 
 #ifdef DO_WIN32
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 
   /* get input data */
   /* -------------- */
-  Init(argc, argv, VT_TOOL);
+  Init(argc, argv, MCN_TOOL_DST_TIME);
   OwnInit(argc, argv);
   nNumFrms = 1;
   nOption  = 1;

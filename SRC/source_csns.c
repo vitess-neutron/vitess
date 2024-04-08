@@ -35,7 +35,7 @@ static short  s_nSource=ANYSOURCE; /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS  
 /* dTemp      : [K]  eff. moderator temperature 
    nModType   :      decoupled POISONED, DECOUPLED unpoisoned, COUPLED
    dPower     : [W]  average source power                    */          
-double CsnsTotalFU(const double dTemp,   const short  eModType, const double dPower)
+double CsnsTotalFU(const double dTemp,   const VtModType  eModType, const double dPower)
 {
   double dFUAmpl=0.0;;
 
@@ -66,14 +66,14 @@ double CsnsModFU(const double dLambda, const double dTime, const double dPosY, c
   double dFuA,         // amplitude of the flux    [n/(cm²  sterad Ang]
          dFu=0.0;      // actualflux value         [n/(cm²s sterad Ang]
 
-  dFuA = stMod[imod].dFUAmpl * Maxwellian(dLambda, stMod[imod].dModTemp);
+  dFuA = stMod[imod].FUAmpMod * Maxwellian(dLambda, stMod[imod].ModTemp);
 
-  if      (stMod[imod].eModType==COUPLED   && stMod[imod].dModTemp < 100.0)
-    dFu = dFuA * PulseShape(dTime, 2.9e-04, 20.0);
-  else if (stMod[imod].eModType==DECOUPLED && stMod[imod].dModTemp > 100.0)
-    dFu = dFuA * PulseShape(dTime, 3.5e-05,  5.0);
-  else if (stMod[imod].eModType==POISONED  && stMod[imod].dModTemp < 100.0)
-    dFu = dFuA * PulseShape(dTime, 4.9e-05,  5.0);
+  if      (stMod[imod].eModType==COUPLED   && stMod[imod].ModTemp < 100.0)
+    dFu = dFuA * ShortPulseShape(dTime, 2.9e-04, 20.0);
+  else if (stMod[imod].eModType==DECOUPLED && stMod[imod].ModTemp > 100.0)
+    dFu = dFuA * ShortPulseShape(dTime, 3.5e-05,  5.0);
+  else if (stMod[imod].eModType==POISONED  && stMod[imod].ModTemp < 100.0)
+    dFu = dFuA * ShortPulseShape(dTime, 4.9e-05,  5.0);
   else
     Error("data for chosen CSNS moderator not available");
 

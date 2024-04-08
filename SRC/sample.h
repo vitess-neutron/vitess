@@ -4,22 +4,29 @@
 #include "intersection.h"
 #include "general.h"
 
-extern char* SampleFileName;
+/******************************/
+/**   Global Variables       **/
+/******************************/
+extern int colD, colF, colF2, colDW, colM, colh, colk, coll;
 
-int colD, colF, colF2, colDW, colM, colh, colk, coll;
-double scaleF2;
+extern double scaleF2;
 
-double* hVal;
-double* kVal;
-double* lVal;
-double* F2Val;
+extern double* hVal;
+extern double* kVal;
+extern double* lVal;
+extern double* F2Val;
 
+
+/******************************/
+/** Prototypes               **/
+/******************************/
 void InitSample  (SampleType *Sample);
-void ReadCube    (FILE *SampleFile, SampleType *Sample);
-void ReadCylinder(FILE *SampleFile, SampleType *Sample);
-void ReadBall    (FILE *SampleFile, SampleType *Sample);
+void FillSample(SampleType* pSample, const VtSmplGeom eGeom, 
+                const double Xpos,   const double Ypos,  const double Zpos, 
+                const double Xdir,   const double Ydir,  const double Zdir, 
+                const double SizeD,  const double SizeH, const double SizeW, const double SizeT);
 
-void SetSampleGeometry(SampleType *Sample);
+void SetSampleGeometry(SampleType *Sample, double CubeRotAngle);
 
 int  CompPair(const void* p1, const void* p2);
 int  ReadTilComment(char* pBuffer, FILE* pSampleFile);
@@ -33,7 +40,6 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
                              double SampleRotMatrix[3][3], VectorType ISP[2],
                              long* pNisp, VtDir eDir);
 
-int ReadStructureFile(const char* sSampleFile, int tag, DoublePair* structFactorLookup[]);
-
+int ReadStructureFile(const char* sStructFile, int tag, DoublePair* structFactorLookup[]);
 
 #endif

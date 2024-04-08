@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
   if (p==1) {
     COLLFILE = fopen(COLLFILEName, "w");
-    fprintf(COLLFILE, "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm           dir y/°       dir z/° \n\n");
+    fprintf(COLLFILE, "     ID      debug color          no  sp wall         x/cm          y/cm          z/cm          dir y/deg     dir z/deg \n\n");
   }
 
   DECLARE_ABORT;

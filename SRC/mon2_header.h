@@ -1,57 +1,41 @@
+#ifndef MON2_HEADER_H
+#define MON2_HEADER_H
 
+#define BINSIZE 251
 
-#define BINSIZE 1001
-static double* by;
-static double* bz;
-static double binyz[BINSIZE][BINSIZE];
-static double binyzerror[BINSIZE][BINSIZE];
-static int binyzcounts[BINSIZE][BINSIZE];
+#include "general.h"
+#include "defines.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+void WriteHeader1D (FILE* fMonitor, const char *sType, short bWeight, int nBinsX,                      // Writes header for 1D monitor file
+                    const char* sPar, const char* sUnit);   
+void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sType,                                    // Writes header for 1D monitor file incl. number of proc. bunches
+                    short iCol, long iBnch, long nBnch, int nBinsX, 
+                    double IntMon, long nTrjMon, 
+                    const char* sPar, const char* sUnit);   
+void WriteHeader2D (FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight,              // Writes header for 2D monitor file
+                    int nBinsX, const char* sAxisTitleX, 
+                    int nBinsY, const char* sAxisTitleY); 
+void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sType, short bWeight, // Writes header for 2D monitor file incl. number of proc. bunches  
+                    long iBnch, long nBnch, double IntMon, long nTrjMon, 
+                    int nBinsX, const char* sAxisTitleX, 
+                    int nBinsY, const char* sAxisTitleY); 
+int  WriteOutput2D (FILE* fMonitor, VtFormat2D eFormat, short bWeight,                                 // Writes 2D spectrum to monitor file
+                    int nBinsX, double* BinPosX, 
+                    int nBinsY, double* BinPosY, 
+                    double** IntXY, double** IntXYError, long** nTrajXY);  
+int  WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,                                 // Writes 2D spectrum to monitor file
+                    int nBinsX, double* BinPosX, 
+                    int nBinsY, double* BinPosY, double fNorm,
+                    double** IntXY, double** IntXYError, long** nTrajXY);  
 
-int WriteOutput(FILE* fmonitor, int format, int pWeight, int nbiny, int nbinz)
-{
+void printFloatItem(double v, FILE*f);                                                   // Writes one float value to the 2D monitor file
 
-  int dy, dz;
-  
-  char formatTag[2][7]={"matrix", "xyz"};
-  char weightTag[2][7]={"", "weight"};
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-  switch (format) {
-	case 0:
-	  fprintf(fmonitor,"#Monitor %s %s\n", formatTag[format], weightTag[pWeight]);
-	  for(dy = 0; dy<nbiny; dy++)
-		{
-		  fprintf(fmonitor,"%10.7f\t",(by[dy]+by[dy+1])/2.0);
-		}
-	  for(dz = 0; dz<nbinz; dz++)
-		{
-		  fprintf(fmonitor,"\n %5.3f\t",(bz[dz]+bz[dz+1])/2.0);
-		  for(dy = 0; dy<nbiny; dy++)
-		{
-		  fprintf(fmonitor,"%5.3E\t",binyz[dy][dz]);
-		}
-		}
-	  break;
-    case 1:
-      fprintf(fmonitor,"#Monitor %s %s\n", formatTag[format], weightTag[pWeight]);
-	  fprintf(fmonitor, "#x  y  z\n");
-	  for(dz = 0; dz<nbinz; dz++) {
-		  for(dy = 0; dy<nbiny; dy++) {
-
-		    if (binyz[dy][dz]>0) {
-		      binyzerror[dy][dz] = binyz[dy][dz]*sqrt(1./binyzcounts[dy][dz]);
-		    }
-
-		    fprintf(fmonitor,"%10.7f\t%10.7f\t%5.3E\t%5.3E\t%d\n", (by[dy]+by[dy+1])/2.0, (bz[dz]+bz[dz+1])/2.0, 
-			    binyz[dy][dz],  binyzerror[dy][dz],  binyzcounts[dy][dz]);
-		  }
-		  fprintf(fmonitor, "\n");
-	  }
-	break;
-  }
-  fclose(fmonitor);
-
-  return 1;
-
-}
+#endif

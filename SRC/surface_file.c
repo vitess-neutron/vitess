@@ -1,124 +1,150 @@
-/*******************************************************************************************/
-/* Tool SurfaceFile:                                                                       */
-/*  Generates the surface file for the bender module for a bender                          */ 
-/*  consisting of thin layers. Channels can exist that are separated                       */
-/*  at the entrance or the exit                                                            */
-/*                                                                                         */
-/* 1.0  Apr 2003  K. Lieutenant  initial version                                           */
-/* 1.1  May 2003  K. Lieutenant  Explanation of channels and wafers in the beginning       */
-/* 1.2  Jul 2004  K. Lieutenant  feature 'space between channels at exit' reactivated;     */
-/*                               correction for radius=0;                                  */
-/* 1.3  Mar 2004  K. Lieutenant  files written to parameter directory or install_dir/FILES */
-/* 1.4  Jun 2013  K. Lieutenant  conical shape of channels allowed                         */
-/*******************************************************************************************/
+/*********************************************************************************************/
+/* Tool SurfaceFile:                                                                         */
+/*  Generates the surface file for the bender module of a bender consisting of amin channels */
+/*  and sub-channels. The main channels can be separated at the entrance or exit             */
+/*                                                                                           */
+/* The free non-commercial use of these routines is granted provided due credit is given to  */
+/* the authors.                                                                              */
+/*                                                                                           */
+/* 1.0  Apr 2003  K. Lieutenant  initial version                                             */
+/* 1.1  May 2003  K. Lieutenant  Explanation of channels and wafers in the beginning         */
+/* 1.2  Jul 2004  K. Lieutenant  feature 'space between channels at exit' reactivated;       */
+/*                               correction for radius=0;                                    */
+/* 1.3  Mar 2004  K. Lieutenant  files written to parameter directory or install_dir/FILES   */
+/* 1.4  Jun 2013  K. Lieutenant  conical shape of channels allowed                           */
+/* 1.5  Mar 2020  K. Lieutenant  tidy up, new central parameters and functions               */
+/* 1.6  Mar 2022  K. Lieutenant  correction: input->output file, check: r > 0 removed        */
+/*********************************************************************************************/
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+
 #include "init.h"
 
+
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
 #define TRUE   1
 #define FALSE  0
 #define PI     3.14159265358
 
-char sBuffer   [256];
 
-long   GetLong  (const char* pText);
-double GetDouble(const char* pText);
-void   GetString(char* pString, const char* pText);
+/******************************/
+/** Prototypes               **/
+/******************************/
+long   GetLong  (const char* pText);                 // Reads long value from stdin   
+double GetDouble(const char* pText);                 // Reads double value from stdin    
+void   GetString(char* pString, const char* pText);  // Reads string from stdin         
+
+char*  FullOutName(const char* filename);             // returns path\name.ext for input directory   located in init.c
 
 
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char* argv[])
 {
-	double dRadius,             // radius of the bender 
-	       dWaferThkIn,         // thickness of each wafer at entrance 
-	       dWaferThkOut,        // thickness of each wafer at exit 
-         dWaferThkAvrg,       // average wafer thickness
+	double Radius      = 0.0,   // radius of the bender 
+	       WaferThkIn  = 0.0,   // thickness of each sub-channel at entrance 
+	       WaferThkOut = 0.0,   // thickness of each sub-channel at exit 
+         WaferThkAvrg= 0.0,   // average sub-channel thickness
 	       dLength     = 0.0,   // length of the bender 
-	       dDistEntr   = 0.0,   // distance between channels at the entrance
-	       dDistExit   = 0.0,   // distance between channels at the exit 
-	       dAngle      = 0.0;   // bender angle relativ to x-axis 
-	long   nNoChannels = 0,     // Number of channels 
-	       nNoWafers   = 0;     // Number wafers per channel		
+	       DistEntr    = 0.0,   // distance between channels at the entrance
+	       DistExit    = 0.0,   // distance between channels at the exit 
+	       Angle       = 0.0;   // bender angle relativ to x-axis 
+	int    nChannels   = 0,     // Number of channels 
+	       nWafers     = 0;     // Number sub-channels per channel		
 	short  bConcentric = FALSE; // criterion: concentric circles
-	char   sFileName[50], sConcentr[9],
-	      *pFullName;
-	FILE*  pSurfaceFile;
+	char   sFileName[50]="", sConcentr[9]="no";
+	FILE*  pSurfaceFile =NULL;
 
-	Init(argc, argv, VT_TOOL);
+  _eModule = MCN_TOOL_GEN_SURF;
+	Init(argc, argv, _eModule);
 
-	printf (">> Generation of the surface file for the bender module <<\n"
-	        "----------------------------------------------------------\n"
-	        "\nThe bender consists of N channels, each of which consists of M wafers.\n"
-	        "The channels may have a spacing at the exit. In case of no spacing, there\n"
-	        "is no difference between N channels of 1 wafer and 1 channel of N wafers.\n\n");
-	nNoChannels = GetLong  ("\nNumber of channels                       ");
-	nNoWafers   = GetLong  ("Number wafers per channel                ");
-	dWaferThkIn = GetDouble("Thickness of wafer at entrance      [cm] ");
-	dWaferThkOut= GetDouble("Thickness of wafer at exit          [cm] ");
-	dDistExit   = GetDouble("Space between channels at exit      [cm] ");
-	dRadius     = GetDouble("Radius of the bender (0 = straight) [cm] ");
-	// dAngle   = GetDouble("Bender angle relativ to x-axis     [deg] ");
-	GetString   (sConcentr, "Concentric circles           (y|n)       ");
-	GetString   (sFileName, "Name of the surface file                 ");
+	printf (">> Generation of the surface file for the bender module, vsn 1.6 <<\n"
+	        "-------------------------------------------------------------------\n"
+	        "\nThe bender consists of N main channels, each of which consists of M sub-channels.\n"
+	        "The main channels can have a spacing at the entrance or the exit or both. \n"
+	        "Without any spacing, there is no difference between N main channels of 1 sub-channel\nand 1 main channel of N sub-channels.\n\n");
+
+	nChannels   = GetLong("\nNumber of main channels                      ");
+	nWafers     = GetLong  ("Number sub-channels per channel              ");
+	WaferThkIn = GetDouble("Thickness of sub-channels at entrance [cm]   ");
+	WaferThkOut= GetDouble("Thickness of sub-channels at exit     [cm]   ");
+	DistEntr   = GetDouble("Space between main channels at entrance [cm] ");
+	DistExit   = GetDouble("Space between main channels at exit   [cm]   ");
+	Radius     = GetDouble("Radius of the bender (0 = straight)   [cm]   ");
+  if (Radius > 0.0)
+	  GetString (sConcentr, "Concentric circles           (y|n)           ");
+	GetString   (sFileName, "Name of the surface file                     ");
+	printf("\n");
+
+  if (WaferThkIn  <= 0.0) Warning("Channel thickness is zero or less at entrance, bender will not be able to transmit neutrons");
+  if (WaferThkOut <= 0.0) Warning("Channel thickness is zero or less at exit, bender will not be able to transmit neutrons");
+  // if (DistEntr > 0.0 && DistExit > 0.0) Warning("Having exit and entrance difference greater creates additional channels that are presumably not foreseen and need to be blocked");
 
 	if (strcmp(sConcentr,"y")==0 || strcmp(sConcentr,"Y")==0 || strcmp(sConcentr,"yes")==0 || strcmp(sConcentr,"Yes")==0)
 		bConcentric = TRUE;
 
 	if (strlen(sFileName) > 0)
-	{	if (nNoChannels > 0  &&  dRadius != 0.0  &&  dWaferThkIn > 0.0  &&  dWaferThkOut > 0.0  &&  strlen(sFileName) > 0) 
+	{	
+    if (nChannels > 0  &&  nWafers > 0) 
 		{	
-			double dYEntr, dYExit,      /* Border of wafer at entrance and exit */
-			       dYE0=0.0,                 /* Exit height for angle 0°   */
-			       dRadCenter=0.0;                /* Radius of centered circles */
+			double Yentr, Yexit,      /* Border of sub-channel at entrance and exit */
+			       YE0=0.0,            /* Exit height for angle 0°   */
+			       RadCenter=0.0;      /* Radius of centered circles */
 			long   nCh, nWa;
 
-			dRadCenter   = dRadius;
-      dWaferThkAvrg= (dWaferThkIn+dWaferThkOut)/2.0;
+			RadCenter    = Radius;
+      WaferThkAvrg= (WaferThkIn+WaferThkOut)/2.0;
 
 			// GenerateSurfaceFile
-			pFullName = FullParName(sFileName);
-			if (strcmp(pFullName, sFileName)==0)
-				pFullName = FullInstallName(sFileName, "FILES/");
-			pSurfaceFile = fopen(pFullName, "w");
+			pSurfaceFile = OpenOutputFile(sFileName, FALSE, "w");
 
 			if (pSurfaceFile)
-			{	/* dYE0  = dRadius - sqrt(dRadius*dRadius - length*length); */
-				dYEntr = -0.5*(nNoChannels*nNoWafers*dWaferThkIn  + (nNoChannels-1)*dDistEntr);
-				dYExit = -0.5*(nNoChannels*nNoWafers*dWaferThkOut + (nNoChannels-1)*dDistExit)
-								     + dYE0 + dLength*tan(dAngle*PI/180.);
-				if (dRadius != 0 && bConcentric)
-					dRadCenter  = dRadius + 0.5*nNoChannels*nNoWafers*dWaferThkAvrg;
+			{	/* YE0  = Radius - sqrt(Radius*Radius - length*length); */
+				Yentr = -0.5*(nChannels*nWafers*WaferThkIn  + (nChannels-1)*DistEntr);
+				Yexit = -0.5*(nChannels*nWafers*WaferThkOut + (nChannels-1)*DistExit)
+								     + YE0 + dLength*tan(Angle*PI/180.);
+				if (Radius != 0 && bConcentric)
+					RadCenter  = Radius + 0.5*nChannels*nWafers*WaferThkAvrg;
 
-				for (nCh = 1; nCh <= nNoChannels; nCh++) 
+				for (nCh = 1; nCh <= nChannels; nCh++) 
 				{
 					/* First surface or surface between channels, if there is a spacing at the exit */
-					if (nCh==1 || dDistExit > 0.0)
-						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", dYEntr, dYExit, dRadCenter);
+					if (nCh==1 || DistEntr > 0.0 || DistExit > 0.0)
+						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", Yentr, Yexit, RadCenter);
 
-					for (nWa = 1; nWa <= nNoWafers; nWa++) 
+					for (nWa = 1; nWa <= nWafers; nWa++) 
 					{
-						dYEntr += dWaferThkIn;
-						dYExit += dWaferThkOut;
-						if (dRadius != 0 && bConcentric)
-							dRadCenter -= dWaferThkAvrg;
-						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", dYEntr, dYExit, dRadCenter);
+						Yentr += WaferThkIn;
+						Yexit += WaferThkOut;
+						if (Radius != 0 && bConcentric)
+							RadCenter -= WaferThkAvrg;
+						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", Yentr, Yexit, RadCenter);
 					}
-					dYEntr += dDistEntr;
-					dYExit += dDistExit;
+					Yentr += DistEntr;
+					if (DistEntr > 0.0 && DistExit > 0.0 && nCh < nChannels)
+						fprintf(pSurfaceFile, "%8.4f\t%8.4f\t%9.3f\n", Yentr, Yexit, RadCenter);
+					Yexit += DistExit;
 				}
 
-				printf ("\nData written to %s\n", pFullName);
+				printf ("\nData written to %s\n", FullOutName(sFileName));
 				fclose(pSurfaceFile);
 			}
 			else
-			{	printf("\nERROR: Output file could not be generated\n");
+			{	printf("ERROR: Output file '%s' could not be generated\n", FullOutName(sFileName));
 			}
-		}
+    }
+	  else
+	  {	printf("ERROR: Number of channels and subchannels per channel must both be greater 0 -  no file generated\n");
+	  }
 	}
 	else
-	{	printf("\nERROR: no surface file name given!\n File could not be generated");
+	{	printf("ERROR: no surface file name given!\n File could not be generated\n");
 	}
 
 	printf("\n Hit any key to terminate ! \n");
@@ -135,6 +161,12 @@ int main(int argc, char* argv[])
 }
 
 
+/*******************************************************/
+/** Reads different types of parameters from stdin    **/
+/**   GetLong  :   Reads long value from stdin       **/
+/**   GetDouble:   Reads double value from stdin      **/
+/**   GetString:   Reads string from stdin            **/
+/*******************************************************/
 long GetLong(const char* pText)
 {
 	long nValue;
@@ -145,17 +177,15 @@ long GetLong(const char* pText)
 	return nValue;
 }
 
-
 double GetDouble(const char* pText)
 {
-	double dValue;
+	double value;
 	
 	printf("%s ", pText);
-	scanf ("%lf", &dValue);
+	scanf ("%lf", &value);
 
-	return dValue;
+	return value;
 }
-
 
 void GetString(char* pString, const char* pText)
 {

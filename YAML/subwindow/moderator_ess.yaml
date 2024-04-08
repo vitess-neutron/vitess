@@ -1,0 +1,116 @@
+#input fields so far:
+#type:    title, file, string, float, int, switch (yes, no), combo (for selection list)
+#descr:   description of the parameter lable
+#tooltip: detailed description shown when mouse cursor remains over label
+#default: Value for title, values for selection list, optional default values
+#min:     minimum value optional
+#max:     maximum value optional
+#column:  column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+#prefix:  prefix for parameter in pipe
+
+moderator_ess:
+  - category: "moderator"
+  - sModName :
+      descr:   "name"
+      type:    "string"
+      column:  0                #0-2
+
+  - eModType:                   #   [-]  VtModType ModType_Txt2ID
+      type:    "combo"
+      descr:   "type"
+      tooltip: "moderator type"
+      enum:    "VtModType"
+      options: ["POISONED", "DECOUPLED", "COUPLED", "MULT_SPEC"]
+      default:  "COUPLED"
+      column:   0
+      prefix:  "-t"
+#  - eModShape:                    #   VtModShape ModShape_Txt2ID(const char* sText)
+#      type:    "combo"
+#      descr:   "shape"
+#      tooltip: "moderator shape"
+#      enum:    "VtModShape"
+#      options: ["VT_MOD_SQUARE", "VT_MOD_CIRCLE"]
+#      default:  "VT_MOD_SQUARE"
+#      column:   1
+#      prefix:  "-s"
+#
+#  - ModDiam:                   #   [cm]   diameter of a rectangular moderator
+#      type:    "float"
+#      descr:   "diameter [cm]"
+#      tooltip: "diameter of the moderator"
+#      default: 2.0
+#      column:   0
+#      prefix:  "-r"
+  - Width   :                   #   [cm]   width  of the moderator
+      type:    "float"
+      descr:   "width [cm]"
+      tooltip: "width of the moderator"
+      column:  1
+      prefix:  "-w"
+  - Height  :                   #   [cm]   height of the moderator
+      type:    "float"
+      descr:   "height [cm]"
+      tooltip: "height of the moderator"
+      default: 3.0
+      column:  2
+      prefix:  "-h"
+
+  - ModCntrX:                   #   [cm]   x coordinate of the center of the moderator
+      type:    "float"
+      descr:   "center x [cm]"
+      tooltip: "x coordinate of the center of the moderator"
+      default: 0.0
+      column:  0
+      prefix:  "-X"
+  - ModCntrY:                   #   [cm]   y coordinate of the center of the moderator
+      type:    "float"
+      descr:   "center y [cm]"
+      tooltip: "y coordinate of the center of the moderator"
+      default: 0.0
+      column:  1
+      prefix:  "-Y"
+  - ModCntrZ:                   #   [cm]   z coordinate of the center of the moderator
+      type:    "float"
+      descr:   "center z [cm]"
+      tooltip: "z coordinate of the center of the moderator"
+      default: 0.0
+      column:  2
+      prefix:  "-Z"
+
+  - iOrder:                     #   [-]    spatial order of the moderator (the higher the number the more it is in the background)
+      type:    "int"
+      descr:   "spatial order"
+      tooltip: "spatial order of the moderator (the higher the number the more it is in the background)"
+      column:  0
+      prefix: "-o"
+  - iColor:                     #   [-]    the trajectories can be marked by this 'color' to identify the moderator of origin
+      type:    "int"
+      descr:   "color"
+      tooltip: "the trajectories can be marked by this 'color' to identify the moderator of origin"
+      min:    -1
+      column:  1
+      prefix: "-c"
+
+  - eModTemp:                   #   [K]    temperature of a Maxwellian distribution
+      type:    "float"
+      descr:   "temperature [K]"
+      tooltip: "Temperature of a Maxwellian distribution"
+      min: 50.0
+      max: 325.0
+      default: 50.0
+      column:  0
+      prefix: "-T"
+  - PerformFact:                #   [-]    Factor allowing for losses by aging or engineering design d
+      type:    "float"
+      descr:   "performance factor"
+      tooltip: "Factor allowing for losses by aging or engineering design d"
+      min:     0.0
+      default: 1.0
+      column:  1
+      prefix: "-p"
+  - Current :                   #  [n/s]   Moderator current (only useful if moderator flux is zero)
+      type:    "float"
+      descr:   "current [n/s]"
+      tooltip: "Average moderator current (only useful if moderator flux is zero)"
+      column:  2
+      prefix: "-I"

@@ -6,6 +6,9 @@
 /* 1.0  Jun 2009  A. Houben      Copy of EVAL_ELAST 1.7a in order to do 3D analysis          */
 /* 1.1  May 2013  A. Houben      Sample-Detector distance                                    */
 /* 1.2  Aug 2014  A. Houben      Allow output of zero entries in output (helps with MatLab)  */
+/* 1.3  Mar 2020  K. Lieutenant  tidy up, new central visualization parameters               */
+/* 1.4  Sep 2022  K. Lieutenant  2D output                                                   */
+/* 1.4  Jun 2023  K. Lieutenant  update after each bunch                                     */
 /*********************************************************************************************/
 // --Z1 --U1.0e-25 --G1 --B10000 --PC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector --LC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/vpipelog15 -k1 -oC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca2.eva -OC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca2.int -IC:/Users/ahouben/Documents/POWTEX/Berechnung/mcPOWplot/090113-11_FS_Detector/elast_sca.inf -n146 -m100 -x0 -X180 -y1.0 -Y4.8 -p1 -w1 -c0 -l4351.4 -T0 -e-1.e10 -E1.e10 -C0 --Fno_file --fC:\Users\ahouben\Documents\POWTEX\Berechnung\mcPOWplot\090113-11_FS_Detector\detector.out -s3 -L80 -D1 -f1
 
@@ -14,15 +17,17 @@
 #include <string.h>
 #include <math.h>
 
+#include "convert.h"
 #include "init.h"
 #include "general.h"
 #include "matrix.h"
 #include "softabort.h"
+#include "mon2_header.h"
 
-//#define BINS   5000
-//#define NCENTER 200
-//#define INDEX(x,y) (x*(nbinsX)+y)
-#define INDEX(x,y) (x*(nbinsY)+y)
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
+#define INDEX(x,y) (x*(nBinsY)+y)
 
 typedef struct
 {
@@ -32,169 +37,166 @@ typedef struct
 	long   Counts;
 } BINDATA;
 
-/* globale variable */
-int   probactiv=TRUE,        /* probactiv=1 means probabilities activated, 
-                                else neutron weight is set to 1.0         */
-      TOF = FALSE,           /* TRUE : time of flight instrument */
-      TOFcorr = FALSE,       /* TRUE : correct time to shortest detector distance */
-      scatang = FALSE,       /* TRUE : position information is used (needs more information)
-                               FALSE : direction cosine is used */
-      deadspotactive=FALSE,  /* TRUE : deadspot exists */
-      bExclCount =FALSE,     /* TRUE : only neutrons complying with the evaluate requirements
-                                       are written to the output      */
-      bLogBinningX=FALSE,     /* TRUE: binning increases exponentially 
-                                FALSE: linear binning                  */
-      bLogBinningY=FALSE,     /* TRUE: binning increases exponentially 
-                                FALSE: linear binning                  */
-      bFullMatrix=FALSE,      /* TRUE: Also lines with zero intensity/counts are written; needs more memory 
-                                FALSE: Default: only write non-zero lines */
-	  SortMode = 0;			  /* 0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse */
+
+/*********************************/
+/** Global Variables            **/
+/*********************************/
+// Input parameters
+VtEvalComb eComb    =VT_NO_ECOMB;// -k  [-]  1=scattering angle and wavelength; 2=scattering angle and TOF 
+VtEvalSort eSortMode=VT_NO_SORT; // -s  [-]  0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse 
+VtAngleSel eScatAng =VT_NO_SEL;  // -D  [-]  TRUE : position information is used (needs more information)  FALSE: direction cosine is used 
+	     
+char*  sEvalFileName=NULL;   // -o  [-]  evaluation file containing intensity as a function scattering angle and TOF or wavelength  
+short  bFmt2D     =FALSE,    // -F  [-]  TRUE : output file is a 2D matrix     FALSE: x y z format
+       bFullMatrix=FALSE,    // -f  [-]  TRUE: Also lines with zero intensity/counts are written; needs more memory  FALSE: Default: only write non-zero lines 
+       bProbActive=TRUE,     // -p  [-]  bProbActive=1 means probabilities activated, else neutron weight is set to 1.0 
+       bExclCount =FALSE,    // -c  [-]  TRUE : only neutrons complying with the evaluate requirements are written to the output 
+       bTOF       =FALSE,    // -w  [-]  TRUE : time of flight instrument 
+       bTOFcorr   =FALSE;    // -t  [-]  TRUE : correct time to shortest detector distance
+       
+long   nBinsX=0,             // -n  [-]  number of bins in X 
+       nBinsY=0;             // -m  [-]  number of bins in Y 
+int    nColour = ANY_COLOR,  // -C  [-]  colour necessary for the trajectory to be regarded  colour -1 means: all trajectories are regarded 
+       minColor= ANY_COLOR,  // -a  [-]  neutrons with color >= minColour used  colour -1 means: all trajectories are regarded 
+       maxColor= ANY_COLOR;  // -A  [-]  neutrons with color <= maxColour used,  colour -1 means: all trajectories are regarded
+
+double // referenceWavelength// reference Wavelength for crystal monochromator (or mechanical velocity selector) instrument                                                 */
+       MinX=0.0,             // -x [deg] lower bound of theta range ==> X 
+       MaxX=0.0,             // -X [deg] upper bound of theta range ==> X 
+       MinY=0.0,             // -y [var] lower bound of wavelength or TOF [Ang],[ms] ==> Y 
+       MaxY=0.0,             // -Y [var] upper bound of wavelength or TOF [Ang],[ms] ==> Y 
+       dLogProzX=0.0,        // -R  [%]  percentage of increase to next bin ==> X 
+       dLogProzY=0.0,        // -S  [%]  percentage of increase to next bin ==> Y
+       Flightpath=0.0,       // -l  [cm] length of neutron flight path 
+       sdpath    =0.0,       // -L  [cm]  shortest sample detector distance
+       TimeOffset=0.0,       // -T [deg] global shift of the neutron time t= t-TimeOffset
+       deadspotangle=0.0,    // -d [deg] excludes all neutrons with a scattering angle < deadspotangle 
+       EvalTimeMin=-1.0e10,  // -e [ms] minimal and maximal time for evaluation 
+       EvalTimeMax= 1.0e10;  // -E [ms] minimal and maximal time for evaluation 
+
+// Variables determined from input parameters or trajectory data
+double *bpostX = {NULL};     //          limits of the bins                                           */
+double *bpostY = {NULL};     //          limits of the bins                                           */
+BINDATA **bin = {NULL};      //          Counts = count rate of a bin                                 */
+                             //          number of trajectories contributing to count rate            */
+BINDATA **bin_sorted={NULL}; //          pointers to BINDATA of bin; array size dynamically allocated */
+
+double TotInt=0.0;           //          total intensitiy within monitor limits
+short  bLogBinningX=FALSE,   //          flag: TRUE : binning on x-axis increases exponentially    FALSE: linear binning  
+       bLogBinningY=FALSE,   //          flag: TRUE : binning on y-axis increases exponentially    FALSE: linear binning  
+       bDeadSpot   =FALSE;   //          flag: TRUE : deadspot exists 
+long   nTrajTot=0,           // total number of trajectories within binning
+       nBunches    = 1;      //          number of bunches started
+
+VtFormat2D eFormat=NO_2D_FORMAT;
 
 
-long  nbinsX,                 /* number of bins in X */
-      nbinsY,                 /* number of bins in Y */
-      nColour = -1,          /* colour necessary for the trajectory to be regarded
-                                colour -1 means: all trajectories are regarded  */
-      minColor = -1,         /* colour necessary for the trajectory to be regarded
-                                colour -1 means: all trajectories are regarded  
-                                use neutrons with color >= minColour */
-      maxColor = -1,         /* colour necessary for the trajectory to be regarded
-                                colour -1 means: all trajectories are regarded  
-                                use neutrons with color <= maxColour */
-      kind;                  /* 1=scattering angle and wavelength; 2=scattering angle and TOF */
-
-double referenceWavelength,  /* reference Wavelength for crystal monochromator (or mechanical velocity
-                                  selector) instrument                                                 */
-       deadspotangle=0,      /* excludes all neutrons with a scattering angle < deadspotangle [deg] */
-       Flightpath=0,         /* length of neutron flight path [cm] */
-       sdpath=0,             /* shortest sample detector distance [cm] */
-       TimeOffset=0,         /* global shift of the neutron time t= t-TimeOffset [ms] */
-       x,X,                  /* lower and upper bound of d-spacing, q or theta range [A], [1/A], [deg] ==> X */
-       y,Y,                  /* lower and upper bound of d-spacing, q or theta range [A], [1/A], [deg] ==> Y */
-       dLogProzX=0.0,        /* percentage of increase to next bin      */
-       dLogProzY=0.0,        /* percentage of increase to next bin      */
-       dDelLambda,           /* difference between wavelength calculated from TOF and true wavelength  */
-       dEvalTimeMin=-1.0e10, /* minimal and maximal time for evaluation */
-       dEvalTimeMax= 1.0e10;
-
-//double bpostX[BINS+1] = {0};             /* limits of the bins                                           */
-double *bpostX = {NULL};                 /* limits of the bins                                           */
-//double bpostY[BINS+1] = {0};             /* limits of the bins                                           */
-double *bpostY = {NULL};                 /* limits of the bins                                           */
-//BINDATA *bin[(BINS+1)*(BINS+1)] = {NULL}; /* pointers to BINDATA; memory for struct dynamically allocated */
-BINDATA **bin = {NULL};
-										  /* Counts = count rate of a bin                                 */
-                                          /* number of trajectories contributing to count rate            */
-//BINDATA *bin_sorted[(BINS+1)*(BINS+1)] = {NULL}; /* pointers to BINDATA; memory for struct dynamically allocated */
-BINDATA **bin_sorted = {NULL};           /* pointers to BINDATA of bin; array size dynamically allocated */
-
-FILE *fspectra=NULL, *ftotcounts=NULL, *finfofile=NULL;
+/******************************/
+/** Prototypes               **/
+/******************************/
+void CreateBin    (BINDATA **bin, double *bpostX, double *bpostY);       // Creates the 2D bin beginning at the given (X,Y) edge
+int  FindIndexXY  (double *Xval, double *Yval, int *iBinX, int *iBinY);  // Returns the index of the bin, in which the point (X,Y) lies
+void OwnInit      (int argc, char *argv[]);                              // Reads input parameters and sets global variables                             
+void UpdateMon    (long iBnch);                                          // Updates output file 
+int  comparebinX  (const void *a, const void *b);                        // checks if a->X is larger b->X and returns 1 or -1 depending of sort mode 
+int  comparebinY  (const void *a, const void *b);                        // checks if a->Y is larger b->Y and returns 1 or -1 depending of sort mode 
+int  comparebinInt(const void *a, const void *b);                        // checks if a->Int is larger b->Int and returns 1 or -1 depending of sort mode 
+int  comparebinCnt(const void *a, const void *b);                        // checks if a->Cnt is larger b->Cnt and returns 1 or -1 depending of sort mode 
+int  (*comparebin)(const void *a, const void *b) = &comparebinInt;       // eSortMode=3
+int  sign(int v);                                                        // 1 for >= 0; else -1
 
 
-void CreateBin(BINDATA **bin, double *bpostX, double *bpostY);
-int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY);
-void OwnInit   (int argc, char *argv[]);
-int comparebinX(const void *a, const void *b);
-int comparebinY(const void *a, const void *b);
-int comparebinInt(const void *a, const void *b);
-int comparebinCnt(const void *a, const void *b);
-int (*comparebin)(const void *a, const void *b) = &comparebinInt;  /*SortMode=3*/
-int sign(int v);                           /* 1 for >= 0; else -1 */
-
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char *argv[])
 {
-	long i;
-	//long j,k, leftedge, rightedge;
+  long   iBnch=0,             // current bunch
+         i=0;
+  double bintervalX=1.0, bintervalY=1.0,
+         time=0.0, lambda=0.0, dist=0.0,
+         TwoTheta=0.0, TwoThetaDeg=0.0, Phi=0.0, 
+         prob=0.0;
 
-	double bintc, bintc_sorted=0., bintervalX=1.0, bintervalY=1.0,
-	  //center[NCENTER], totcenter[NCENTER], range[NCENTER],
-	  time, lambda, dist,
-	  TwoTheta, TwoThetaDeg, Phi, 
-	  //qValue, dspacing,
-	  prob=0;
+  int iBinX = 0, iBinY = 0, iBinXY = 0;
 
-	int ibinX = 0, ibinY = 0, ibinXY = 0;
+  // reading of input data and initilisation
+  // ---------------------------------------
+  _eModule=MCN_EVAL2_ELAST;
 
-	/* Initialisation */
-	Init   (argc, argv, VT_EVAL_ELAST2);
-	print_module_name("eval_elast2 1.2");
-	OwnInit(argc, argv);
-	
-	switch (kind) 
-	{
-		case 1: fprintf(LogFilePtr, "Option: scattering angle and wavelength\n"); break;
-		case 2: fprintf(LogFilePtr, "Option: scattering angle and TOF\n"); break;
-		default:Error("Wrong value for evaluation parameter\n");
-	}
+  Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "1.5");
+  OwnInit(argc, argv);
+ 
+  bVisInstalled = FALSE;
+  bBlowUp       = FALSE;
 
-	//memset(totcenter, 0, NCENTER*sizeof(double));
-	//memset(bpostX,     0, BINS*sizeof(double));
-	//memset(bpostY,     0, BINS*sizeof(double));
-	//memset(bint,      0, (BINS+1)*(BINS+1)*sizeof(double));
-	//memset(bcnt,      0, (BINS+1)*(BINS+1)*sizeof(long));
-	bintc = 0;
-	bpostX = malloc(sizeof(double)*nbinsX+1);
-	memset(bpostX, 0, sizeof(double)*nbinsX+1);
-	bpostY = malloc(sizeof(double)*nbinsY+1);
-	memset(bpostY, 0, sizeof(double)*nbinsY+1);
-	bin = malloc(sizeof(BINDATA*)*(INDEX(nbinsX, nbinsY)+1));
-	memset(bin, 0, sizeof(BINDATA*)*(INDEX(nbinsX, nbinsY)+1));
+  nBunches = ReadNumBnch();
+
+	bpostX = malloc(sizeof(double)*nBinsX+1);
+	memset(bpostX, 0, sizeof(double)*nBinsX+1);
+	bpostY = malloc(sizeof(double)*nBinsY+1);
+	memset(bpostY, 0, sizeof(double)*nBinsY+1);
+	bin = malloc(sizeof(BINDATA*)*(INDEX(nBinsX, nBinsY)+1));
+	memset(bin, 0, sizeof(BINDATA*)*(INDEX(nBinsX, nBinsY)+1));
+  if (eFormat==XYZ)
+  	bin_sorted = malloc(sizeof(BINDATA*)*(INDEX(nBinsX, nBinsY)+1));
 
 	/* Construction of the Bins */
 	/* logarithmic */
 	if (bLogBinningX)
 	{	
 		//bpostX[0] = (double *)malloc(sizeof(double));
-		bpostX[0] = x;
+		bpostX[0] = MinX;
 
-		for(ibinX = 1; bpostX[ibinX-1] < X; ibinX++)
+		for(iBinX = 1; bpostX[iBinX-1] < MaxX; iBinX++)
 		{
-			//bpostX[ibinX] = (double *)malloc(sizeof(double));
-			bpostX[ibinX] = (bpostX[ibinX-1]) * (1.0 + dLogProzX/100.);
+			//bpostX[iBinX] = (double *)malloc(sizeof(double));
+			bpostX[iBinX] = (bpostX[iBinX-1]) * (1.0 + dLogProzX/100.);
 		}
-		nbinsX = ibinX-1;
+		nBinsX = iBinX-1;
 	}
 	/* linear */
 	else
-	{	bintervalX = (X - x) / (double)nbinsX;
+	{	bintervalX = (MaxX - MinX) / (double)nBinsX;
 		
-		for(ibinX = 0; ibinX<=nbinsX; ibinX++)
+		for(iBinX = 0; iBinX<=nBinsX; iBinX++)
 		{
-			//bpostX[ibinX] = (double *)malloc(sizeof(double));
-			bpostX[ibinX] = x + bintervalX*ibinX;
+			//bpostX[iBinX] = (double *)malloc(sizeof(double));
+			bpostX[iBinX] = MinX + bintervalX*iBinX;
 		}
 	}
 	/* logarithmic */
 	if (bLogBinningY)
 	{	
 		//bpostY[0] = (double *)malloc(sizeof(double));
-		bpostY[0] = y;
+		bpostY[0] = MinY;
 
-		for(ibinY = 1; bpostY[ibinY-1] < Y; ibinY++)
+		for(iBinY = 1; bpostY[iBinY-1] < MaxY; iBinY++)
 		{
-			//bpostY[ibinY] = (double *)malloc(sizeof(double));
-			bpostY[ibinY] = (bpostY[ibinY-1]) * (1.0 + dLogProzY/100.);
+			//bpostY[iBinY] = (double *)malloc(sizeof(double));
+			bpostY[iBinY] = (bpostY[iBinY-1]) * (1.0 + dLogProzY/100.);
 		}
-		nbinsY = ibinY-1;
+		nBinsY = iBinY-1;
 	}
 	/* linear */
 	else
-	{	bintervalY = (Y - y) / (double)nbinsY;
+	{	bintervalY = (MaxY - MinY) / (double)nBinsY;
 		
-		for(ibinY = 0; ibinY<=nbinsY; ibinY++)
+		for(iBinY = 0; iBinY<=nBinsY; iBinY++)
 		{
-			//bpostY[ibinY] = (double *)malloc(sizeof(double));
-			bpostY[ibinY] = y + bintervalY*ibinY;
+			//bpostY[iBinY] = (double *)malloc(sizeof(double));
+			bpostY[iBinY] = MinY + bintervalY*iBinY;
 		}
 	}
 
   if (bFullMatrix) {
-    for(ibinX = 0; ibinX<(nbinsX); ibinX++)
+    for(iBinX = 0; iBinX<(nBinsX); iBinX++)
 		{	
-			for(ibinY = 0; ibinY<(nbinsY); ibinY++)
+			for(iBinY = 0; iBinY<(nBinsY); iBinY++)
 			{
-				ibinXY = INDEX(ibinX, ibinY);
-				CreateBin(&bin[ibinXY], &bpostX[ibinX], &bpostY[ibinY]);
+				iBinXY = INDEX(iBinX, iBinY);
+				CreateBin(&bin[iBinXY], &bpostX[iBinX], &bpostY[iBinY]);
 			}
 		}
   }
@@ -202,239 +204,163 @@ int main(int argc, char *argv[])
 	/* Processing of the Neutrons */
 	DECLARE_ABORT
 
+	// loop over trajectories
+  // ----------------------
 	while (ReadNeutrons())
-	{	for(i=0; i<NumNeutGot; i++)
+	{	
+    for(i=0; i<NumNeutGot; i++)
 		{
 			CHECK
 
-      dist     = sqrt(InputNeutrons[i].Position[0]*InputNeutrons[i].Position[0]+InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]);
-
-      if (scatang==0) { //use direction cosine
-        CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
-      } else {
-        /* select traj. according to colour: (nColour=0 means: all colours accepted) */
-        TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        iBnch++;
+        UpdateMon(iBnch);
+        WriteNeutron(&(InputNeutrons[i]));
       }
+      else
+      { 
+        dist     = sqrt(InputNeutrons[i].Position[0]*InputNeutrons[i].Position[0]+InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]);
+
+        if (eScatAng==VT_SEL_DIR) { //use direction cosine
+          CartesianToSpherical(InputNeutrons[i].Vector, &TwoTheta, &Phi);
+        } else {
+          /* select traj. according to colour: (nColour=0 means: all colours accepted) */
+          TwoTheta = acos(InputNeutrons[i].Position[0]/dist); 
+        }
       
-			prob     = probactiv ? InputNeutrons[i].Probability : 1.0;
-			time     = InputNeutrons[i].Time - TimeOffset;
-      //if (TOFcorr==TRUE) time = time*sdpath/dist;
-      //if (TOFcorr==TRUE) time = time*Flightpath/(Flightpath-sdpath+dist);
-			//lambda   = TOF ? 395.60346/(Flightpath/time) : InputNeutrons[i].Wavelength; //referenceWavelength;
-      lambda   = TOF ? 395.60346/((TOFcorr ? Flightpath-sdpath+dist : Flightpath)/time) : InputNeutrons[i].Wavelength; //referenceWavelength;
+			  prob     = bProbActive ? InputNeutrons[i].Probability : 1.0;
+			  time     = InputNeutrons[i].Time - TimeOffset;
+        //if (bTOFcorr==TRUE) time = time*sdpath/dist;
+        //if (bTOFcorr==TRUE) time = time*Flightpath/(Flightpath-sdpath+dist);
+			  //lambda   = bTOF ? 395.60346/(Flightpath/time) : InputNeutrons[i].Wavelength; //referenceWavelength;
+        lambda   = bTOF ? 395.60346/((bTOFcorr ? Flightpath-sdpath+dist : Flightpath)/time) : InputNeutrons[i].Wavelength; //referenceWavelength;
 
-			/* Writing out all neutrons, if 'exclusive counts = no' is set */
-			if (bExclCount==FALSE)		
-				WriteNeutron(&InputNeutrons[i]);
+			  /* Writing out all neutrons, if 'exclusive counts = no' is set */
+			  if (bExclCount==FALSE)		
+				  WriteNeutron(&InputNeutrons[i]);
 
-			/* trajectories within deadspot */
-			if (deadspotactive && TwoTheta <= deadspotangle) continue;
+			  /* trajectories within deadspot */
+			  if (bDeadSpot && TwoTheta <= deadspotangle) continue;
 
-			/* traj. out of time of evaluation */
-			if (time < dEvalTimeMin || time > dEvalTimeMax) continue;
+			  /* traj. out of time of evaluation */
+			  if (time < EvalTimeMin || time > EvalTimeMax) continue;
 
-			/* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
-			if (nColour!=-1 && nColour!=InputNeutrons[i].Color) continue;
-			if (minColor >= 0 && InputNeutrons[i].Color < minColor) continue;
-			if (maxColor >= 0 && InputNeutrons[i].Color > maxColor) continue;
+			  /* exclude traj. with wrong colour: (nColour=0 means: all colours accepted) */
+			  if (nColour!=-1 && nColour!=InputNeutrons[i].Color) continue;
+			  if (minColor >= 0 && InputNeutrons[i].Color < minColor) continue;
+			  if (maxColor >= 0 && InputNeutrons[i].Color > maxColor) continue;
 
-			/* Writing out the neutrons that comply with the requirements, 
-			   if 'exclusive counts = yes' is set */
-			if (bExclCount==TRUE)
-				WriteNeutron(&InputNeutrons[i]);
+			  /* Writing out the neutrons that comply with the requirements, if 'exclusive counts = yes' is set */
+			  if (bExclCount==TRUE)
+				  WriteNeutron(&InputNeutrons[i]);
 			
-			TwoThetaDeg = TwoTheta*180.0/M_PI;
-			//qValue = (4.0*M_PI/lambda)*sin(TwoTheta/2.0);
-			switch (kind) 
-			{
-				case 1:	// scattering angle + lambda
-					ibinXY = FindIndexXY(&TwoThetaDeg, &lambda, &ibinX, &ibinY);
-					break;
-				case 2:	// scattering angle + TOF
-					ibinXY = FindIndexXY(&TwoThetaDeg, &time, &ibinX, &ibinY);
-					break;
-			}
-			if (ibinXY >= 0)
-			{
-				if (bin[ibinXY] == NULL)
-				{
-          /*
-					bin[ibinXY] = (BINDATA *)malloc(sizeof(BINDATA));
-					if (bLogBinningX)
-						bin[ibinXY]->X = sqrt((bpostX[ibinX])*(bpostX[ibinX+1]));
-					else
-						bin[ibinXY]->X = ((bpostX[ibinX])+(bpostX[ibinX+1]))/2.0;
-					if (bLogBinningY)
-						bin[ibinXY]->Y = sqrt((bpostY[ibinY])*(bpostY[ibinY+1]));
-					else
-						bin[ibinXY]->Y = ((bpostY[ibinY])+(bpostY[ibinY+1]))/2.0;
-					bin[ibinXY]->Counts = 0;
-					bin[ibinXY]->Int = 0.;*/
-          CreateBin(&bin[ibinXY], &bpostX[ibinX], &bpostY[ibinY]);
-				}
-				bin[ibinXY]->Counts++;
-				bin[ibinXY]->Int += prob;
+			  TwoThetaDeg = TwoTheta*180.0/M_PI;
+			  //qValue = (4.0*M_PI/lambda)*sin(TwoTheta/2.0);
+			  switch (eComb) 
+			  {
+				  case VT_SCA_LMBD:	// scattering angle + lambda
+					  iBinXY = FindIndexXY(&TwoThetaDeg, &lambda, &iBinX, &iBinY);
+					  break;
+				  case VT_SCA_TOF:	// scattering angle + TOF
+					  iBinXY = FindIndexXY(&TwoThetaDeg, &time, &iBinX, &iBinY);
+					  break;
+			  }
+			  if (iBinXY >= 0)
+			  {
+				  if (bin[iBinXY] == NULL)
+				  {
+            CreateBin(&bin[iBinXY], &bpostX[iBinX], &bpostY[iBinY]);
+				  }
+				  bin[iBinXY]->Counts++;
+				  bin[iBinXY]->Int += prob;
 
-				bintc += prob;
-			}
+          nTrajTot++;
+				  TotInt += prob;
+			  }
+      }
 		}
 	}
 
-	my_exit:
+// Finish: writes and closes evaluate files, writes to log and instrument file, frees memory
+// -----------------------------------------------------------------------------------------
+my_exit:
+  // writes final monitor output
+  UpdateMon(nBunches);  
 
 	// Output of Results
-	fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc);
+	fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n\n", TotInt);
 	fflush(LogFilePtr);
-	
-	// Spectrum 
-	if (fspectra != NULL)
-	{
-		// method 1: faster, more memory
-		//Copy data pointers to new 1D-array with no unallocated pointers
-		bin_sorted = malloc(sizeof(BINDATA*)*(INDEX(nbinsX, nbinsY)+1));
-		ibinX = 0;
-		for (ibinXY = 0; ibinXY < INDEX(nbinsX, nbinsY); ibinXY++)
-		{
-			if (bin[ibinXY] != NULL)
-			{
-				bin_sorted[ibinX] = bin[ibinXY];
-				//bintc_sorted += bin_sorted[ibinX]->Int;
-				ibinX++;
-			}
-		}
-		//fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc_sorted);
-		//bintc_sorted=0.;
-		//Sort
-		if (SortMode != 0) qsort(bin_sorted, ibinX, sizeof(BINDATA*), comparebin);
-		//Print spectrum
-		for (ibinY = 0; ibinY < ibinX; ibinY++)
-		{
-			fprintf(fspectra,"%12g %12g %12g %8ld\n", bin_sorted[ibinY]->X, bin_sorted[ibinY]->Y, bin_sorted[ibinY]->Int, bin_sorted[ibinY]->Counts);
-			bintc_sorted += bin_sorted[ibinY]->Int;
-			free(bin_sorted[ibinY]);
-		}
-		fprintf(LogFilePtr, "total neutron count rate within binning after sorting: %11.4e n/s \n", bintc_sorted);
-		free(bin_sorted);
-		
-		/*// method 2: takes longer, less memory
-		
-		//Sort array with unallocated pointers
-		if (SortMode != 0) qsort(bin, INDEX(nbinsX, nbinsY)+1, sizeof(BINDATA*), comparebin);
-		for(ibinX = 0; ibinX<(nbinsX); ibinX++)
-		{	
-			for(ibinY = 0; ibinY<(nbinsY); ibinY++)
-			{
-				ibinXY = INDEX(ibinX, ibinY);
-				if (bin[ibinXY] != NULL)
-					fprintf(fspectra,"%12g %12g %12g %8d\n", bin[ibinXY]->X, bin[ibinXY]->Y, bin[ibinXY]->Int, bin[ibinXY]->Counts);
-				free(bin[ibinXY]);
-			}
-		}*/
-
-		free(bin);
-		fclose(fspectra);
-	}
-
-/*	if (ftotcounts != NULL && binterval > 0)
-	{ 
-		if (finfofile == NULL)
-		{
-			Error("you must define a spectra information file to obtain integrated counts");
-		}
-
-		fprintf(LogFilePtr,"\n binintervalls = integration range for each selected point:");
-
-		i = 0;
-		while(!feof(finfofile))
-		if (2 == fscanf(finfofile, "%lf %lf", &center[i], &range[i]))
-		i++;
-		else
-		break;
-		fclose (finfofile);
-
-		for (j=0; j<i; j++)
-		{
-			leftedge =  (long)floor( (center[j] - (range[j]/2.0) -m)/binterval );
-			rightedge = (long)floor( (center[j] + (range[j]/2.0) -m)/binterval);
-	  				  
-			fprintf(LogFilePtr,"\n [%ld, %ld]",leftedge, rightedge);
-				  
-			for (k=leftedge; k<=rightedge; k++)
-			totcenter[j] += bint[k];
-		}
-
-		// writeout 
-		for(j = 0; j<i; j++)
-		{ 
-			if (fabs(totcenter[j]) < 1E-40) totcenter[j] = 0.0;
-			fprintf(ftotcounts,"%7.7f\t%11.7E\n", center[j], totcenter[j]);
-		}
-		fclose(ftotcounts);
-	}  // end totcounts 
-*/
 
 	//Cleanup
-	/*for(ibinX = 0; ibinX<(nbinsX); ibinX++)
-		free(bpostX[ibinX]);*/
-	/*for(ibinY = 0; ibinY<(nbinsY); ibinY++)
-		free(bpostY[ibinY]);*/
-	//free(bpostX);
-	//free(bpostY);
-	stPicture.eType = (short) kind;  
-	fprintf(LogFilePtr,"\n");
+  free(bin);
+  if (bin_sorted!=NULL)
+    free(bin_sorted);
 	Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
 	return 0;
 }
 
-void CreateBin(BINDATA **bin, double *bpostX, double *bpostY)
+
+/***********************************************************/
+/** Creates the 2D bin beginning at the given (X,Y) edge  **/
+/***********************************************************/
+void CreateBin(BINDATA **Bin, double *BpostX, double *BpostY)
 {
-	*bin = (BINDATA *)malloc(sizeof(BINDATA));
+	*Bin = (BINDATA *)malloc(sizeof(BINDATA));
 	if (bLogBinningX)
-		(*bin)->X = sqrt((*bpostX)*(*(bpostX+1)));
+		(*Bin)->X = sqrt((*BpostX)*(*(BpostX+1)));
 	else
-		(*bin)->X = ((*bpostX)+(*(bpostX+1)))/2.0;
+		(*Bin)->X = ((*BpostX)+(*(BpostX+1)))/2.0;
 	if (bLogBinningY)
-		(*bin)->Y = sqrt((*bpostY)*(*(bpostY+1)));
+		(*Bin)->Y = sqrt((*BpostY)*(*(BpostY+1)));
 	else
-		(*bin)->Y = ((*bpostY)+(*(bpostY+1)))/2.0;
-	(*bin)->Counts = 0;
-	(*bin)->Int = 0.;
+		(*Bin)->Y = ((*BpostY)+(*(BpostY+1)))/2.0;
+	(*Bin)->Counts = 0;
+	(*Bin)->Int = 0.;
 }
 
-int FindIndexXY(double *Xval, double *Yval, int *ibinX, int *ibinY)
+
+/*****************************************************************/
+/** Returns the index of the bin, in which the point (X,Y) lies **/
+/*****************************************************************/
+int FindIndexXY(double *Xval, double *Yval, int *iBinX, int *iBinY)
 {
-	//int ibinX = -1, ibinY = -1;
-	//int bin = (((X - x) / (double)nbinsX)*146+1e-4) / ((X - x) / (double)nbinsX);
-	*ibinX = -1;
-	*ibinY = -1;
+	//int iBinX = -1, iBinY = -1;
+	//int bin = (((MaxX - MinX) / (double)nBinsX)*146+1e-4) / ((MaxX - MinX) / (double)nBinsX);
+	*iBinX = -1;
+	*iBinY = -1;
 	if (bLogBinningX){
-		for(*ibinX = 0; *ibinX<nbinsX; (*ibinX)++){
-			if (bpostX[*ibinX] <= *Xval && *Xval < bpostX[(*ibinX)+1])
+		for(*iBinX = 0; *iBinX<nBinsX; (*iBinX)++){
+			if (bpostX[*iBinX] <= *Xval && *Xval < bpostX[(*iBinX)+1])
 				break;
 		}
 	} else
-		*ibinX = (int)floor((*Xval - x) / ((X - x) / (double)nbinsX));
+		*iBinX = (int)floor((*Xval - MinX) / ((MaxX - MinX) / (double)nBinsX));
 	
 	if (bLogBinningY){
-		for(*ibinY = 0; *ibinY<nbinsY; (*ibinY)++){	
-			if (bpostY[*ibinY] <= *Yval && *Yval < bpostY[(*ibinY)+1])
+		for(*iBinY = 0; *iBinY<nBinsY; (*iBinY)++){	
+			if (bpostY[*iBinY] <= *Yval && *Yval < bpostY[(*iBinY)+1])
 				break;
 		}
 	} else
-		*ibinY = (int)floor((*Yval - y) / ((Y - y) / (double)nbinsY));
+		*iBinY = (int)floor((*Yval - MinY) / ((MaxY - MinY) / (double)nBinsY));
 	
-	if ((*ibinX >= 0) && (*ibinY >= 0) && (*ibinX < nbinsX) && (*ibinY < nbinsY))
-		return INDEX(*ibinX, *ibinY);
+	if ((*iBinX >= 0) && (*iBinY >= 0) && (*iBinX < nBinsX) && (*iBinY < nBinsY))
+		return INDEX(*iBinX, *iBinY);
 	else
 		return -1;
 }
 
+
+/*******************************************************/
+/** Reads input parameters and sets global variables  **/
+/*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
-	long   i;
-	double winp;
-	char * arg;
+  char  sEvalComb[51];
+	long  i=0;
+	char* arg=NULL;
 
 	for(i=1; i<argc; i++) 
 	{
@@ -445,63 +371,101 @@ void OwnInit(int argc, char *argv[])
 			switch(arg[-1]) 
 			{
 				case 'o':
-					if ((fspectra = fopen(FullParName(arg),"w"))) {
-						fprintf(LogFilePtr,"\nOutput file: %s\n",arg);
-						break;
-					}
-					fprintf(LogFilePtr,"\nERROR: File %s could not be opened for spectra output\n",arg);
-					exit(-1);
-					  
-				case 'O':
-					if ((ftotcounts = fopen(FullParName(arg),"w")))
-						break;
-					fprintf(LogFilePtr,"\nERROR: File %s could not be opened for integrated output\n",arg);
-					exit(-1);
-
-				case 'I':
-					/* info file for generating integrated output */
-					if ((finfofile = fopen(FullParName(arg),"r")))
-						break;
-					fprintf(LogFilePtr,"\nERROR: File %s could not be opened \n",arg);
-					exit(-1);
-
-				case 'n':
-					nbinsX = atol(arg); /* number of bins */
-					/*if (nbinsX > BINS){
-						fprintf(LogFilePtr,"\nERROR: number of bins must be <= %d", BINS);
-						exit(99);
-					}*/
-					break;
-
-				case 'm':
-					nbinsY = atol(arg); /* number of bins */
-					/*if (nbinsY > BINS){
-						fprintf(LogFilePtr,"\nERROR: number of bins must be <= %d", BINS);
-						exit(99);
-					}*/
-					break;
+          sEvalFileName=arg;
+				  break;
 
 				case 'k':
-					kind = atol(arg); /* 1= d-spacing; 2=momentum transfer q; 3=scattering angle */
+					eComb = (VtEvalComb) atoi(arg); /* 1= scattering angle + lambda;  2: scattering angle + TOF */
+					break;
+				case 's':
+					eSortMode = (VtEvalSort) atoi(arg);
+					/* 0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse */
+					break;
+        case 'D':
+					eScatAng = (VtAngleSel) atoi(arg); /* Select the way how the scattering angle is determined (0=direction/1=position) */
 					break;
 
+				case 'n':
+					nBinsX = atol(arg); /* number of bins in x direction */
+					break;
+				case 'm':
+					nBinsY = atol(arg); /* number of bins in y direction */
+					break;
+				case 'x':
+					MinX = atof(arg);   /* lower bound of theta range in x direction  [deg]*/
+					break;
+				case 'X':
+					MaxX = atof(arg);   /* upper bound of theta range in x direction  [deg] */
+					break;
+				case 'y':
+					MinY = atof(arg);   /* lower bound of lambda or TOF [Ang], [ms]  in y direction */
+					break;
+				case 'Y':
+					MaxY = atof(arg);   /* upper bound of lambda or TOF [Ang], [ms]  in y direction */
+					break;
+
+				case 'R':
+					dLogProzX    = atof(arg);       /* percentage of increase to next bin */
+					if (dLogProzX!=0.0)
+						bLogBinningX = TRUE;
+					break;
+				case 'S':
+					dLogProzY    = atof(arg);       /* percentage of increase to next bin */
+					if (dLogProzY!=0.0)
+						bLogBinningY = TRUE;
+					break;
+
+				case 'F':
+					bFmt2D      = (short) atoi(arg);  /* if activated, output is written in 2D format instead of x y z format  */
+          if (bFmt2D==TRUE) 
+            eFormat = MATRIX;
+          else
+            eFormat = XYZ;
+					break;
+				case 'f':
+					bFullMatrix = (short) atoi(arg);  /* if activated, also non-zero lines are written  */
+					break;
+				case 'p':
+					bProbActive = (short) atoi(arg);  /* bProbActive=1 means probabilities activated, else neutron weight is set to 1.0 */
+					break;
+				case 'c':
+					bExclCount  = (short) atoi(arg);  /* if activated, only neutrons complying with the evaluate requirements are considered further on */
+					break;
 				case 'w':
-					winp = atof(arg);
-					if (winp == 1.0) TOF = TRUE; /* time of flight instrument */
+					bTOF        = (short) atoi(arg);  /* time of flight instrument */
+					break;
+        case 't':
+					bTOFcorr    = (short) atoi(arg);  /* correct tof to constant sample-detector distance of '-L' (true/false) */
 					break;
 
 				//case 'r':
 				//	referenceWavelength = atof(arg); /* reference Wavelength for crystal monochromator */
 				//	break;                           /* (or mechanical velocity selector) instrument   */
 
+				case 'l':
+					Flightpath = atof(arg);  /* length of neutron flight path [cm] */
+					if (Flightpath <= 0.0)
+						Error("you must define a flight path > 0.0");
+					break;
+        case 'L':
+					sdpath = atof(arg);  /* length of sample detector distance [cm] */
+					if (sdpath <= 0.0)
+						Error("you must define a sample detector distance > 0.0");
+					break;
+				case 'T':
+					TimeOffset = atof(arg); /* global shift of the neutron time t= t-TimeOffset [ms] */
+					break;
+				case 'd':
+					deadspotangle = M_PI*atof(arg)/180.0; /* excludes all neutrons with a           */
+					bDeadSpot = TRUE;                /* scattering angle < deadspotangle [deg] */
+					break;
+					
 				case 'e':
-					dEvalTimeMin = atof(arg);        /* minimal time for evaluation */
+					EvalTimeMin = atof(arg);        /* minimal time for evaluation */
 					break;
-
 				case 'E':
-					dEvalTimeMax = atof(arg);        /* maximal time for evaluation */
+					EvalTimeMax = atof(arg);        /* maximal time for evaluation */
 					break;
-
 
 				case 'C':
 					nColour = atol(arg);       /*  excludes all neutrons with diff. Colour, if nColour > 0 */
@@ -513,85 +477,6 @@ void OwnInit(int argc, char *argv[])
 					maxColor = atol(arg);       /*  use neutrons with color <= maxColour */
 					break;
 
-				case 'd':
-					deadspotangle = M_PI*atof(arg)/180.0; /* excludes all neutrons with a           */
-					deadspotactive = TRUE;                /* scattering angle < deadspotangle [deg] */
-					break;
-
-
-				case 'x':
-					x = atof(arg);   /* lower bound of d-spacing, q or theta range [A], [1/A], [deg]*/
-					break;
-
-				case 'X':
-					X = atof(arg);   /* upper bound of d-spacing, q or theta range [A], [1/A], [deg]*/
-					break;
-
-				case 'y':
-					y = atof(arg);   /* lower bound of d-spacing, q or theta range [A], [1/A], [deg]*/
-					break;
-
-				case 'Y':
-					Y = atof(arg);   /* upper bound of d-spacing, q or theta range [A], [1/A], [deg]*/
-					break;
-
-				case 'R':
-					dLogProzX    = atof(arg);       /* percentage of increase to next bin */
-					if (dLogProzX!=0.0)
-						bLogBinningX = TRUE;
-					break;
-
-				case 'S':
-					dLogProzY    = atof(arg);       /* percentage of increase to next bin */
-					if (dLogProzY!=0.0)
-						bLogBinningY = TRUE;
-					break;
-
-				case 'c':
-					if(atol(arg)==1)        /* if activated, only neutrons complying with the  */
-						bExclCount = TRUE;   /* evaluate requirements are considered further on */
-					break;
-
-
-				case 'l':
-					Flightpath = atof(arg);  /* length of neutron flight path [cm] */
-					if (Flightpath <= 0.0)
-						Error("you must define a flight path > 0.0");
-					break;
-
-        case 'L':
-					sdpath = atof(arg);  /* length of sample detector distance [cm] */
-					if (sdpath <= 0.0)
-						Error("you must define a sample detector distance > 0.0");
-					break;
-
-        case 't':
-					TOFcorr = atof(arg); /* correct tof to constant sample-detector distance of '-L' (true/false) */
-					break;
-
-        case 'D':
-					scatang = atof(arg); /* Select the way how the scattering angle is determined (0=direction/1=position) */
-					break;
-
-				case 'T':
-					TimeOffset = atof(arg); /* global shift of the neutron time t= t-TimeOffset [ms] */
-					break;
-
-				case 'p':
-					probactiv = atoi(arg);
-					/* probactiv=1 means probabilities activated, else neutron weight is set to 1.0 */
-					break;
-				
-				case 's':
-					SortMode = atoi(arg);
-					/* 0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse */
-					break;
-					
-				case 'f':
-					if(atol(arg)==1)        /* if activated, also non-zero lines are written  */
-						bFullMatrix = TRUE;   
-					break;
-
 				default:
 					fprintf(LogFilePtr,"ERROR: unknown command option: %s\n", argv[i]);
 					exit(-1);
@@ -600,33 +485,44 @@ void OwnInit(int argc, char *argv[])
 		}
 	}
 
-	/* checks */
-	if ((bLogBinningX && x==0.0) || (bLogBinningY && y==0.0))
+	// checks
+  // ------
+  if (bFmt2D==TRUE && bFullMatrix==FALSE)
+  { bFullMatrix=TRUE;
+    Note("2D format requires all matrix elements; 'Zeros' set to 'no'");
+  }
+
+	if ((bLogBinningX && MinX==0.0) || (bLogBinningY && MinY==0.0))
 		Error("lower bound value must not be zero for logarithmic binning");
-	if (fspectra == NULL)
-		Error("no spectra file given");
+	if (sEvalFileName == NULL)
+		Error("no spectrum file given");
   
-  fprintf(LogFilePtr,"Color: %ld\n",nColour);
+  EvalComb_ID2Txt(sEvalComb, eComb);
+  fprintf(LogFilePtr,"\noption %s\n", sEvalComb);
+
+  if (nColour!=NO_COLOR && nColour!=ANY_COLOR)
+    fprintf(LogFilePtr, "Color: %ld\n", nColour);
   
-  if (scatang==TRUE) {
+  if (eScatAng==VT_SEL_POS) 
+  {
     if (sdpath<=0.)
       Error("You must provide a minimum source detector distance to evaluate the position.");
     //if ((nColour_c+nColour_v+nColour_r==0) && (minColor_c+minColor_v+minColor_r==-3) && (maxColor_c+maxColor_v+maxColor_r==-3))
       //Error("You should provide a colour choice for evaluating the position.");
   }
 
-	switch (abs(SortMode))
+	switch (abs(eSortMode))
 	{
-	case 1:
+	case VT_SORT_X:
 		comparebin = &comparebinX;
 		break;
-	case 2:
+	case VT_SORT_Y:
 		comparebin = &comparebinY;
 		break;
-	case 3:
+	case VT_SORT_INT:
 		comparebin = &comparebinInt;
 		break;
-	case 4:
+	case VT_SORT_CTS:
 		comparebin = &comparebinCnt;
 		break;
 	default:
@@ -636,9 +532,94 @@ void OwnInit(int argc, char *argv[])
 }
 
 
+/*******************************************************/
+/**  Updates main monitor output file                 **/
+/*******************************************************/
+void UpdateMon(long iBnch)
+{
+  int    iBinX=0, iBinY=0, iBinXY=0;            // matrix indices
+  double bintc_sorted=0.0,
+         sigma   = 0.0,               // standard deviation of the intensity
+         f_norm  = 1.0;               // ratio of total to processed bunches after treating current bunch
+  FILE*  fSpectr= NULL;               // pointer to output file
 
+  // opens monitor file
+  fSpectr = OpenOutputFile(sEvalFileName, TRUE, "wt");
+	
+	// Spectrum 
+	if (fSpectr != NULL)
+	{
+    // normalize according number of bunches simulated
+    if (iBnch > 0 && nBunches > 1)
+      f_norm = (double) nBunches / (double) iBnch;
 
+    switch (eComb)
+    { case VT_SCA_LMBD: WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot,  nBinsX, "scat_ang [deg]", nBinsY, "wavelength [Ang]"); break;
+      case VT_SCA_TOF : WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot,  nBinsX, "scat_ang [deg]", nBinsY, "TOF [ms]");         break;
+      default         : Error("Evaluation parameter unknown");
+    }
 
+    // matrix format
+    if (eFormat == MATRIX)
+    { 
+      for (iBinX = 0; iBinX < nBinsX; iBinX++)
+        fprintf(fSpectr, "%10.4f   ", (bpostX[iBinX] + bpostX[iBinX+1]) / 2.0);
+      fputc('\n',fSpectr);
+
+      for (iBinY=0; iBinY < nBinsY; iBinY++) 
+      {
+        fprintf(fSpectr, "%10.4f  ", (bpostY[iBinY]+bpostY[iBinY+1]) / 2.0);
+        for (iBinX=0; iBinX < nBinsX; iBinX++)
+        {
+          iBinXY = INDEX(iBinX, iBinY);
+          if (bProbActive==TRUE)
+            fprintf(fSpectr, "%12.5e ", f_norm * bin[iBinXY]->Int);
+          else
+            fprintf(fSpectr, "%7ld ", (long)(f_norm * bin[iBinXY]->Counts));
+        }
+        fputc('\n',fSpectr);
+      }
+    }
+    else
+    { // x y z format
+      //
+      // method 1: faster, more memory
+		  //Copy data pointers to new 1D-array with no unallocated pointers
+		  iBinX = 0;
+		  for (iBinXY = 0; iBinXY < INDEX(nBinsX, nBinsY); iBinXY++)
+		  {
+			  if (bin[iBinXY] != NULL)
+			  {
+				  bin_sorted[iBinX] = bin[iBinXY];
+				  //bintc_sorted += bin_sorted[iBinX]->Int;
+				  iBinX++;
+			  }
+		  }
+		  //fprintf(LogFilePtr, "total neutron count rate within binning: %11.4e n/s \n", bintc_sorted);
+		  //bintc_sorted=0.;
+		  //Sort
+		  if (eSortMode != VT_NO_SORT) qsort(bin_sorted, iBinX, sizeof(BINDATA*), comparebin);
+		  //Print spectrum
+		  for (iBinY = 0; iBinY < iBinX; iBinY++)
+		  {
+        if (bin_sorted[iBinY]->Counts > 0)
+          sigma = bin_sorted[iBinY]->Int / (double)bin_sorted[iBinY]->Counts;
+        else
+          sigma = 0.0;
+			  fprintf(fSpectr,"%10.4f %10.4f  %12.5e %12.5e  %7ld\n", bin_sorted[iBinY]->X, bin_sorted[iBinY]->Y, bin_sorted[iBinY]->Int, sigma, bin_sorted[iBinY]->Counts);
+			  bintc_sorted += bin_sorted[iBinY]->Int;
+		  }
+		  fprintf(LogFilePtr, "total neutron count rate within binning after sorting: %11.4e n/s \n", bintc_sorted);
+    }
+
+		fclose(fSpectr);
+	}
+}
+
+/*********************************************************************************/
+/** The following functions check if the parameters X, Y, Int or Cnt            **/
+/** are larger in 'a' or in 'b' and returns 1 or -1 depending of the sort mode  **/
+/*********************************************************************************/
 int comparebinX(const void *a, const void *b)
 {
 	const BINDATA *arg1 = *((BINDATA*const*)a);
@@ -650,16 +631,16 @@ int comparebinX(const void *a, const void *b)
 	else if (arg2 == NULL)
 		ret = -1;
 	else  if (arg1->X < arg2->X)
-		ret = -1*sign(SortMode);
+		ret = -1*sign(eSortMode);
 	else if (arg1->X > arg2->X)
-		ret = 1*sign(SortMode);
-	else if (SortMode != 0)
+		ret = 1*sign(eSortMode);
+	else if (eSortMode != VT_NO_SORT)
 	{
-		int SortModeSave = SortMode;
-		SortMode = 0;
+		int SortModeSave = eSortMode;
+		eSortMode = VT_NO_SORT;
 		ret = comparebinY(a, b);
-		SortMode = SortModeSave;
-		ret *= sign(SortMode);
+		eSortMode = SortModeSave;
+		ret *= sign(eSortMode);
 	}
 
 	return ret;
@@ -674,18 +655,18 @@ int comparebinY(const void *a, const void *b)
 	if (arg1 == NULL)
 		ret = 1;
 	else if (arg2 == NULL)
-		ret = -1*sign(SortMode);
+		ret = -1*sign(eSortMode);
 	else  if (arg1->Y < arg2->Y)
-		ret = -1*sign(SortMode);
+		ret = -1*sign(eSortMode);
 	else if (arg1->Y > arg2->Y)
-		ret = 1*sign(SortMode);
-	else if (SortMode != 0)
+		ret = 1*sign(eSortMode);
+	else if (eSortMode != VT_NO_SORT)
 	{
-		int SortModeSave = SortMode;
-		SortMode = 0;
+		int SortModeSave = eSortMode;
+		eSortMode = VT_NO_SORT;
 		ret = comparebinX(a, b);
-		SortMode = SortModeSave;
-		ret *= sign(SortMode);
+		eSortMode = SortModeSave;
+		ret *= sign(eSortMode);
 	}
 
 	return ret;
@@ -702,18 +683,18 @@ int comparebinInt(const void *a, const void *b)
 	else if (arg2 == NULL)
 		ret = -1;
 	else  if (arg1->Int < arg2->Int)
-		ret = -1*sign(SortMode);
+		ret = -1*sign(eSortMode);
 	else if (arg1->Int > arg2->Int)
-		ret = 1*sign(SortMode);
-	else if (SortMode != 0)
+		ret = 1*sign(eSortMode);
+	else if (eSortMode != VT_NO_SORT)
 	{
-		int SortModeSave = SortMode;
-		SortMode = 0;
+		int SortModeSave = eSortMode;
+		eSortMode = VT_NO_SORT;
 		ret = comparebinCnt(a, b);
 		if (ret == 0) ret = comparebinX(a, b);
 		if (ret == 0) ret = comparebinY(a, b);
-		SortMode = SortModeSave;
-		ret *= sign(SortMode);
+		eSortMode = SortModeSave;
+		ret *= sign(eSortMode);
 	}
 	
 	return ret;
@@ -730,23 +711,27 @@ int comparebinCnt(const void *a, const void *b)
 	else if (arg2 == NULL)
 		ret = -1;
 	else  if (arg1->Counts < arg2->Counts)
-		ret = -1*sign(SortMode);
+		ret = -1*sign(eSortMode);
 	else if (arg1->Counts > arg2->Counts)
-		ret = 1*sign(SortMode);
-	else if (SortMode != 0)
+		ret = 1*sign(eSortMode);
+	else if (eSortMode != VT_NO_SORT)
 	{
-		int SortModeSave = SortMode;
-		SortMode = 0;
+		int SortModeSave = eSortMode;
+		eSortMode = VT_NO_SORT;
 		ret = comparebinInt(a, b);
 		if (ret == 0) ret = comparebinX(a, b);
 		if (ret == 0) ret = comparebinY(a, b);
-		SortMode = SortModeSave;
-		ret *= sign(SortMode);
+		eSortMode = SortModeSave;
+		ret *= sign(eSortMode);
 	}
 	
 	return ret;
 }
 
+
+/*******************************************************/
+/**  1 for >= 0; else -1                              **/
+/*******************************************************/
 int sign(int v)
 {
 	return v >= 0 ? 1 : -1;

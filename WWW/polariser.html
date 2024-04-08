@@ -1,0 +1,340 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <title>Module Polarizer Supermirror</title>
+</head>
+
+<body>
+
+  <h1> VITESS Polariser Modules</h1>
+  <p>
+    There are two dedicated VITESS modules to simulate neutron polarisers: <br />
+    <b>polariser_he3</b> simulates a helium-3 polarizer. <br />
+    <b>polariser_sm</b> simulates a (vertical) stack of nearly horizontal, rectangular, parallel plane mirrors with different reflectivity curves for up- and and down-neutrons.
+    It assumes an odd number of channels, absorption on the left and right side of the stack, a polarizing B field along the x-axis and identical reflectivities for all mirrors.
+    A stack of vertical mirrors can be realized using the <b>frame</b> module before and after this component. 
+    For any other situation, the module <b>sm_ensemble</b> has to be used. <br />
+    If the polarizer consists of only 1 mirror, it is easiest to use the module <b>pol_mirror</b>, which allows horizontal and vertical mirror orientation.
+  </p>
+
+  <br />
+  <h2><font size="+1"> VITESS Module Polarizer Supermirror</font></h2>
+  <p>
+    This module simulates a multichannel supermirror polarizer with flat channel
+    walls tilted by an angle relative to the neutron beam in order to reflect
+    all neutrons at least one time. <br>
+    The polarization process at each reflection is treated quantummechanically:
+  </p>
+  <p>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="Symbol">q</font><sub>new</sub>
+    = 2. * atan(a<sub>DD</sub>/ a<sub>UU</sub> * tan(<font face="Symbol">q</font>/2.))
+    ;
+  </p>
+  <p>where </p>
+  <p>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a<sub>UU</sub> = sqrt(rupdata[datanumber])
+    ;
+  </p>
+  <p>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a<sub>DD</sub> = sqrt(rdowndata[datanumber])
+    ;
+  </p>
+  <p>
+    are the diagonal components of the polarization scattering matrix and rupdata[datanumber]
+    and rdowndata[datanumber] give the "Up" and "Down" reflectivities belonging
+    to the wavelength bin (numero 'datanumber') as read from the reflectivity
+    files. <br>
+    The probability weight is multiplied by the probability of reflection in
+    function of the wavelength:
+  </p>
+  <p>
+    &nbsp;Prob =Prob * (sq(aUU * cos(<font face="Symbol">q</font>/2.)) + sq(aDD
+    * sin(<font face="Symbol">q</font>/2.)) );
+  </p>
+  <p>
+    and this simplifies to Prob = Prob * R<sub>Up,Down&nbsp;</sub> in case
+    of only "Up" or "Down" trajectories,&nbsp; when <font face="Symbol">q </font>is
+    0 or <font face="Symbol">p</font>.
+  </p>
+  <p>
+    The spin precessions are approximated classically i.e. we rotate the spin
+    vectors belonging to the trajectories in order to simulate dephasing in function
+    of flight time through the magnetic field.
+  </p>
+
+    <br />
+    <h4>Parameters for Module 'polarizer_sm'</h4>
+  <p>
+    <table border="1" width="95%">
+      <tbody>
+        <tr>
+          <td valign="top"><b>Parameter<br> Unit<br></b></td>
+          <td valign="top"><b>Description<br>       </b></td>
+          <td valign="top"><b>Range or Values<br>   </b></td>
+          <td valign="top"><b>Command Option<br>    </b></td>
+        </tr>
+        <tr>
+          <td>parameter file</td>
+          <td>name of the parameter file</td>
+          <td>  </td>
+          <td>-P</td>
+        </tr>
+        <tr>
+          <td>Up-reflectivity file</td>
+          <td>reflectivity data file for Up neutrons; format as guide reflectivity file</td>
+          <td>file for m=4</td>
+          <td>-U</td>
+        </tr>
+        <tr>
+          <td>Down-reflectivity file</td>
+          <td>reflectivity data file for Down neutrons; format as guide reflectivity file </td>
+          <td>file for m=0.6</td>
+          <td>-D</td>
+        </tr>
+        <tr>
+          <td>position X, Y, Z <br>[cm]</td>
+          <td>center position of the rectangular geometry polarizer</td>
+          <td> (48.0, 0.0, 0.5) </td>
+          <td> -a, -b, -c </td>
+        </tr>
+        <tr>
+          <td>vertical inclination<br>[deg]</td>
+          <td>rotation angle of the polarizer in vertical direction (0, 0 means parallel to X i.e. beam)</td>
+          <td> 0.6 deg</td>
+          <td>   -V   </td>
+        </tr>
+        <tr>
+          <td>output X, Y, Z<br>[cm]</td>
+          <td>position of the output frame (in the input frame)</td>
+          <td>(96.0, 0.0, 1.0)</td>
+          <td>-R, -E, -G</td>
+        </tr>
+        <tr>
+          <td>hor., vert. rotation angle<br>[deg]</td>
+          <td>
+            rotation angle of the output frame in horizontal (first rotation)&nbsp;&nbsp;
+            and vertical direction (0, 0 means parallel to original X)
+          </td>
+          <td>0.0, 1.2 deg</td>
+          <td>   -h, -v   </td>
+        </tr>
+      </tbody>
+    </table>
+  </p>
+
+  <br />
+  <h4>File Input Parameters</h4>
+  <p>
+    <table border="1" width="95%">
+      <tbody>
+        <tr>
+          <td valign="top"><b>Parameter<br> Unit<br></b></td>
+          <td valign="top"><b>Description<br>       </b></td>
+          <td valign="top"><b>Range or examples<br>   </b></td>
+          <td valign="top"><b>Command Option<br>    </b></td>
+        </tr>
+        <tr>
+          <td>dimension X, Y, Z<br>[cm]</td>
+          <td>length, width and height of the polarizer</td>
+          <td> 96, 6.0, 3.0 </td>
+          <td>  </td>
+        </tr>
+        <tr>
+          <td>number of channels</td>
+          <td>number of channels in vertical direction</td>
+          <td> 1, 3, 5, ...</td>
+          <td>  </td>
+        </tr>
+        <tr>
+          <td>wall width<br>[cm]</td>
+          <td>width of the wall between the channels</td>
+          <td> 0.05 </td>
+          <td>  </td>
+        </tr>
+        <tr>
+          <td>guide field X, Y, Z <br> [Gs]</td>
+          <td>components of the guide field</td>
+          <td> all components &ge;0, e.g. (1.0, 0.0, 0.0) </td>
+          <td>  </td>
+        </tr>
+        <tr>
+          <td>analysis dir. X, Y, Z</td>
+          <td>direction vector components of the quantization direction</td>
+          <td> (1.0, 0.0, 0.0) </td>
+          <td>  </td>
+        </tr>
+      </tbody>
+    </table>
+  <p>
+
+
+  <br /><br />
+  <h2><font size="+1"> VITESS Module Polarizer He-3</font></h2>
+  <p>
+    This module simulates a He-3 gas polarizer/filter. Inside the cylindrical
+    He-3 gas chamber the field component is homogeneous. The guide field is added
+    to the total field. <br>
+    The spin precessions are first approximated classically i.e. we first rotate
+    the spin vectors belonging to the trajectories in order to simulate dephasing
+    in function of flight time through the magnetic field. Then we use the known
+    quantummechanical formulas to define the new spin orientation if the "Up"
+    and "Down" mixed states weights will change due to the interaction with the
+    He-3 gas:
+  </p>
+  <pre>
+    { CartesianToSpherical(SpinVector, &amp;theta, &amp;phi);
+      pDown = sqrt(1.0 - polardata[datanumber]);
+      theta = 2.0 * asin(pDown * sin(theta/2.0)) ; 
+      SphericalToCartesian(SpinVector, &amp;theta, &amp;phi); 
+    }
+  </pre>
+  <p>
+    where polardata[datanumber] gives the polarization belonging to the wavelength
+    bin (numero 'datanumber') as read from the 'polarization file'. <br>
+    The probability weight is multiplied by the transmission in function of the
+    wavelength. <br>
+    As result, the <b>average</b> polarization and transmission per wavelength
+    of the trajectories will depend on the wavelength as given in the polarization
+    and transmission files.
+  </p>
+  <p>
+    In the case of choosing the analytical option, the neutron polarization&nbsp;<img src="img00005.gif" height="29" width="48" align="middle">
+    and transmission&nbsp;<img src="img00006.gif" height="28" width="46"
+                               align="middle">
+    are given by the formulas:
+  </p>
+  <center>
+    <p>
+      <img src="img00007.gif" height="64" width="414">
+    </p>
+  </center>
+
+  <p>
+    where <i>n</i> and <i>l</i> are the He-3 particle density [cm<sup>-3</sup>] and the polarizer length [cm] resp. 
+    and <i>P<sub>He</sub></i> is the He-3 polarization.<br />
+    &nbsp;<img src="img00009.gif" height="25" width="161" align="middle"> is the cross-section [barn], with <i>E<sub>n</sub></i> given in eV.
+    Alternatively, &sigma;(&lambda;) = 2945 barn * &lambda;/&Aring;
+<p>
+
+  <br />
+  <h4>Parameters for Module 'polarizer_he3'</h4>
+  <p>
+    <table border="1" width="95%">
+      <tbody>
+        <tr>
+          <td><b>Parameter<br>Unit</b></td>
+          <td><b>Description</b></td>
+          <td><b>Range or Values</b></td>
+          <td><b>Command option</b></td>
+        </tr>
+        <tr>
+          <td>wavelength dependence</td>
+          <td>
+            choice between analytical and numerical determination of the wavelength dependence of the polarization and transmission <br />
+            If 'wavelength dependence'='analytical' is chosen' the polarization and transmission file are generated from the He-3 polarization, its density and the tube length of the polarizer<br />
+            If 'wavelength dependence'='numerical' is chosen, the files containing polarization and transmission as a function of wavelenth are used.
+            They have to be supplied by the user and must be in the form described below.  <br />
+            Note that He-3 polarization, He-3 particle density and length of the polarizer are ignored in this case. 
+          </td>
+          <td>'numerical'<br />'analytical'</td>
+          <td>-a</td>
+        </tr>
+        <tr>
+          <td>polarization He3<br>[%]</td>
+          <td>polarization of the He-3 gas</td>
+          (needed for the analytical calculation of polarization and transmission)
+          <td>80%</td>
+          <td>-b </td>
+        </tr>
+        <tr>
+          <td>density He3 <br>[cm<sup>-3</sup>] </td>
+          <td>
+            density of the He3 gas <br>
+            (needed for analytical calculation of polarization and transmission)
+          </td>
+          <td>2.7e19<br>(for 1 bar)</td>
+          <td>-d</td>
+        </tr>
+        <tr>
+          <td>polarization xsection [barn]</td>
+          <td>
+            polarization cross-section of 1 &Aring; neutrons in He-3 <br>
+            (usually calculated from the tabulated value for 1.798 &Aring; neutrons)
+          </td>
+          <td>2945</td>
+          <td>-c</td>
+        </tr>
+
+        <tr>
+          <td>polarization file</td>
+          <td>
+            Input file containing the wavelength dependent polarization of the given He-3 polarizer <br />
+            If 'wavelength dependence'='analytical' is chosen' it is generated in the beginning of the simulation from the He-3 polarization, its density and the polarizer tube length <br />
+            Otherwise, it has to be supplied by the user.  <br />
+            It consists of polarization values (between 0 and 1) in a single column for wavelength values of 0.01, 0.02, 0.03, 0.04 ... 50 &Aring;         <br>
+          </td>
+          <td>  </td>
+          <td>-P</td>
+        </tr>
+        <tr>
+          <td>transmission file</td>
+          <td>
+            Input file containing the wavelength dependent transmission of the given He-3 polarizer <br />
+            If 'wavelength dependence'='analytical' is chosen' it is generated in the beginning of the simulation from the He-3 polarization, its density and the polarizer tube length  <br />
+            Otherwise, it has to be supplied by the user.  <br />
+            It consists of polarization values (between 0 and 1) in a single column for wavelength values of 0.01, 0.02, 0.03, 0.04 ... 50 &Aring;         <br>
+          </td>
+          <td>  </td>
+          <td>-T</td>
+        </tr>
+        <tr>
+          <td>position main X,Y,Z <br>[cm]</td>
+          <td>center position of the cylindrical He-3 gas chamber</td>
+          <td> 25  0  0 </td>
+          <td>-k, -l, -m</td>
+        </tr>
+        <tr>
+          <td>cylinder length, diameter <br>[cm]</td>
+          <td>length (along the beamline) and diameter of the cylindrical He-3 gas chamber</td>
+          <td>10 10 </td>
+          <td>-X, -Y</td>
+        </tr>
+        <tr>
+          <td>guide field X, Y, Z <br>[Gs]</td>
+          <td>x-, y- and z-component of the guide field</td>
+          <td>  1  0  0 </td>
+          <td>-G, -H, -K</td>
+        </tr>
+        <tr>
+          <td>pol. field X, Y, Z <br>[Gs]</td>
+          <td>x-, y- and z-component of the magnetic field in the chamber, which is added to the guide field</td>
+          <td> 10  0  0 </td>
+          <td>-M, -N, -O</td>
+        </tr>
+        <tr>
+          <td>output X, Y, Z <br>[cm]</td>
+          <td>position of the output frame (in the input frame)</td>
+          <td> 50  0  0 </td>
+          <td>-p, -r, -s</td>
+        </tr>
+
+      </tbody>
+    </table>
+
+
+  <p>
+    <a href="vitess.html">Back to VITESS overview</a> <br>
+    <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
+  </p>
+  <p>
+    <!-- hhmts start --><font size="-1">
+      Last modified: Tue Jul 23 17:27:04
+      MEST 2002, G.Zs.
+    </font><!--#echo var="LAST_MODIFIED"  --><!-- hhmts end -->
+  </p>
+  <br>
+</body>
+</html>

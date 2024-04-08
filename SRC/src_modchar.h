@@ -1,92 +1,78 @@
 #ifndef SRC_MODCHAR_H
 #define SRC_MODCHAR_H
 
-/***********************************************/
-/* Functions for simulations of moderators     */
-/***********************************************/
-
 
 /***********************************************/
 /* Definitions                                 */
 /***********************************************/
-
-#define ANYSOURCE 0
-#define ESS       1
-#define SNS       2
-#define ISIS      3
-#define CSNS      4
-#define ILL      10
-#define HMI      11
-
-#define CWS       1
-#define SPSS      2
-#define LPSS      3
-
-#define POISONED   1   /* moderator decoupled poisoned        */
-#define DECOUPLED  2   /* moderator decoupled unpoisoned      */
-#define COUPLED    3   /* moderator coupled                   */
-#define MULT_SPEC  4   /* effective spectrum of a moderator consisting of a cold and thermal part      */
-
-#define NUM_MOD    3   /* max. number of moderators in the moderator system */
-
+#define NUM_MOD   10   /* max. number of moderators in the moderator system */
 #define FNL      101
-
-#define NO_TRACING      0
-#define WRITE_TRC_FILES 1
-#define ONLY_TRC_TRAJ   2
 
 
 /***********************************************/
 /* Structures                                  */
 /***********************************************/
 typedef struct
-{	short  eSrcType;       /* source type: CWS SPSS LPSS */
-	const char *pSrcName;
-	short  nSource;
-	double dPulseFreq;     /* repetition rate of the pulses in Hz */
-	double dPulsePeriod;   /* period of pulse cycle         in ms */
-	double dPulseLength;   /* LPSS pulse length             in s  */
-	double dPower;         /* average power of the source   in W  */
-}
-Source;
-
-typedef struct {
-  double dModTemp;
-  short  nBackground;
-  short  nColour;
-  char   bCircle;
-  double dCntrX;
-  double dCntrY;
-  double dCntrZ;
-  double dWidth;
-  double dHeight;
-  double dDiameter;
-  double dArea;         /* area of the moderator [cm²] */
-  double dDistModWnd;   /* distance moderator - propagation window  */
-  double dWndFact;      /* factor to normalise divergence distribution defined 'by window' */
-  double dTotalFlux;    /* total CW-flux on the moderator surface [n/cm²s]  */
-  double dCurrent;      /* mean neutron current leaving the moderator [n/s] */
-  double dNorm;         /* mean neutron current per traj. normalized by wavelength [n*Ang/s]
-			   (and for spallation sources) by time interval         [n*Ang]   */
-  double dPfmcFact;     /* performance factor considering losses by the technical realization */
+{	
+  const char *pSrcName;   //             name of the source   
+  VtSrcName   nSource;    //             enum defining the sourc    
+  VtSrcKind   eSrcKind;   //             enum: source kind: uses 'SrcKind' (s.a.) to define the source type (Vitess 3)
+  VtSrcType   eSrcType;   //             enum: source type: CWS SPSS LPSS    (Vitss 4)
+  double  PulseFreq;      //    [Hz]     repetition rate of the pulses in
+  double  PulsePeriod;    //    [ms]     period of pulse cycle         in
+  double  PulseLength;    //    [s]      LPSS pulse length             in
+  double  Power;          //    [W]      average power of the source   in
+}                         
+Source;                   
+                          
+typedef struct            
+{                         
+  double ModTemp;         //     [K]     effective moderator temperature  
+  VtModType eModType;     //     [-]     moderator type: coupled, decoupled, ...
+  VtTS   eIsisTS;	        //             Target station 0: no ISIS moderator, 1: TS1, 2: TS2 
+  short  nBackground;     //     [-]     index: order of moderators: higher number is in background
+  short  nColour;         //     [-]     neutrons leaving this moderator get this colour
+  char   bCircle;         //     [-]     flag: circular moderator
+  double CntrX;           //     [cm]    x-component of the center fo the moderator
+  double CntrY;           //     [cm]    y-component of the center fo the moderator           
+  double CntrZ;           //     [cm]    y-component of the center fo the moderator
+  double Diameter;        //     [cm]    diameter of the moderator
+  double Width;           //     [cm]    width of the moderator 
+  double Height;          //     [cm]    height of the moderator
+  double Area;            //    [cm²]   area of the moderator*/
+  double DistModWnd;      //     [cm]    distance moderator - propagation window 
+  double WndFact;         //             factor to normalise divergence distribution defined 'by window'
+  double PfmcFact;        //             performance factor considering losses by the technical realization
   char   sLFileName[FNL];
   char   sTFileName[FNL];
   char   sLTFileName[FNL];
-  short  eModType;
-  double dTauDecay;        /* decay time constant of pulse in s  */
-  double dTauAscent;       /* ascent time constant of pulse in s */
-  double dFUAmpl;          /* pulse ampl. on the moderator surface   [n/(cm²*sterad)]
-			      (number of neutrons per area per solid angle per pulse )     */
-  short eIsisTS;	   /* Target station 0: no ISIS moderator, 1: TS1, 2: TS2 */
+  double TauAscMod;       //     [s]     ascent time constant of the moderated neutrons in the pulse
+  double TauDecMod;       //     [s]     decay time constant of the moderated neutrons in the pulse 
+                              
+  double Chi;             //   [1/Ang]   factor for the wavelength dependence of under-moderated neutrons 
+  double Kappa;           //     [1]     scaling factor for the flux of under-moderated neutrons
+  double TauAscUM;        //     [s]     ascent time constant of the under-moderated neutrons in the pulse
+  double TauDecUM;        //     [s]     decay time constant of the under-moderated neutrons in the pulse
+                               
+  double Current;         //    [n/s]    mean neutron current leaving the moderator
+  double TotFluxMod,      //  [n/cm²/s]  total CW-flux of the moderated neutrons on the moderator surface    
+         TotFluxUM;       //  [n/cm²/s]  total CW-flux of the under-moderated neutrons on the moderator surface
+                          //             flux amplitude for moderated und undermoderated neutrons
+  double FUAmpMod,        // [n/s/cm²/sr] - continuous sources: number of neutrons per area per solid angle per second 
+         FUAmpUM;         //  [n/cm²/sr]  - pulsed sources:     number of neutrons per area per solid angle per pulse 
+  double NormTrj,         // [cm²sr Ang] Phase space volume per trajectory 
+         NormInt;         //  [n*Ang/s]   mean neutron current per traj. normalized by wavelength
+                          //   [n*Ang]     and for pulsed sources by time interval   (= FUAmp*NormTrj)     
 }
 Moderator;
 
+
 typedef struct
 {
-	double dF001;
-	double dF002;
-	double dF003;
-	double dTemp;
+  double F001;
+  double F002;
+  double F003;
+  double Temp;
   double alpha_SD;
   double kappa_SD;
   double alpha_L;
@@ -96,6 +82,7 @@ typedef struct
   double alpha_2;
 }
 ModInfo;
+
 
 typedef struct 
 {
@@ -114,23 +101,27 @@ typedef struct
 EssModChar;
 
 typedef struct
-{	double dLambdaMin;
-	double dLambdaMax;
-	double dMaxDivY;
-	double dMaxDivZ;
-	double dTimeFrmMin;
-	double dTimeFrmMax;
+{	
+  double LambdaMin;
+  double LambdaMax;
+  double MinDivY;
+  double MaxDivY;
+  double MinDivZ;
+  double MaxDivZ;
+  double TimeFrmMin;
+  double TimeFrmMax;
 }
 TrajParam;
 
 typedef struct
-{	double* pTabX;
-	double* pTabY;
-	double* pTabF;
-	long    nLines;
-	long    nColumns;
-	double  dInt;
-	double (*pDisFct)();
+{	
+  double* pTabX;
+  double* pTabY;
+  double* pTabF;
+  long    nLines;
+  long    nColumns;
+  double  Int;
+  double (*pDisFct)();
 }
 FctTable;
 
@@ -138,40 +129,47 @@ FctTable;
 /***********************************************/
 /* Prototypes                                  */
 /***********************************************/
+void   InitSource     (Source*    pSrc);
+void   InitModerator  (Moderator* pMod);
+void   InitTrajRange  (TrajParam* pTrj);
+void   CopyTrajRange  (const TrajParam* pSrc, TrajParam* pDest);
 
-long   IndLT        (const long i, const long j);
-double TotalFU      (const double Temp,    const short  eSource,  const short  eModType,
-					           const double dPower,  const double dPeriod,  const double dPulseLen);
-double EssModFU     (const double Lambda,  const double dTime,    const double dLength);
+long   IndLT          (const long   i,       const long   j);
+double TotalFU        (const double Temp,    const VtSrcName eSource, const VtModType eModType,
+					             const double Power,   const double Period,  const double PulseLen);
+double EssModFU       (const double Lambda,  const double Time,    const double Length);
+                      
+double Maxwellian     (const double lambda,  const double ModTemp);
+double LeakageFct     (const double lambda,  const ModInfo* pInfo);
+double EmpCorrFact    (double lmbd);
+double NotMaxwell     (const double lambda,  const double chi,     const double kappa);
+short  GetEssModDat   (ModInfo*     ModInfo, const double ModTemp, const double ModHeight, const short iVsn);
 
-double Maxwellian   (const double Lambda,  const double dModTemp);
-double LeakageFct   (const double Lambda,  const ModInfo* pInfo);
-double NotMaxwell   (const double Lambda,  const double alpha,   const double kappa);
-short  GetEssModDat (ModInfo*     ModInfo, const double ModTemp, const double ModHeight, const short iVsn);
+double UserLambdaDis  (const double Lambda,  const double ModTemp);
+double UserLmbdTimeDis(const double Lambda,  const double Time);
+double UserTimeDis    (const double Time,    const double TauDecay, const double TauRatio, const double PulsLen);
 
-double UserLambdaDis(const double dLambda, const double dModTemp);
-double UserLmbdTimeDis(const double dLambda, const double dTime);
-double UserTimeDis  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
+double PulseShapeP    (const double Time,    const double TauDecay, const double TauRatio, const double PulsLen);
+double ShortPulseShape(const double Time,    const double TauDecay, const double TauRatio);
+double LongPulseShape (const double Time,    const double TauDecay, const double TauRatio, const double PulsLen);
+double PulseShapeInt  (const double Time,    const double TauDecay, const double TauAscent);
 
-double PulseShapeP  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
-double PulseIntEss  (const double dTime, const double dTauDecay, const double dTauRatio, const double dPLength);
-double PulseShape   (const double dTime, const double dTauDecay, const double dTauRatio);
-double PulseShapeInt(const double dTime, const double dTauDecay, const double dTauAscent);
+double f_cold         (const double lambda);
+double f_therm        (const double lambda);
 
-double f_cold       (const double dLambda);
-double f_therm      (const double dLambda);
+double AveSolidAngleC(const double ModDiam,
+                      const double WndWidth, const double WndHeight, const double Dist);
+double AveSolidAngleR(const double ModWidth, const double ModHeight,
+                      const double WndWidth, const double WndHeight, const double Dist);
+double AveWeightC    (const double ModCntrY, const double ModCntrZ,  const double ModDiam,
+                      const double WndWidth, const double WndHeight, const double Dist);
+double AveWeightR    (const double ModCntrY, const double ModCntrZ,
+                      const double ModWidth, const double ModHeight,
+                      const double WndWidth, const double WndHeight, const double Dist);
+double IntAtan       (const double IntAnf,   const double IntEnd,    const double Param);
+double WeightDirByWnd(const double WndWidth, const double Dist,      const double ModPos);
 
-double AveSolidAngleC(const double dModDiam,
-                      const double dWndWidth, const double dWndHeight, const double dDist);
-double AveSolidAngleR(const double dModWidth, const double dModHeight,
-                      const double dWndWidth, const double dWndHeight, const double dDist);
-double AveWeightC    (const double dModCntrY, const double dModCntrZ,  const double dModDiam,
-                      const double dWndWidth, const double dWndHeight, const double dDist);
-double AveWeightR    (const double dModCntrY, const double dModCntrZ,
-                      const double dModWidth, const double dModHeight,
-                      const double dWndWidth, const double dWndHeight, const double dDist);
-double IntAtan       (const double dIntAnf,   const double dIntEnd,    const double dParam);
-double WeightDirByWnd(const double dWndWidth, const double dDist, const double dModPos);
+char*  FullModPath    (short eSource);
 
 #endif
 

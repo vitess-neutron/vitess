@@ -24,11 +24,14 @@ class MathMatrix {
 
   MathMatrix();
   MathMatrix(double array[9]);
+  MathMatrix(double matrix[3][3]);
   MathMatrix(double alpha, double beta, double gamma, string order = "xyz");
   virtual ~MathMatrix() {  };
 
   static MathMatrix* RotMatrixXFromVector(MathVector* v);
   MathMatrix* Transpose();
+  void transpose();
+  void swap(int i, int j);
 
   friend MathMatrix operator + (const MathMatrix& m1, const MathMatrix& m2);
   friend MathMatrix operator - (const MathMatrix& m1, const MathMatrix& m2);
@@ -72,11 +75,6 @@ inline MathMatrix& MathMatrix::operator -= (MathMatrix const &m)
   entries[2][0] -= m.entries[2][0]; entries[2][1] -= m.entries[2][1]; entries[2][2] -= m.entries[2][2];
   return *this;
 }
-
-
-
-
-
 
 
 #endif

@@ -5,9 +5,9 @@
 /* 2.0  Mar 2013  K. Lieutenant  2nd version - simulation routine is main program           */
 /********************************************************************************************/
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include "opt_fct.h"
 #include "init.h"
@@ -51,7 +51,6 @@ char  sGridOpt[FN_LEN] = "",                   // parameter to call grid command
 short OptGrad();
 short OptGradMC();
 short Metropolis();
-short Patrol();
 short Swarm();
 
 static void  OwnInit    (int argc, char *argv[]);
@@ -69,7 +68,7 @@ int main(int argc, char* argv[])
 	short       bCont=0, bIni=FALSE;
 	VtFitMethod eMethod=VT_METHOD_NN;
 
-	Init   (argc, argv, VT_TOOL);
+	Init   (argc, argv, MCN_OPT_MAIN);
 	OwnInit(argc, argv);
 	if (strcmp(sIniFile,"")!=0) bIni=TRUE;		
 
@@ -127,7 +126,7 @@ long ReadData(double* pX, double* pY, double* pW, const char* sDatFilename)
 	long   nMeas,   // number of measuring points
 	       nCol;    // number of columns in file
 	FILE*  pDataFile=NULL;
-	char   sBuffer[BUF_LEN];
+	char   sBuffer[BUF_LEN+1];
 
 	if (sDatFilename!=NULL)	
 		pDataFile = fopen(sDatFilename, "r");
@@ -164,21 +163,22 @@ long ReadData(double* pX, double* pY, double* pW, const char* sDatFilename)
 /*******************************************************************/
 /* Function to read control parameters and                         */
 /*          initial, min., max. P-values and DeltaP                */
-/*  input : sParFile:  input file name (default:'opt_param.ini')   */
-/*  output: *pP     :  initial parameter set                       */
-/*          *pPmin  :  minimal values for components of vector P   */
-/*          *pPmax  :  minimal values for components of vector P   */
-/*          *pDelP  :  step siye for numerical differiation        */
-/*  return: nP      :  number of fit parameters                    */
+/*  input : sInFile:  input file name (default:'opt_param.ini')    */
+/*  output: *pP    :  initial parameter set                        */
+/*          *pPmin :  minimal values for components of vector P    */
+/*          *pPmax :  minimal values for components of vector P    */
+/*          *pDelP :  step siye for numerical differiation         */
+/*  return: nP     :  number of fit parameters                     */
 /*******************************************************************/
 short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption, 
-                   double* pP, double* pPmin, double* pPmax, double* pDelP, const char* sParFile)
+                   double* pP, double* pPmin, double* pPmax, double* pDelP, const char* sInFile)
 {	
 	short i, j, ind,    // indices
-	      nP=0;      // number of fit parameters
+        nHeadlines=5, // number of lines in Header
+	      nP=0;         // number of fit parameters
 	FILE* pParFile;
 	char  sDash[80]="---------------------------------------------------------------------------",
-        sBuffer[BUF_LEN+1];
+        sBuffer[BUF_LEN+1]="";
 
 	for (j=0; j<=NMAX; j++)
 	{	pP   [j]=0.0;
@@ -187,11 +187,11 @@ short ReadFitParam(VtFitMethod* pMethod, VtAppl* pOption,
 		pDelP[j]=0.0;
 	}
 	
-	pParFile = fileOpen(sParFile, "r");
+	pParFile = fileOpen(sInFile, "r");
 
 	if (pParFile!=NULL)
 	{	
-		nP = (short) (LinesInFile(pParFile)-5);
+		nP = (short) (LinesInFile(pParFile) - nHeadlines);
 		if (nP > NMAX)
 			Error("opt_sim: Number of parameters higher than NMAX"); 
 

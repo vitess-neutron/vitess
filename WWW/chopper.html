@@ -1,0 +1,533 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta name="Author" content="geza">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <title>Module Disc Chopper</title>
+</head>
+<body>
+
+  <h1> VITESS Chopper Modules </h1>
+  <p>
+    There are VITESS modules for 2 different types of choppers: <b>Disc Chopper</b> and <b>Fermi Chopper</b>.
+    For the Fermi chopper, there are 2 options: <b>Straight Fermi Chopper</b> and <b>Curved Fermi Chopper</b>.
+  </p>
+
+
+  <br>
+  <h2><font size="+1"> VITESS Module 'chopper_disc' to simulate Disc Choppers </font></h2>
+  <p>
+    The module <b>chopper</b> simulates the chopping of the neutron beam by a chopper disc.
+  <p>
+    The orientation, y and z coordinates of the origin defined by the previous
+    VITESS module are maintained, while a shift along the x-axis can be introduced
+    according to the distance between the chopper and the device or window described
+    by the previous VITESS module (x is set to 0 by the chopper module, i.e.
+    a transmitted neutron is written to the output file at the chopper position).
+  </p>
+  <p>
+    The co-ordinate system, in which the orientation of the chopper disc is
+    given, is a (fixed) system defined by the co-ordinate system of the beamline
+    at the chopper position. The centre is shifted, orientation of y- and z-axes
+    are the same. (Imagine a mark on the edge of the chopper disc pointing into
+    the +z-direction; this defines the phase 0 deg). A positive phase is achieved
+    by a counter-clockwise rotation (seen in the direction of the flying
+    neutrons), cf. Fig. 3.
+  </p>
+
+      <br>
+      <h4> Parameters for module 'chopper_disc' </h4>
+      <table border="1" width="95%">
+        <tbody>
+          <tr>
+            <td valign="top" width="15%"><b>Parameter</b> <br> <b>Unit</b> </td>
+            <td valign="top" width="60%"><b>Description</b></td>
+            <td valign="top" width="12%"><b>range or values</b></td>
+            <td valign="top" width="8%"> <b>Command option</b><br> </td>
+          </tr>
+          <tr>
+            <td> chopper file<br> </td>
+            <td>The chopper file describes the geometry and properties of the disc.</td>
+            <td> </td>
+            <td> -C </td>
+          </tr>
+          <tr>
+            <td> rounds / min <br> [cm] </td>
+            <td>
+              A positive value means that the rotation angle increases with time,
+              and a negative value means that the chopper disc operates in the opposite direction of rotation <br>
+              Positive rotation is counter-clockwise seen in the direction of the flying neutrons (as indicated in Fig. 3).<br>
+            </td>
+            <td>no restriction</td>
+            <td> -s </td>
+          </tr>
+          <tr>
+            <td> Offset<br>   <br> [deg] </td>
+            <td>
+              This parameter defines the initial rotation angle of the chopper, i.e.the orientation for time = 0.
+              (The neutron time is initialised in the module source.) <br>
+              Negative values are reasonable for positive rotation (rounds/min &gt; 0) and vice versa<br>
+            </td>
+            <td> no restriction </td>
+            <td> -o </td>
+          </tr>
+          <tr>
+            <td> distance to previous module<br> [cm] </td>
+            <td>
+              The distance along the x-axis between chopper  and the reference point of the previous module.
+              The influence of gravity can be included or omitted during travels of neutrons from X=0 to the chopper  plane.<br>
+            </td>
+            <td>&ge; 0</td>
+            <td> -l </td>
+          </tr>
+          <tr>
+            <td> absorption </td>
+            <td>
+              ideal: a trajectory that hits the chopper disc (outside the windows) is removed.<br>
+              Gd: a trajectory that hits the chopper disc (outside the windows) is reduced in intensity
+              according to a wavelength dependent transmission probability for Gd
+              coating of  2 x 0.1 mm assumed, cutoff for wavelength above 6 Ang.<br>
+              Bor: same as Gd, except: transmission coefficients of Bor-10, coating of  2 x 0.25 mm assumed<br>
+            </td>
+            <td>
+              ideal<br>
+              Gd<br>
+              Bor<br>
+            </td>
+            <td> -g </td>
+          </tr>
+          <tr>
+            <td>randomize TOF</td>
+            <td>
+              no : the time of arrival at the chopper is given by the starting time at the source and the time-of-flight to the chopper. <br>
+              yes: the time of arrival at the chopper is defined by a random choice within the period of the chopper disc, i.e. the real TOF is ignored.
+              The minimal value of the time interval is calculated from the initial offset and the chopper positions to avoid splitting one pulse into two. <br>
+              This option is useful for the first chopper of a TOF instrument on a continuous source.
+              It can be combined with the option 'set zero time'  <br>
+            </td>
+            <td>yes / no <br>default: no </td>
+            <td> -r </td>
+          </tr>
+          <tr>
+            <td>set zero time</td>
+            <td>
+              Yes: The time of the trajectory is set to a value between -T/2 and +T/2 (with T being the period of the chopper),
+              depending on the phase of the chopper at the moment of crossing.<br>
+                t = Phase_red / RotFreq<br>
+              A time close to zero is only achieved, if the window is open for phase = 0. But in any case the number of pulses is reduced to the number of windows.<br>
+              This option is useful for time-of-flight instruments on constant wave sources.<br>
+              No: nothing happens (default, only option until Vitess 2.3)<br>
+            </td>
+            <td>yes / no</td>
+            <td>   -z   </td>
+          </tr>
+          <tr>
+            <td> treat neutrons passing by </td>
+            <td>
+              Yes: If there are trajectories which do not hit the chopper disc area,  they are written to the output file and considered further on.
+              In this case, a warning is given including the number of those trajectories (default, only option until Vitess 2.4)<br>
+              No: Trajectories arriving at the chopper plane outside the disc are removed.<br>
+            </td>
+            <td>yes / no</td>
+            <td> -p     </td>
+          </tr>
+          <tr>
+            <td> set colour </td>
+            <td>
+              Yes: The number of the window defines the 'colour' of the trajectory.<br>
+                  (If the trajectory does not pass a window, the colour is set to zero.) <br>
+              No: nothing happens (default, the only option until Vitess 2.4)<br>
+            </td>
+            <td>yes / no</td>
+            <td> -c     </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <br />
+      <h4> Chopper file parameters </h4>
+      <table border="1" width="95%">
+        <tbody>
+          <tr>
+            <td valign="top" width="15%"><b>Parameter</b> <br> <b>Unit</b> </td>
+            <td valign="top" width="60%"><b>Description</b></td>
+            <td valign="top" width="12%"><b>range or values</b></td>
+            <td valign="top" width="8%"> <b>Command option</b><br> </td>
+          </tr>
+          <tr>
+            <td> number of windows </td>
+            <td>Number of  apertures of the chopper disc.</td>
+            <td> &ge; 1 </td>
+            <td> -N </td>
+          </tr>
+          <tr>
+            <td> radius <br> [cm] </td>
+            <td>The radius of the chopper disc.</td>
+            <td> &gt; 0.0</td>
+            <td> -R </td>
+          </tr>
+          <tr>
+            <td>vertical position<br>[cm] </td>
+            <td>
+              z-component of the position of the chopper axle relative to the origin,
+              i.e.  the center of  the beam. <br>
+              If the horizontal positon is zero, the chopper is positioned exactly below
+              the beamline for vert. pos &lt; 0 and exactly above  the beamline for vert.
+              pos &gt; 0. <br>
+              If it is below the beamline, the chopper window is open for: rotational angle
+              = 'window position' (see below). If it is above the beamline, the chopper
+              window is open for: rotational angle+180&deg;  = 'window position'. <br>
+            </td>
+            <td> no restriction</td>
+            <td> -Z </td>
+          </tr>
+          <tr>
+            <td>horizontal position<br>[cm]</td>
+            <td>
+              y-component of the position of the chopper axle relative to the origin,
+              i.e.  the center of  the beam. <br>
+              If the vertical distance is zero, the chopper is positioned exactly left
+              (hor. pos. &gt; 0)  or right (hor. pos. &lt; 0) of the beamline (seen in
+              the direction of the flying neutrons).  In this case, the chopper window
+              is open for: rotational angle - 90&deg; = 'window position' (left) or rotational
+              angle + 90&deg; = 'window position' (right) resp..
+            </td>
+            <td> no restriction</td>
+            <td> -Y </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <p>
+        <img src="chop2.gif" name="Grafik2" border="0" height="272"
+             width="433" align="bottom">
+      </p>
+
+      <br />
+      <h4>For each window</h4>
+      <table border="1" width="95%">
+        <tbody>
+          <tr>
+            <td valign="top" width="15%"><b>Parameter</b> <br> <b>Unit</b> </td>
+            <td valign="top" width="60%"><b>Description</b></td>
+            <td valign="top" width="12%"><b>range or values</b></td>
+            <td valign="top" width="8%"> <b>Command option</b><br> </td>
+          </tr>
+          <tr>
+            <td>window position<br>[deg]<br></td>
+            <td>
+              Position of the window on the disc<br>
+              In case of 1 window, a straightforward choice is to put it to a position
+              that it is open for t=0, i.e. 0 deg for a chopper below the beamline, 180
+              deg for a chopper above the beamline, 90 deg for a chopper right of the beamline
+              and -90 deg for a chopper left of the beamline (cf. 'vertical  position',
+              'horizontal position'). This value is also given as a note in the output
+              of the run.
+            </td>
+            <td> -360° &nbsp;- &nbsp; +360°</td>
+            <td> -p </td>
+          </tr>
+          <tr>
+            <td> window height <br> [cm] </td>
+            <td> Height of the window. <br> The window is always open to edge of the disc (see Figure 3). </td>
+            <td> 0.0   -   radius</td>
+            <td> -h </td>
+          </tr>
+          <tr>
+            <td> window width <br> [deg] </td>
+            <td> Aperture of the window in degree (cf. Figure 3) </td>
+            <td> &gt;0.0° &nbsp; - &nbsp; 360°</td>
+            <td> -w </td>
+          </tr>
+          <tr>
+            <td> left side deviation <br> [deg] </td>
+            <td>
+              Deviation for left edge of the window in degree. <br>
+              A positive value indicates that the window widens (see Fig. 3).
+            </td>
+            <td> -90° &nbsp; - &nbsp; 90°</td>
+            <td> -l </td>
+          </tr>
+          <tr>
+            <td> right side deviation<br> [deg] </td>
+            <td>
+              Deviation for right edge of the window in degree. <br>
+              A positive value indicates that the window widens (see Fig. 3).
+            </td>
+            <td> -90° &nbsp; - &nbsp; 90°</td>
+            <td> -r </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <p>
+        <img src="chop3.gif" name="Grafik3" border="0" height="253" width="433" align="bottom">
+      </p>
+
+      <br>
+      <br>
+      <h2><font size="+1"> VITESS Module 'chopper_fermi' to simulate Fermi Choppers </font></h2>
+
+      <h3> Option: Straight Fermi Chopper </h3>
+      <p>
+        In this option, the module simulates a Fermi chopper with straight channels i.e. the very
+        fast neutrons are transmitted with only a time modulation and lower speed
+        neutrons are modulated both in time of flight and wavelength. <br>
+        The geometry of the chopper consists of a rectangular shape object with
+        a wide channel system built in perpendicular direction to the beam (when
+        transmitting) - this is inserted into a cylinder frame in order not to transmit
+        neutrons which do not fly throught the channels (when the rectangular channel
+        system is rotated by 90&deg;). The rotation axix coincides with Z.
+      </p>
+
+      <p>
+        <img src="chfermistr.gif" height="300" width="391">
+      </p>
+
+      <br>
+      <h4> Parameters for module 'chopper_fermi' in the option 'straight' </h4>
+      <table border="1" width="95%">
+        <tbody>
+          <tr>
+            <td valign="top" width="15%"><b>Parameter</b> <br> <b>Unit</b> </td>
+            <td valign="top" width="60%"><b>Description</b></td>
+            <td valign="top" width="12%"><b>range or values</b></td>
+            <td valign="top" width="8%"> <b>Command option</b><br> </td>
+          </tr>
+          <tr>
+            <td> position X, Y, Z <br> [cm] </td>
+            <td>center position of the Fermi chopper in the input frame</td>
+            <td>  </td>
+            <td>X, -Y, -V</td>
+          </tr>
+
+          <tr>
+            <td>height, width <br>[cm]</td>
+            <td>height and width of the Fermi chopper channel system</td>
+            <td> &gt; 0.0</td>
+            <td>-a   -b</td>
+          </tr>
+          <tr>
+            <td>channel length<br>[cm]</td>
+            <td>length of the Fermi chopper channel system</td>
+            <td> &gt; 0.0</td>
+            <td>-c</td>
+          </tr>
+          <tr>
+            <td>number of channels</td>
+            <td>number of straight channels</td>
+            <td> &ge; 1</td>
+            <td>-l</td>
+          </tr>
+
+          <tr>
+            <td>wall thickness <br>[cm] </td>
+            <td>thickness of the walls between the channels</td>
+            <td> &ge; 0.0 <br /> typical 0.01</td>
+            <td>-m</td>
+          </tr>
+          <tr>
+            <td>diameter<br>[cm]</td>
+            <td>diameter of the shadowing cylinder</td>
+            <td>&gt; length, width</td>
+            <td>-r</td>
+          </tr>
+          <tr>
+            <td>rotations per second<br />[Hz]</td>
+            <td>frequency of rotation</td>
+            <td> &gt; 0.0</td>
+            <td>-n</td>
+          </tr>
+          <tr>
+            <td>phase<br>[deg]</td>
+            <td>dephasing angle at zero time</td>
+            <td>  </td>
+            <td>-q</td>
+          </tr>
+
+          <tr>
+            <td>set zero time</td>
+            <td>
+              Yes: The time of the trajectory is set to a value between -T/2 and +T/2 (with T being the period of the chopper),
+              depending on the phase of the chopper at the moment of crossing.<br>
+              t = Phase_red / RotFreq<br>
+              A time close to zero is only achieved, if the window is open for phase = 0. But in any case the number of pulses is reduced to the number of windows.<br>
+              This option is useful for time-of-flight instruments on constant wave sources.<br>
+              No: nothing happens (default, only option until Vitess 2.3)<br>
+            </td>
+            <td>'yes', 'no'</td>
+            <td>    -z     </td>
+          </tr>
+          <tr>
+            <td>number of gates</td>
+            <td>
+              4: number of gates representing the channels ideal for thermal and best for cold neutrons <br />
+              6: more accurate but slower   <br />
+              8: most accurate but slowest
+            </td>
+            <td> 4, 6 or 8 </td>
+            <td>-p</td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <br />
+      <br />
+      <h3> Option: Curved Fermi Chopper</h3>
+      <p>
+        <br>
+        This module simulates a Fermi chopper with curved channels i.e. neutrons
+        are transmitted with a time AND wavelength modulation . <br>
+        The geometry of the chopper consists of a horizontal cylinder with a wide
+        channel system built in vertical direction (when transmitting). At the entrance
+        all channels have the same height, at the exit the channel height depends
+        on the vertical position and other parameters in order to transmit all neutrons
+        having 0 divergence and the nominal (main) wavelength. See figure below.
+        The alghorhythm works with rotating chopper framework. Neutrons reflected
+        on the channel walls are absorbed.
+      </p>
+
+      <h4> Parameters for module 'chopper_fermi' in the option 'curved' </h4>
+      <table border="1" width="95%">
+        <tbody>
+          <tr>
+            <td valign="top" width="15%"><b>Parameter</b> <br> <b>Unit</b> </td>
+            <td valign="top" width="60%"><b>Description</b></td>
+            <td valign="top" width="12%"><b>range or values</b></td>
+            <td valign="top" width="8%"> <b>Command option</b><br> </td>
+          </tr>
+          <tr>
+            <td>geometry file</td>
+            <td>
+              output file of the curved channel geometry  <br>
+              (for scatter plot of the last two columns, first column: channel index, 0 = envelope)
+            </td>
+            <td>  </td>
+            <td>-G</td>
+          </tr>
+
+          <tr>
+            <td>position X, Y, Z <br>[cm]</td>
+            <td>center position of the Fermi chopper in the input framework</td>
+            <td>  </td>
+            <td>X, -Y, -V</td>
+          </tr>
+
+          <tr>
+            <td>height, width <br>[cm]</td>
+            <td>height and width of the Fermi chopper channel system</td>
+            <td> &gt; 0.0</td>
+            <td>-a   -b</td>
+          </tr>
+          <tr>
+            <td>channel length<br>[cm]</td>
+            <td>length of the Fermi chopper channel system</td>
+            <td> &gt; 0.0</td>
+            <td>-c</td>
+          </tr>
+
+          <tr>
+            <td>number of channels</td>
+            <td>number of curved channels</td>
+            <td> &ge; 1</td>
+            <td>-l</td>
+          </tr>
+          <tr>
+            <td>wall thickness <br>[cm] </td>
+            <td>thickness of the walls between the channels</td>
+            <td> &ge; 0.0 <br /> typical 0.01</td>
+            <td>-m</td>
+          </tr>
+          <tr>
+            <td>diameter<br>[cm]</td>
+            <td>diameter of the shadowing cylinder</td>
+            <td>&gt; length, width</td>
+            <td>-r</td>
+          </tr>
+
+          <tr>
+            <td>rotations per second<br>[Hz]</td>
+            <td>frequency of rotation</td>
+            <td> &gt; 0.0</td>
+            <td>-n</td>
+          </tr>
+          <tr>
+            <td>phase<br>[deg]</td>
+            <td>dephasing angle at zero time</td>
+            <td>  </td>
+            <td>-q</td>
+          </tr>
+          <tr>
+            <td>optimal wavelength<br>[A]</td>
+            <td>optimal wavelength to be transmitted at highest intensity</td>
+            <td> &gt; 0.0</td>
+            <td>-L</td>
+          </tr>
+
+          <tr>
+            <td>set zero time</td>
+            <td>
+              Yes: The time of the trajectory is set to a value between -T/2 and +T/2 (with T being the period of the chopper),
+              depending on the phase of the chopper at the moment of crossing.<br>
+              t = Phase_red / RotFreq<br>
+              A time close to zero is only achieved, if the window is open for phase = 0. But in any case the number of pulses is reduced to the number of windows.<br>
+              This option is useful for time-of-flight instruments on constant wave sources.<br>
+              No: nothing happens (default, only option until Vitess 2.3)<br>
+            </td>
+            <td>'yes', 'no'</td>
+            <td>    -z     </td>
+          </tr>
+          <tr>
+            <td>channel shape</td>
+            <td>
+              circular: channels have circular shape <br />
+              ideal: channels close to parabolic shape
+            </td>
+            <td>  </td>
+            <td>-g</td>
+          </tr>
+          <tr>
+            <td>number of gates</td>
+            <td>
+              4: number of gates representing the channels ideal for thermal and best for cold neutrons <br />
+              6: more accurate but slower   <br />
+              8: most accurate but slowest
+            </td>
+            <td> 4, 6 or 8 </td>
+            <td>-p</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <br />
+      <h4> Example for the geometry file </h4>
+      <p>
+        <img src="CurvedFermi.gif" border="0" height="612" width="701">
+        <br>
+         <br>
+        <br>
+      </p>
+
+      <br>
+      <h4> GUI example </h4>
+      <p>
+        <img src="fermicurved_help.jpg" alt="fermicurved_help" width="720"
+             height="540">
+          <br>
+      </p>
+
+      <p>
+        <a href="vitess.html">Back to VITESS overview</a> <br>
+        <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
+      </p>
+
+      <p>
+        <!-- hhmts start --><font size="-1"> Last modified: 2021-07-22  KL </font><!-- hhmts end -->
+      </p>
+
+</body>
+</html>

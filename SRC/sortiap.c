@@ -1,9 +1,9 @@
-//*******************************************************************************************
+// ******************************************************************************************
 // VITESS helper application sortiap
 // Sort trajectories from individual files to a result file.
 // Assume the first file has all neutron ids.
 // Feb 2012 M. Fromme
-//********************************************************************************************
+// *******************************************************************************************
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,7 +54,7 @@ FILE *outf;
 
 char *x3d_option_filename;
 float viewport[3][2] = {{-1e5,1e5},{-1e5,1e5},{-1e5,1e5}};
-int annotationLabels=1;        // if set, annotate X3D model with module names
+int annotationLabels=0;        // if set, annotate X3D model with module names
 
 int svg_width = 800;
 int svg_height = 600;

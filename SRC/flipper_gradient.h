@@ -1,73 +1,26 @@
-/* START HEADER STORY */
+#ifndef FLIPPER_GRAD_H
+#define FLIPPER_GRAD_H
 
-#define	FIELD_SIZE	3000
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
+/* Number of domains */
+#define	FIELD_SIZE	  3000
 #define	FIELD_SIZE_FL	9000
 
-#define	ENERGY_FROM_LAMBDA(x) ( 81805.048 / x / x ) /*[ueV]*/
-#define FREQUENCY_FROM_FIELD(x)  ( 18.324282 * x ) /* rad*kHz from Oe=Gauss */ 
 
-	long		NumOut,  i, wall_1, wall_2, ind_x, ind_y, ind_z, indp=1, ind_x_max=2, ind_y_max=2, ind_z_max=2 ; /* Number of domains in the X, Y and Z directions */
-	
-	double		field_guide[3], field_parameter, field_precession, TOF, TOF1, TOF2, TOF3, WL, Prob, phi, the, PhaseShift, NumberPrecessions ;
-	
-	double		NumberPrecessionsave, NumberPrecessionssum, PhaseShift0;
-	
-	double		width, height, depth, AnglMainHoriz=0.0, IntegralIntensity;
-	
-	static double		RotMatrixMain[3][3], RotMatrixField[3][3], LarmorMatrix[3][3];
-				
-	static double	PolX[FIELD_SIZE_FL], PolY[FIELD_SIZE_FL], PolZ[FIELD_SIZE_FL], ProbM[FIELD_SIZE_FL],
-			FielX[FIELD_SIZE_FL], FielY[FIELD_SIZE_FL], FielZ[FIELD_SIZE_FL], FielM[FIELD_SIZE_FL];
-	
-	VectorType	 Pos, Dir, SpinVector, Path, Pos1, Pos2, domain_field, PosDomain, PosMain, DimDomain, TranslOut ;
-	Neutron		Neutrons ;
-	
-	/* Variables for rotating and gradient (permanent) magnetic field add Manoshin Sergey*/
+/**************************/
+/** Functions prototypes **/
+/**************************/
+void   OwnInit(int argc, char *argv[]);                               // Reads input parameters and sets global parameters
+void   OwnCleanup();                                                  // Does module specific cleanup
+void   SetGeometry(char* sColor);                                     // Fills the structure stGeometry for visualization 
+double RectangularF  (double Time, double FieldValue, double Period); // Returns rectangular pulses 
+double RectangularFTr(double Time, double FieldValue, double Period); // Returns rectangular pulses via Fourier transform 
+/* Intersection with rectangular object */
+long   IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2, long *wall_1, long *wall_2) ;
 
+void   gsl_ran_dir_3d (const gsl_rng * r, double * x, double * y, double * z);
 
-	double FieldValue, FieldValueInit, Omega, omegainit, OmegaInit, phi0, phi0d; /*Rotating magnetic field FieldValue*sin(Omega*t + phi0); Initial and current values */
-	double FieldValueDevPer=0.0; /* Deviation of amplitude of rotating magnetic field in %! */
-	double OmegaDevPer=0.0; /* Deviation of frequency of rotating magnetic field in %! */
-	long DevLawAmpl=0; /* Law of distribution of amplitude of magnetic field: 0 - Normal (Default), 1 -Uniform */
-	long DevLawFreq=0; /* Law of distribution of frequency of rotating : 0 - Normal (Default), 1 -Uniform */	
-	double Period, PeriodInit; /* Period of rectangular pulse field */
-	double Number_NOP=0.0;
-	long keyrot=0; /* activate rotating field (default) or rectangular (Prof. Drabkin) pulse field */
-	long keyphase=1; /* 1 - use the neutron TOF from preceding modules for rotating field phase; 0 - No;  */
-	double TOFP; /* Neutron TOF from preceding modules for synhro rotations */
-	long keyaxis=0; /* Value 0, 1, 2 - rotating around axis 0x, 0y, 0z respectivly */
-	long keysph=0; /* Key for activate output polarisation components in the file, default no */
-	long keyrotampl=0; /* Key for choose law of changing of rotating field amplitude */
-	long keyguidech=0; /* Key for choose law of chnaging the guide field */
-	long keyrotampldir=0; /* Key for choose direction of changing of rotating field amplitude, default axis 0X */
-	long keyguidechdir=0; /* Key for choose direction of chnaging the guide field, default axis 0X */
-	double FieldValue0Init[3], FieldValue0[3]; /* Additional permanent field to the rotating or initial value for linear changing */
-	double FieldValue0Grlin[3]; /* Amplitude for cos or sin law OR final value for linear changing, Oe */	
-	double FieldValue0Ave[3]; /* variable for calculations */
-	double FieldValue0Dev=0.0; /* Additional random magnetic field, amplitude, Oe */
-	double FieldValue0Length, OmegaFV0, OmegaFV0in; /* Internal variable */
-
-
-	/* For random amplitude and frequency of rotating (pulse) field */	
-	double FieldValueA=0.0, FieldValueB=0.0; /* Internal variables */
-	double OmegaA=0.0, OmegaB=0.0; /* Internal variables */
-	double SigmaField=0.0, SigmaOmega=0.0, SigmaPeriod=0.0; /* Internal Variables */
-	double  PeriodA=0.0, PeriodB=0.0; /* Internal variables */ 
-	
-/* For output polarization components and magnetic field */	
-	FILE *fmonitp=NULL;
-	char *Monitp=NULL;
-
-	FILE *fmonitf=NULL;
-	char *Monitf=NULL;	
-
-/* Functions prototypes */
-
-	long		IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2, long *wall_1, long *wall_2) ;
-	double 		RectangularF(double, double, double);
-	double 		DistrGauss(double, double);
-	void		OwnInit(int argc, char *argv[]) ;
-	void		OwnCleanup() ;
-
-/* FINISH HEADER STORY */
+#endif
 

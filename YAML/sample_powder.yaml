@@ -1,0 +1,253 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+sample_powder:
+  - category:  "sample"
+
+  - sParFile :                  # -S         [-]    parameter file name
+      type:    "file"
+      plottable: false
+      descr:   "parameter file"
+      tooltip: "File containing parameters of the powder sample\nThese parameters are only used if they are not given as direct input parameters."
+      prefix:  "-S"
+  - sStructFile :                 # file       [-]    structure factor file name (of the sample material)
+      type:    "file"
+      plottable: false
+      descr:   "structure factor file"
+      tooltip: "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program."
+      prefix:  "-s"
+
+  - bIncohScat:                 # -I  NO     [-]    flag: shall incoherent scattering be done ?
+      type:    "switch"
+      descr:   "incoherent scattering"
+      tooltip: "yes: activates calculation of incoherent scattering\nno : no incoherent scattering"
+      default:  no
+      column:   0
+      prefix:  "-I"
+  - nRep:                  # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory)
+      type:    "int"
+      descr:   "repetition"
+      tooltip: "repetitions (number of trajectories generated per incoming trajectory)"
+      min:     1
+      default: 1
+      column:  1
+      prefix:  "-A"
+  - iColor  :                 # -c         [-]    colour of the neutrons scattered from the environment
+      type:    "int"
+      descr:   "colour"
+      tooltip: "Colour of the neutrons scattered by the powder sample"
+      min:     0
+      column:  0
+      prefix:  "-c"
+  - bTreatAll:                  # -I  NO     [-]    flag: shall neutrons not hitting the sample be treated ?
+      type:    "switch"
+      descr:   "treat all neutrons"
+      tooltip: "no : only neutrons hitting the sample are treated\nyes: neutrons passing by are also treated"
+      default:  no
+      column:  1
+      prefix:  "-a"
+
+  - ScatHor:                  # 0.0 [deg]   horizontal rotation defining the main scattering direction
+      type:    "float"
+      descr:   "angle horiz final [deg]"
+      tooltip: "horizontal rotation defining the (hoizontal) center of the scattering range (usually the center of the detector)"
+      default: 90.0
+      column:  0
+      prefix:  "-D"
+  - ScatVert:                 # 0.0 [deg]   vertical rotation defining the main scattering direction
+      type:    "float"
+      descr:   "angle vert final [deg]"
+      tooltip: "vertical rotation defining the (vertical) center of the scattering range (usually the center of the detector)"
+      default: 180.0
+      column:  1
+      prefix:  "-P"
+  - DelScatHor:                   # 0.0 [deg]   variation DelTheta determining the hor. scat. range [Theta-DelTheta, Theta+DelTheta]
+      type:    "float"
+      descr:   "delta angle horiz [deg]"
+      tooltip: "variation DeltaTheta determining the hor. scattering range [Theta-DeltaTheta, Theta+DeltaTheta]\n 0 deg:left, 180 deg: right"
+      default: 70.0
+      column:  0
+      prefix:  "-d"
+  - DelScatVert:                  # 0.0 [deg]   variation DelPhi determining the vert. scat. range [Phi-DelPhi, Phi+DelPhi]
+      type:    "float"
+      descr:   "delta angle vert [deg]"
+      tooltip: "variation DeltaPhi determining the vert. scatering range [Phi-DeltaPhi, Phi+DeltaPhi]"
+      default: 10.0
+      column:  1
+      prefix:  "-p"
+
+  - Title:
+      type:    "title"
+      default: "Sample"
+  - PosSmplX:                  # -x    0.0  [cm]   center position X of the powder sample
+      type:    "float"
+      descr:   "X [cm]"
+      tooltip: "Center position X of the powder sample"
+      default: 30.0
+      column:   0
+      prefix:  "-x"
+  - PosSmplY:                  # -y    0.0  [cm]   center position Y of the powder sample
+      type:    "float"
+      descr:   "Y [cm]"
+      tooltip: "Center position Y of the powder sample"
+      column:  1
+      prefix:  "-y"
+  - PosSmplZ:                  # -z    0.0  [cm]   center position Z of the powder sample
+      type:    "float"
+      descr:   "Z [cm]"
+      tooltip: "center position Z of the powder sample"
+      default: 0.0
+      column:  2
+      prefix:  "-z"
+
+  -  eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "sample geometry"
+      tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
+      enum:    "VtSmplGeom"
+      options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+      default:  "VT_CYL"
+      column:  0
+      prefix:  "-G"
+
+  - Diameter:                  # file  1.0  [cm]   thickness of the powder sample  (: R_out - R_in)
+      type:    "float"
+      descr:   "thickness or diameter [cm]"
+      tooltip: "Thickness of a cubic sample, or diameter of sphere of cylinder."
+      min:     0.0001
+      default: 0.5
+      column:  0
+      prefix:  "-t"
+  - Height  :                  # file 20.0  [cm]   outer height of the powder sample
+      type:    "float"
+      descr:   "height [cm]"
+      tooltip: Height of the powder sample (not needed for spherical shape)"
+      default: 2.0
+      min:     0.0
+      column:  1
+      prefix:  "-h"
+  - Width:                  # file 10.0  [cm]   outer diameter of the powder sample  (: 2*R_out)
+      type:    "float"
+      descr:   "diameter [cm]"
+      tooltip: "Width of a cubic powder sample"
+      default: 0.0
+      min:     0.0
+      column:  2
+      prefix:  "-w"
+
+  - DirSmplX:                    # -x 0.0  [cm]   x-component of the sample orientation
+      type:    "float"
+      descr:   "x direction [cm]"
+      tooltip: "x-component of the sample orientation"
+      default: 0.0
+      column:  0
+      prefix:  "-X"
+  - DirSmplY:                    # -y 0.0  [cm]   y-component of the sample orientation
+      type:    "float"
+      descr:   "y direction [cm]"
+      tooltip: "y-component of the sample orientation"
+      default: 0.0
+      column:  1
+      prefix:  "-Y"
+  - DirSmplZ:                     # -z 0.0  [cm]   z-component of the sample orientation
+      type:    "float"
+      descr:   "z direction [cm]"
+      tooltip: "z-component of the sample orientation"
+      default: 0.0
+      column:  2
+      prefix:  "-Z"
+
+  - Title:
+      type:    "title"
+      default: "Scattering"
+  - MuScatIncoh:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the powder sample material
+      type:    "float"
+      descr:   "incoherent scattering [1/cm]"
+      tooltip: "Macroscopic incoherent scattering cross section of the powder sample material.\nNeeded if 'Incoherent scattering' is chosen."
+      default: 0.0
+      min:     0.0
+      column:  0
+      prefix:  "-i"
+  - MuScatTotal:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the powder sample material
+      type:    "float"
+      descr:   "total scattering [1/cm]"
+      tooltip: "Macroscopic total scattering cross section of the powder sample material (used for attenuation)"
+      default: 0.5
+      min:     0.0
+      column:  1
+      prefix:  "-T"
+  - MuAbsorb   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the powder sample material
+      type:    "float"
+      descr:   "absorption [1/cm]"
+      tooltip: "Macroscopic absorption cross section of the powder sample material for 1.798 Ang (used for attenuation)"
+      default: 20.0
+      min:     0.1
+      column:  2
+      prefix:  "-m"
+  - UCV     :                  # file 50.0 [Ang^3] unit cell volume of the powder sample material
+      type:    "float"
+      descr:   "unit cell volume [A^3]"
+      tooltip: "Unit cell volume of the powder sample material"
+      default: 20.0
+      min:     0.0001
+      column:  0
+      prefix:  "-U"
+
+  - Title:
+      type:    "title"
+      default: "Structure factor file format"
+  - ColumnDspc   :
+      type:    "int"
+      descr:   "d-spacing column"
+      tooltip: "column of the structure factor file, where the d-spacing is\nSee also HelpFile 'sample.html'"
+      default: 0
+      min:     0
+      column:  0
+      prefix:  "-C"
+  - ColumnStructFact:
+      type:    "int"
+      descr:   "F column"
+      tooltip: "column of the structure factor file, where the structure factor F is\nSee also HelpFile 'sample.html'"
+      default: 0
+      min:     0
+      column:  1
+      prefix:  "-F"
+  - ColumnStructFactSq:
+      type:    "int"
+      descr:   "|F|² column"
+      tooltip: "column of the structure factor file, where the square of the structure factor F² is\nSee also HelpFile 'sample.html'"
+      default: 0
+      min:     0
+      column:  2
+      prefix:  "-Q"
+  - ColumnMult   :
+      type:    "int"
+      descr:   "Multiplicity column"
+      tooltip: "column of the structure factor file, where the muliplicity M is\nSee also HelpFile 'sample.html'"
+      default: 0
+      min:     0
+      column:  0
+      prefix:  "-M"
+  - ColumnDW   :
+      type:    "int"
+      descr:   "Debye-Waller column"
+      tooltip: "column of the structure factor file, where the Debye-Waller factor is\nSee also HelpFile 'sample.html'"
+      default: 0
+      min:     0
+      column:  1
+      prefix:  "-W"
+  - ScaleFact :
+      type:    "float"
+      descr:   "Scale factor"
+      tooltip: "Normalization factor for the structure factor\nSee also HelpFile 'sample.html'"
+      default: 1.0
+      min:     0.000001
+      column:  2
+      prefix:  "-f"

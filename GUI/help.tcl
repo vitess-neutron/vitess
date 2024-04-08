@@ -248,8 +248,8 @@ proc helpToHtml {{args ""}} {
   puts $f {
     <p><hr><strong>
     <a href="#top">Back to start of page</a><p>
-    <a href="http://www.helmholtz-berlin.de/vitess/index.html">VITESS homepage</a><hr>
-    <address><a href="mailto:vitess@helmholtz-berlin.de">Email vitess@helmholtz-berlin.de</a></address>
+    <a href="https://www.fz-juelich.de/en/jcns/expertise/simulations">VITESS homepage</a><hr>
+    <address><a href="mailto:vitess@fz-juelich.de">Email vitess@fz-juelich.de</a></address>
     </strong>
   </body>
 </html>
@@ -295,7 +295,7 @@ are activated again.
 helpItem {Visualising Results} {
 To visualise the result of your simulation, you should use a monitor, e.g. 'mon1_lambda'
 to see the wavelength dependence of the intensity.
-Click on the '--inactive--' button and choose 'visualise_data' -> 'mon1_lambda'.
+Click on the '--inactive--' button and choose 'monitor' -> 'mon1_lambda'.
 }
 
 helpItem {Saving an Instrument} {

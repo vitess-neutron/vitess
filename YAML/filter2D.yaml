@@ -1,0 +1,55 @@
+#description of input fields
+# type: title, file, string, float, int, switch (NO (default),YES), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+filter2D:
+  - category:  "filter"
+  - eFilt2D:      # Mon2Par_Txt2ID
+      type:    "combo"
+      descr:   "filter parameter"
+      tooltip: "2D parameter that is filtered (position or divergence)"
+      enum:    "VtMon2Par"
+      options: ["MON2_POS","MON2_DIV"]
+      default: "MON2_POS"
+      column:   0
+      prefix:  "-P"
+  - sTabFile  :                 # -m   NULL   [-]  file describing the transmission of the material in the open part of window
+      type:    "file"
+      plottable: true
+      descr:   "filter table"
+      tooltip: "Name of the file containing the filter matrix\nThe filter range is divided into a number of channels corresponding to the number of rows (height) and columns (width)"
+      prefix:  "-m"
+
+  - Title_rect :
+      type:    "title"
+      default: "the rectangular filter range"
+  - MinY    :
+      type:    "float"
+      descr:   "min. y [cm]"
+      tooltip: "minimal horizontal filter position"
+      column:  0
+      prefix:  "-y"
+  - MaxY    :
+      type:    "float"
+      descr:   "max. y [cm]"
+      tooltip: "maximal horizontal filter position"
+      column:  1
+      prefix:  "-Y"
+  - MinZ    :
+      type:    "float"
+      descr:   "min. z [cm]"
+      tooltip: "minimal vertical filter position"
+      column:  0
+      prefix:  "-z"
+  - MaxZ    :
+      type:    "float"
+      descr:   "max. z [cm]"
+      tooltip: "maximal vertical filter position"
+      column:  1
+      prefix:  "-Z"

@@ -5,10 +5,10 @@
 /* 1.1   Apr 2013  Klaus Lieutenant  changes for new optimization concept                   */
 /********************************************************************************************/
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 
 #include "init.h"
 #include "opt_defs.h"
@@ -27,11 +27,9 @@ void   OwnCleanup    ();
 /*********************************************/
 /* global and static variables               */
 /*********************************************/
-extern FILE*  LogFilePtr=NULL;  // Pointer on file for output of the progress of the fit
 
 FILE    *pExeVFile=NULL;
-char     cSlash       = '/',
-         cQuot        = ' ',         
+char     cQuot        = ' ',         
          cNL          = '\n',         
          cShort       = 'N',
          sInstr   [FN_LEN+1]= "std_instr.cmd",      // file of the initial instrument
@@ -83,7 +81,7 @@ int main(int argc, char* argv[])
 	       sFilename  [FN_LEN+1]="",
          sNumber    [ 6]="";
 
-	Init   (argc, argv, VT_TOOL);
+	Init   (argc, argv, MCN_OPT_PIPE);
 	OwnInit(argc, argv);
 	InitArrays();
 

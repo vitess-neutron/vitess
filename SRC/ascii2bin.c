@@ -1,117 +1,85 @@
-/* The free non-commercial use of these routines is granted          */
-/* providing due credit is given to the authors.                     */
-/* Author: Géza Zsigmond, last change JUL 2002                       */
-/* Change: Klaus Lieutenant, JUL 2002, trace coordinates added       */
+/*********************************************************************************************/
+/*  VITESS tool 'ascii2bin.c'                                                                */
+/*    conversion of tractory files from ASCII format to binary format                        */
+/*                                                                                           */
+/* The free non-commercial use of these routines is granted providing due credit is given to */
+/* the authors.                                                                              */
+/*                                                                                           */
+/* 1.0      2000  G. Zsigmond    initial                                                     */
+/* 1.1  Jul 2002  G. Zsigmond    correction                                                  */
+/* 1.2  Jul 2002  K. Lieutenant  trace coordinates added                                     */
+/* 1.3  Mar 2020  K. Lieutenant  tidy up, new central parameters and functions               */
+/*********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "general.h"
 #include "init.h"
 
-/* Here, any include file may follow you like */
+
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+short OwnInit();                   // Reads input parameters and sets global parameters
+void  OwnCleanup();                // Does module specific cleanup
+
+
+/*********************************/
+/** Global and Static Variables **/
+/*********************************/
+FILE* pAsciiFile;
+char  AsciiFileName [80]="";
+char  BinaryFileName[80]="";
 
 extern short bTrace;
 
-FILE *AsciiFile;
 
-char skipcomment[1000];
-
-
-short OwnInit(void) 
-{
-  char  AsciiFileName [80];
-  char  BinaryFileName[80];
-  short bDirGiven=TRUE;
-
-  bTrace = FALSE;
-
-  printf("Give ASCII file name : ");
-  scanf("%s", AsciiFileName);
-	
-  if((AsciiFile=fopen(AsciiFileName,"r"))==NULL) 
-  { 
-    bDirGiven=FALSE;
-    AsciiFile=fopen(FullParName(AsciiFileName),"r");
-    if (AsciiFile==NULL)
-    { printf("Can't open file %s\n", AsciiFileName);
-      return(FALSE);
-    }
-  }
-
-  printf("Give binary file name: ");
-  scanf("%s", BinaryFileName);
-
-  if(bDirGiven)
-    OutputFilePtr=fopen(BinaryFileName,"wb");
-  else
-    OutputFilePtr=fopen(FullParName(BinaryFileName),"wb");
-
-  if (OutputFilePtr==NULL)
-  { printf("Can't open file %s\n", BinaryFileName);
-    return(FALSE);
-  }
-  
-  return TRUE;
-}
-
-void OwnCleanup()
-{
-  printf("\n Hit [Enter] to terminate ! \n");
-  getchar();
-  getchar();
-  getchar();
-  
-  if (AsciiFile!=NULL)
-    fclose(AsciiFile);
-}
-
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char **argv)
 {
-  int i,j;
-  char cBlank;
+  int   i,j, rc;
+  char  sLine[256];
+	char  *pForm="%c%c%lu %c %hd %lf %le %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf";
   short bFiles;
 
   /* Initialize the program according to the parameters given   */
-  Init(argc, argv, VT_TOOL);
-  print_module_name("ASCII2BIN");
-
-  /* module specific initialization */
-  bFiles = OwnInit();
+  _eModule=MCN_TOOL_A2B;
+  Init(argc, argv, _eModule);
+  PrintModuleName(_eModule, "1.3");
+  bFiles = OwnInit();             // module specific initialization
 
   if (bFiles)
   { 
-    /* header line */
-    fgets(skipcomment, 1000, AsciiFile);
-
+	  // loop over trajectories
+    // ----------------------
     for(j=0; j<1e10; j++)
     {
       for(i=0; i<BufferSize; i++) 
       {
-        if (fscanf(AsciiFile,"%2s", (char *) &InputNeutrons[i].ID.IDGrp )==EOF) goto finish;
-        fscanf(AsciiFile,"%lu", &InputNeutrons[i].ID.IDNo ) ;
-        fscanf(AsciiFile,"%c%c", &cBlank,  &InputNeutrons[i].Debug ) ;
-        fscanf(AsciiFile,"%hd", &InputNeutrons[i].Color ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Time ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Wavelength ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Probability ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Position[0] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Position[1] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Position[2] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Vector[0] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Vector[1] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Vector[2] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[0] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[1] ) ;
-        fscanf(AsciiFile,"%lf", &InputNeutrons[i].Spin[2] ) ;
-        fgets(skipcomment, 1000, AsciiFile) ;
+        ReadLine(pAsciiFile, sLine, sizeof(sLine)-1);
 
-        NumNeutRead += 1;
-               
+        rc=sscanf(sLine, pForm, &InputNeutrons[i].ID.IDGrp[0], &InputNeutrons[i].ID.IDGrp[1], &InputNeutrons[i].ID.IDNo, 
+                                &InputNeutrons[i].Debug,       &InputNeutrons[i].Color,                        
+                                &InputNeutrons[i].Time,        &InputNeutrons[i].Wavelength,  &InputNeutrons[i].Probability, 
+                                &InputNeutrons[i].Position[0], &InputNeutrons[i].Position[1], &InputNeutrons[i].Position[2], 
+                                &InputNeutrons[i].Vector[0],   &InputNeutrons[i].Vector[1],   &InputNeutrons[i].Vector[2], 
+                                &InputNeutrons[i].Spin[0],     &InputNeutrons[i].Spin[1],     &InputNeutrons[i].Spin[2]   ); 
+        if (rc < 1)
+          goto finish;
+                       
         WriteNeutron(&(InputNeutrons[i]));
+        NumNeutRead += 1;
       }
     }
+
+  // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
+  // ----------------------------------------------------------------------------------------
   finish:
-    printf("\n binary file written !\n");
+    printf("\n %6.0f trajectories written to binary file %s !\n", NumNeutRead, BinaryFileName);
   }
 
   /* do module specific cleanups */
@@ -121,4 +89,53 @@ int main(int argc, char **argv)
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
   
   return 0;
+}
+
+
+/*******************************************************/
+/** Reads input parameters and sets global variables  **/
+/*******************************************************/
+short OwnInit(void) 
+{
+  NumNeutRead=0.0;
+  bTrace = FALSE;
+
+  // read ASCII input file
+  printf("Give ASCII file name : ");
+  scanf ("%s", AsciiFileName);
+	
+  pAsciiFile = OpenInputFile(AsciiFileName, FALSE, "r");
+  if (pAsciiFile==NULL) 
+  { 
+    printf("Can't open file %s\n", AsciiFileName);
+    return(FALSE);
+  }
+
+  // write binary file to the same folder
+  printf("Give binary file name: ");
+  scanf ("%s", BinaryFileName);
+
+  OutputFilePtr = OpenInputFile(BinaryFileName, FALSE, "wb");
+  if (OutputFilePtr==NULL)
+  { printf("Can't open file %s\n", BinaryFileName);
+    return(FALSE);
+  }
+  else
+  { return(TRUE);
+  }
+}
+
+
+/*******************************************************/
+/** Does module specific cleanup                      **/
+/*******************************************************/
+void OwnCleanup()
+{
+  printf("\n Hit [Enter] to terminate ! \n");
+  getchar();
+  getchar();
+  getchar();
+  
+  if (pAsciiFile!=NULL)
+    fclose(pAsciiFile);
 }

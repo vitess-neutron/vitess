@@ -11,11 +11,11 @@
 space_group    = -F 4 2 3 # this is a comment
 #space_group = 225
 # space_group = F_m_-3_m
- lattice_a = 4.049
+lattice_a = 4.049
 lattice_b = 4.049
 lattice_c = 4.049
-   lattice_alpha   =   90
-lattice_beta=90
+lattice_alpha = 90
+lattice_beta  = 90
 lattice_gamma = 90
 debye_temp=429.0
 

@@ -30,16 +30,15 @@ static char  sOsName      [15]="",
              sBuffer  [BUFLEN]="";
 
 
-extern char  cSlash,
-             cQuot,
+extern char  cQuot,
              cNL,
              cShort,
              sCommName[50],
              sLogFile [18],
-             sPathSl  [99],
-             sPath    [99],
-             sDirSl   [99],
-             sDir     [99],
+             sPathSl  [CHAR_BUF_SMALL],
+             sPath    [CHAR_BUF_SMALL],
+             sDirSl   [CHAR_BUF_SMALL],
+             sDir     [CHAR_BUF_SMALL],
              sPDir    [10],
              sCall    [11],
              sType    [11],
@@ -139,7 +138,6 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
     strcpy(sCopy ,"cp");
     strcpy(sDel  ,"rm");
     strcpy(sCall ,"time");
-    cSlash = '/';
     cNL    = '\n';
     cQuot  = '\"';
   } else {
@@ -147,7 +145,6 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
     strcpy(sCopy ,"copy");
     strcpy(sDel  ,"erase");
     strcpy(sCall ,"call");
-    cSlash = '\\';
     cNL    = '\n';
     cQuot  = ' ';
     if (nNoFiles==2 && eModus == VT_SER_1F)
@@ -204,19 +201,19 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
 
 /* Writing the command pipe */
 /****************************/
-void WriteCommand(FILE* pFile, short nModNo, short bEcho)
+void WriteCommand(FILE* pFile, short nMod, short bEcho)
 {
 	short m;
 	
 	if (bEcho)
 	{	fprintf(pFile, "%c", cNL);
-		for (m=0; m < nModNo; m++)
+		for (m=0; m < nMod; m++)
 		{	fprintf(pFile, "echo %s >> %sHistory.txt%c", sLine[m], sPDir, cNL);
 		}
 	}
 
 	fprintf(pFile, "%s", sLine[0]);
-	for (m=1; m < nModNo; m++)
+	for (m=1; m < nMod; m++)
 	{	
 		fprintf(pFile, " | %s", sLine[m]);
 	}
@@ -270,9 +267,8 @@ short ChangeParam(short iSim)
 int
 GetLine(FILE* pFile, char* const pLine)
 {
-
-  char sBuffer[BUFLEN];
   int rc;
+
   if ((rc = ReadLine(pFile, sBuffer, BUFLEN)))
     strcpy(pLine, sBuffer);
   return rc;
@@ -282,7 +278,7 @@ GetLine(FILE* pFile, char* const pLine)
 /* Change and shorten commandline */
 /**********************************/
 void
-StripCmdLine(char* const pLine, char cShort)
+StripCmdLine(char* const pLine, char cSh)
 {
 	char  *pBlank, *pSlash;
 	int   kBlank;
@@ -327,7 +323,7 @@ StripCmdLine(char* const pLine, char cShort)
 	}
 
 	// Shorten the command
-	if (cShort=='V')
+	if (cSh=='V')
 		StrgChange(pLine, " --B10000", "");	
 
 	if (eSystem == VT_UNIX || eSystem == VT_LINUX)
@@ -358,20 +354,6 @@ SubstPar(char* pLine, short kBeg, const char* pEnd, int nVar, const char* pVar)
 		sprintf(pLine, "%s%%%d%s", sLeftPart, nVar, sRightPart);
 	else
 		sprintf(pLine, "%s%s%s", sLeftPart, pVar, sRightPart);
-}
-
-
-/* Changing the Slashes to the right ones, e.g. '\' to '/' */
-/***********************************************************/
-void ChangeSlash(char* pStr)
-{
-	int k, klen;
-
-	klen = strlen(pStr);
-	for (k=0; k < klen; k++)
-	{	if (pStr[k]=='/' || pStr[k]=='\\')
-			pStr[k]=cSlash;
-	}
 }
 
 

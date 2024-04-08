@@ -1,40 +1,53 @@
 /*********************************************************************************************/
-/*  VITESS module  WRITEOUT                                                                  */
+/*  VITESS module 'writeout'                                                                 */
+/*                                                                                           */
+/* This module writes neutron events (trajectories) info files in different formats          */
+/*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.0  June 1999  ???             initial version                                           */
-/* 1.1  Mar  2001  K. Lieutenant   headline                                                  */	
-/* 1.2  Jan  2004  K. Lieutenant   changes for 'instrument.dat' and changed headline         */
-/* 1.3  Feb  2004  K. Lieutenant   'FullParName' and 'ERROR' included                        */
-/* 1.4  Mar  2004  K. Lieutenant   F-Format Option                                           */
-/* 1.4e Jul  2005  M. Fromme       headline, simplification                                  */
-/* 1.4f Jan  2010  A. Houben       WriteOut only if given color matches Neutron color        */
-/* 1.4g Feb  2010  A. Houben       Added wavelength, Div and yz position filter              */
-/* 1.4h Feb  2010  K. Lieutenant   colour = 0 means all                                      */
-/* 1.4i Jul  2011  A. Houben       colour = -1 means all; colour = 0 means only untaged      */
+/* 1.0   Jun 1999  ???             initial version                                           */
+/* 1.1   Mar 2001  K. Lieutenant   headline                                                  */
+/* 1.2   Jan 2004  K. Lieutenant   changes for 'instrument.dat' and changed headline         */
+/* 1.3   Feb 2004  K. Lieutenant   'FullParName' and 'ERROR' included                        */
+/* 1.4   Mar 2004  K. Lieutenant   F-Format Option                                           */
+/* 1.4e  Jul 2005  M. Fromme       headline, simplification                                  */
+/* 1.4f  Jan 2010  A. Houben       WriteOut only if given color matches Neutron color        */
+/* 1.4g  Feb 2010  A. Houben       Added wavelength, Div and yz position filter              */
+/* 1.4h  Feb 2010  K. Lieutenant   colour = 0 means all                                      */
+/* 1.4i  Jul 2011  A. Houben       colour = -1 means all; colour = 0 means only untaged      */
 /*                                 neutrons by previous modules                              */
-/* 1.4j Aug  2011  A. Houben       extended divergence filters                               */
-/* 1.5  May  2012  A. Houben       select output columns (reduces file size for long simul.) */
-/*      Aug  2012  M. Fromme       clean up                                                  */
-/* 1.6  Jan  2013  K. Lieutenant   tidy up; McStas and MCNPX format                          */
-/* 1.7  Apr  2018  K. Lieutenant   MCPL format                                               */
+/* 1.4j  Aug 2011  A. Houben       extended divergence filters                               */
+/* 1.5   May 2012  A. Houben       select output columns (reduces file size for long simul.) */
+/*       Aug 2012  M. Fromme       clean up                                                  */
+/* 1.6   Jan 2013  K. Lieutenant   tidy up; McStas and MCNPX format                          */
+/* 1.7   Apr 2018  K. Lieutenant   MCPL format                                               */
+/* 1.8   Jul 2018  K. Lieutenant   McStas and MCNPX format use their own structures          */
+/* 1.9   Mar 2020  K. Lieutenant   new central visualization parameters                      */
+/* 1.10  Mar 2020  K. Lieutenant   binary output for VITESS format                           */
+/* 1.11  Feb 2021  K. Lieutenant   binary output for all data formats                        */
+/* 1.12  Feb 2021  K. Lieutenant   MCNP6 and MCNPX format                                    */
+/* 1.13  Feb 2022  K. Lieutenant   MCNP6 binary output, title, surface; MCNPX format removed */
+/* 1.14  Sep 2022  P. Zakalek      Added writeout of SSW files                               */
+/* 1.14a Feb 2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
+/* 1.15  Jan 2024  K. Lieutenant   order of choosing type of output file corrected           */
 /*********************************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "general.h"
 #include "init.h"
-#include "in_out.h"
 #include "softabort.h"
+#include "convert.h"
 #include "mcpl.h"
+#include "sswread.c"
 
 
 /******************************/
 /** Definitions and Enums    **/
 /******************************/
-#define SP(var, form) if (csep) strcpy(var,sep); strncat(var, form, 13)
-#define FP(s) if (csep++) fputs(sep, pOutFile); fputs(s, pOutFile)
+#define SP(var, form) if (iSep) strcpy(var,pSep); strncat(var, form, 13)
+#define FP(s) if (iSep++) fputs(pSep, pOutFile); if (bHeader) fputs(s, pOutFile);
 
 #define cID       0
 #define cTrc      1
@@ -52,260 +65,373 @@
 #define cSpinY   13
 #define cSpinZ   14
 
+#define BLOCK_SIZE 20.0
+#define TITLE_LEN  80
+
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit(int argc, char *argv[]);
-void  OwnCleanup();
-void  SetFormatsAndHeader(int iSsep, const char *sSep);
-short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv, const VectorType Direction);
+void  OwnInit(int argc, char *argv[]);                                           // Reads input parameters and sets global variables
+void  OwnCleanup();                                                              // Does module specific cleanup
+void  HeaderAndParameters(void);                                                 // Writes header of binary file
+void  ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf);        // Helper function for SSW write
+void ssw_update_nparticles(FILE* f, int64_t np1pos, int32_t np1,                 // Helper function for SSW write
+                           int64_t nrsspos, int32_t nrss);
+short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv,        // calculation of divergence from flight direction
+                     const VectorType Direction);
+void  VitessParameters();                                                        // Defines format for variables and headline in output file 
+void  McStasParameters();                                                        // Sets output parameters for McStas  
+void  MCNP6Parameters();                                                         // Sets output parameters for MCNP6  
+void  MCNPXParameters();                                                         // Sets output parameters for MCNPX  
+short ConvertVitess2McStas(McNeutron*       pMcNeut,   const Neutron* pVitNeut); // Conversion from VITESS to McStas trajectory
+short ConvertVitess2MCPL  (mcpl_particle_t* pMcplNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCPL  trajectory
+short ConvertVitess2MCNP6 (Mcnp6Neutron*    pMcnpNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCNP6  trajectory
+short ConvertVitess2MCNPX (McnpxNeutron*    pMcnpNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCNPX trajectory
 
-short McStasParameters();
-short MCNPXParameters();
-short ConvertVitess2McStas(Neutron*         pMcNeutron,   const Neutron* pVitNeutron);
-short ConvertVitess2MCNPX (Neutron*         pMcnpNeutron, const Neutron* pVitNeutron);
-short ConvertVitess2MCPL  (mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutron);
+void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);            // Vector transfer from VITESS to McStas co-ordinate system
 
-void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);
-
-
-/******************************/
-/** Global Variables    **/
-/******************************/
-FILE*          pOutFile; // pointer to output file
-mcpl_outfile_t hOutFile; // handle to output file for MCPL format
-
-char form[15][15];    // formats to print data of the different parameters using VITESS
-char* outform;        // format for the whole line using McStas or MCNPX
-char* header;         // header: parameters of the event file
-char* units;          // header: units used in the event file
-
-VtPrgFormat  ePrgFormat=VT_VITESS_FMT; // output format (VITESS, McStas, MCNPX)
-VtDataFormat eDatFormat=VT_FLOAT;      // output format (exponential, float)
-VtSeparator  eSeparator=VT_BLANK;      // separator between columns (space, tab)
-
-short  DetectColor  = 0;    // WriteOut only neutrons with a given color, -1 means any
-int    calcDivY = 0,        // boolean: calculation of hor. divergence 
-       calcDivZ = 0;        //                      or vert. divergence necessary
-
-short bF_cID=TRUE,
-      bF_cTrc=TRUE,
-      bF_cColor=TRUE,
-      bF_cTOF=TRUE,
-      bF_cLambda=TRUE,
-      bF_cCounts=TRUE,
-      bF_cPosition=TRUE,
-      bF_cDirection=TRUE,
-      bF_cSpin=TRUE,
-      bF_Active=TRUE;
-
-double filtLambdaMin=-1.0,   // filter
-       filtLambdaMax=-1.0,
-       filtYMin     =-1.0e10,
-       filtYMax     = 1.0e10,
-       filtZMin     =-1.0e10,
-       filtZMax     = 1.0e10,
-       filtYDivMin  =-1.0,
-       filtZDivMin  =-1.0,
-       filtDivMin   =-1.0,
-       filtYDivMax  =-1.0,
-       filtZDivMax  =-1.0,
-       filtDivMax   =-1.0;
+char* FullParName(const char* filename);                                         // function in init.c, adds parameter directory to file name 
 
 
 /******************************/
-/** Program                  **/
+/** Global Variables         **/
+/******************************/
+// Input parameters
+char*        sOutFileName=NULL;         //  -A   [-]   output file name
+short        bActive=TRUE;              //  -a   [-]   flag: YES: writeout is active   NO: output file is not written
+short        bHeader=TRUE;              //  -h   [-]   flag: YES: write header         NO: write only data, no header
+VtPrgFormat  ePrgFormat=VT_VITESS_FMT;  //  -f   [-]   output format: VT_VITESS_FMT: VITESS format   VT_MCSTAS_FMT: McStas   VT_MCPL_FMT: MCPL   VT_MCNP6_FMT: MCNP6   VT_MCNPX_FMT: MCNPX  )
+VtDataFormat eDatFormat=VT_FLOAT;       //  -F   [-]   data format (exponential, float, binary)
+VtSeparator  eSeparator=VT_BLANK;       //  -S   [-]   separator between columns (space, tab)
+short        iDetectColor = -1;         //  -C   [-]   write out only neutrons with a given color, -1 means any
+short        bF_cID=TRUE,               //  -c   [-]   string containing 9 flags to determine which parameters are written: ID, trace flag, color, TOF, wavelength, intensity, position, direction, spin.
+bF_cTrc=TRUE,
+        bF_cColor=TRUE,
+        bF_cTOF=TRUE,
+        bF_cLambda=TRUE,
+        bF_cCounts=TRUE,
+        bF_cPosition=TRUE,
+        bF_cDirection=TRUE,
+        bF_cSpin=TRUE;
+
+double       FactInt   = 1.0;           //  -I   [-]   factor to normalize to the source intensity from MCNP data
+int          iSurface  = MISSING;       //  -s   [-]   surface ID written to the event file
+char*        pTitle=NULL;               //  -T   [-]   title of the simulation 
+
+double       filtLambdaMin=-1.0,        //  -l  [Ang]  minimal wavelength to be taken into account
+filtLambdaMax= 1.0e10,     //  -L  [Ang]  maximal wavelength to be taken into account
+filtYMin     =-1.0e10,     //  -y   [cm]  minimal horizontal position to be taken into account
+filtYMax     = 1.0e10,     //  -Y   [cm]  maximal horizontal position to be taken into account
+filtZMin     =-1.0e10,     //  -z   [cm]  minimal vertical position to be taken into account
+filtZMax     = 1.0e10,     //  -Z   [cm]  maximal vertical position to be taken into account
+filtYDivMin  =-1.0e10,     //  -e  [deg]  minimal horizontal divergence to be taken into account
+filtYDivMax  = 1.0e10,     //  -d  [deg]  maximal horizontal divergence to be taken into account
+filtZDivMin  =-1.0e10,     //  -E  [deg]  minimal vertical divergence to be taken into account
+filtZDivMax  = 1.0e10,     //  -D  [deg]  maximal vertical divergence to be taken into account
+filtDivMin   =-1.0e10,     //  -g  [deg]  minimal divergence to be taken into account
+filtDivMax   = 1.0e10;     //  -G  [deg]  maximal divergence to be taken into account
+
+// Variables determined from input parameters or trajectory data
+FILE*          pOutFile=NULL;           //             pointer to output file
+mcpl_outfile_t hOutFile;                //             handle to output file for MCPL format
+ssw_file_t    fsswref;                  //           handle to SSW output file
+char*        ssw_rfile=NULL;         //  -r   [-]   SSW reference file file name
+int ssw_reclen;
+int ssw_ssblen;
+int64_t ssw_hdrlen;
+int64_t ssw_np1pos;
+int64_t ssw_nrsspos;
+int ssw_mcnp_type = 0;
+long used = 0;
+long long skipped_nosswtype = 0;
+double ssb[11];
+int32_t orig_np1;
+
+char*          sOutform=NULL;           //             format for the whole line using McStas, MCNP6 or MCNPX
+char*          sHeader =NULL;           //             header: parameters of the event file
+char*          sUnits  =NULL;           //             header: units used in the event file
+short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence 
+bCalcDivZ = FALSE;       //                               or vert. divergence necessary
+char           sVsn[5]="1.15",
+        form[15][15]={"","","","","","","","","","","","","","",""};
+// formats to print data of the different parameters using VITESS
+
+
+/******************************/
+/**  Main Program            **/
 /******************************/
 int main(int argc, char **argv)
 {
-  int             i,                // index of trajectories
-                  csep;             // index of formats (useless)
-  const char     *sep;              // separator
-  double          Divy, Divz, Div;  // divergence of actual trajectory
+  int             i=0,               // index of trajectories
+  nBytesW=0;                         // number of bytes written to output file
+  double          Divy=0.0,
+                  Divz=0.0, Div=0.0; // divergence of the current trajectory
   Neutron         OutNeutron;
+  McNeutron       OutMcNeutron;
+  Mcnp6Neutron    OutMp6Neutron;
+  McnpxNeutron    OutMpxNeutron;
   mcpl_particle_t OutParticle;
 
-  Divy = Divz = Div = 0.0;
+  memset(&OutNeutron,   '\0', sizeof(Neutron));
+  memset(&OutMcNeutron, '\0', sizeof(McNeutron));
+  memset(&OutMp6Neutron,'\0', sizeof(Mcnp6Neutron));
+  memset(&OutMpxNeutron,'\0', sizeof(McnpxNeutron));
+  memset(&OutParticle,  '\0', sizeof(mcpl_particle_t));
 
-  // Initialize the program according to the parameters given 
-  Init(argc, argv, VT_WRITEOUT);
-  print_module_name("writeout 1.7");
 
-  // module specific initialization 
+  // Initialization 
+  // --------------
+  _eModule=MCN_WRITEOUT;
+
+  Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, sVsn);
   OwnInit(argc, argv);
-  
-  if (eSeparator==VT_TABULATOR) 
-    sep = "\t"; 
-  else if (eSeparator==VT_BLANK) 
-    sep = " ";
-  else
-    Error("Separator has unknown value");
-  csep = 0;
 
-  // define format for variables in output file and print headline
-  if (bF_Active)
-  {
-    switch (ePrgFormat)
-    { case VT_MCSTAS_FMT:
-        header  = "#     weight        pos_x     pos_y      pos_z      speed_x      speed_y      speed_z        TOF       S_x  S_y  S_z \n";  
-        units   = "#      [n/s]         [m]       [m]        [m]        [m/s]        [m/s]        [m/s]         [s]       [1]  [1]  [1] \n";  
-        outform = "%15.3f  %9.6f %9.6f %10.6f  %12.2f %12.2f %12.2f  %11.9f  %4.1f %4.1f %4.1f";
-	      fprintf(pOutFile,"#Trajectories writeout_McStas \n");
-        fprintf(pOutFile, "%s%s", header, units);
-        break;
-      case VT_MCPL_FMT:
-        mcpl_hdr_set_srcname    (hOutFile, "VITESS 3.4  module writeout 1.7"); /* Name of the generating application         */
-        mcpl_hdr_add_comment    (hOutFile, "first test");                      /* Add one or more human-readable comments    */
-        mcpl_enable_polarisation(hOutFile);                                    /* to write the "polarisation" info           */
-        break;
-      case VT_MCNPX_FMT:
-        header  = "#    pos_x          pos_y          pos_z          dir_x          dir_y          dir_z            E           weight          time  \n";  
-        units   = "#     [cm]           [cm]           [cm]           [1]            [1]            [1]           [MeV]           [1]         [1e-8s] \n";  
-        outform = "%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e";
-	      fprintf(pOutFile,"#Trajectories writeout_MCNPX \n");
-        fprintf(pOutFile, "%s%s", header, units);
-        break;
-      default:   // nothing to do for VITESS
-	      fprintf(pOutFile, "#Trajectories writeout_Vitess \n");
-        SetFormatsAndHeader(csep, sep);
-    }
-  }
- 
-  // Get the neutrons from file
+  bVisInstalled = FALSE;
+  bBlowUp       = FALSE;
+
+  if (bActive)
+    HeaderAndParameters();
+
   DECLARE_ABORT;
 
-  while((ReadNeutrons())!= 0)
+  // loop over trajectories
+  // ----------------------
+  while (ReadNeutrons() != 0)
   {
-    CHECK;    
-    for(i=0; i<NumNeutGot; i++) 
+    for(i=0; i<NumNeutGot; i++)
     {
       CHECK;
 
       // write all trajectories to pipe
-	    WriteNeutron(&(InputNeutrons[i]));
+      WriteNeutron(&(InputNeutrons[i]));
 
       // skip the rest if the module is not active 
-	    if (!bF_Active) continue;
+      if (!bActive) continue;
 
-	    // Filter wavelength and position
+      // Filter wavelength and position
       if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
-	    if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
+      if (filtLambdaMax >= 0. && InputNeutrons[i].Wavelength > filtLambdaMax) continue;
 
-	    if (InputNeutrons[i].Position[1] < filtYMin) continue;
-	    if (InputNeutrons[i].Position[1] > filtYMax) continue;
-	    if (InputNeutrons[i].Position[2] < filtZMin) continue;
-	    if (InputNeutrons[i].Position[2] > filtZMax) continue;
-	  
+      if (InputNeutrons[i].Position[1] < filtYMin) continue;
+      if (InputNeutrons[i].Position[1] > filtYMax) continue;
+      if (InputNeutrons[i].Position[2] < filtZMin) continue;
+      if (InputNeutrons[i].Position[2] > filtZMax) continue;
+
       // filter divergence
       CalcDivergence(&Div, &Divy, &Divz, InputNeutrons[i].Vector);
 
-	    if (filtYDivMin >= 0.) if (fabs(Divy) < filtYDivMin) continue;
+      if (filtYDivMin >= 0.) if (fabs(Divy) < filtYDivMin) continue;
       if (filtYDivMax >= 0.) if (fabs(Divy) > filtYDivMax) continue;
       if (filtZDivMin >= 0.) if (fabs(Divz) < filtZDivMin) continue;
-	    if (filtZDivMax >= 0.) if (fabs(Divz) > filtZDivMax) continue;
+      if (filtZDivMax >= 0.) if (fabs(Divz) > filtZDivMax) continue;
       if (filtDivMin  >= 0.) if (fabs(Div)  < filtDivMin)  continue;
-	    if (filtDivMax  >= 0.) if (fabs(Div)  > filtDivMax)  continue;
+      if (filtDivMax  >= 0.) if (fabs(Div)  > filtDivMax)  continue;
 
       // transform to wanted format
       switch (ePrgFormat)
       { case VT_MCSTAS_FMT:
-          ConvertVitess2McStas(&OutNeutron, &InputNeutrons[i]);
+          ConvertVitess2McStas(&OutMcNeutron, &InputNeutrons[i]);
           break;
         case VT_MCPL_FMT:
-          ConvertVitess2MCPL (&OutParticle, &InputNeutrons[i]);
+          ConvertVitess2MCPL (&OutParticle,   &InputNeutrons[i]);
+          break;
+        case VT_MCNP6_FMT:
+          ConvertVitess2MCNP6(&OutMp6Neutron, &InputNeutrons[i]);
           break;
         case VT_MCNPX_FMT:
-          ConvertVitess2MCNPX(&OutNeutron,  &InputNeutrons[i]);
+          ConvertVitess2MCNPX(&OutMpxNeutron, &InputNeutrons[i]);
           break;
         default:   // nothing to do for VITESS
           memcpy(&OutNeutron, &InputNeutrons[i], sizeof(Neutron));
       }
 
       // write out neutrons of proper colour
-      if (DetectColor < 0 || OutNeutron.Color == DetectColor) 
+      if (iDetectColor < 0 || OutNeutron.Color == iDetectColor)
       {
         switch (ePrgFormat)
         {
           case VT_MCSTAS_FMT:
-            fprintf(pOutFile, outform, OutNeutron.Probability, 
-			                                 OutNeutron.Position[0], OutNeutron.Position[1], OutNeutron.Position[2],
-			                                 OutNeutron.Vector  [0], OutNeutron.Vector  [1], OutNeutron.Vector  [2],
-		                                   OutNeutron.Time,        
-			                                 OutNeutron.Spin    [0], OutNeutron.Spin    [1], OutNeutron.Spin    [2]);
+            if (eDatFormat==VT_BINARY)
+            { nBytesW = fwrite(&OutMcNeutron, sizeof(McNeutron), 1, pOutFile);
+            }
+            else
+            { fprintf(pOutFile, sOutform, OutMcNeutron.Weight,
+                      OutMcNeutron.Position[0], OutMcNeutron.Position[1], OutMcNeutron.Position[2],
+                      OutMcNeutron.Speed   [0], OutMcNeutron.Speed   [1], OutMcNeutron.Speed   [2],
+                      OutMcNeutron.Time,
+                      OutMcNeutron.Spin    [0], OutMcNeutron.Spin    [1], OutMcNeutron.Spin    [2]);
+            }
             break;
 
           case VT_MCPL_FMT:
             mcpl_add_particle(hOutFile, &OutParticle);
             break;
 
+          case VT_SSW_FMT:
+            ++ssb[0];
+            ssb[2] = OutNeutron.Probability;
+            ssb[3] = 1.0e-12 * ENERGY_FROM_LAMBDA(OutNeutron.Wavelength);//change from lambda to MeV
+            ssb[4] = OutNeutron.Time * 1.0e5;//milliseconds to "shakes"
+            ssb[5] = (double) OutNeutron.Position[0];//already in cm
+            ssb[6] = (double) OutNeutron.Position[1];//already in cm
+            ssb[7] = (double) OutNeutron.Position[2];//already in cm
+            ssb[8] = (double) OutNeutron.Vector[0];
+            ssb[9] = (double) OutNeutron.Vector[1];
+
+            int32_t isurf = iSurface;
+            if (!isurf) {
+              Error("No Surface ID given");
+            }
+
+            if (isurf<=0||isurf>1000000) {
+              if (isurf==0&&iSurface==0)
+                Error("Could not determine surface ID: no global surface id specified and particle had no (or empty) userflags");
+              else
+                Error("Surface id must be in range 1..999999");
+            }
+
+            int64_t rawtype;
+            if (ssw_mcnp_type == SSW_MCNP6) {
+              rawtype = conv_mcnp6_pdg2ssw(2112);
+            } else if (ssw_mcnp_type == SSW_MCNPX) {
+              rawtype = conv_mcnpx_pdg2ssw(2112);
+            } else {
+              assert(ssw_mcnp_type == SSW_MCNP5);
+              rawtype = 1;
+            }
+
+            if (ssw_mcnp_type == SSW_MCNP6) {
+              assert(ssw_ssblen==11);
+              ssb[10] = isurf;//Should we set the sign of ssb[10] to mean something (we take abs(ssb[10]) in sswread.c)?
+              ssb[1] = rawtype*4;//Shift 2 bits (thus we only create files with those two bits zero!)
+            } else if (ssw_mcnp_type == SSW_MCNPX) {
+              ssb[1] = isurf + 1000000*rawtype;
+              if (ssw_ssblen==11)
+                ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
+              //it to 1 (seems to be not used anyway?)
+            } else {
+
+
+              assert(ssw_mcnp_type == SSW_MCNP5);
+              ssb[1] = (isurf + 1000000*rawtype)*8;
+              if (ssw_ssblen==11)
+                ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
+              //it to 1 (seems to be not used anyway?)
+            }
+
+            //Sign of ssb[1] is used to store the sign of dirz:
+            assert(ssb[1] >= 1.0);
+            if (OutNeutron.Vector[2]<0.0)
+              ssb[1] = - ssb[1];
+
+            ssw_writerecord(pOutFile,ssw_reclen,sizeof(double)*ssw_ssblen,(char*)&ssb[0]);
+            used += 1;
+
           case VT_MCNPX_FMT:
-            fprintf(pOutFile, outform, OutNeutron.Position[0], OutNeutron.Position[1], OutNeutron.Position[2],
-			                                 OutNeutron.Vector  [0], OutNeutron.Vector  [1], OutNeutron.Vector  [2],
-		                                   OutNeutron.Wavelength,  OutNeutron.Probability, OutNeutron.Time);
+            if (eDatFormat==VT_BINARY)
+            { nBytesW = fwrite(&OutMpxNeutron, sizeof(McnpxNeutron), 1, pOutFile);
+            }
+            else
+            { fprintf(pOutFile, sOutform, OutMpxNeutron.Position[0], OutMpxNeutron.Position[1], OutMpxNeutron.Position[2],
+                      OutMpxNeutron.Vector  [0], OutMpxNeutron.Vector  [1], OutMpxNeutron.Vector  [2],
+                      OutMpxNeutron.Energy,      OutMpxNeutron.Counts,      OutMpxNeutron.Shakes);
+            }
             break;
 
-          default:    // VITESS
-            if (bF_cID)        { fprintf(pOutFile, form[cID],     OutNeutron.ID.IDGrp[0], OutNeutron.ID.IDGrp[1], OutNeutron.ID.IDNo); }
-            if (bF_cTrc)       { fprintf(pOutFile, form[cTrc],    OutNeutron.Debug); }
-            if (bF_cColor)     { fprintf(pOutFile, form[cColor],  OutNeutron.Color); }
-            if (bF_cTOF)       { fprintf(pOutFile, form[cTOF],    OutNeutron.Time); }
-            if (bF_cLambda)    { fprintf(pOutFile, form[cLambda], OutNeutron.Wavelength); }
-            if (bF_cCounts)    { fprintf(pOutFile, form[cCounts], OutNeutron.Probability); }
-            if (bF_cPosition)  {
-              fprintf(pOutFile, form[cPosX],   OutNeutron.Position[0]);
-              fprintf(pOutFile, form[cPosY],   OutNeutron.Position[1]);
-              fprintf(pOutFile, form[cPosZ],   OutNeutron.Position[2]); }
-            if (bF_cDirection) {
-              fprintf(pOutFile, form[cDirX],   OutNeutron.Vector[0]);
-              fprintf(pOutFile, form[cDirY],   OutNeutron.Vector[1]);
-              fprintf(pOutFile, form[cDirZ],   OutNeutron.Vector[2]); }
-            if (bF_cSpin)      {
-              fprintf(pOutFile, form[cSpinX],  OutNeutron.Spin[0]);
-              fprintf(pOutFile, form[cSpinY],  OutNeutron.Spin[1]);
-              fprintf(pOutFile, form[cSpinZ],  OutNeutron.Spin[2]); }
+          case VT_MCNP6_FMT:
+            if (eDatFormat==VT_BINARY)
+            { int num=88;
+              fwrite(&num, 4, 1, pOutFile);
+              nBytesW = fwrite(&OutMp6Neutron, sizeof(Mcnp6Neutron), 1, pOutFile);
+              fwrite(&num, 4, 1, pOutFile);
+            }
+            else
+            { fprintf(pOutFile, sOutform, OutMp6Neutron.History,     OutMp6Neutron.ID,
+                      OutMp6Neutron.Counts,      OutMp6Neutron.Energy,      OutMp6Neutron.Shakes,
+                      OutMp6Neutron.Position[0], OutMp6Neutron.Position[1], OutMp6Neutron.Position[2],
+                      OutMp6Neutron.DirX,        OutMp6Neutron.DirY,        OutMp6Neutron.Surface);
+            }
+            break;
+
+          case VT_VITESS_FMT:    // VITESS format
+            if (eDatFormat==VT_BINARY)
+            { nBytesW = fwrite(&OutNeutron, sizeof(Neutron), 1, pOutFile);
+            }
+            else
+            { if (bF_cID)        {fprintf(pOutFile, form[cID],     OutNeutron.ID.IDGrp[0], OutNeutron.ID.IDGrp[1], OutNeutron.ID.IDNo); }
+              if (bF_cTrc)       {fprintf(pOutFile, form[cTrc],    OutNeutron.Debug); }
+              if (bF_cColor)     {fprintf(pOutFile, form[cColor],  OutNeutron.Color); }
+              if (bF_cTOF)       {fprintf(pOutFile, form[cTOF],    OutNeutron.Time); }
+              if (bF_cLambda)    {fprintf(pOutFile, form[cLambda], OutNeutron.Wavelength); }
+              if (bF_cCounts)    {fprintf(pOutFile, form[cCounts], OutNeutron.Probability); }
+              if (bF_cPosition)  {fprintf(pOutFile, form[cPosX],   OutNeutron.Position[0]);
+                fprintf(pOutFile, form[cPosY],   OutNeutron.Position[1]);
+                fprintf(pOutFile, form[cPosZ],   OutNeutron.Position[2]); }
+              if (bF_cDirection) {fprintf(pOutFile, form[cDirX],   OutNeutron.Vector[0]);
+                fprintf(pOutFile, form[cDirY],   OutNeutron.Vector[1]);
+                fprintf(pOutFile, form[cDirZ],   OutNeutron.Vector[2]); }
+              if (bF_cSpin)      {fprintf(pOutFile, form[cSpinX],  OutNeutron.Spin[0]);
+                fprintf(pOutFile, form[cSpinY],  OutNeutron.Spin[1]);
+                fprintf(pOutFile, form[cSpinZ],  OutNeutron.Spin[2]); }
+            }
+            break;
+
+          default:
+            Error("Data format not (yet) handled");
         }
 
-        if (ePrgFormat!=VT_MCPL_FMT)
-          fputs("\n", pOutFile);
+        if (ePrgFormat!=VT_MCPL_FMT && ePrgFormat!=VT_SSW_FMT)
+        {
+          double nBlocks, rest;
+
+          if (eDatFormat!=VT_BINARY)
+            fputs("\n", pOutFile);
+
+          // flush output file to make it available for other applications
+          rest = modf((i+1)/BLOCK_SIZE, &nBlocks);
+          if (rest==0.0)
+            fflush(pOutFile);
+        }
       }
     }
   }
-  
+
   // Do module specific cleanups
- my_exit:
+  my_exit:
   OwnCleanup();
-  
+  fprintf(LogFilePtr,"\n");
+
   // Do the general cleanup
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
-  
+
   return 0;
 }
 
 
-// ------------------------------
-// module specific initialization
-// ------------------------------
-void  OwnInit(int argc, char *argv[]) 
+/*******************************************************/
+/** Reads input parameters and sets global parameters **/
+/*******************************************************/
+void  OwnInit(int argc, char *argv[])
 {
-  char *AsciiFileName=NULL;
-  int i;
+  int         i=0;         // index of parameter list
 
-  for(i=1; i<argc; i++) 
-  { if(argv[i][0]!='+') 
-    { switch(argv[i][1])
-      { 
+  for(i=1; i<argc; i++)
+  {
+    if(argv[i][0]!='+')
+    {
+      switch(argv[i][1])
+      {
         case 'A':
-          AsciiFileName = &argv[i][2];
+          sOutFileName = &argv[i][2];
           break;
+
         case 'a':
-          sscanf(&(argv[i][2]),"%hd", &bF_Active);
+          bActive= (short) atoi(&argv[i][2]);
           break;
-        case 'c':
-          sscanf(&(argv[i][2]),"%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
-          break;
-        case 'C':
-          DetectColor = (short) atoi(&argv[i][2]);
+        case 'h':
+          bHeader= (short) atoi(&argv[i][2]);
           break;
 
         case 'f':
@@ -317,7 +443,25 @@ void  OwnInit(int argc, char *argv[])
         case 'S':
           eSeparator = (VtSeparator) atoi(&argv[i][2]);
           break;
-		
+
+        case 'I':
+          FactInt    = atof(&argv[i][2]);
+          break;
+        case 's':
+          iSurface = atoi(&argv[i][2]);
+          break;
+        case 'T':
+          pTitle = &argv[i][2];
+          break;
+
+
+        case 'c':
+          sscanf(&(argv[i][2]),"%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd%1hd", &bF_cID, &bF_cTrc, &bF_cColor, &bF_cTOF, &bF_cLambda, &bF_cCounts, &bF_cPosition, &bF_cDirection, &bF_cSpin);
+          break;
+        case 'C':
+          iDetectColor = (short) atoi(&argv[i][2]);
+          break;
+
         case 'l':
           filtLambdaMin = atof(&argv[i][2]);  /* filter lambda, -1 means any */
           break;
@@ -337,18 +481,20 @@ void  OwnInit(int argc, char *argv[])
         case 'Z':
           filtZMax = atof(&argv[i][2]);       /* filter Z */
           break;
-	    
-        case 'd':
-          filtYDivMax = atof(&argv[i][2]);    /* filter DivYMax, -1 means any */
-          break;
-        case 'D':
-          filtZDivMax = atof(&argv[i][2]);    /* filter DivZMax, -1 means any */
+        case 'r':
+          ssw_rfile = &argv[i][2];       /* filter Z */
           break;
         case 'e':
           filtYDivMin = atof(&argv[i][2]);    /* filter DivYMin, -1 means any */
           break;
+        case 'd':
+          filtYDivMax = atof(&argv[i][2]);    /* filter DivYMax, -1 means any */
+          break;
         case 'E':
           filtZDivMin = atof(&argv[i][2]);    /* filter DivZMin, -1 means any */
+          break;
+        case 'D':
+          filtZDivMax = atof(&argv[i][2]);    /* filter DivZMax, -1 means any */
           break;
         case 'g':
           filtDivMin = atof(&argv[i][2]);     /* filter DivMin,  -1 means any */
@@ -364,73 +510,312 @@ void  OwnInit(int argc, char *argv[])
     }
   }
 
-  calcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
-  calcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
+  bCalcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
+  bCalcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
 
-  if (AsciiFileName != NULL)
-  { if (bF_Active) 
+  if (sOutFileName != NULL)
+  {
+    if (bActive)
     { if (ePrgFormat== VT_MCPL_FMT)
+      { hOutFile = mcpl_create_outfile(FullParName(sOutFileName));
+      }
+      else if (ePrgFormat== VT_SSW_FMT)
       {
-         hOutFile = mcpl_create_outfile(FullParName(AsciiFileName));
-      }
-      else  
-      { if ((pOutFile=fopen(FullParName(AsciiFileName),"wt"))==NULL) 
-        { fprintf(LogFilePtr,"ERROR: Can't open file %s\n", AsciiFileName);
-          exit(-1);
+        if (iSurface==0)
+          Error("MCPL file contains no userflags so parameter specifying "
+                "resulting SSW surface ID of particles is mandatory (use -s<ID>).");
+
+        fsswref = ssw_open_file(ssw_rfile);
+
+        //Open reference file and figure out variables like header length, position of
+        //"nparticles"-like variables, fortran record length and mcnp version.
+        ssw_layout(fsswref, &ssw_reclen, &ssw_ssblen, &ssw_hdrlen, &ssw_np1pos, &ssw_nrsspos);
+        assert(ssw_np1pos<ssw_hdrlen);
+        assert(ssw_nrsspos<ssw_hdrlen);
+
+        ssw_mcnp_type = 0;
+        if (ssw_is_mcnp6(fsswref)) {
+          ssw_mcnp_type = SSW_MCNP6;
+        } else if (ssw_is_mcnpx(fsswref)) {
+          ssw_mcnp_type = SSW_MCNPX;
+        } else if (ssw_is_mcnp5(fsswref)) {
+          ssw_mcnp_type = SSW_MCNP5;
         }
+
+        assert(ssw_mcnp_type>0);
+        char ref_mcnpflavour_str[64];
+        ref_mcnpflavour_str[0] = '\0';
+        strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));
+
+        int ref_is_gzipped = ssw_is_gzipped(fsswref);
+        ssw_close_file(fsswref);
+
+        //Grab the header:
+        unsigned char * hdrbuf = (unsigned char*)malloc(ssw_hdrlen);
+        assert(hdrbuf);
+        ssw_internal_grabhdr( ssw_rfile, ref_is_gzipped, ssw_hdrlen, hdrbuf );
+
+        orig_np1 = * ((int32_t*)(&hdrbuf[ssw_np1pos]));
+
+        //Clear |np1| and nrss in header to to indicate incomplete info (we will
+        //update just before closing the file):
+        *((int32_t*)(&hdrbuf[ssw_np1pos])) = 0;
+        *((int32_t*)(&hdrbuf[ssw_nrsspos])) = 0;
+
+        printf("Creating (or overwriting) output SSW file.\n");
+
+        //Open new ssw file:
+        pOutFile = fopen(sOutFileName,"wb");
+
+        if (!pOutFile)
+          Error("Problems opening new SSW file");
+
+        //Write header:
+        int nb = fwrite(hdrbuf, 1, ssw_hdrlen, pOutFile);
+        if (nb!=ssw_hdrlen)
+          Error("Problems writing header to new SSW file");
+
+        free(hdrbuf);
+
+        if ( ssw_ssblen != 10 && ssw_ssblen != 11)
+          Error("Unexpected length of ssb record in reference SSW file");
+        if ( (ssw_mcnp_type == SSW_MCNP6) && ssw_ssblen != 11 )
+          Error("Unexpected length of ssb record in reference SSW file (expected 11 for MCNP6 files)");
+
+        //ssb[0] should be history number (starting from 1), but in our case we always
+        //put nhistories=nparticles, so it is simply incrementing by 1 for each particle.
+        ssb[0] = 0.0;
+
+        assert(iSurface>=0&&iSurface<1000000);
       }
+      else if (eDatFormat== VT_BINARY)
+      { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wb");
+      }
+      else
+      { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wt");
+      }
+      fprintf(LogFilePtr,"Trajectories written to output file %s\n", FullParName(sOutFileName));
     }
-  } 
-  else 
-  { fputs("ERROR: The option -A to give the ascii file name is mandatory!\n", LogFilePtr);
-    exit(-1);
+    else
+    { Note("writeout inactive, no file written");
+      bHeader = FALSE;
+    }
+  }
+  else
+  { Error("File name missing");
+  }
+
+  if (ePrgFormat==VT_MCPL_FMT && eDatFormat!=VT_BINARY)
+    Note("Input and output of MCPL data is handled via module 'mcpl' which stores data in binary format.\nChoice of ASCII format ignored.");
+}
+
+void ssw_update_nparticles(FILE* f,
+                           int64_t np1pos, int32_t np1,
+                           int64_t nrsspos, int32_t nrss)
+{
+  //Seek and update np1 and nrss fields at correct location in header:
+  const char * errmsg = "Errors encountered while attempting to update number of particle info in output file.";
+  int64_t savedpos = ftell(f);
+  if (savedpos<0)
+    Error(errmsg);
+  if (fseek( f, np1pos, SEEK_SET ))
+    Error(errmsg);
+  size_t nb = fwrite(&np1, 1, sizeof(np1), f);
+  if (nb != sizeof(np1))
+    Error(errmsg);
+  if (fseek( f, nrsspos, SEEK_SET ))
+    Error(errmsg);
+  nb = fwrite(&nrss, 1, sizeof(nrss), f);
+  if (nb != sizeof(nrss))
+    Error(errmsg);
+  if (fseek( f, savedpos, SEEK_SET ))
+    Error(errmsg);
+}
+
+void ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
+{
+  if (reclen==4) {
+    uint32_t rl = lbuf;
+    size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
+    if (nb!=sizeof(rl))
+      Error("write error");
+    nb = fwrite(buf, 1, lbuf, outfile);
+    if (nb!=lbuf)
+      Error("write error");
+    nb = fwrite(&rl, 1, sizeof(rl), outfile);
+    if (nb!=sizeof(rl))
+      Error("write error");
+  } else {
+    assert(reclen==8);
+    uint64_t rl = lbuf;
+    size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
+    if (nb!=sizeof(rl))
+      Error("write error");
+    nb = fwrite(buf, 1, lbuf, outfile);
+    if (nb!=lbuf)
+      Error("write error");
+    nb = fwrite(&rl, 1, sizeof(rl), outfile);
+    if (nb!=sizeof(rl))
+      Error("write error");
   }
 }
 
+void HeaderAndParameters(void)
+{
+  int         iNum[12]={2,143,32,-50000,-1,0,0,-11,1,299,0,32};
+  char        sDate[11]="", sFormat[10]="",
+          sDateUS[10]="         ", sTime[11]="          ",
+          sSrcName  [CHAR_BUF_XS]="",    sID[9]="SF_00001", sPrg[9]="VITESS  ", sPrgVsn[9]="3.5  ",
+          sHeadlines[CHAR_BUF_SMALL]="", sTitle[TITLE_LEN+1]="VITESS simulation   ";
+  Mcnp6Header Head;
+  int k;
 
-// -----------------------
-// module specific cleanup
-// -----------------------
+  GetActDate(sDate,   DATE_STD);
+  GetActDate(sDateUS, DATE_US); strcat(sDateUS, " ");
+  GetActTime(sTime);            strcat(sTime  , "  ");
+  PrgFormat_ID2Txt(sFormat, ePrgFormat);
+  if (pTitle!=NULL)
+    StrgCopy(sTitle, pTitle, TITLE_LEN);
+
+  sprintf(sSrcName,   "VITESS 3.5  Trajectories module %s %s  %s-Format", sModuleName, sVsn, sFormat);
+  sprintf(sHeadlines, "# %s\n# %s %s\n# %s\n", sSrcName, sDate, sTime, sTitle);
+
+  // define format for variables in output file and print header
+  if (eDatFormat==VT_BINARY)
+  {
+    switch (ePrgFormat)
+    {
+      case VT_MCPL_FMT:
+        mcpl_hdr_set_srcname    (hOutFile, sSrcName);   /* Name of the generating application         */
+        mcpl_hdr_add_comment    (hOutFile, sTitle);     /* Add one or more human-readable comments    */
+        mcpl_enable_polarisation(hOutFile);             /* to write the "polarisation" info           */
+        break;
+      case VT_MCNP6_FMT:
+        Head.nBytes   = 8;
+        Head.iNum1[0] = 8; Head.iNum1[1] = 143;
+        memcpy(Head.sID,      sID,    8);
+        memcpy(Head.sPrg,     sPrg,   8);
+        memcpy(Head.sVsn,     sPrgVsn,5);
+        memcpy(Head.sDatePrg, sDateUS,9);
+        memcpy(Head.sDateEnd, sDateUS,9);
+        memcpy(Head.sTimeEnd, sTime, 10);
+        memcpy(Head.sDateBeg, sDateUS,9);
+        memcpy(Head.sTimeBeg, sTime,  9);
+        memcpy(Head.sTitle,   sTitle, TITLE_LEN);
+        for (k=0; k < 12; k++)
+          Head.iNum2[k]=iNum[k];
+        Head.iNum2[5] = (int)NumNeutWritten;
+        memset(Head.sRest, '\0', 300);
+
+        fwrite(&Head, sizeof(Mcnp6Header), 1, pOutFile);
+        break;
+    }
+  }
+  else
+  {
+    switch (ePrgFormat)
+    { case VT_MCSTAS_FMT:
+        McStasParameters();
+        if (bHeader)
+        { fprintf(pOutFile, "%s", sHeadlines);
+          fprintf(pOutFile, "%s%s", sHeader, sUnits);
+        }
+        break;
+      case VT_MCPL_FMT:
+        mcpl_hdr_set_srcname    (hOutFile, sSrcName);   /* Name of the generating application         */
+        mcpl_hdr_add_comment    (hOutFile, sTitle);     /* Add one or more human-readable comments    */
+        mcpl_enable_polarisation(hOutFile);             /* to write the "polarisation" info           */
+        break;
+      case VT_MCNP6_FMT:
+        MCNP6Parameters();
+        if (bHeader)
+        { fprintf(pOutFile, "%s", sHeadlines);
+          fprintf(pOutFile, "%s%s", sHeader, sUnits);
+        }
+        break;
+      case VT_MCNPX_FMT:
+        /* MCNPXParameters();
+        if (bHeader)
+        { fprintf(pOutFile, "#Trajectories writeout_MCNPX \n");
+          fprintf(pOutFile, "%s%s", sHeader, sUnits);
+        }*/
+        Error("MCNPX format not yes properly implemented");
+        break;
+      case VT_VITESS_FMT:
+        if (bHeader)
+          fprintf(pOutFile, "%s", sHeadlines);
+        VitessParameters();
+        break;
+      case VT_SSW_FMT:
+        break;
+      default:
+        Error("Data format not (yet) existent");
+    }
+  }
+
+}
+
+
+/***************************************************/
+/**  Does module specific cleanup                 **/
+/***************************************************/
 void OwnCleanup()
 {
   /* close the file if it was openend */
-  if (bF_Active) 
+  if (bActive)
   { if (ePrgFormat== VT_MCPL_FMT)
     {
       mcpl_close_outfile(hOutFile);
+    } else if (ePrgFormat == VT_SSW_FMT){
+
+      int32_t new_nrss = used;
+      int32_t new_np1 = new_nrss;
+
+      if (new_np1==0) {
+        //SSW files must at least have 1 history (but can have 0 particles)
+        fprintf(LogFilePtr, "WARNING: Input MCPL file has 0 useful particles but we are setting number"
+                           " of histories in new SSW file to 1 to avoid creating an invalid file.\n");
+        new_np1 = 1;
+      }
+      if (orig_np1<0)
+        new_np1 = - new_np1;
+
+      ssw_update_nparticles(pOutFile,ssw_np1pos,new_np1,ssw_nrsspos,new_nrss);
+
+      fclose(pOutFile);
     }
-    else  
+    else
     { fclose(pOutFile);
     }
   }
 }
 
 
-// -----------------------------------------------
-// calculation of divergence from flight direction
-// in : Direction: normalized flight direction
-// out: Div    : total divergence
-//    : HorDiv : horizontal divergence
-//    : VrtDiv : vertical divergence
-// return: rc  : TRUE/FALSE
-// -----------------------------------------------
+/***************************************************
+** calculation of divergence from flight direction
+** in : Direction: normalized flight direction
+** out: Div    : total divergence
+**    : HorDiv : horizontal divergence
+**    : VrtDiv : vertical divergence
+** return: rc  : TRUE/FALSE
+****************************************************/
 short CalcDivergence(double *pDiv, double *pHorDiv, double *pVrtDiv, const VectorType Direction)
 {
   short rc=FALSE;
 
-  if (calcDivY) 
+  if (bCalcDivY)
   { *pHorDiv  = atan2(Direction[1], Direction[0]);
     *pHorDiv *= 180.0/M_PI;
     if ((Direction[1]==0.0) && (Direction[0]==0.0))
       *pHorDiv=0.0;
     rc=TRUE;
   }
-  if (calcDivZ) 
+  if (bCalcDivZ)
   { *pVrtDiv  = atan2(Direction[2], Direction[0]);
     *pVrtDiv *= 180.0/M_PI;
     if ((Direction[2]==0.0) && (Direction[0]==0.0))
       *pVrtDiv=0.0;
-    if (calcDivY) *pDiv = sqrt(sq(*pHorDiv) + sq(*pVrtDiv));
+    if (bCalcDivY) *pDiv = sqrt(sq(*pHorDiv) + sq(*pVrtDiv));
     rc=TRUE;
   }
 
@@ -438,89 +823,89 @@ short CalcDivergence(double *pDiv, double *pHorDiv, double *pVrtDiv, const Vecto
 }
 
 
-
-// -------------------------------------------------------------
-// define format for variables in output file and print headline
-// -------------------------------------------------------------
-void SetFormatsAndHeader(int csep, const char *sep)
+/***************************************************************/
+/**  Defines format for variables in output file and header   **/
+/***************************************************************/
+void VitessParameters()
 {
-  switch (ePrgFormat)
-  { case VT_MCSTAS_FMT: McStasParameters(); break;
-    case VT_MCNPX_FMT : MCNPXParameters();  break;
-    default: ; // nothing to do for VITESS
-  }
+  const char* pSep=NULL;   // separator
+  int         iSep=0;      // index of formats
+
+  if (eSeparator==VT_TABULATOR)
+    pSep = "\t";
+  else if (eSeparator==VT_BLANK)
+    pSep = " ";
+  else
+    Error("Separator has unknown value");
 
   if (pOutFile)
   {
-    fputs("#", pOutFile);
-    if (eSeparator==VT_TABULATOR) 
+    if (bHeader) fputs("#", pOutFile);
+    if (eSeparator==VT_TABULATOR)
     { // Tabular
-      if (eDatFormat==VT_FLOAT) 
+      if (eDatFormat==VT_FLOAT)
       { // float
-        if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
-        if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
-        if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
-        if (bF_cTOF)       { SP(form[cTOF],    "%7.3f");     FP("TOF"); }
-        if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("lambda"); }
-        if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP("count_rate"); }
+        if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ ") }
+        if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc") }
+        if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color") }
+        if (bF_cTOF)       { SP(form[cTOF],    "%9.5f");     FP("   TOF   ") }
+        if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP(" lambda ") }
+        if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP(" count_rate") }
         if (bF_cPosition)  {
-          SP(form[cPosX],   "%8.4f");     FP("pos_x");
-          SP(form[cPosY],   "%8.4f");     FP("pos_y");
-          SP(form[cPosZ],   "%8.4f");     FP("pos_z"); }
+          SP(form[cPosX],   "%8.4f");     FP("  pos_x ");
+          SP(form[cPosY],   "%8.4f");     FP("  pos_y ");
+          SP(form[cPosZ],   "%8.4f");     FP("  pos_z "); }
         if (bF_cDirection) {
-          SP(form[cDirX],   "%9.6f");     FP("dir_x");
-          SP(form[cDirY],   "%9.6f");     FP("dir_y");
-          SP(form[cDirZ],   "%9.6f");     FP("dir_z"); }
+          SP(form[cDirX],   "%9.6f");     FP("  dir_x  ");
+          SP(form[cDirY],   "%9.6f");     FP("  dir_y  ");
+          SP(form[cDirZ],   "%9.6f");     FP("  dir_z  "); }
         if (bF_cSpin)      {
           SP(form[cSpinX],  "%4.1f");     FP("sp_x");
           SP(form[cSpinY],  "%4.1f");     FP("sp_y");
           SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
-      } 
+      }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
         if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
-        if (bF_cTOF)       { SP(form[cTOF],    "%.5e");      FP("TOF"); }
-        if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("lambda"); }
+        if (bF_cTOF)       { SP(form[cTOF],    "%.5e");      FP("    TOF   "); }
+        if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("  lambda  "); }
         if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP("count_rate"); }
         if (bF_cPosition)  {
-          SP(form[cPosX],   "% .5e");     FP("pos_x");
-          SP(form[cPosY],   "% .5e");     FP("pos_y");
-          SP(form[cPosZ],   "% .5e");     FP("pos_z"); } 
+          SP(form[cPosX],   "% .5e");     FP("   pos_x   ");
+          SP(form[cPosY],   "% .5e");     FP("   pos_y   ");
+          SP(form[cPosZ],   "% .5e");     FP("   pos_z   "); }
         if (bF_cDirection) {
-          SP(form[cDirX],   "% .5e");     FP("direction_x");
-          SP(form[cDirY],   "% .5e");     FP("direction_y");
-          SP(form[cDirZ],   "% .5e");     FP("direction_z"); }
+          SP(form[cDirX],   "% .5e");     FP(" direction_x");
+          SP(form[cDirY],   "% .5e");     FP(" direction_y");
+          SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
         if (bF_cSpin)      {
-          SP(form[cSpinX],  "% .5e");     FP("spin_x");
-          SP(form[cSpinY],  "% .5e");     FP("spin_y");
-          SP(form[cSpinZ],  "% .5e");     FP("spin_z"); }
+          SP(form[cSpinX],  "% .5e");     FP("   spin_x  ");
+          SP(form[cSpinY],  "% .5e");     FP("   spin_y  ");
+          SP(form[cSpinZ],  "% .5e");     FP("   spin_z  "); }
       }
-      else
-      { Error("Data format not yet implemented");
-      } // end eDatFormat
-    } 
-    else if (eSeparator==VT_BLANK) 
+    }
+    else if (eSeparator==VT_BLANK)
     { // Space
-      if (eDatFormat==VT_FLOAT) 
+      if (eDatFormat==VT_FLOAT)
       { // float
         if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
-        if (bF_cTOF)       { SP(form[cTOF],    " %7.3f");    FP("    TOF"); }
-        if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("  lambda"); }
+        if (bF_cTOF)       { SP(form[cTOF],    " %9.5f");    FP("     TOF "); }
+        if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("  lambda "); }
         if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP(" count_rate"); }
-        if (bF_cPosition)  { SP(form[cPosX],   " %8.4f");    FP("    pos_x");
-                             SP(form[cPosY],   "%8.4f");     FP("   pos_y");
-                             SP(form[cPosZ],   "%8.4f");     FP("   pos_z"); }
+        if (bF_cPosition)  { SP(form[cPosX],   " %8.4f");    FP("   pos_x");
+          SP(form[cPosY],   "%8.4f");     FP("   pos_y");
+          SP(form[cPosZ],   "%8.4f");     FP("   pos_z"); }
         if (bF_cDirection) { SP(form[cDirX],   " %9.6f");    FP("     dir_x");
-                             SP(form[cDirY],   "%9.6f");     FP("    dir_y");
-                             SP(form[cDirZ],   "%9.6f");     FP("    dir_z"); }
-        if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("  sp_x");
-                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
-      } 
+          SP(form[cDirY],   "%9.6f");     FP("    dir_y");
+          SP(form[cDirZ],   "%9.6f");     FP("    dir_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("   sp_x");
+          SP(form[cSpinY],  "%4.1f");     FP("sp_y");
+          SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+      }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
         if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
@@ -529,20 +914,17 @@ void SetFormatsAndHeader(int csep, const char *sep)
         if (bF_cTOF)       { SP(form[cTOF],    " %.5e");     FP("     TOF"); }
         if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("       lambda"); }
         if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP(" count_rate"); }
-        if (bF_cPosition)  { SP(form[cPosX],   " % .5e");    FP("         pos_x");
-                             SP(form[cPosY],   "% .5e");     FP("       pos_y");
-                             SP(form[cPosZ],   "% .5e");     FP("       pos_z"); }
-        if (bF_cDirection) { SP(form[cDirX],   " % .5e");    FP("  direction_x");
-                             SP(form[cDirY],   "% .5e");     FP(" direction_y");
-                             SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
-        if (bF_cSpin)      { SP(form[cSpinX],  " % .5e");    FP("       spin_x");
-                             SP(form[cSpinY],  "% .5e");     FP("      spin_y");
-                             SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
+        if (bF_cPosition)  { SP(form[cPosX],   " % .5e");    FP("       pos_x");
+          SP(form[cPosY],   "% .5e");     FP("       pos_y");
+          SP(form[cPosZ],   "% .5e");     FP("       pos_z"); }
+        if (bF_cDirection) { SP(form[cDirX],   " % .5e");    FP("     direction_x");
+          SP(form[cDirY],   "% .5e");     FP(" direction_y");
+          SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  " % .5e");    FP("    spin_x");
+          SP(form[cSpinY],  "% .5e");     FP("      spin_y");
+          SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
       }
-      else
-      { Error("Data format not yet implemented");
-      } // end eDatFormat
-    } 
+    }
     else
     { Error("Separator has unknown value");
     } // end Separator
@@ -551,86 +933,192 @@ void SetFormatsAndHeader(int csep, const char *sep)
   } // end if (pOutFile)
 }
 
-
-short McStasParameters()
+void McStasParameters()
 {
   bF_cID  = bF_cTrc    = bF_cColor    = bF_cLambda    = FALSE;
   bF_cTOF = bF_cCounts = bF_cPosition = bF_cDirection = bF_cSpin = TRUE;
 
-  return(TRUE);
+  if (eSeparator==VT_BLANK)
+  { if (eDatFormat==VT_FLOAT)
+    { sHeader  = "#   weight        pos_x     pos_y     pos_z     speed_x  speed_y   speed_z      TOF       P_x  P_y  P_z \n";
+      sUnits   = "#    [n/s]         [m]       [m]       [m]       [m/s]    [m/s]     [m/s]       [s]       [1]  [1]  [1] \n";
+      sOutform = "%13.6e  %9.6f %9.6f %9.6f  %8.3f %8.3f %10.3f  %11.9f  %4.1f %4.1f %4.1f";
+    }
+    else
+    { sHeader  = "#   weight         pos_x         pos_y         pos_z         speed_x       speed_y       speed_z          TOF            P_X           P_Y           P_Z \n";
+      sUnits   = "#    [n/s]          [cm]          [cm]          [cm]          [m/s]         [m/s]         [m/s]           [s]            [1]           [1]           [1] \n";
+      sOutform = "%13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e  %13.6e %13.6e %13.6e";
+    }
+  }
+  else
+  { if (eDatFormat==VT_FLOAT)
+    { sHeader  = "#   weight\t   pos_x\t   pos_y\t   pos_z\t  speed_x\t  speed_y\t   speed_z\t    TOF \t  P_x\t P_y\t P_z \n";
+      sUnits   = "#    [n/s]\t    [m] \t    [m] \t    [m] \t   [m/s] \t   [m/s] \t    [m/s] \t    [s] \t  [1]\t [1]\t [1] \n";
+      sOutform = "%13.6e\t%9.6f\t%9.6f\t%9.6f\t%8.3f\t%8.3f\t%10.3f\t%11.9f\t %4.1f\t%4.1f\t%4.1f";
+    }
+    else
+    { sHeader  = "#    weight\t    pos_x\t     pos_y\t    pos_z\t   speed_x\t   speed_y\t   speed_z\t      TOF\t      P_X\t      P_Y\t      P_Z \n";
+      sUnits   = "#     [n/s]\t     [cm]\t      [cm]\t     [cm]\t    [m/s] \t    [m/s] \t    [m/s] \t      [s]\t      [1]\t      [1]\t      [1] \n";
+      sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
+    }
+  }
 }
 
-short MCNPXParameters()
+void MCNPXParameters()
 {
   bF_cID  = bF_cTrc    = bF_cColor    = bF_cLambda    = FALSE;
   bF_cTOF = bF_cCounts = bF_cPosition = bF_cDirection = bF_cSpin = TRUE;
 
-  return(TRUE);
+  if (eSeparator==VT_BLANK)
+  { if (eDatFormat==VT_FLOAT)
+    { sHeader  = "# pos_x    pos_y    pos_z      dir_x     dir_y     dir_z          E          counts         time  \n";
+      sUnits   = "#  [cm]     [cm]     [cm]       [1]       [1]       [1]         [MeV]          [1]        [1e-8s] \n";
+      sOutform = "%8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f  %13.6e %13.6e %13.6e";
+    }
+    else
+    {
+      sHeader  = "#    pos_x         pos_y         pos_z          dir_x         dir_y         dir_z            E           counts          time  \n";
+      sUnits   = "#     [cm]          [cm]          [cm]           [1]           [1]           [1]           [MeV]           [1]         [1e-8s] \n";
+      sOutform = "%13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e  %13.6e  %13.6e";
+    }
+  }
+  else
+  { if (eDatFormat==VT_FLOAT)
+    { sHeader  = "# pos_x  \t   pos_y\t   pos_z\t   dir_x\t   dir_y\t   dir_z\t      E  \t   counts\t    time   \n";
+      sUnits   = "#  [cm]  \t    [cm]\t    [cm]\t    [1] \t    [1] \t    [1] \t    [MeV]\t     [1] \t   [1e-8s] \n";
+      sOutform = "%8.4f\t%8.4f\t%8.4f\t%9.6f\t%9.6f\t%9.6f\t%13.6e\t%13.6e\t%13.6e";
+    }
+    else
+    {
+      sHeader  = "#    pos_x\t    pos_y\t    pos_z\t    dir_x\t    dir_y\t    dir_z\t      E  \t    counts\t     time  \n";
+      sUnits   = "#     [cm]\t     [cm]\t     [cm]\t     [1] \t     [1] \t     [1] \t    [MeV]\t      [1] \t   [1e-8s] \n";
+      sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
+    }
+  }
 }
 
-
-// ------------------------------------
-//  Convert VITESS to McStas trajectory 
-// ------------------------------------
-
-short ConvertVitess2McStas(Neutron* pMcNeutron, const Neutron* pVitNeutron)
+void MCNP6Parameters()
 {
-	double  velocity;      // velocity of the neutron  [m/s]
+  bF_cID  = bF_cTrc    = bF_cColor    = bF_cLambda    = FALSE;
+  bF_cTOF = bF_cCounts = bF_cPosition = bF_cDirection = bF_cSpin = TRUE;
 
-	// initialization			                      
-	memcpy(pMcNeutron, pVitNeutron, sizeof(Neutron));        
+  if (eSeparator==VT_BLANK)
+  { if (eDatFormat==VT_FLOAT)
+    { sHeader  = "# History       ID         weight          E            time        pos_x    pos_y    pos_z     dir_x     dir_y    surface \n";
+      sUnits   = "#                            [1]         [MeV]        [1e-8s]        [cm]     [cm]     [cm]      [1]       [1]       [1]   \n";
+      sOutform = "%10.0f %10.0f  %13.6e %13.6e %13.6e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.1f";
+    }
+    else
+    {
+      sHeader  = "#   History          ID           weight          E            time          pos_x         pos_y         pos_z          dir_x        surface        dir_z \n";
+      sUnits   = "#                                  [1]          [MeV]        [1e-8s]          [cm]          [cm]          [cm]           [1]           [1]           [1]  \n";
+      sOutform = "%13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e";
+    }
+  }
+  else
+  { if (eDatFormat==VT_FLOAT)
+    { sHeader  = "# History\t    ID   \t   weight\t      E  \t     time \t pos_x  \t   pos_y\t   pos_z\t   dir_x \t  dir_y \t surface\t \n";
+      sUnits   = "#        \t         \t     [1] \t    [MeV]\t   [1e-8s]\t  [cm]  \t    [cm]\t    [cm]\t    [1]  \t   [1]  \t   [1]  \t \n";
+      sOutform = "%10.0f\t%10.0f\t%13.6e\t%13.6e\t%13.6e\t%8.4f\t%8.4f\t%8.4f\t%9.6f\t%9.6f\t%9.1f";
+    }
+    else
+    {
+      sHeader  = "#   History\t      ID \t   weight\t      E  \t     time \t    pos_x\t    pos_y\t    pos_z\t    dir_x\t    dir_y\t   surface\t \n";
+      sUnits   = "#          \t         \t     [1] \t    [MeV]\t   [1e-8s]\t     [cm]\t     [cm]\t     [cm]\t     [1] \t     [1] \t     [1]  \t \n";
+      sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
+    }
+  }
+}
 
-	pMcNeutron->Time /= 1000.0;            // unit ms -> s
 
-	RotVit2Mc(&pMcNeutron->Position, &pVitNeutron->Position);
-	RotVit2Mc(&pMcNeutron->Vector,   &pVitNeutron->Vector);
-	RotVit2Mc(&pMcNeutron->Spin,     &pVitNeutron->Spin);
+/***************************************************/
+/**  Conversion from VITESS to McStas trajectory  **/
+/***************************************************/
+short ConvertVitess2McStas(McNeutron* pMcNeutron, const Neutron* pVitNeutron)
+{
+  double  velocity;      // velocity of the neutron  [m/s]
 
-	velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
-	MultiplyByScalar(pMcNeutron->Vector, velocity);     
-	MultiplyByScalar(pMcNeutron->Position, 0.01);             // unit    cm -> m
+  // initialization
+  memset(pMcNeutron, '\0', sizeof(McNeutron));
+
+  velocity = 10.0 * V_FROM_LAMBDA(pVitNeutron->Wavelength); // unit cm/ms -> m/s
+  pMcNeutron->Time   = pVitNeutron->Time/1000.0;            // unit ms -> s
+  pMcNeutron->Weight = pVitNeutron->Probability;
+
+  RotVit2Mc(&pMcNeutron->Position, &pVitNeutron->Position);
+  RotVit2Mc(&pMcNeutron->Speed,    &pVitNeutron->Vector);
+  RotVit2Mc(&pMcNeutron->Spin,     &pVitNeutron->Spin);
+
+  MultiplyByScalar(pMcNeutron->Speed, velocity);
+  MultiplyByScalar(pMcNeutron->Position, 0.01);             // unit    cm -> m
 
   return(TRUE);
 }
 
-// ------------------------------------------
-// conversion from VITESS to MCPL parameters
-// ------------------------------------------
+/**************************************************/
+/** Conversion from VITESS to MCPL parameters    **/
+/**************************************************/
 short ConvertVitess2MCPL(mcpl_particle_t* pMCPLNeutron, const Neutron* pVitNeutron)
 {
-	// initialization			                      
-	memset(pMCPLNeutron, '\0', sizeof(mcpl_particle_t));        
+  // initialization
+  memset(pMCPLNeutron, '\0', sizeof(mcpl_particle_t));
 
-	pMCPLNeutron->pdgcode= NEUTRON_ID;
-	pMCPLNeutron->ekin   = 1.0e-12 * ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength); // lambda -> energy;  unit µeV -> MeV
-	pMCPLNeutron->time   = pVitNeutron->Time;                                     // unit ms -> s
-	pMCPLNeutron->weight = pVitNeutron->Probability;
+  pMCPLNeutron->pdgcode= NEUTRON_ID;
+  pMCPLNeutron->ekin   = 1.0e-12 * ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength); // lambda -> energy;  unit microeV -> MeV
+  pMCPLNeutron->time   = pVitNeutron->Time;                                     // unit ms -> s
+  pMCPLNeutron->weight = pVitNeutron->Probability;
 
-	RotVit2Mc(&pMCPLNeutron->position,     &pVitNeutron->Position);
-	RotVit2Mc(&pMCPLNeutron->direction,    &pVitNeutron->Vector);
-	RotVit2Mc(&pMCPLNeutron->polarisation, &pVitNeutron->Spin);
+  CopyVector( pVitNeutron->Position, pMCPLNeutron->position);
+  CopyVector(pVitNeutron->Vector, pMCPLNeutron->direction);
+  CopyVector(pVitNeutron->Spin, pMCPLNeutron->polarisation);
 
   return(TRUE);
 }
 
-// ------------------------------------------
-// conversion from VITESS to MCNPX parameters
-// ------------------------------------------
-short ConvertVitess2MCNPX (Neutron* pMcnpNeutron, const Neutron* pVitNeutron)
+/**************************************************/
+/**  Conversion from VITESS to MCNP parameters  **/
+/**************************************************/
+short ConvertVitess2MCNPX(McnpxNeutron* pMcnpNeutron, const Neutron* pVitNeutron)
 {
-  memcpy(pMcnpNeutron, pVitNeutron, sizeof(Neutron));
+  // initialization
+  memset(pMcnpNeutron, '\0', sizeof(McnpxNeutron));
 
-  pMcnpNeutron->Wavelength  =  ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) // lambda -> energy
-                             * 1.0e-12;     // unit µeV -> MeV
-  pMcnpNeutron->Time        *= 1.0e+05;     // unit  ms -> shakes = 1.0e-08 s
+  CopyVector(pVitNeutron->Position, pMcnpNeutron->Position);
+  CopyVector(pVitNeutron->Vector  , pMcnpNeutron->Vector  );
+  pMcnpNeutron->Energy = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit microeV -> MeV
+  pMcnpNeutron->Counts = pVitNeutron->Probability / FactInt;                      //  n/s -> counts
+  pMcnpNeutron->Shakes = 1.0e+05 *pVitNeutron->Time;                              // unit  ms -> shakes = 1.0e-08 s
+
+  return(TRUE);
+}
+
+short ConvertVitess2MCNP6(Mcnp6Neutron* pMcnpNeutron, const Neutron* pVitNeutron)
+{
+  // initialization
+  memset(pMcnpNeutron, '\0', sizeof(Mcnp6Neutron));
+
+  pMcnpNeutron->History = 0.0;
+  pMcnpNeutron->ID      = 8.0 * pVitNeutron->Vector[2]/fabs(pVitNeutron->Vector[2]);
+  pMcnpNeutron->Counts  = pVitNeutron->Probability / FactInt;                      //  n/s -> counts
+  pMcnpNeutron->Energy  = ENERGY_FROM_LAMBDA(pVitNeutron->Wavelength) * 1.0e-12;   // lambda -> energy,  unit microeV -> MeV
+  pMcnpNeutron->Shakes  = 1.0e+05 * pVitNeutron->Time;                             // unit  ms -> shakes = 1.0e-08 s
+  pMcnpNeutron->DirX    = pVitNeutron->Vector[0];
+  pMcnpNeutron->DirY    = pVitNeutron->Vector[1];
+  if (iSurface==MISSING) pMcnpNeutron->Surface = 0.0;
+  else                   pMcnpNeutron->Surface = (double) iSurface;
+
+  CopyVector(pVitNeutron->Position, pMcnpNeutron->Position);
 
   return(TRUE);
 }
 
 
+/****************************************************************/
+/**  Vector transfer from VITESS to McStas co-ordinate system  **/
+/****************************************************************/
 void RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector)
 {
-	(*pMcVector)[0] = (*pVitVector)[1];
-	(*pMcVector)[1] = (*pVitVector)[2];
-	(*pMcVector)[2] = (*pVitVector)[0];
+  (*pMcVector)[0] = (*pVitVector)[1];
+  (*pMcVector)[1] = (*pVitVector)[2];
+  (*pMcVector)[2] = (*pVitVector)[0];
 }

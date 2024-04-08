@@ -4,10 +4,6 @@
 /* 0.9   Apr 2011  Klaus Lieutenant  1st version                                            */
 /********************************************************************************************/
 
-#ifdef _MSC_VER
- #define VT_WINDOWS
-#endif 
-
 #include "calc_sim_fom.h"
 #include "init.h"
 
@@ -16,12 +12,6 @@ double arP[MAX_SIM][NMAX+1], // function F to parameter set P
        arF[MAX_SIM][IMAX+1]; // for sets 0 ... nSim-1 
 
 extern char sFomPrg[FN_LEN];
-
-#ifdef VT_WINDOWS
- char cSlash = '\\';
-#else
- char cSlash = '/';
-#endif
 
 static char sPipePrg[FN_LEN]="gener_pipe",
             sGridPrg[FN_LEN]="./gridrun -o";
@@ -33,7 +23,6 @@ static char sPipePrg[FN_LEN]="gener_pipe",
 static short WriteAllP(const char* sFilename, const short mMin, const short mMax, const short nPar);
 static short ReadAllF (const char* sFilename, const short mMin, const short mMax);
 static short AddPathAndExt(char* sCmdName);
-static void  ChangeSlash(char* pStr);
 
 
 /*********************************************************************/
@@ -253,17 +242,3 @@ short AddPathAndExt(char* sCmdName)
   return(rc);
 }
 
-
-/**************************************************************/
-/* Change of the Slashes to the right ones, e.g. '\' to '/'   */
-/**************************************************************/
-static void ChangeSlash(char* pStr)
-{
-	int k, klen;
-
-	klen = strlen(pStr);
-	for (k=0; k < klen; k++)
-	{	if (pStr[k]=='/' || pStr[k]=='\\')
-			pStr[k]=cSlash;
-	}
-}

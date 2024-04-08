@@ -24,7 +24,7 @@ If you select a given template, you override the default plot.
 }
 
 helpItem {Plot template example} {
-If you want to plot 2D data (xyz format) with Gnuplot, using a simple red color table, you could
+If you want to plot 2D data (xyz format only!) with Gnuplot, using a simple red color table, you could
 edit the template file gnu2D with those 3 lines
 set palette defined (0 "black", 1 "red")
 set pm3d map
@@ -42,11 +42,13 @@ or, if the gnuplot process may silently vanish after 10 minutes
 #!/usr/bin/sh
 gnuplot -e "plot '$PFILENAME'; pause 600"
 
-
+If you have Python + Matplotlib installed, you may use the shell2D template provided.
+Python code to read monitor Matrix 2D files may be found in FILES/Scripts/rshow.py . 
 
 Those variables are substituted before execution of a template:
 $PFILENAME  is the name of the file to be plotted
-$PPATH      is the parameter directory 
+$PPATH      is the parameter directory
+$PPWD       directory where Vitess is installed
 $PMODULE    name of the pipe module, for autoplots after pipe execution  
 $PSKIP      number of lines starting with \# in the beginning of the file
 $PROWS      number of rows with data in the file
@@ -169,13 +171,22 @@ proc show2Dfile {fname} {
 
   gets $f ins
 
-  # skip #Monitor line
-  if [regexp {^#Monitor} $ins] {
-    gets $f ins
-  }
+  # skip header
+  set is_xyz [regexp {Format: xyz} $ins]
+  if [regexp {^# 1D} $ins] {gets $f ins}
+  if [regexp {^# 2D} $ins] {gets $f ins}
+  if [regexp {^#Monitor} $ins] {gets $f ins}
+  if [regexp {^# Monitor} $ins] {gets $f ins}
+  if [regexp {^# x-axis} $ins] {gets $f ins}
+  if [regexp {^# y-axis} $ins] {gets $f ins}
+  if [regexp {^# Date} $ins] {gets $f ins}
+  if [regexp {^# Total} $ins] {gets $f ins}
+  if [regexp {^# Within} $ins] {gets $f ins}
+  if [regexp {^# Bunches} $ins] {gets $f ins}
+  if [regexp {^# Data} $ins] {gets $f ins}
   
   set ll [eval list $ins]
-  if [string compare "#x y z" "$ll"] {
+  if {!$is_xyz &&  [string compare "#x y z" "$ll"]} {
     set xl $ll;	# first line and first column are tic values
     while {[gets $f ins] > 0} {
       incr rows
@@ -637,7 +648,7 @@ proc macroExpand {contentvar itemsvar fn} {
   upvar $itemsvar items
 
   # first find items present in content
-  foreach item {PATH FILENAME MODULE SKIP ROWS COLS} {
+  foreach item {PATH FILENAME MODULE SKIP ROWS COLS PWD} {
     set s \\\$
     append s P$item
     if [regexp $s $content] {set la(P$item) 1}
@@ -651,6 +662,7 @@ proc macroExpand {contentvar itemsvar fn} {
       break
     }
   }
+  set la(PPWD) [globVal SourceDirectory]
   set la(PPATH) [entryVal defdirectory]
   set la(PFILENAME) $fn
   set la(PMODULE) mymodule
@@ -747,9 +759,10 @@ proc showPlotFile {name {topt 0}} {
   set ftype [checkPlotfile $name]
 
   if {$ftype == ""} return
-  if {$ftype == "matrix" || $topt == 2} {
-    # if requested, or if the file is a 2D monitor file in matrix format,
-    # gnuplot may not be used to plot, but we use our own Tcl/Tk code
+  if {($ftype == "matrix" && $topt != "shell2D") || $topt == 2} {
+    # If requested, or if the file is a 2D monitor file in matrix format,
+    # and no shell2D template is present, gnuplot may not be used. 
+    # We use our own Tcl/Tk code here.
     show2Dfile $name
     return
   }

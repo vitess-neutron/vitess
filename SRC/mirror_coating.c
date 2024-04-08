@@ -3,6 +3,9 @@
 /*  Generating reflectivity files for mirror coating as used in the                        */
 /*  modules 'guide' and 'bender' from parameters m, R_0, R_m, Q_c and W                    */
 /*                                                                                         */
+/* The free non-commercial use of these routines is granted provided due credit is given   */
+/* to the authors.                                                                         */
+/*                                                                                         */
 /* 1.0  Sep 2003  K. Lieutenant  initial version                                           */
 /* 1.1  Nov 2003  K. Lieutenant  more precise Q-value given                                */
 /* 1.2  Mar 2004  K. Lieutenant  files written to parameter directory or install_dir/FILES;*/
@@ -10,51 +13,79 @@
 /* 1.3  Nov 2005  K. Lieutenant  parameter W added                                         */
 /* 1.4  May 2012  K. Lieutenant  parameter beta added                                      */
 /* 1.5  Sep 2012  K. Lieutenant  new treatment of case m<1 and correction: output formula  */
+/* 2.0  Sep 2019  K. Lieutenant  new standard reflect., strict use of 'general.h/c', header*/
+/* 2.1  Mar 2020  K. Lieutenant  new central parameters and functions                      */
 /*******************************************************************************************/
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <ctype.h>
+#include <time.h>
+
 #include "init.h"
 
-#define THETA_NI 0.099138
-#define PI       3.1415926535898
 
-double GetDouble(const char* pText);
-void   GetString(char* pString, const char* pText);
-double RoundD   (const double in, const int nDigits);
+/************************************/
+/** Definitions, structures, enums **/
+/************************************/
+#define PI       3.14159265358979323846
 
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+short  GetShort  (const char* pText);                // Reads short value from stdin   
+double GetDouble (const char* pText);                // Reads double value from stdin  
+void   GetString (char* pString, const char* pText); // Reads string from stdin        
+void   Mode2Text (char* sReflMode, VtInMod iMode);   // Converts enum for reflectivity calculation to text
+
+char*  FullInName(const char* filename);             // returns path\name.ext for input directory   located in init.c
+void   setParDirectory (char *a);
+
+
+/******************************/
+/** Program                  **/
+/******************************/
 int main(int argc, char* argv[])
 {
-	double  M,           // m      : official factor of supermirror
-          M2,          // m'     : real SM factor R(Q) profile
-	        Q,           // Q      : momentum transfer of the reflection
-	        Qc,          // Q_c    : crit. momentum transfer  (see figure)
-	        QcNi,        // Q_c(Ni): crit. momentum transfer of nickel
-	        W,           // W      : width of cut-off  [1/Ang]
-	        ThetaC,      // theta_c: crit. angle for lambda = 1 Angstroem
-	        ThetaM,      // theta_max = m * theta_c(Ni)        (see figure)
-	        ThetaW,      //
-	        Theta,       // theta  : reflection angle for lambda = 1 Angstroem
-	        R0,          // R_0    : reflectivity for 0 <= Q <= Q_c
-	                     //                 (or 0 <= theta <= theta_c)
-	        Rm=0,        // R_m    : reflectivity for Q = m * Q_c(Ni)
-	        R,           // R      : reflectivity for Q or theta,
-	        alpha =0.0,  // slope Delta_R / Delta_theta
-	        alphaQ=0.0,  // slope Delta_R / Delta_Q
-          betaQ =0.0;  // quadratic term to describe R(q)
-  short   bSN=FALSE;   // criterion: use SwissNeutronics parameter
-	long    i, nLen;
-	FILE*   pFile;
-	char    sFileName[50]="",
-	        sSNPar[50]="",
-	       *pFullName;
+	double  mO=1.0,           // m      : official m-value of supermirror
+          mT=1.0,           // m'     : true m-value from the R(Q) profile
+          m,                // m      : current m value in loop
+	        Q,                // Q      : momentum transfer of the reflection
+	        Qc=QC_NI,         // Q_c    : crit. momentum transfer  (see figure)
+          thetaNi,          // theta_Ni reflection angle for 1 Ang and Q_c(Ni)
+	        theta,            // theta  : reflection angle for lambda = 1 Ang
+	        W=0.00157,        // W      : width of cut-off  [1/Ang]
+	        R0=0.995,         // R_0    : reflectivity for 0 <= Q <= Q_c
+	                          //                 (or 0 <= theta <= theta_c)
+	        Rm=0.0,           // R_m    : reflectivity for Q = m * Q_c(Ni)
+	        R =0.0;           // R      : reflectivity for Q or theta,
+  double  aM[ROFQ_MAX],     // array of m values read from 2 column file
+          aQ[ROFQ_MAX],     // array of Q values read from 2 column file
+          aR[ROFQ_MAX];     // array of R values read from 2 column file
+  int     nVals=0;          // number of Q and R values from 2 column file
+  VtInMod eMode=VT_PAR_IN;  // mode of reflectivity calculation
+	long    i, nLen=0;
+	FILE   *pFileIn, 
+         *pFileOut;
+	char   *pFullName,
+         *sDash="---------------------------------------------------------------------------------------------",
+          sMode[CHAR_BUF_SMALL]="",
+          sText[CHAR_BUF_SMALL]="",
+          sFileIn [50]="",
+          sFileOut[50]="";
 
-	Init(argc, argv, VT_TOOL);
+  _eModule=MCN_TOOL_GEN_COAT;
 
-	printf("------------------------------------------------------------------\n");
-	printf("Generation of a reflectivity file as used in 'Guide' and 'Bender' \n");
-	printf("------------------------------------------------------------------\n\n");
+	Init(argc, argv, _eModule);
+  for (i=1; i < ROFQ_MAX; i++)
+  { aQ[i]=0.0;
+    aR[i]=0.0;
+  }
+  thetaNi = Degrees(asin(QC_NI/(4*PI)));
+
+  printf("%s\nGeneration of a reflectivity file as used in 'Guide' and 'Bender'\n%s\n", sDash, sDash);
 //	printf("                                              ");
 //	printf("    |                                         ");
 //	printf(" R_0|_____________                            ");
@@ -76,106 +107,126 @@ int main(int argc, char* argv[])
 //  cut-off at m*theta_c,
 //      not at m*theta_c(Ni) !!
 
-// read:
-	GetString(sSNPar,"quadratic Swiss Neutronics description  ('yes'/'no') ");
-	M    = GetDouble("m   = Qmax / Qmax(Ni)                  ");
+  // get parameters and determine array length
+	eMode = GetShort ("Calculation mode:\n 1: standard reflectivities \n 2: from R(m) file         \n 3: from R(Q) file          \n 4: old quadr. SwissNeutr.  \n 5: from 5 parameters       ");
 
-  if (strcmp(sSNPar, "yes")==0 || strcmp(sSNPar, "Yes")==0 || strcmp(sSNPar, "Y")==0 || strcmp(sSNPar, "y")==0) bSN=TRUE;
-  if (bSN)
+  if (eMode!=VT_M_R_COL && eMode!=VT_Q_R_COL)
+    mO = GetDouble("m   = Qmax / Qmax(Ni)                  ");
+
+  if (eMode==VT_PAR_IN)
+	{ Qc = GetDouble("Q_c = 4*pi*sin(theta_c)/lambda [1/Ang] \n     (0.0217   for Ni)                 ");
+	  W  = GetDouble("width W of cut-off             [1/Ang] \n(typical 0.0015; polygonal shape: 0.0) ");
+	  R0 = GetDouble("reflectivity(Q=0)                      ");
+    if (mO > 1.0)
+	    Rm = GetDouble("reflectivity(Q=m*Q_c(Ni)) for W=0      ");
+    else
+      Rm = R0;
+    mT = mO;
+  }
+  else if (eMode==VT_REFL_STD)
   {
-  	Qc = 0.0217;
-    W  = 0.0022 - 0.0002*M;
-  	R0 = 0.99;
-    M2 = M*0.9853 + 0.1978;
+    W  = 0.00157;             // only needed for memory allocation
+    mT = mO + 0.14;           // only needed for memory allocation
+  }
+  else if (eMode==VT_SN_QUD)
+  {
+    W  = 0.0022 - 0.0002*mO;  // only needed for memory allocation
+    mT = mO*0.9853 + 0.1978;  // only needed for memory allocation
+  }
+  else if (eMode==VT_M_R_COL)
+  {
+    GetString(sFileIn, "Name of the 2-column mirror file R(m)  ");
+    mO      = GetDouble("m-value of the coating described there ");
+	  pFileIn = OpenInputFile(sFileIn, FALSE, "r");
+	  if (pFileIn!=NULL)
+	  {
+      nVals = ReadRofQ(pFileIn, aM, aR);
+
+      fclose(pFileIn);
+    }
+    mT = aM[nVals-1];
+  }
+  else if (eMode==VT_Q_R_COL)
+  {
+    GetString(sFileIn, "Name of the 2-column mirror file R(Q)  ");
+    mO      = GetDouble("m-value of the coating described there ");
+	  pFileIn = OpenInputFile(sFileIn, FALSE, "r");
+	  if (pFileIn!=NULL)
+	  {
+      nVals = ReadRofQ(pFileIn, aQ, aR);
+
+      fclose(pFileIn);
+    }
+    mT=aM[nVals-1]/QC_NI;
   }
   else
-	{ Qc = GetDouble("Q_c = 4*pi*sin(theta_c)/lambda [1/Ang] \n     (0.0217   for Ni)                 ");
-	  W  = GetDouble("width W of cut-off             [1/Ang] \n(typical 0.003; 0 for polygonal shape) ");
-	  R0 = GetDouble("reflectivity(Q=0)                      ");
-	  Rm = GetDouble("reflectivity(Q=m*Q_c(Ni)) for W=0      ");
-    M2 = M;
+  { mT = mO;
+    Error("Unknown calculation mode");
   }
-	GetString(sFileName, "Name of the mirror file                ");
 
-	QcNi = RoundD(4*PI*sin(PI/180.0*THETA_NI)/1.0, 6);
-
-	if (M < 1.0 && Qc > 0.99*QcNi)
-	{	
-		Qc *= M;
-		printf("\nNOTE: m < 1 and Qc=Qc,Ni: therefore  Q_c = %7.5f  set \n\n", Qc);
-	}
-
-	/* write to parameter directory or to FILES in install directory */
-	pFullName = FullParName(sFileName);
-	// if (strcmp(pFullName, sFileName)==0)
-	// 	pFullName = FullInstallName(sFileName, "FILES/");
-	pFile = fopen(pFullName, "w");
+  // number of reflectivity values
+  if (eMode==VT_Q_R_COL)
+    nLen = NumDataPtsQ(aQ[nVals-1]);
+  else if (eMode==VT_M_R_COL)
+    nLen = NumDataPtsM(mT, Qc, 0.0);
+  else
+    nLen = NumDataPtsM(mT, Qc, W);
+  
+  if (nLen > 0)
+  {
+	  /* write to input directory */
+	  GetString(sFileOut, "Name of the output mirror file         ");
+    pFullName = FullInName(sFileOut);
+		
+    pFileOut = fopen(pFullName, "w"); 
+	  if (pFileOut!=NULL)
+	  {
+      // Header
+      GetActDate(sText, DATE_STD);
+      Mode2Text (sMode, eMode);
+      fprintf(pFileOut, "#%s\n# %s\n# %s for m=%4.2f\n", sDash, sText, sMode, mO);
 	
-	if (pFile!=NULL)
-	{
-		ThetaC = 180.0/PI*asin(Qc/(4*PI));
-		ThetaW = 180.0/PI*asin(W/(4*PI));
-		ThetaM = M * ThetaC;
-		nLen   = (long) ((Max(ThetaM,ThetaC) + 6.0*ThetaW)*1000 + 4);
+		  switch (eMode)
+      { case VT_M_R_COL : 
+        case VT_Q_R_COL : sprintf(sText, "2 column file %s read and transferred to Vitess format", sFileIn);
+                                                                                    break;   
+        case VT_REFL_STD: R = ReflTypicalT(sText, 2.0*Qc, mO, TRUE);                break;
+        case VT_SN_QUD  : R = ReflSNT     (sText, 2.0*Qc, mO, TRUE);                break; 
+        case VT_PAR_IN  : R = ReflMirrT   (sText, 2.0*Qc, mO, R0, Rm, W, Qc, TRUE); break;
+      }
+      fprintf(pFileOut, "# %s\n#%s\n", sText, sDash);
 
-		/* slopes in theta and Q */
-    if (bSN)
-    { if (M > 3.0)
-      {
-        alphaQ =  5.0944 + 0.1204*M;
-        betaQ  = 68.1137 - 7.6251*M;
-      }
-      else
-      { alphaQ = M;
-        betaQ  = 0.0;
-      }
-    }
-    else
-    {	if (ThetaM > ThetaC)
-		  {	alpha  = -(Rm - R0) / (ThetaM - ThetaC);
-			  alphaQ = -(Rm - R0) / (M*Qc   - Qc);
+      /* calculate reflectivity for 1 Ang in steps of 0.001 deg
+		     and write 10 values into each line                     */
+		  i=0;
+		  for (theta=0.0; i < nLen; theta+=0.001)
+		  {
+			  i++;
+			  Q = QbyRefl  (1.0, theta);
+        m = theta/thetaNi;
+			  switch (eMode)
+        { case VT_M_R_COL : R = InterpolM       (m, aM, aR, nVals);             break;   
+          case VT_Q_R_COL : R = InterpolQ       (Q, aQ, aR, nVals);             break;   
+          case VT_REFL_STD: R = ReflTypical     (Q, mO);                        break;
+          case VT_PAR_IN  : R = ReflMirrT(sText, Q, mO, R0, Rm, W, Qc, FALSE);  break;
+          case VT_SN_QUD  : R = ReflSNT  (sText, Q, mO, FALSE);                 break; 
+        }
+			  if (10*(i/10) == i)
+				  fprintf(pFileOut, "%6.4f  # theta=%5.3f  m=%5.3f \n", R, RoundP(theta,3), RoundP(m,3));
+			  else
+				  fprintf(pFileOut, "%6.4f ",  R);
 		  }
-    }
+		  fclose(pFileOut);
 
-		/* calculate reflectivity for 1 Ang in steps of 0.001 deg
-		   and write 10 values into each line                     */
-		i=0;
-		for (Theta=0.0; i < nLen; Theta+=0.001)
-		{
-			i++;
-			if (Theta < ThetaC)
-			{	R = R0;
-			}
-			else	
-			{	/* sharp cut-off at m*theta_c(Ni) */
-				if (W==0.0)
-				{	if (Theta > ThetaM)
-						R = 0.0;
-					else
-						R = R0 - alpha*(Theta-ThetaC);
-				}
-				/* McStas function: smooth cut-off at m*theta_c */
-				else
-				{	Q = 4*PI*sin(PI/180.0*Theta)/1.0;
-					R = R0 * 0.5*(1.0-tanh((Q-M2*Qc)/W)) * (1.0 - alphaQ*(Q-Qc) + betaQ*(Q-Qc)*(Q-Qc));
-				}
-			}
-			if (10*(i/10) == i)
-				fprintf(pFile, "%6.4f\n", R);
-			else
-				fprintf(pFile, "%6.4f ",  R);
-		}
-
-    if (W==0)
-		  printf ("\nslope in Q: -%5.3f Ang\n", alphaQ);
-    else
-		  printf("\nR(Q) = %5.3f * 0.5*(1 - tanh((Q-%5.3f*Qc)/%7.5f)) * (1 - %5.3f*(Q-Qc) + %6.3f*(Q-Qc)^2),   Qc=%7.5f 1/Ang\n", R0, M2, W, alphaQ, betaQ, Qc);
-		printf("\nData written to %s\n", pFullName);
-		fclose(pFile);
-	}
-	else
-	{	printf("\nERROR: Output file could not be generated\n(%s)", pFullName);
-	}
+		  printf("\n%s\nData written to %s\n", sText, pFullName); 
+	  }
+	  else
+	  {	printf("\nERROR: Output file %s could not be generated\n", pFullName);
+	  }
+  }
+  else
+  { Error("Calculation did not give a positive number of data points");
+  }
 
 	printf("\n Hit any key to terminate ! \n");
 	getchar();
@@ -190,6 +241,22 @@ int main(int argc, char* argv[])
 }
 
 
+/*******************************************************/
+/** Reads different types of parameters from stdin    **/
+/**   GetShort :   Reads short value from stdin       **/
+/**   GetDouble:   Reads double value from stdin      **/
+/**   GetString:   Reads string from stdin            **/
+/*******************************************************/
+short  GetShort (const char* pText)
+{
+	short nValue;
+	
+	printf("%s ", pText);
+	scanf ("%hd", &nValue);
+
+	return nValue;
+}
+
 double GetDouble(const char* pText)
 {
 	double dValue;
@@ -200,17 +267,25 @@ double GetDouble(const char* pText)
 	return dValue;
 }
 
-void GetString(char* pString, const char* pText)
+void   GetString(char* pString, const char* pText)
 {
 	printf("%s ", pText);
 	scanf ("%s", pString);
 }
 
-double RoundD(const double in, const int nDigits)
-{	
-	double out;
 
-	out = floor(in * pow(10.0, nDigits) + 0.5);
 
-	return out / pow(10.0, nDigits);
+/********************************************************/
+/** Converts enum for reflectivity calculation to text **/
+/********************************************************/
+void Mode2Text(char* sReflMode, VtInMod iMode)
+{
+  switch (iMode)
+  { case VT_REFL_STD: strcpy(sReflMode, "standard reflectivity");       break;
+    case VT_M_R_COL : strcpy(sReflMode, "reflectivity from R(m) file"); break;
+    case VT_Q_R_COL : strcpy(sReflMode, "reflectivity from R(Q) file"); break;
+    case VT_SN_QUD  : strcpy(sReflMode, "quadratic SN reflectivity");   break;
+    case VT_PAR_IN  : strcpy(sReflMode, "reflectivity from 5 parameter McStas function"); break;
+    default         : strcpy(sReflMode, "unknown reflectivity calculation mode");
+  }
 }

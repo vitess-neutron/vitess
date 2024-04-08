@@ -1,0 +1,220 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+sample_s_q:
+  - category:  "sample"
+
+  - sParFile :                  # -S         [-]    parameter file name
+      type:    "file"
+      plottable: false
+      descr:   "sample file"
+      tooltip: "File containing geometry and scattering parameters of the sample\nThese parameters are only used if they are not given as direct input parameters."
+      prefix:  "-S"
+
+  - ScatHor:                  # 0.0 [deg]   horizontal rotation defining the main scattering direction
+      type:    "float"
+      descr:   "angle horiz final [deg]"
+      tooltip: "horizontal rotation defining the (hoizontal) center of the scattering range (usually the center of the detector)"
+      default: 90.0
+      prefix:  "-D"
+      column:  0
+  - ScatVert:                 # 0.0 [deg]   vertical rotation defining the main scattering direction
+      type:    "float"
+      descr:   "angle vert final [deg]"
+      tooltip: "vertical rotation defining the (vertical) center of the scattering range (usually the center of the detector)"
+      default: 60.0
+      prefix:  "-P"
+      column:  1
+  - DelScatHor:                   # 0.0 [deg]   variation DelTheta determining the hor. scat. range [Theta-DelTheta, Theta+DelTheta]
+      type:    "float"
+      descr:   "delta angle horiz [deg]"
+      tooltip: "variation DeltaTheta determining the hor. scattering range [Theta-DeltaTheta, Theta+DeltaTheta]\n 0 deg:left, 180 deg: right"
+      prefix:  "-d"
+      column:  0
+  - DelScatVert:                  # 0.0 [deg]   variation DelPhi determining the vert. scat. range [Phi-DelPhi, Phi+DelPhi]
+      type:    "float"
+      descr:   "delta angle vert [deg]"
+      tooltip: "Variation DeltaPhi determining the vert. scatering range [Phi-DeltaPhi, Phi+DeltaPhi]"
+      default: 10.0
+      prefix:  "-p"
+      column:  1
+
+  - bIncohScat:                     # -I  NO     [-]    flag: shall incoherent scattering be done ?
+      type:    "switch"
+      descr:   "incoherent scattering"
+      tooltip: "yes: activates calculation of incoherent scattering\nno : no incoherent scattering"
+      default:  no
+      column:   0
+      prefix:  "-I"
+  - nRep:                   # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory)
+      type:    "int"
+      descr:   "repetition"
+      min:     1
+      default: 1
+      tooltip: "Repetitions (number of trajectories generated per incoming trajectory)"
+      column:  1
+      prefix:  "-A"
+  - iColor  :                  # -c         [-]    colour of the neutrons scattered from the environment
+      type:    "int"
+      descr:   "colour"
+      tooltip: "Colour of the neutrons scattered by the sample"
+      min:     0
+      column:  0
+      prefix:  "-c"
+  - bTreatAll:                      # -I  NO     [-]    flag: shall neutrons not hitting the sample be treated ?
+      type:    "switch"
+      descr:   "treat all neutrons"
+      tooltip: "no: only neutrons hitting the sample are treated\nyes: neutrons passing by are also treated"
+      default:  no
+      column:   1
+      prefix:  "-a"
+
+  - Title:
+      type:    "title"
+      default: "Modulation of the sample response"
+  - ModulFreq:
+      type:    "float"
+      descr:   "frequency [Hz]"
+      tooltip: "Modulation frequency of the sample response\nif Freq > 0.0, S(Q,t) = S(Q) 1/2 (1 + cos(2*pi*Freq*t + Phase0))"
+      default:  0.0
+      prefix:  "-f"
+      column:  1
+  - ModulPhase:
+      type:    "float"
+      descr:   "initial phase [deg]"
+      tooltip: "Phase of the sample response at t=0\nif Freq > 0.0, S(Q,t) = S(Q) 1/2 (1 + cos(2*pi*Freq*t + Phase0))"
+      default:  0.0
+      prefix:  "-o"
+      column:  1
+
+  - Title:
+      type:    "title"
+      default: "Sample position and geometry"
+  - PosSmplX:                  # -x    0.0  [cm]   center position X of the sample
+      type:    "float"
+      descr:   "x [cm]"
+      tooltip: "Center position X of the sample"
+      default: 30.0
+      column:   0
+      prefix:  "-x"
+  - PosSmplY:                  # -y    0.0  [cm]   center position Y of the sample
+      type:    "float"
+      descr:   "y [cm]"
+      tooltip: "Center position Y of the sample"
+      column:  1
+      prefix:  "-y"
+  - PosSmplZ:                  # -z    0.0  [cm]   center position Z of the sample
+      type:    "float"
+      descr:   "z [cm]"
+      tooltip: "center position Z of the sample"
+      default: 0.0
+      column:  2
+      prefix:  "-z"
+
+  - eSmplGeom:               # VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "sample geometry"
+      tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
+      enum:    "VtSmplGeom"
+      options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+      default: "VT_CYL"
+      prefix:  "-G"
+      column:  0
+
+  - SmplDiam:                  # file  1.0  [cm]   thickness of the sample  (: R_out - R_in)
+      type:    "float"
+      descr:   "thickness or diameter [cm]"
+      tooltip: "Thickness of a cubic sample, or diameter of sphere of cylinder."
+      min:     0.0001
+      default: 0.2
+      column:  0
+      prefix:  "-t"
+  - SmplHeight  :                  # file 20.0  [cm]   outer height of the sample
+      type:    "float"
+      descr:   "height [cm]"
+      tooltip: Height of the sample (not needed for spherical shape)"
+      default: 0.5
+      min:     0.0
+      column:  1
+      prefix:  "-h"
+  - SmplWidth:                  # file 10.0  [cm]   outer diameter of the sample  (: 2*R_out)
+      type:    "float"
+      descr:   "diameter [cm]"
+      tooltip: "Width of a cubic sample"
+      default: 0.5
+      min:     0.0
+      column:  2
+      prefix:  "-w"
+
+  - SmplOrientX:                    # -x 0.0  [cm]   x-component of the sample orientation
+      type:    "float"
+      descr:   "x direction [cm]"
+      tooltip: "x-component of the sample orientation"
+      default: 0.0
+      prefix:  "-X"
+      column:  0
+  - SmplOrientY:                    # -y 0.0  [cm]   y-component of the sample orientation
+      type:    "float"
+      descr:   "y direction [cm]"
+      tooltip: "y-component of the sample orientation"
+      default: 0.0
+      prefix:  "-Y"
+      column:  1
+  - SmplOrientZ:                     # -z 0.0  [cm]   z-component of the sample orientation
+      type:    "float"
+      descr:   "z direction [cm]"
+      tooltip: "z-component of the sample orientation"
+      default: 0.0
+      prefix:  "-Z"
+      column:  2
+
+  - Title:
+      type:    "title"
+      default: "Scattering"
+  - eDataSrc:               # VtDataSrc   DataSrc_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "structure factors"
+      tooltip: "Source of the structure factor data, either 'from file' or 'as function'\nIn the latter case, an adaption of the program and re-compiling may be needed (see Help|sample)"
+      enum:    "VtDataSrc"
+      options: ["VT_FR_FILE", "VT_AS_FCT"]
+      default:  "VT_FR_FILE"
+      prefix:  "-G"
+      column:  0
+  - sStructFile :                  # file       [-]    structure factor file name (of the sample material)
+      type:    "file"
+      plottable: true
+      descr:   "structure factor file"
+      tooltip: "This file contains information to determine the scattering probability for each reflection. The first contains the momentum transfer values Q [1/Ang] and the second the corresponding value for S"
+      prefix:  "-s"
+
+  - MuScatIncoh:                  # file  0.0 [1/cm]  user defined macroscopic incoherent scattering cross section of the sample material
+      type:    "float"
+      descr:   "incoherent scat- tering [1/cm]"
+      tooltip: "Macroscopic incoherent scattering cross section of the sample material. (Needed if 'Incoherent scattering' is chosen.)"
+      default: 0.0
+      min:     0.0
+      column:  0
+      prefix:  "-i"
+  - MuScatCoh:                  # file  0.0 [1/cm]  user defined macroscopic total scattering cross section of the sample material
+      type:    "float"
+      descr:   "coherent scat- tering [1/cm]"
+      tooltip: "Macroscopic coherent scattering cross section of the sample material (required)"
+      default: 0.5
+      min:     0.0
+      column:  1
+      prefix:  "-C"
+  - MuAbsorb   :                  # file  0.0 [1/cm]  user defined macroscopic absorption cross section of the sample material
+      type:    "float"
+      descr:   "absorption [1/cm]"
+      tooltip: "Macroscopic absorption cross section of the sample material for 1.798 Ang (used for attenuation)"
+      default: 0.1
+      min:     0.0
+      column:  2
+      prefix:  "-m"

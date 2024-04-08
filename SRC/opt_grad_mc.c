@@ -5,9 +5,9 @@
 /* 2.0  Mar 2013  K. Lieutenant  2nd version - simulation routine is main program           */
 /********************************************************************************************/
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include "general.h"
 #include "opt_fct.h"
@@ -33,7 +33,7 @@ static short ReadIniFile(short*  pOut, short*  pNZmax, short*  pNDmax,
 /**********************************************************************************/
 /* Least Square Fitting routine                                                   */
 /**********************************************************************************/
-short OptGradMC()
+short OptGradMC(char* sIniFile)
 {
                              /* sets of the parameter set P to be fitted                                    */
   double P0[NMAX+1],         /* P vector of the last step (or starting value)                               */

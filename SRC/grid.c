@@ -1,747 +1,755 @@
 /**********************************************************************************************/
-/*  VITESS module grid                                                      		      */
+/*  VITESS module 'grid'                                                    		              */
+/*                                                                                            */
+/* This module simulates a rectangular plate having N x M rectangular of circulalar apertures */
+/*   (non-ideal absorption of the plate can be considered)                                    */
+/*                                                                                            */
 /* The free non-commercial use of these routines is granted providing due credit is given to  */
 /* the authors.                                                                               */
 /*                                                                                            */
-/* Written by Manoshin Sergey in Jun 2003 for VSANS simulations, HMI Berlin		      */	
-/* Born from module spacewindow_muliplie						      */
-/* Simplified alg.									      */
+/* Written by Manoshin Sergey in Jun 2003 for VSANS simulations, HMI Berlin		                */	
+/* Born from module spacewindow_multiple	                                                    */
 /*                                                                                            */
-/* 1.00  Jun  2003  S. Manoshin     initial version                                           */	
-/* 				    with possibility for simulations of material of           */     
-/*				    collimator: 0 - from file, 1 - gadolinium, 2 - cadmium,   */
-/*	      			    3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber         */
-/* 1.01  Jul  2004  S. Manoshin	    Color tracking was added				      */
-/* 1.02  Aug  2004  S. Manoshin	    Add deviation of distance and shifts of collimator, in %  */
-/*				    Auto calculation for gravity monochromator and collimators*/
-/*				    Add reducing of grid sizes for convergent gridset system  */
-/* 1.1  Oct  2004  S. Manoshin	    Add and correct the deviation of grid system	      */
-/*				    DistanceDev, ShiftHorDev, ShiftVerDev, Pos and Size  hole */
+/* 1.00  Jun 2003  S. Manoshin    initial version with possibility of material simulation     */     
+/* 1.01  Jul 2004  S. Manoshin    Color tracking was added				                            */
+/* 1.02  Aug 2004  S. Manoshin    Add deviation of distance and shifts of the grid elements   */
+/*				                        Auto calculation for gravity monochromator and grid system  */
+/*			                    	    Add reducing of grid sizes for convergent gridset system    */
+/* 1.1   Oct 2004  S. Manoshin	  Add and correct the deviation of grid system	              */
+/*			                    	    DistanceDev, ShiftHorDev, ShiftVerDev, Pos and Size  hole   */
+/* 1.2   Aug 2019  K. Lieutenant  tidy up and visualization                                   */
+/* 1.2a  Sep 2022  K. Lieutenant  visualization corrected and minor improvements              */
 /**********************************************************************************************/
 
 #include "init.h"
 #include "softabort.h"
 #include "intersection.h"
 #include "bender_inter_data.h"
+#include "convert.h"
+#include "message.h"
 
-double Interpolation(double, long, double *, double *, long);
+
+/******************************/
+/** Prototypes               **/
+/******************************/
+void  OwnInit     (int argc, char *argv[]);    // Reads input parameters and sets them as global variables
+void  EvalInput   ();                          // Analyses input parameters and prepares attenuation
+short ReadGridFile();                          // Reads the file describing the grid geometry
+void  SetGeometry (char* sColor, int nHoles);  // Fills the structure stGeometry for visualization
 
 
+/******************************/
+/** Global Variables         **/
+/******************************/
+// Input parameters
+char   *sCollFileName=NULL;     // -I  [-]  file describing the grid geometry 
+char	 *sTransFileName=NULL;    // -C  [-]  file describing the transmission of the grid material
+VtWndAbs  eMaterialO            // -c  [-]  material of the grids: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+	         =VT_WABS_IDEAL;      //                                 4 - Eu,        5 - Silicon,   99 - ideal absorber
+VtShape eKeyShape=VT_NO_SHAPE;  // -N  [-]  Form of grid elements 0 - square form; 1 - circle form 
+long	  eKeyColorTrack=0;       // -K  [-]  Activate color tracking = cross-talk analysis, default no (0)
+
+double	Distance=0.0,           // -D  [cm] distance from the previous item of the grid
+        ShiftHor=0.0,           // -d  [cm]  horizontal and
+        ShiftVer=0.0,           // -e  [cm]  vertical shift of the grid element
+        Thickness=0.1,          // -t  [cm]  thickness of the plate
+        OuterA=0.0,             // -a  [cm]  radius or width of the plate
+        OuterB=0.0;             // -b  [cm]  height of the plate
+
+double  DistanceDev =0.0,       // -X  [cm]  distance and deviation
+        ShiftHorDev =0.0,       // -y  [cm]  horizontal and
+        ShiftVerDev =0.0,       // -q  [cm]  vertical displacement of a grid element
+        WinRadiusDev=0.0,       // -h  [cm]  deviation of hole size
+       	WinCenterDev=0.0;       // -H  [cm]  deviation of hole position
+
+double	DistanceAbs = 0.0;      // -M  [cm]  absolute distance from first grid element, for simulation of system of grid, [cm]
+double  TotalLength = 0.0;      // -m  [cm]  length of the grid system = half the lenngth from first element to detector
+double  WaveMonoch  = 0.0;      // -n  [Ang] standard wavelength for monochromatisation, if zero disactivated
+        
+                                  
+// Variables determined from input parameters, files or trajectory data
+double  WAVS[MAX_MU],                     // lambda and µ-values and thickness of the grid material 
+        MUS [MAX_MU];
+long    nValF=0;                          // number of attenuation values in file (describing absorption in grid material)
+
+double  winsize   [1001],                 // arrays of hole positions and sizes
+        ywincenter[1001], 
+        zwincenter[1001]; 
+double  OuterRadius=0.0;                  // outer radius for spherical holes
+
+
+
+/******************************/
+/** Main Program             **/
+/******************************/
 int main(int argc, char *argv[])
 {
-	char	*CollFileName=NULL;
-    char    sLine[1024];
-	FILE	*coll_file=NULL;
+  long    i=0,               // index of trajectories
+          j=0,               // index of holes
+          k=0;               // counter of cross-talk events
+  long    key_abs=1;         // key absorb: 1 - absorption,  0 - transmission   
+  short	  current_color=0,   // color of the current trajecotry (= number of the previous hole that the neutron passed)
+          current_hole=0;    // number of the hole, where the neutron passed
+  double  dist_squared=0.0;  // distance from the point of impact to the center of the grid  
+  double  TimeOF=0.0;        // TOF of neutron from origin to grid element
+  long    NumberOfHoles=0;     // number of holes in each grid element 
+	
+  Plane	  Endpoint,          // Planes through beginning and end of the grid element
+          EndpointCol;       // Endpoint.D: distance from origin to grid along x-axis        [cm]
 
-	long	i, j, k, counter;
-	long	BufferIndex;
-	long 	NumberOfHoles;
-	long	key_abs=1; 
-	long    key_outer=0; /* Form of collimators 0 - square form; 1 - circle form */
-	long    key_output=0;
-	
-	
-	long	key_colortracking=0; /* Activate color tracking, default no(0) */
-	short	color_current, hole_current=0 ;
-	int     rc;
-
-	double	Distance=0.0, DistanceDev=0.0; /* distance and deviation */
-	
-	
-	/* Options for simulating the grid system: for gravity monochromator*/
-	double	DistanceAbs = 0.0; /* absolute distance from first grid, 
-				    for simualtion of system of grid, cm */
-	double  TotalLength = 1200; /* total length of grid system, cm */			    
-	
-	double  WaveMonoch = 0.0; /* Wavelength (Ang) for monokhromatisation, if zero disactivated */
-	
-	
-	double	rdate[3003];
-	double  winradius[1001], ywincenter[1001], zwincenter[1001]; 
-	double  winradiusdev=0.0; /* Deviation of hole of size*/
-	double	wincenterdev=0.0; /* Deviation of position of hole */
-	double  OuterA=0.0, OuterB=0.0, OuterRadius=0.0; /* Outer Sizes of collimator */ 
-	
-	double  ShiftHor=0.0, ShiftVer=0.0; /* displacement of collimator */
-	double  ShiftHorDev=0.0, ShiftVerDev=0.0; /* deviation of displacement of collimator */	
-	
-	double  tempdistsquared;
-	double  TimeOF;
-	
-	Plane	Endpoint, Endpointcol, Pcalc;
-	double	NewPositionY, NewPositionZ;
-	Neutron  Output, Ncalc;
-	
-
-
- 	long  keymaterial0=6; /* Material of collimator */
-	  /* Material of collimator: 0 - from file, 1 - gadolinium, 2 - cadmium, 
-	      3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
-	long ntfs=0, count;    	      
-	double WAVS[500], MUS[500], transm0[1000];
-	char	*TransFileName0=NULL;
-	FILE	*trans_file0=NULL; /* file for describing of transmission of material of collimator  */
+  double  NewPositionY=0.0,  // neutron position in co-ordinate system  rotated by 'rotang'
+          NewPositionZ=0.0; 
        
-	double VelocityReal, N_Wavelength , mu, prob=0.0, Thicknesscoll=0.1;
+  double  VelocityReal=0.0,  // velocity of the current neutron
+          N_Wavelength,      // wavelength of the current neutron
+          mu=0.0,            // attenuation coefficient of the material, that the neutron traverses
+          prob=0.0;          // probability of traversing the material
 
+  Neutron Output;            // trajectory as it is written to the output
 
-	/* Initialisation */
+  /******************************************/
+  /** Initialisation and parameter input   **/
+  /******************************************/  
+  _eModule=MCN_GRID;
 
- 	BufferIndex = 0;
-	DistanceAbs = 0.0;
-	WaveMonoch = 0.0;
-	
-	winradiusdev=0.0; 
-	wincenterdev=0.0; 
-	
-	DistanceDev=0.0;
-	ShiftHorDev=0.0; 
-	ShiftVerDev=0.0;
-	
-	keymaterial0=6;
+  Init(argc,argv, _eModule);
+  PrintModuleName(_eModule, "1.2a");
+  OwnInit(argc, argv);
+  MsgInit();
+  EvalInput();
+  NumberOfHoles=ReadGridFile();
 
-	/***************************************************************************/
-	/* Endpoint.D                distance to window along x-direction   [cm]   */
-        /***************************************************************************/
+  bVisInstalled = TRUE;
+  if (bVisInstr) 
+    bBlowUp = TRUE;
 
-  /*input*/
-  Init(argc, argv, VT_GRID);
-
-
-  for(i=1; i<argc; i++)
-    {
-      if(argv[i][0]!='+') {
-
-	switch(argv[i][1])
-	  {
-	  case 'I':
-	    if( (coll_file = fopen(&argv[i][2],"r"))==NULL)
-	      {
-		fprintf(LogFilePtr,"File %s could not be opened for InputNeutrons\n",&argv[i][2]);
-		exit(-1);
-	      }
-
-	    CollFileName=&argv[i][2];
-	    break;
-
-	  case 'D':
-	    Distance =  atof(&argv[i][2]);
-	    break;
-	    
-	    
-	  case 'M':
-	    DistanceAbs =  atof(&argv[i][2]);
-	    break;	    
-	    
-	    
-	  case 'm':
-	    TotalLength =  atof(&argv[i][2]);
-	    break;	    	    
-	    
-	    
-	  case 'n':
-	    WaveMonoch =  atof(&argv[i][2]);
-	    break;	    	    	    
-
-	    
-	  case 'X':
-	    DistanceDev =  atof(&argv[i][2]);
-	    break;	    
-	    
-	    
-	  case 'a':
-	    OuterA = atof(&argv[i][2]);
-	    break;
-	    
-	  case 'b':
-	    OuterB = atof(&argv[i][2]);
-	    break;	    
-	    
-	  case 'd':
-	    ShiftHor = atof(&argv[i][2]);
-	    break;	    	    
-
-	    
-	  case 'y':
-	    ShiftHorDev = atof(&argv[i][2]);
-	    break;	    	    	    
-	    
-	    
-	  case 'e':
-	    ShiftVer = atof(&argv[i][2]);
-	    break;
-
-	    
-	  case 'q':
-	    ShiftVerDev = atof(&argv[i][2]);
-	    break;	    	    	    
-	    
-	    
-	  case 'h':
-	    winradiusdev = atof(&argv[i][2]);
-	    break;	    	    	    	    
-	    
-	    
-	  case 'H':
-	    wincenterdev = atof(&argv[i][2]);
-	    break;	    	    	    	    	    
-	    
-	    
-	  case 'k':
-	    key_output = atol(&argv[i][2]); 
-	    break;    	    	    
-
-	    
-	  case 'K':
-	    key_colortracking = atol(&argv[i][2]); 
-	    break;    	    	    	    
-	    
-	    	    	    	    
-	  case 'N':
-	    key_outer = atol(&argv[i][2]); /* Form of collimators 0 - square form; 1 - circle form */
-	    break;    
-	    
-	  case 'c':
-	    keymaterial0 = atol(&argv[i][2]);  /* Material of nemder channels: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber */
-      	    break;
-      
-      				
-      	  case 'C':
-	    TransFileName0=&argv[i][2]; 
-	    break;
-      				
-      	  case 't':
-	    Thicknesscoll = atof(&argv[i][2]);
-	    break;
-		    
-
-	    
-	  default:
-	    fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
-	    exit(-1);
-	    break;
-	  }
-      }
-    }
-    
-    print_module_name("Space and Grid 1.1");
-    
-    
-    	if (key_colortracking == 1)
-	{
-		fprintf(LogFilePtr, "=====TRACKING OF CROSSTALK OF TRAJECTORIES IS ACTIVATED.=====  \n");
-		fprintf(LogFilePtr, "PLEASE SET INITIAL COLOR OF ALL NEUTRONS IN SOURCE ON ZERO (0) \n");
-		fprintf(LogFilePtr, "IDEAL ABSORBTION IS ACTIVATED. \n");
-		keymaterial0 = 6 ;
-	}    
-    
-    	if (key_outer == 0)
-    	fprintf(LogFilePtr,"Form of collimators 0 - square form\n"); 
-    	
-    	if (key_outer == 1)
-    	{
-    		fprintf(LogFilePtr,"Form of collimators 1 - circle form\n"); 
-    		OuterRadius = OuterA;
-    	}	
-    	
-    
-	if (TransFileName0 != NULL) trans_file0 = fopen(TransFileName0,"r");
-	
-	
-	if (WaveMonoch < 0.0)
-	{
-	   fprintf(LogFilePtr,"Wavelength for monhromatisation must be positive!!! \n");
-	   exit(-1);
-	}
-	
-	
-	if (DistanceAbs < 0.0)
-	{
-	   fprintf(LogFilePtr,"Absolute distance must be positive!!! \n");
-	   exit(-1);
-	}
-	
-	
-	if (TotalLength <= 0.0)
-	{
-	   fprintf(LogFilePtr,"Total length of gridset must be positive!!! \n");
-	   exit(-1);
-	}
-
-	
-	if (Thicknesscoll <= 0.0)
-	{
-		fprintf(LogFilePtr,"Thickness of collimator <= 0.0 !!!");
-		exit(-1);
-	}
-	
-	
-	if (DistanceDev < 0.0)
-	{
-	   fprintf(LogFilePtr,"Deviation of distance must be positive!!! \n");
-	   exit(-1);
-	}
-	
-
-	if (ShiftHorDev < 0.0)
-	{
-	   fprintf(LogFilePtr,"Deviation of horizontal shift must be positive!!! \n");
-	   exit(-1);
-	}	
-
-	
-	if (ShiftVerDev < 0.0)
-	{
-	   fprintf(LogFilePtr,"Deviation of vertical shift must be positive!!! \n");
-	   exit(-1);
-	}		
-
-	
-	if (winradiusdev < 0.0)
-	{
-	   fprintf(LogFilePtr,"Deviation of size of hole must be positive!!! \n");
-	   exit(-1);
-	}			
-	
-
-	if (wincenterdev < 0.0)
-	{
-	   fprintf(LogFilePtr,"Deviation of position of hole must be positive!!! \n");
-	   exit(-1);
-	}		
-
-	
-	if (keymaterial0 == 0)
-  	{
-	    fprintf(LogFilePtr,"MATERIAL OF COLLIMATOR: Material transmission characteristics reading from file\n");
-  	}
-
-  	if (keymaterial0 == 1)
-  	{
-	    fprintf(LogFilePtr,"MATERIAL OF COLLIMATOR: Gadolinium \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary \n");
-  	}
-  	
-  	if (keymaterial0 == 2)
-  	{
-	    fprintf(LogFilePtr,"MATERIAL OF COLLIMATOR: Cadmium \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
-  	
-  	if (keymaterial0 == 3)
-  	{
-	    fprintf(LogFilePtr,"MATERIAL OF COLLIMATOR: Bor10 \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
-  	
-  	if (keymaterial0 == 4)
-  	{
-	    fprintf(LogFilePtr,"MATERIAL OF COLLIMATOR: Eu \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
-  	
-  	if (keymaterial0 == 5)
-  	{
-	    fprintf(LogFilePtr,"MATERIAL OF COLLIMATOR: Silicon \n");
-  	    fprintf(LogFilePtr,"Wavelength range must be 1 .. 20 A, please correct if nesessary  \n");
-  	}
-  	
-  	if (keymaterial0 == 6)
-  	{
-	    fprintf(LogFilePtr,"MATERIAL OF COLLIMATOR: IDEAL ABSORBER \n");
-  	}
-  	
-	if ((keymaterial0 != 0)&&(keymaterial0 != 1)&&(keymaterial0 != 2)&&(keymaterial0 != 3)&&(keymaterial0 != 4)&&(keymaterial0 != 5)&&(keymaterial0 != 6))
-  	{
-  	    fprintf(LogFilePtr,"MATERIAL OF COLLIMATOR: No material: EXIT! Correct -c option \n");
-	    exit(-1);
-  	}
-
-
-	if (DistanceAbs > 0.0)
-	{
-		fprintf(LogFilePtr,"----------FOR GRIDSET simulations ONLY=========\n");
-		fprintf(LogFilePtr, "I  Total length of instrument =  %f  cm  \n", TotalLength);
-		fprintf(LogFilePtr, "I  Absolute distance from first grid = %f  cm  \n", DistanceAbs);
-
-		if (WaveMonoch > 0.0)
-		{
-	   		fprintf(LogFilePtr,"WARNING: Gravity monochromatisation is activated for  %f  Ang \n", WaveMonoch);
-	   		fprintf(LogFilePtr,"WARNING: All grids in system will be shifted in vertical direction, down!!!! \n");
-	   
-			/* Calculate vertical shifting */
-			
-			Ncalc.Position[0] = 0.0 ;
-			Ncalc.Position[1] = 0.0 ;
-			Ncalc.Position[2] = 0.0 ;
-			Ncalc.Vector[0] = 1.0 ;
-			Ncalc.Vector[1] = 0.0 ;			
-			Ncalc.Vector[2] = 0.0 ; 
-			Ncalc.Wavelength = WaveMonoch ; 
-			
-			Pcalc.A = 1.0;
-		 	Pcalc.B = 0.0;
-		   	Pcalc.C = 0.0;
-		  	Pcalc.D = -1.0*DistanceAbs;
-
-			TimeOF = NeutronPlaneIntersectionGrav(&Ncalc, Pcalc);
-			
-			ShiftVer = Ncalc.Position[2] ;
-	
-			fprintf(LogFilePtr,"WARNING: OVERRIDDING! New value for the down shifting  %f  cm \n", ShiftVer);
-	
-		}	
-		fprintf(LogFilePtr,"---------------------------------==========================\n");
-	}
-
-
-	if (DistanceDev > 0.0)
-	{
-	   fprintf(LogFilePtr,"Deviation of distance is activated  +-  %f  cm \n", DistanceDev);
-	   Distance   =   Distance +  (MonteCarlo(-1.0, 1.0)*DistanceDev) ;
-	}
-	
-
-	if (ShiftHorDev > 0.0)
-	{
-	   fprintf(LogFilePtr,"Deviation of horizontal shift is activated  +-  %f  cm \n", ShiftHorDev);
-	   ShiftHor   =   ShiftHor +  (MonteCarlo(-1.0, 1.0)*ShiftHorDev) ;	   
-	   fprintf(LogFilePtr,"New value for horizontal shift = %f cm \n", ShiftHor);
-	}	
-
-	
-	if (ShiftVerDev > 0.0)
-	{
-	   fprintf(LogFilePtr,"Deviation of vertical shift is activated  +-  %f cm \n", ShiftVerDev);
-	   ShiftVer   =   ShiftVer +  (MonteCarlo(-1.0, 1.0)*ShiftVerDev) ;	   
-	   fprintf(LogFilePtr,"New value for vertical shift = %f cm \n", ShiftVer);	   
-	}		
-	
-
-
-	  for(i=0; i<500; i++)
-	  {	
-		WAVS[i] = 0.0;
-		MUS[i] = 0.0;
-	  }
-	  
-	  for(i=0; i<1000; i++)
-	  {	
-		transm0[i] = 0.0;
-	  }
-	  
-  
-
-
-    if (keymaterial0 == 0)
-    {
-      /* Read transmission file for collimator */
-
-      if (TransFileName0 !=NULL)
-        {
-          for(count=1; count<=1000; count++)
-    	    {
-    		if (fscanf(trans_file0,"%lf",&transm0[count])==EOF)
-		    break;
-	    }
-
-    	  fclose(trans_file0);
-	
-	    k = 1;
-	    ntfs = (long)((count-1)/2);
-    	    for(i = 1; i <= ntfs; i++)
-	    {
-		WAVS[i] = transm0[k];
-		MUS[i] = transm0[k+1];
-		k = k + 2;
-	    }
-	    
-	/* check the input data */	    
-	    for(i = 1; i <= (ntfs-1); i++)
-	    {
-		if (WAVS[i+1] <= WAVS[i]) 
-		{
-		    fprintf(LogFilePtr,"MISTAKE: incorrect data in transmission file of the collimator \n");
-		    fprintf(LogFilePtr,"The numbers in the wavelength columns must be increase!!! \n");
-		    exit(-1);
-		}    
-	    }
-	    
-//	    fprintf(LogFilePtr,"transmfile for surface count = %d  num = %d \n", count, ntfs);
-//	    for(i = 1; i <= ntfs; i++)
-//	    fprintf(LogFilePtr," %f   %f  \n",WAVS[i], MUS[i]);
-	    fprintf(LogFilePtr,"Minimal and maximal wavelengths must be %f ... %f \n",WAVS[1], WAVS[ntfs]);
-	
-      }		
-      else
-	fprintf(LogFilePtr,"No file, which description transmission of collimator \n");
-    }	
-
-
-
+  memset(&Output, '\0', sizeof(Neutron));
      
- 	Endpoint.A = 1.0;
- 	Endpoint.B = 0.0;
- 	Endpoint.C = 0.0;
- 	Endpoint.D = -1.0*Distance;
+  Endpoint.A = 1.0;
+  Endpoint.B = 0.0;
+  Endpoint.C = 0.0;
+  Endpoint.D = -1.0*Distance;
+  fprintf(LogFilePtr,"Distance between plane x=0 and grid plane  %f cm  \n", fabs(Endpoint.D));
  	
- 	fprintf(LogFilePtr,"Distance between plane x=0 and window plane  %f cm  \n", fabs(Endpoint.D));
- 	
- 	
- 	Endpointcol.A = 1.0;
- 	Endpointcol.B = 0.0;
- 	Endpointcol.C = 0.0;
- 	Endpointcol.D = -1.0*(Thicknesscoll+Distance);
- 	
- 	fprintf(LogFilePtr,"Thickness+dist of collimator plate  %f cm  \n", fabs(Endpointcol.D));
- 	
-  
-	for(i=0; i<=1000; i++)
-	{
-		winradius[i] = 0.0; 
-		ywincenter[i] = 0.0; 
-		zwincenter[i] = 0.0;
-	}	
-	
-	for(i=0; i<=3000; i++) 
-	rdate[i] = 0.0;
-
-	
+  EndpointCol.A = 1.0;
+  EndpointCol.B = 0.0;
+  EndpointCol.C = 0.0;
+  EndpointCol.D = -1.0*(Distance+Thickness);
+  fprintf(LogFilePtr,"Distance + Thickness of the grid plate %f cm  \n", fabs(EndpointCol.D));
 	  
   if(keygrav == 1)
-  {
-      fprintf(LogFilePtr,"Grid module: Gravity is enabled \n");
-  }
+    fprintf(LogFilePtr,"Grid module: Gravity is enabled \n");
   else
-  {
-      fprintf(LogFilePtr,"Grid module: Gravity is disabled \n");
-  }
+    fprintf(LogFilePtr,"Grid module: Gravity is disabled \n");
 
-	
-	
-	/* Input data from collimator file */
-	
-	
+  DECLARE_ABORT
 
-  if (CollFileName !=NULL)
-    {
-      for(counter = 1; counter <= 3000; counter+=3)
-	{
-	  // if (fscanf(coll_file,"%lf",&rdate[counter])==EOF) break;
-        rc=ReadLine(coll_file, sLine, sizeof(sLine));
-        if (rc==FALSE) break;
-        StrgScanLF(sLine, &rdate[counter], 3, 0);
-	}
-
-      fclose(coll_file);
-    }
-  else
-    {
-    fprintf(LogFilePtr,"\n No data for grid description. Check the input file. \n");
-    exit(-1);
-    }
-    
-/*    for(i = 1; i <= counter; i++)
-    {
-    fprintf(LogFilePtr," %d   %f \n", i, rdate[i]);
-    }   */
-
-    NumberOfHoles = (long)((counter-1)/3);
-
-/*	fprintf(LogFilePtr,"Number of in %d \n", (counter-1)); */
-	fprintf(LogFilePtr,"\n Number of holes: %ld \n", NumberOfHoles);
-	
-	k = 1;
-	for(i = 1; i <= NumberOfHoles; i++) 
-	{
-	
-	    
-	    	if (DistanceAbs > 0.0)
-		{
-		
-		/* reducing the grids sizes according the converging to the detector */
-		
-		    if ((2.0*TotalLength) <= DistanceAbs)
-		    {
-		    	fprintf(LogFilePtr,"EXIT: Incorrect absolute distance and Total length of grid system \n");
-			exit(-1);
-		    }
-		
-			ywincenter[i] = ((rdate[k])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(-1.0, 1.0)*wincenterdev); 
-	    		zwincenter[i] = ((rdate[k+1])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(-1.0, 1.0)*wincenterdev);
-	    		winradius[i] = ((rdate[k+2])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(0.0, 1.0)*winradiusdev);   
-
-		}
-		else
-		{	
-	    		ywincenter[i] = rdate[k] + (MonteCarlo(-1.0, 1.0)*wincenterdev); 
-	    		zwincenter[i] = rdate[k+1] + (MonteCarlo(-1.0, 1.0)*wincenterdev);
-	    		winradius[i] = rdate[k+2] + (MonteCarlo(0.0, 1.0)*winradiusdev);	    
-	    	}	
-	    
-	    k = k + 3;
-	    
-	}
-	
-	
-	for(i = 1; i <= NumberOfHoles; i++)
-	{
-//	fprintf(LogFilePtr,"\n Grid data: center Y = %f cm  Z = %f cm radius = %f cm", ywincenter[i], 
-//		zwincenter[i], winradius[i]);
-	} 
-	
-
-	DECLARE_ABORT
-
-	while(ReadNeutrons()!= 0)
+  /******************************/
+  /** Loop over trajectories   **/
+  /******************************/
+  while(ReadNeutrons()!= 0)
   {
     for(i=0; i<NumNeutGot; i++)
     {
-
-/****************************************************************************************/
-/* 	Move neutron to window with gravity effect and calculate Time of Flight (ms).   */
-/****************************************************************************************/
-	
       CHECK
       
+      if (IsEOB(&(InputNeutrons[i]))==TRUE)
+      {
+        WriteNeutron(&(InputNeutrons[i]));
+      }
+      else
+      { 
         if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-      	if (InputNeutrons[i].Wavelength == 0.0) continue;
-	VelocityReal = (double)(V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
-	if (VelocityReal <= 0.0) continue;
-	color_current = InputNeutrons[i].Color;
-      
-			
-	if (keygrav == 1)
-	{
-		TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-	}
-	else
-	{
-		TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
-	}
+        if (InputNeutrons[i].Wavelength == 0.0) continue;
+        VelocityReal = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
+        if (VelocityReal <= 0.0) continue;
+        current_color = InputNeutrons[i].Color;
+      			
+        // Move neutron to beginning of grid element with gravity effect and calculate Time of Flight
+        // ------------------------------------------------------------------------------------------
+        if (keygrav == 1)
+        {
+          TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+        }
+        else
+        {
+          TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+        }
+        InputNeutrons[i].Time += (double)TimeOF;
 
-		InputNeutrons[i].Time += (double)TimeOF;
+        /* windows test */
+        NewPositionY = InputNeutrons[i].Position[1] - ShiftHor;
+        NewPositionZ = InputNeutrons[i].Position[2] - ShiftVer;
 
+        key_abs = 0;		  // not absorbed
 
-		if (key_output==1)
-		{
-		    fprintf(LogFilePtr,"Pos  %f    %f    %f   \n", InputNeutrons[i].Position[0],
-		    InputNeutrons[i].Position[1], InputNeutrons[i].Position[2]);
-		}    
-
-				/* windows test */
-
-			
-		NewPositionY = InputNeutrons[i].Position[1] - ShiftHor;
-		NewPositionZ = InputNeutrons[i].Position[2] - ShiftVer;
-		tempdistsquared = NewPositionY*NewPositionY + NewPositionZ*NewPositionZ;		
-
-		key_abs = 0;		
-
-		if (key_outer==0) /* Choose Form of collimators 0 - square form; 1 - circle form */
-		{
-		    if ((-0.5*OuterA < NewPositionY)&&(0.5*OuterA > NewPositionY)&&(-0.5*OuterB < NewPositionZ)&&(0.5*OuterB > NewPositionZ))
-		    {
-		/*	Square form     */
-	    		key_abs = 1;
-			for(j=1; j<=NumberOfHoles; j++) 
-			{
-				if ((-0.5*winradius[j] < (NewPositionY-ywincenter[j]))&&
-				(0.5*winradius[j] > (NewPositionY-ywincenter[j]))&&
-				(-0.5*winradius[j] < (NewPositionZ-zwincenter[j]))&&
-				(0.5*winradius[j] > (NewPositionZ-zwincenter[j]))) 
-							{
-									    key_abs = 0 ;
-									    hole_current = j ;
-							}		    
-			}		
-		    }	
-		}
-		else
-		{ 
-		/*      Circle form	*/
-		    if (tempdistsquared <= OuterRadius*OuterRadius) 
-		    {
-			key_abs = 1;
-			for(j=1; j<=NumberOfHoles; j++) 
-			{
-			    tempdistsquared = (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) +
-			    (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
-			    if (tempdistsquared <= winradius[j]*winradius[j]) 
-						    {
-									key_abs = 0;
-									hole_current = j ;
-						    }	
-			}
-		    }
-		}
-	
+        // shape of grid elements: 0 - square form
+        if (eKeyShape==VT_SQUARE) 
+        {
+          if ((-0.5*OuterA < NewPositionY)&&(0.5*OuterA > NewPositionY)&&(-0.5*OuterB < NewPositionZ)&&(0.5*OuterB > NewPositionZ))
+          {
+            /*	Square form */
+            key_abs = 1;            // absorbed
+            for(j=1; j<=NumberOfHoles; j++) 
+            {
+              if ((-0.5*winsize[j] < (NewPositionY-ywincenter[j]))&&   // here the size means half of the side length of a square
+                  ( 0.5*winsize[j] > (NewPositionY-ywincenter[j]))&&
+                  (-0.5*winsize[j] < (NewPositionZ-zwincenter[j]))&&
+                  ( 0.5*winsize[j] > (NewPositionZ-zwincenter[j]))) 
+              {
+                key_abs = 0 ;       // not absorbed
+                current_hole = j ;
+              }		    
+            }		
+          }	
+        }
+        else
+        { 
+          /*  1 - circle form	*/
+          dist_squared = NewPositionY*NewPositionY + NewPositionZ*NewPositionZ;		
+          if (dist_squared <= OuterRadius*OuterRadius) 
+          {
+            key_abs = 1;            // absorbed
+            for(j=1; j<=NumberOfHoles; j++) 
+            {
+              dist_squared = (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) +
+                             (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
+              if (dist_squared <= winsize[j]*winsize[j]) 
+              {
+                key_abs = 0;      // not absorbed
+                current_hole = j ;
+              }	
+            }
+          }
+        }
+	      if (key_abs==TRUE)
+          WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+        else
+          WriteIAP(&InputNeutrons[i], VT_PASSED);
 				
-	 /* case of transmission neutron */
-
-	 if (keygrav == 1)
-	 {
-		TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpointcol);
-	 }
-	 else
-	 {
-		TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpointcol);
-	 }
-	 
-	    InputNeutrons[i].Time += (double)TimeOF;
-
-
-	 /* Attenuation in the collimator material */	 
-
-		if (key_abs == 1) 
-		{
-			if (keymaterial0 == 6)
- continue;
-		     /* Attenuation during pass of collimator material */
-				 N_Wavelength = InputNeutrons[i].Wavelength;    
-				 mu = Interpolation(N_Wavelength,keymaterial0,WAVS,MUS,ntfs);
-				 if (mu == -10000.0)
-				 {
-				    fprintf(LogFilePtr,"EXIT! Interpolation mistake\n");
-				    exit(-1);
-				 }
-				 prob = exp(-mu*TimeOF*VelocityReal);	
-// 				 fprintf(LogFilePtr,"surf prob = %f mu = %f \n",prob,mu);
- 				 InputNeutrons[i].Probability = InputNeutrons[i].Probability*prob;
-		
-		}
+        // Move neutron to end of grid element with gravity effect and calculate Time of Flight
+        // ------------------------------------------------------------------------------------
+        Output = InputNeutrons[i];
+        if (keygrav == 1)
+        {
+          TimeOF = NeutronPlaneIntersectionGrav(&Output, EndpointCol);
+        }
+        else
+        {
+          TimeOF = NeutronPlaneIntersection1(&Output, EndpointCol);
+        }
+        Output.Time += TimeOF;
 
 
-	if (key_colortracking == 1)
-	{
-	    if ((hole_current != color_current)&&(color_current != 0.0))
-	    {
-		fprintf(LogFilePtr,"WARNING: CROSSTALK OF TRAJECTORIES IS FOUND!  DistanceAbs:   %f    hole_current:   %d   color_current:   %d    I \n", DistanceAbs, hole_current, color_current);
-	    }
-	}    
+        // In case of absorption: Attenuation in the grid material
+        // -------------------------------------------------------
+        if (key_abs == 1) 
+        {
+          if (eMaterialO == VT_WABS_IDEAL)
+            continue;
+          /* Attenuation during pass through grid material */
+          N_Wavelength = Output.Wavelength;    
+          mu = Interpolation(N_Wavelength, eMaterialO, WAVS, MUS, nValF);
+          if (mu == -10000.0)
+          {
+            CountMessageID(WNDO_L_RANGE_TOO_SMALL, Output.ID);
+          }
+          prob = exp(-mu*TimeOF*VelocityReal);	
+          Output.Probability = Output.Probability*prob;
+          if (Output.Probability < wei_min) 
+            continue;
+        }
+
+        if (eKeyColorTrack == 1)
+        {
+          if ((current_hole != current_color)&&(current_color != 0.0))
+          { 
+            CountMessageID(WND_CROSS_TALK, Output.ID);
+            k++;
+            if (k < 20)
+              fprintf(LogFilePtr,"WARNING: CROSSTALK OF TRAJECTORIES IS FOUND!  DistanceAbs:   %f    current_hole:   %d   current_color:   %d    I \n", DistanceAbs, current_hole, current_color);
+          }
+        }    
 	
-	InputNeutrons[i].Color = hole_current;	 
-	InputNeutrons[i].Position[0] = 0.0;
-	Output = InputNeutrons[i];
-	WriteNeutron(&Output);
-	}
+        Output.Color = current_hole;
+        WriteIAP(&Output, VT_PASSED);
+
+        Output.Position[0] = 0.0;
+        WriteNeutron(&Output);
+      }
     }
+  }
 
-	my_exit:
+/******************************************************************************/
+/* Finish: print parameters, write geometry and instrument file, free memory  */
+/******************************************************************************/
+my_exit:
 
-	fprintf(LogFilePtr," \n");
+  fprintf(LogFilePtr," \n");
+  PrintMessage(WNDO_L_RANGE_TOO_SMALL, sTransFileName, ON);
+  PrintMessage(WND_CROSS_TALK, "", ON);
 
-	Cleanup((Thicknesscoll+Distance), 0.0, 0.0, 0.0, 0.0);
+  SetGeometry("grey", NumberOfHoles);
+  Cleanup((Thickness+Distance), 0.0, 0.0, 0.0, 0.0);
 
-	return(0);
+  return(0);
 }
 
-////////////////////////////////////////////////////
 
+/**************************************************************/
+/** Reads input parameters and sets them as global variables **/
+/**************************************************************/
+void   OwnInit   (int argc, char *argv[])
+{
+  int i=0,
+      eMat=-1;        // key for outer material as saved or read from GUI
 
- 	
+  for(i=1; i<argc; i++)
+  {
+    if(argv[i][0]!='+')
+    {
+      switch(argv[i][1])
+      {
+        // Geometry
+        case 'I':
+          sCollFileName=&argv[i][2];
+          break;
+
+        case 'D':
+          Distance =  atof(&argv[i][2]);
+          break;
+        case 't':
+          Thickness = atof(&argv[i][2]);
+          break;
+
+        case 'a':
+          OuterA = atof(&argv[i][2]);
+          break;
+        case 'b':
+          OuterB = atof(&argv[i][2]);
+          break;	    
 	    
-
+        case 'e':
+          ShiftVer = atof(&argv[i][2]);
+          break;
+        case 'd':
+          ShiftHor = atof(&argv[i][2]);
+          break;	    	    
 	    
+        case 'N':
+          eKeyShape = (VtShape) atoi(&argv[i][2]); /* Form of grid elements 0 - square form; 1 - circle form */
+          break;    
+        case 'K':
+          eKeyColorTrack = atol(&argv[i][2]); 
+          break;    	    	    	    
+	    
+        // Grid material
+        case 'C':
+          sTransFileName=&argv[i][2]; 
+          break;
+        case 'c':
+          eMat = atoi(&argv[i][2]);      // Material of window frame: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber
+          if (eMat==6)
+            eMaterialO = VT_WABS_IDEAL;  // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Interpolation()')
+          else                           // and for ideal absorption here, in 'window' and 'window_mult'
+				    eMaterialO = (VtWndAbs) eMat;
+          break;
+
+        // Deviations
+        case 'q':
+          ShiftVerDev = atof(&argv[i][2]);
+          break;	    	    	    
+        case 'y':
+          ShiftHorDev = atof(&argv[i][2]);
+          break;	    	    	    
+	    
+        case 'h':
+          WinRadiusDev = atof(&argv[i][2]);
+          break;	    	    	    	    
+        case 'H':
+          WinCenterDev = atof(&argv[i][2]);
+          break;	    	    	    	    	    
+	    
+        case 'X':
+          DistanceDev =  atof(&argv[i][2]);
+          break;	    
+	    	    	    	    
+        // Gravity monochromator option
+        case 'M':
+          DistanceAbs =  atof(&argv[i][2]);
+          break;	    
+        case 'm':
+          TotalLength =  atof(&argv[i][2]);
+          break;	    	    
+        case 'n':
+          WaveMonoch =  atof(&argv[i][2]);
+          break;	    	    	    
+		    
+        default:
+          fprintf(LogFilePtr,"unknown commandline option: %s\n",argv[i]);
+          exit(-1);
+          break;
+      }
+    }
+  }
+}
+
+
+/********************************************************/
+/** Analyses input parameters and prepares attenuation **/
+/********************************************************/
+void  EvalInput()
+{
+  char    sLine[CHAR_BUF_SMALL]="", sShape[11]="";
+  FILE   *trans_file=NULL;   // file describing the transmission of the grid material 
+	long    i;              // index of arrays for wavelength and attenuation 
+  double  TimeOF=0.0;        // TOF of neutron from origin to window
+  Plane   Pcalc;             // Pcalc.D: distance to window along x-axis        [cm]
+  Neutron Ncalc;             // Neutron trajctory
+    
+  // Checks
+  // ------
+  if ((2.0*TotalLength) <= DistanceAbs)
+  {
+    fprintf(LogFilePtr,"EXIT: Incorrect absolute distance and Total length of grid system \n");
+    exit(-1);
+  }
+	
+  if (WaveMonoch < 0.0)
+  {
+    fprintf(LogFilePtr,"Wavelength for monhromatisation must be positive!!! \n");
+    exit(-1);
+  }
+	
+  if (DistanceAbs < 0.0)
+  {
+    fprintf(LogFilePtr,"Absolute distance must be positive!!! \n");
+    exit(-1);
+  }
+	
+  if (TotalLength <= 0.0)
+  {
+    fprintf(LogFilePtr,"Total length of gridset must be positive!!! \n");
+    exit(-1);
+  }
+	
+  if (Thickness < 0.0)
+    Error("Thickness of the disk < 0.0");
+  if (Thickness == 0.0 && eMaterialO!=VT_WABS_IDEAL)
+    Error("Thickness of the disk can only be zero for ideal absorber");
+
+  if (DistanceDev < 0.0)
+  {
+    fprintf(LogFilePtr,"Deviation of distance must be positive!!! \n");
+    exit(-1);
+  }
+
+  if (ShiftHorDev < 0.0)
+  {
+    fprintf(LogFilePtr,"Deviation of horizontal shift must be positive!!! \n");
+    exit(-1);
+  }	
+	
+  if (ShiftVerDev < 0.0)
+  {
+    fprintf(LogFilePtr,"Deviation of vertical shift must be positive!!! \n");
+    exit(-1);
+  }		
+	
+  if (WinRadiusDev < 0.0)
+  {
+    fprintf(LogFilePtr,"Deviation of size of hole must be positive!!! \n");
+    exit(-1);
+  }			
+
+  if (WinCenterDev < 0.0)
+  {
+    fprintf(LogFilePtr,"Deviation of position of hole must be positive!!! \n");
+    exit(-1);
+  }		
+
+  // Inits
+  // -----
+  memset(&Ncalc,  '\0', sizeof(Neutron));
+
+  for (i=0; i < MAX_MU; i++)
+  { WAVS[i] = 0.0;
+    MUS[i]  = 0.0;
+  }
+
+  // Settings and printing of parameters
+  // -----------------------------------
+  if (eKeyColorTrack == 1)
+  {
+    fprintf(LogFilePtr, "=====TRACKING OF CROSSTALK OF TRAJECTORIES IS ACTIVATED.=====  \n");
+    fprintf(LogFilePtr, "PLEASE SET INITIAL COLOR OF ALL NEUTRONS IN SOURCE ON ZERO     \n");
+    fprintf(LogFilePtr, "IDEAL ABSORPTION IS ACTIVATED. \n");
+    eMaterialO = VT_WABS_IDEAL ;
+  }    
+    
+  Shape_ID2Txt(sShape, eKeyShape);
+  fprintf(LogFilePtr, "Form of the grid elements: %s\n", sShape); 
+
+  if (eKeyShape == VT_CIRCLE)
+    OuterRadius = OuterA;
+
+  fprintf(LogFilePtr,"Window frame material: ");
+
+  switch (eMaterialO)
+  { case VT_WABS_FILE :  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileName); break;
+    case VT_WABS_GD   :  fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WAVS, MUS, &nValF); break;
+    case VT_WABS_CD   :  fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WAVS, MUS, &nValF); break;
+    case VT_WABS_B10  :  fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WAVS, MUS, &nValF); break;
+    case VT_WABS_EU   :  fprintf(LogFilePtr, "Eu         \n"); Eu        (WAVS, MUS, &nValF); break;
+    case VT_WABS_SI   :  fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WAVS, MUS, &nValF); break;
+    case VT_WABS_IDEAL:  fprintf(LogFilePtr, "Ideal absorber \n");                            break;
+    default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
+  }
+
+
+  if (DistanceAbs > 0.0)
+  {
+    fprintf(LogFilePtr,"----------FOR GRIDSET simulations ONLY=========\n");
+    fprintf(LogFilePtr, "I  Total length of instrument =  %f  cm  \n", TotalLength);
+    fprintf(LogFilePtr, "I  Absolute distance from first grid = %f  cm  \n", DistanceAbs);
+
+    if (WaveMonoch > 0.0)
+    {
+      fprintf(LogFilePtr,"WARNING: Gravity monochromatisation is activated for  %f  Ang \n", WaveMonoch);
+      fprintf(LogFilePtr,"WARNING: All grids in system will be shifted in vertical direction, down!!!! \n");
+	   
+      /* Calculate vertical shifting */
 			
-		
+      Ncalc.Position[0] = 0.0 ;
+      Ncalc.Position[1] = 0.0 ;
+      Ncalc.Position[2] = 0.0 ;
+      Ncalc.Vector[0] = 1.0 ;
+      Ncalc.Vector[1] = 0.0 ;			
+      Ncalc.Vector[2] = 0.0 ; 
+      Ncalc.Wavelength = WaveMonoch ; 
+			
+      Pcalc.A = 1.0;
+      Pcalc.B = 0.0;
+      Pcalc.C = 0.0;
+      Pcalc.D = -1.0*DistanceAbs;
+
+      TimeOF = NeutronPlaneIntersectionGrav(&Ncalc, Pcalc);
+			
+      ShiftVer = Ncalc.Position[2] ;
+	
+      fprintf(LogFilePtr,"WARNING: OVERIDDING! New value for the down shifting  %f  cm \n", ShiftVer);
+    }	
+    fprintf(LogFilePtr,"---------------------------------==========================\n");
+  }
+
+  if (DistanceDev > 0.0)
+  {
+    fprintf(LogFilePtr,"Deviation of distance is activated  +-  %f  cm \n", DistanceDev);
+    Distance   =   Distance +  (MonteCarlo(-1.0, 1.0)*DistanceDev) ;
+  }
+
+  if (ShiftHorDev > 0.0)
+  {
+    fprintf(LogFilePtr,"Deviation of horizontal shift is activated  +-  %f  cm \n", ShiftHorDev);
+    ShiftHor   =   ShiftHor +  (MonteCarlo(-1.0, 1.0)*ShiftHorDev) ;	   
+    fprintf(LogFilePtr,"New value for horizontal shift = %f cm \n", ShiftHor);
+  }	
+
+  if (ShiftVerDev > 0.0)
+  {
+    fprintf(LogFilePtr,"Deviation of vertical shift is activated  +-  %f cm \n", ShiftVerDev);
+    ShiftVer   =   ShiftVer +  (MonteCarlo(-1.0, 1.0)*ShiftVerDev) ;	   
+    fprintf(LogFilePtr,"New value for vertical shift = %f cm \n", ShiftVer);	   
+  }		
+  
+
+  if (eMaterialO == VT_WABS_FILE)
+  {
+    // Read transmission file for grid element
+    if (sTransFileName != NULL)
+    {
+      trans_file = OpenInputFile(sTransFileName, FALSE, "r");
+      if (trans_file != NULL)  
+      { 
+        i=0;
+        while (ReadLine(trans_file, sLine, sizeof(sLine)-1) > 0) 
+        { i++;
+          sscanf(sLine, "%lf %lf", &WAVS[i], &MUS[i]);
+        }
+        nValF = i;
+        fclose(trans_file);
+	    
+        /* check the input data */	    
+        for(i = 1; i <= (nValF-1); i++)
+        {
+          if (WAVS[i+1] <= WAVS[i]) 
+          {
+            fprintf(LogFilePtr,"MISTAKE: incorrect data in the transmission file of the grid material \n");
+            fprintf(LogFilePtr,"The wavelength values (1st column) must be in ascending order!!!\n");
+            exit(-1);
+          }    
+        }
+      }
+      else
+      { Error("Transmission file could not be opened");
+      }
+    }		
+    else
+    { 
+      Error("No file name given describing the transmission of the window frame\n");
+    }
+  }
+}
+
+
+/**************************************************************/
+/** Reads the file describing the grid geometry              **/
+/**************************************************************/
+short ReadGridFile()
+{
+  char   sLine[CHAR_BUF_SMALL]="";
+	FILE  *coll_file=NULL;         // file describing the grid geometry 
+  double rdate[3]={0.0,0.0,0.0}; // values for each grid hole
+  int    i=0;                    // counter of lines 
+  long   nHoles=0;               // number of holes
+	
+  /* Input data from the file describing the grid system */
+  if (sCollFileName !=NULL)
+  {
+    coll_file = OpenInputFile(sCollFileName, FALSE, "r");
+    if (coll_file==NULL)
+    {
+      fprintf(LogFilePtr,"File %s describing the grid arrangement could not be opened\n", sCollFileName);
+      exit(-1);
+    }
+    else
+    {
+      while (ReadLine(coll_file, sLine, sizeof(sLine)-1)==TRUE)
+      {
+        StrgScanLF(sLine, rdate, 3, 0);
+        i++;
+
+        if (DistanceAbs > 0.0)
+        {
+          /* reducing the grid sizes according the converging to the detector */
+          ywincenter[i] = ((rdate[0])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(-1.0, 1.0)*WinCenterDev); 
+          zwincenter[i] = ((rdate[1])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(-1.0, 1.0)*WinCenterDev);
+          winsize   [i] = ((rdate[2])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo( 0.0, 1.0)*WinRadiusDev);   
+        }
+        else
+        {	
+          ywincenter[i] = rdate[0] + (MonteCarlo(-1.0, 1.0)*WinCenterDev); 
+          zwincenter[i] = rdate[1] + (MonteCarlo(-1.0, 1.0)*WinCenterDev);
+          winsize   [i] = rdate[2] + (MonteCarlo (0.0, 1.0)*WinRadiusDev);	    
+        }	
+      }
+      nHoles = i;
+
+      /*	fprintf(LogFilePtr,"Number of in %d \n", (counter-1)); */
+      fprintf(LogFilePtr,"\n Number of holes: %ld \n", nHoles);
+
+      fclose(coll_file);
+    }
+  }
+  else
+  { 
+    Error("Name of the file describing the grid arrangement missing.");
+  }
+
+  return (nHoles);
+}
+
+
+/*******************************************************/
+/** Fills the structure stGeometry for visualization  **/
+/*******************************************************/
+void  SetGeometry(char* sColor, int nHoles)
+{
+  int j;
+  double InnerRadius=0.0,                   // sizes of the plate
+         InnerWidth=0.0, InnerHeight=0.0;         
+
+  // Geometry data
+  if (bVisInstr)
+  { 
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+    stGeometry.pDescr  =  sVisDescrpt;
+    stGeometry.eModule = _eModule;
+
+    for (j=1; j <= nHoles; j++)
+    { 
+      if (eKeyShape==VT_CIRCLE)
+      { InnerRadius = fmax(InnerRadius, sqrt(sq(ywincenter[j]) + sq(zwincenter[j])) + winsize[j]);
+      }
+      else
+      { InnerWidth  = fmax(InnerWidth,  2.0*(ywincenter[j] + 0.5*winsize[j]));
+        InnerHeight = fmax(InnerHeight, 2.0*(zwincenter[j] + 0.5*winsize[j]));
+      }
+    }
+   
+    if (eKeyShape==VT_SQUARE)   // square 
+    {
+      stGeometry.nHulls   = nHoles+1; 
+      stGeometry.pHull    = calloc(nHoles+1,   sizeof(VtHull));
+
+      // whole plate
+      stGeometry.pHull[0].WidthIn    = BlowUp * InnerWidth;
+      stGeometry.pHull[0].WidthOut   = BlowUp * OuterA;
+      stGeometry.pHull[0].HeightIn   = BlowUp * InnerHeight;
+      stGeometry.pHull[0].HeightOut  = BlowUp * OuterB;
+      stGeometry.pHull[0].Length     = Thickness;
+      stGeometry.pHull[0].vCntr[0]   = (Distance + stGeometry.pHull[0].Length/2.);
+      stGeometry.pHull[0].vCntr[1]   = 0.0;
+      stGeometry.pHull[0].vCntr[2]   = 0.0;
+      stGeometry.pHull[0].vNormal[0] = 1.0;
+      stGeometry.pHull[0].vNormal[1] = 0.0;
+      stGeometry.pHull[0].vNormal[2] = 0.0;
+
+      for (j=1; j<=nHoles; j++)
+      {
+        stGeometry.pHull[j].WidthIn   = BlowUp * winsize[j];
+        stGeometry.pHull[j].WidthOut  = BlowUp * winsize[j] * 1.1;
+        stGeometry.pHull[j].HeightIn  = BlowUp * winsize[j];
+        stGeometry.pHull[j].HeightOut = BlowUp * winsize[j] * 1.1;
+        stGeometry.pHull[j].Length    = Thickness;
+        stGeometry.pHull[j].vCntr[0]  = (Distance + stGeometry.pHull[0].Length/2.);
+        stGeometry.pHull[j].vCntr[1]  = ywincenter[j];
+        stGeometry.pHull[j].vCntr[2]  = zwincenter[j];
+        stGeometry.pHull[j].vNormal[0]= 1.0;
+        stGeometry.pHull[j].vNormal[1]= 0.0;
+        stGeometry.pHull[j].vNormal[2]= 0.0;
+      }
+    }
+    else
+    {
+      stGeometry.nHolCyls = nHoles+1;
+      stGeometry.pHolCyl  = calloc(nHoles+1, sizeof(VtHolCyl));
+
+      // whole plate
+      stGeometry.pHolCyl[0].Radius      = BlowUp * OuterRadius;
+      stGeometry.pHolCyl[0].InnerRadius = BlowUp * InnerRadius;
+      stGeometry.pHolCyl[0].Length      = Thickness;
+      stGeometry.pHolCyl[0].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.);
+      stGeometry.pHolCyl[0].vCntr[1]    = 0.0;
+      stGeometry.pHolCyl[0].vCntr[2]    = 0.0;
+      stGeometry.pHolCyl[0].vSymAxis[0] = 1.0;
+      stGeometry.pHolCyl[0].vSymAxis[1] = 0.0;
+      stGeometry.pHolCyl[0].vSymAxis[2] = 0.0;
+
+      for (j=1; j<=nHoles; j++)
+      { 
+        stGeometry.pHolCyl[j].InnerRadius = BlowUp * winsize[j];
+        stGeometry.pHolCyl[j].Radius      = BlowUp * winsize[j] * 1.1;
+        stGeometry.pHolCyl[j].Length      = Thickness;
+        stGeometry.pHolCyl[j].vCntr[0]    = (Distance + stGeometry.pHolCyl[0].Length/2.);
+        stGeometry.pHolCyl[j].vCntr[1]    = BlowUp * ywincenter[j];
+        stGeometry.pHolCyl[j].vCntr[2]    = BlowUp * zwincenter[j];
+        stGeometry.pHolCyl[j].vSymAxis[0] = 1.0;
+        stGeometry.pHolCyl[j].vSymAxis[1] = 0.0;
+        stGeometry.pHolCyl[j].vSymAxis[2] = 0.0;
+      }
+    }
+  }
+  return;
+}
+ 	

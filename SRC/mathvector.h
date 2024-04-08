@@ -18,15 +18,21 @@ class MathVector {
 
   double x[3];
     
-  MathVector();
-  MathVector(double x, double y, double z=0);
-  virtual ~MathVector() { };
+  MathVector();                                  // default constructor 
+  MathVector(const MathVector& v);               // copy constructor
+  MathVector(const VectorType V);                // constructor
+  MathVector(double x, double y, double z=0);    // constructor
+  virtual ~MathVector() { };                     // destructor
+
+  const double getX() {return x[0];};
+  const double getY() {return x[1];};
+  const double getZ() {return x[2];};
   
   friend MathVector operator + (const MathVector& v1, const MathVector& v2);
   friend MathVector operator - (const MathVector& v1, const MathVector& v2);
-  friend double operator * (const MathVector& v1, const MathVector& v2);
+  friend double     operator * (const MathVector& v1, const MathVector& v2);
   friend MathVector operator * (const MathVector& v, const double c);
-  friend double operator / (const MathVector& v1, const MathVector& v2);
+  friend double     operator / (const MathVector& v1, const MathVector& v2);
   friend MathVector operator / (const MathVector& v, const double c);
 
   MathVector& operator += (MathVector const & v);

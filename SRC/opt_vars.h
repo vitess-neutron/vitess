@@ -1,12 +1,14 @@
 #ifndef OPT_VARS_H
 #define OPT_VARS_H
 
+#include <stdio.h>
+
 #include "opt_defs.h"
 
 // global variables
 extern FILE*  LogFilePtr;           // Pointer on the log file   (from init.c)
-extern char   sLogFile[FN_LEN],     // name of the log file 
-              sIniFile[FN_LEN];     // name of the file containing the control parameters for the optimization routine
+extern char   sLogFile[FN_LEN];     // name of the log file 
+//              sIniFile[FN_LEN];     // name of the file containing the control parameters for the optimization routine
 extern double arP[MAX_SIM][NMAX+1], // parameter sets P, actual (P0) and variations P1 ... P_nSim-1
               arF[MAX_SIM][IMAX+1]; // functions F corresponding to parameter sets 0 ... nSim-1 
 extern double P00 [NMAX+1],         // initial value of vector P               

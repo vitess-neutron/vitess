@@ -20,7 +20,7 @@ proc textWindow {w th tfont {series 0}} {
   bButton $w.b.c Clear clearText
   bButton $w.b.s Save saveText
   if {$w == "$Textw"} {
-    bButton $w.b.b Big {sizeTextWindow 1}
+    bButton $w.b.b Maximize {sizeTextWindow 1}
   } else {
     if $series {
       bButton $w.b.b "Stop\nSeries" stopSeriesExecution
@@ -146,7 +146,7 @@ proc saveText {} {
   set wt $w.a.t;		# $w.a.t is text area
   set s [$wt get 1.0 end]
   if {$s == ""} return
-  if {0 == [set f [openWriteFile txt]]} return
+  if {0 == [set f [openWriteFile ""]]} return
   puts $f $s
   close $f
 }

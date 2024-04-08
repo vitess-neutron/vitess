@@ -7,7 +7,8 @@
 /* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler,                                     */
 /* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */ 
 /*                                                                                          */
-/* Change: K. L. 2002 JAN, reorganized routines                                             */
+/* Change: K. Lieutenant  Jan 2002 and May 2023 reorganized routines                        */
+/********************************************************************************************/
 
 #ifdef VT_GRAPH
 # include "cpgplot.h"
@@ -17,6 +18,7 @@ extern int do_visualise;
 #include <string.h>
 
 #include "intersection.h"
+#include "init.h"
 
 
 /***********************************************************************************/
@@ -27,22 +29,64 @@ VectorType PVector[6] = {{1.0, 0.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0},
                          {0.0,-1.0, 0.0}, { 0.0, 0.0, 1.0}, {0.0, 0.0,-1.0}};
 
 
-/***********************************************************************************/
-/* prototypes of local functions                                                   */
-/***********************************************************************************/
-
-double SolveQuadraticEq(double, double, double);
-
-
+/********************/
+/* Local functions  */
+/********************/
+int    OrderPositions(const VectorType Dir, VectorType Pos1, VectorType Pos2);
 
 /***********************************************************************************/
 /* global functions                                                                */
 /***********************************************************************************/
 
+/**********************************************************************************/
+/*  FindWWP() determines the intersection point of an trajectory with a wall and
+              writes it to the trajectory visualization file if a reason is given */
+/**********************************************************************************/
+short FindWWP(VectorType* pWWP, Neutron* pNeutronIn, const VectorType Center, const double Length, const double Width, const double Height, VtReason eReason)
+{
+  short   rc=FALSE, k=0, kMin=-1;
+  Neutron NeutT[4];
+  Plane   Wall [4]; //Left, Right, Top, Bottom;
+  double  Time [4]={-1.0,-1.0,-1.0,-1.0},
+          TimeMin=1.0e10;
+
+  for (k=0; k < 4; k++)
+    InitNeutron(&NeutT[k]);
+
+  // defines the 4 walls
+  Wall[0].A=0.0;  Wall[0].B= 1.0;  Wall[0].C= 0.0;  Wall[0].D=-0.5*Width -Center[1];  // left
+  Wall[1].A=0.0;  Wall[1].B=-1.0;  Wall[1].C= 0.0;  Wall[1].D=-0.5*Width +Center[1];  // right
+  Wall[2].A=0.0;  Wall[2].B= 0.0;  Wall[2].C= 1.0;  Wall[2].D=-0.5*Height-Center[2];  // top
+  Wall[3].A=0.0;  Wall[3].B= 0.0;  Wall[3].C=-1.0;  Wall[3].D=-0.5*Height+Center[2];  // bottom
+
+  // checks which one is hit first
+  for (k=0; k < 4; k++)
+  {
+    CopyNeutron(pNeutronIn, &NeutT[k]);
+    Time[k] = NeutronPlaneIntersection1(&NeutT[k], Wall[k]);
+    if (Time[k] > 0.0 && Time[k] < TimeMin)
+    { kMin = k;
+      TimeMin = Time[k];
+    }
+  }
+
+  // write event, if a reason is given and the first wall is hit before the end of the component
+  if (kMin > -1 && NeutT[kMin].Position[0] < Center[0]+0.5*Length && NeutT[kMin].Position[0] > Center[0]-0.5*Length)
+  { 
+    rc = TRUE;
+    CopyVector(NeutT[kMin].Position, *pWWP);
+    if (eReason!=VT_NO_REASON)
+      WriteWWP(&NeutT[kMin], eReason);
+  }
+
+  return rc;
+}
+
+
 /**************************************************************************************************/
-/* This Function similar NeutronPlaneIntersection, but he is calculate new position of neutron
-   in the plane (update) and RETURN time of flight of neutron
-   Author: Manoshin Sergey,   20.02.01                                                            */
+/* This Function is similar to NeutronLineIntersection, but it propagates the neutron
+   to new position on the plane and returns its time of flight there
+   Author: Manoshin Sergey,   20.02.2001                                                            */
 /**************************************************************************************************/
 double NeutronPlaneIntersection1(Neutron *ThisNeutron, const Plane ThisPlane)
 {
@@ -85,7 +129,6 @@ double NeutronPlaneIntersection1(Neutron *ThisNeutron, const Plane ThisPlane)
 
   return Time;
 }
-
 
 /***************************************************************************************************/
 /* This Function similar NeutronPlaneIntersection, but he is include GRAVITY effect
@@ -169,8 +212,6 @@ double	NeutronPlaneAngle2(const Neutron *ThisNeutron, const double AP, const dou
 
   return asin(SinGamma);
 }
-
-
 
 /**************************************************************************************************/
 /* This function move neutron from current position to the surface , furthemore he is include
@@ -264,23 +305,7 @@ double NeutronSurfaceSecIntersectionGr(Neutron *ThisNeutron, const SurfaceSecond
   return Time;
 }
 
-/* ordering points on a trajectory so that Dir shows from Pos1 to Pos2 */
 
-int OrderPositions(const VectorType Dir, VectorType Pos1, VectorType Pos2) 
-{
-  VectorType propag, V;
-
-  CopyVector(Pos2, propag); SubVector(propag, Pos1);
-
-  if(ScalarProduct(propag, Dir) == 0.) return 0;
-  if(ScalarProduct(propag, Dir) < 0.)
-    {
-      CopyVector(Pos1, V) ;
-      CopyVector(Pos2, Pos1) ;
-      CopyVector(V, Pos2) ;
-    }
-  return 1;
-}
 
 /******************************************************************************/
 /* 'IntersectionWithRectangular'                                              */
@@ -295,88 +320,12 @@ int OrderPositions(const VectorType Dir, VectorType Pos1, VectorType Pos2)
 /* (t[i] are proprotional to the time-of-flight until the intersection)       */
 /******************************************************************************/
 
-/******************************************************************************/
-/* 'IntersectionWithRectangular'      intersection function for a rectangular */
-/* (Author: G. Zsigmond)                                                                     */
-long IntersectionWithRectangular(const VectorType DimSample, const VectorType Pos, const VectorType Dir,
-				 VectorType Pos1, VectorType Pos2)
-{
-	VectorType	n, pos0, pos1, pos2, pos3, pos4, pos5 ;
-	int			k ;
-
-	for(k=0;k<3;k++) Pos1[k] = Pos2[k] = 0. ;
-
-	n[0] = 1. ; n[1] = n[2] = 0. ;
-
-	if(PlaneLineIntersect2(Pos, Dir, n, - DimSample[0]/2, pos0) == 1)
-	{
-		if( /*(fabs(pos0[0]) <= DimSample[0]/2.) && */(fabs(pos0[1]) <= DimSample[1]/2.) && (fabs(pos0[2]) <= DimSample[2]/2.) ) CopyVector(pos0, Pos1) ;
-	}
-	if(PlaneLineIntersect2(Pos, Dir, n, + DimSample[0]/2, pos1) == 1)
-	{
-		if( /*(fabs(pos1[0]) <= DimSample[0]/2) && */(fabs(pos1[1]) <= DimSample[1]/2) && (fabs(pos1[2]) <= DimSample[2]/2) )
-		{
-			if(LengthVector(Pos1) == 0.) CopyVector(pos1, Pos1) ;
-			else CopyVector(pos1, Pos2) ;
-		}
-	}
-
-	n[1] = 1. ; n[2] = n[0] = 0. ;
-
-	if(PlaneLineIntersect2(Pos, Dir, n, - DimSample[1]/2, pos2) == 1)
-	{
-		if( (fabs(pos2[0]) <= DimSample[0]/2) && /*(fabs(pos2[1]) <= DimSample[1]/2) &&*/ (fabs(pos2[2]) <= DimSample[2]/2) )
-		{
-			if(LengthVector(Pos1) == 0.) CopyVector(pos2, Pos1) ;
-			else CopyVector(pos2, Pos2) ;
-		}
-	}
-	if(PlaneLineIntersect2(Pos, Dir, n, + DimSample[1]/2, pos3) == 1)
-	{
-		if( (fabs(pos3[0]) <= DimSample[0]/2) && /*(fabs(pos3[1]) <= DimSample[1]/2) &&*/ (fabs(pos3[2]) <= DimSample[2]/2) )
-		{
-			if(LengthVector(Pos1) == 0.) CopyVector(pos3, Pos1) ;
-			else CopyVector(pos3, Pos2) ;
-		}
-	}
-
-	n[2] = 1. ; n[0] = n[1] = 0. ;
-
-	if(PlaneLineIntersect2(Pos, Dir, n, - DimSample[2]/2, pos4) == 1)
-	{
-		if( (fabs(pos4[0]) <= DimSample[0]/2) && (fabs(pos4[1]) <= DimSample[1]/2) /*&& (fabs(pos4[2]) <= DimSample[2]/2)*/ )
-		{
-			if(LengthVector(Pos1) == 0.) CopyVector(pos4, Pos1) ;
-			else CopyVector(pos4, Pos2) ;
-		}
-	}
-	if(PlaneLineIntersect2(Pos, Dir, n, + DimSample[2]/2, pos5) == 1)
-	{
-		if( (fabs(pos5[0]) <= DimSample[0]/2) && (fabs(pos5[1]) <= DimSample[1]/2) /*&& (fabs(pos5[2]) <= DimSample[2]/2)*/ )
-		{
-			if(LengthVector(Pos1) == 0.) CopyVector(pos5, Pos1) ;
-			else CopyVector(pos5, Pos2) ;
-		}
-	}
-	/*pi(0);pv(pos0);pv(pos1);pv(pos2);pv(pos3);pv(pos4);pv(pos5);*/
-
-	if((LengthVector(Pos1) == 0.) || (LengthVector(Pos2) == 0.)) return 0 ;
-
-	/*ordering intersection positions */
-	
-	OrderPositions(Dir, Pos1, Pos2);
-
-	return 1 ;
-
-}/* End IntersectionWithRectangular() */
-
-
-
 /*************************************************************************/
 /* 'LineIntersectsCube'    intersection function for a cube              */
 /* The function assumes that the corners of the cube are parallel        */
 /* to the x-,y- and z-axis and the center of the cube resides at (0,0,0) */
 /* (Author: F. Streffer)                                                                 */
+/*************************************************************************/
 long LineIntersectsCube(const VectorType Offset, const VectorType Direction, const CubeType *Cube,
 			double t[2])
 {
@@ -420,11 +369,11 @@ long LineIntersectsCube(const VectorType Offset, const VectorType Direction, con
 	}
 }
 
-
 /****************************************************************************/
 /* 'LineIntersectsHollowCyl'  intersection function for a hollow cylinder   */
 /* the cylinder axis points along the x-axis                                */
 /* (Author: K. Lieutenant)                                                  */
+/*************************************************************************/
 long LineIntersectsHollowCyl (const VectorType Offset, const VectorType Direction, const HolCylType *HCyl,
 			     double t[2], const VtDir eDir)
 {
@@ -488,11 +437,11 @@ long LineIntersectsHollowCyl (const VectorType Offset, const VectorType Directio
 	return rc;
 }
 
-
 /*************************************************************************/
 /* 'LineIntersectsCylinder'     intersection function for a cylinder     */
 /* the cylinder axis points along the x-axis                             */
 /* (Author: F. Streffer)                                                 */
+/*************************************************************************/
 long LineIntersectsCylinder(const VectorType Offset, const VectorType Direction, const CylinderType *Cyl,
 			    double t[2])
 {
@@ -588,96 +537,10 @@ long LineIntersectsCylinder(const VectorType Offset, const VectorType Direction,
 	return result;
 }
 
-/************************************************************************/
-/* IntersectionWithInfiniteCylinder: gives coordinates of intersections  */
-/* (Author: G. Zsigmond)                                                                */
-long	IntersectionWithInfiniteCylinder(const double DiameterCyl, const VectorType Pos, const VectorType Dir,
-					 VectorType Pos1, VectorType Pos2)
-{
-double b, c, delta;
-
-		b = (Pos[0] * Dir[0] + Pos[1] * Dir[1]) / (sq(Dir[0]) + sq(Dir[1])) ;
-		c = (sq(Pos[0]) + sq(Pos[1]) - sq(DiameterCyl/2)) / (sq(Dir[0]) + sq(Dir[1])) ;
-
-		if((delta = sq(b) - c) < 0.) return 0 ;
-
-		CopyVector(Dir, Pos1) ;
-		MultiplyByScalar(Pos1, - b + (double) sqrt(delta)) ;
-		AddVector(Pos1, Pos) ;
-
-		CopyVector(Dir, Pos2) ;
-		MultiplyByScalar(Pos2, - b - (double) sqrt(delta)) ;
-		AddVector(Pos2, Pos) ;
-
-		return 1 ;
-}
-
-/*****************************************************************/
-/* Intersection with cylinder: gives coordinates of intersections */
-/* (Author: G. Zsigmond)                                                           */
-long IntersectionWithCylinder(const VectorType DimSample, const VectorType Pos, const VectorType Dir,
-			      VectorType Pos1, VectorType Pos2)
-{
-  if(IntersectionWithInfiniteCylinder(DimSample[0], Pos, Dir, Pos1, Pos2) == 0) return 0 ;
-
-  /* ordering intersection positions */
-	
-  OrderPositions(Dir, Pos1, Pos2);	
-
-  if((Pos1[2] > DimSample[2]/2.) && (Pos2[2] > DimSample[2]/2.)) return 0 ;
-  if((Pos1[2] < - DimSample[2]/2.) && (Pos2[2] < - DimSample[2]/2.)) return 0 ;
-  if((fabs(Pos1[2]) <= DimSample[2]/2.) && (fabs(Pos2[2]) <= DimSample[2]/2.)) return 1 ;/* both through cylinder walls */
-		
-  if( (Pos2[2] <= DimSample[2]/2.) && (Pos2[2] >= - DimSample[2]/2.) ) /* exit cylinder wall */
-    {
-      if(Pos1[2] >= DimSample[2]/2.)   /* entrance top */
-	{
-	  if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos2, Dir, Pos1) == 0) return 0 ;
-	  return 1 ;
-	}
-      if(Pos1[2] <= - DimSample[2]/2.) /* entrance bottom */
-	{
-	  if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos2, Dir, Pos1) == 0) return 0 ;
-	  return 1;
-	}
-      else return 0 ;
-    }
-
-  if((Pos1[2] >= DimSample[2]/2.) && (Pos2[2] <= - DimSample[2]/2.)) /* entrance top exit bottom */
-    {
-      if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos, Dir, Pos1) == 0) return 0 ;
-      if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos, Dir, Pos2) == 0) return 0 ;
-      return 1;
-    }
-
-  if((Pos1[2] <= - DimSample[2]/2.) && (Pos2[2] >= DimSample[2]/2.)) /* entrance bottom exit top */
-    {
-      if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos, Dir, Pos1) == 0) return 0 ;
-      if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos, Dir, Pos2) == 0) return 0 ;
-      return 1;
-    }
-
-  if( (Pos1[2] >= - DimSample[2]/2.) && (Pos1[2] <= DimSample[2]/2.) ) /* entrance cylinder wall */
-    {
-      if(Pos2[2] >= DimSample[2]/2.) /* exit top */
-	{
-	  if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos1, Dir, Pos2) == 0) return 0 ;
-	  return 1;
-	}
-      if(Pos2[2] <= - DimSample[2]/2.) /* exit bottom */
-	{
-	  if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos1, Dir, Pos2) == 0) return 0 ;
-	  return 1;
-	}
-      else return 0 ;
-    }
-  else return 0 ;
-}
-
-
 /*****************************************************************************/
 /* 'LineIntersectsSphere'    intersection function for a sphere              */
 /* (Author: F. Streffer)                                                                 */
+/*************************************************************************/
 long LineIntersectsSphere(const VectorType Offset, const VectorType Direction,
 			  const BallType *Sphere, double t[2])
 /* similar to Line_Intersects_Cube but for a sphere */
@@ -708,9 +571,212 @@ long LineIntersectsSphere(const VectorType Offset, const VectorType Direction,
 }
 
 
+
+/******************************************************************************/
+/* 'IntersectionWithRectangular'      intersection function for a rectangular */
+/* (Author: G. Zsigmond)                                                                     */
+/*************************************************************************/
+long IntersectionWithRectangular(const VectorType DimSample, const VectorType Pos, const VectorType Dir,
+				 VectorType Pos1, VectorType Pos2)
+{
+	VectorType	n, pos0, pos1, pos2, pos3, pos4, pos5 ;
+	int			k ;
+
+	for(k=0;k<3;k++) Pos1[k] = Pos2[k] = 0. ;
+
+	n[0] = 1. ; n[1] = n[2] = 0. ;
+
+	if(PlaneLineIntersect2(Pos, Dir, n, - DimSample[0]/2, pos0) == 1)
+	{
+		if( /*(fabs(pos0[0]) <= DimSample[0]/2.) && */(fabs(pos0[1]) <= DimSample[1]/2.) && (fabs(pos0[2]) <= DimSample[2]/2.) ) CopyVector(pos0, Pos1) ;
+	}
+	if(PlaneLineIntersect2(Pos, Dir, n, + DimSample[0]/2, pos1) == 1)
+	{
+		if( /*(fabs(pos1[0]) <= DimSample[0]/2) && */(fabs(pos1[1]) <= DimSample[1]/2) && (fabs(pos1[2]) <= DimSample[2]/2) )
+		{
+			if(LengthVector(Pos1) == 0.) CopyVector(pos1, Pos1) ;
+			else CopyVector(pos1, Pos2) ;
+		}
+	}
+
+	n[1] = 1. ; n[2] = n[0] = 0. ;
+
+	if(PlaneLineIntersect2(Pos, Dir, n, - DimSample[1]/2, pos2) == 1)
+	{
+		if( (fabs(pos2[0]) <= DimSample[0]/2) && /*(fabs(pos2[1]) <= DimSample[1]/2) &&*/ (fabs(pos2[2]) <= DimSample[2]/2) )
+		{
+			if(LengthVector(Pos1) == 0.) CopyVector(pos2, Pos1) ;
+			else CopyVector(pos2, Pos2) ;
+		}
+	}
+	if(PlaneLineIntersect2(Pos, Dir, n, + DimSample[1]/2, pos3) == 1)
+	{
+		if( (fabs(pos3[0]) <= DimSample[0]/2) && /*(fabs(pos3[1]) <= DimSample[1]/2) &&*/ (fabs(pos3[2]) <= DimSample[2]/2) )
+		{
+			if(LengthVector(Pos1) == 0.) CopyVector(pos3, Pos1) ;
+			else CopyVector(pos3, Pos2) ;
+		}
+	}
+
+	n[2] = 1. ; n[0] = n[1] = 0. ;
+
+	if(PlaneLineIntersect2(Pos, Dir, n, - DimSample[2]/2, pos4) == 1)
+	{
+		if( (fabs(pos4[0]) <= DimSample[0]/2) && (fabs(pos4[1]) <= DimSample[1]/2) /*&& (fabs(pos4[2]) <= DimSample[2]/2)*/ )
+		{
+			if(LengthVector(Pos1) == 0.) CopyVector(pos4, Pos1) ;
+			else CopyVector(pos4, Pos2) ;
+		}
+	}
+	if(PlaneLineIntersect2(Pos, Dir, n, + DimSample[2]/2, pos5) == 1)
+	{
+		if( (fabs(pos5[0]) <= DimSample[0]/2) && (fabs(pos5[1]) <= DimSample[1]/2) /*&& (fabs(pos5[2]) <= DimSample[2]/2)*/ )
+		{
+			if(LengthVector(Pos1) == 0.) CopyVector(pos5, Pos1) ;
+			else CopyVector(pos5, Pos2) ;
+		}
+	}
+	/*pi(0);pv(pos0);pv(pos1);pv(pos2);pv(pos3);pv(pos4);pv(pos5);*/
+
+	if((LengthVector(Pos1) == 0.) || (LengthVector(Pos2) == 0.)) return 0 ;
+
+	/*ordering intersection positions */
+	
+	OrderPositions(Dir, Pos1, Pos2);
+
+	return 1 ;
+
+}/* End IntersectionWithRectangular() */
+
+/*************************************************************************/
+/* 'IntersectionWithInfiniteCylinder'                                    */
+/* gives coordinates of intersections with an infinite vertical cylinder */
+/* (Author: G. Zsigmond)                                                 */
+/*************************************************************************/
+long	IntersectionWithInfiniteCylinder(const double DiameterCyl, const VectorType Pos, const VectorType Dir,
+					 VectorType Pos1, VectorType Pos2)
+{
+double b, c, delta;
+
+		b = (Pos[0] * Dir[0] + Pos[1] * Dir[1]) / (sq(Dir[0]) + sq(Dir[1])) ;
+		c = (sq(Pos[0]) + sq(Pos[1]) - sq(DiameterCyl/2)) / (sq(Dir[0]) + sq(Dir[1])) ;
+
+		if((delta = sq(b) - c) < 0.) return 0 ;
+
+		CopyVector(Dir, Pos1) ;
+		MultiplyByScalar(Pos1, - b + (double) sqrt(delta)) ;
+		AddVector(Pos1, Pos) ;
+
+		CopyVector(Dir, Pos2) ;
+		MultiplyByScalar(Pos2, - b - (double) sqrt(delta)) ;
+		AddVector(Pos2, Pos) ;
+
+		return 1 ;
+}
+
+/*************************************************************************/
+/* 'IntersectionWithCylinder'                                            */
+/* gives coordinates of intersections with a vertical cylinder           */
+/* DimSample: [diameter, unused, height]                                 */
+/* (Author: G. Zsigmond)                                                 */
+/*************************************************************************/
+long IntersectionWithCylinder(const VectorType DimSample, const VectorType Pos, const VectorType Dir,
+			      VectorType Pos1, VectorType Pos2)
+{
+  if(IntersectionWithInfiniteCylinder(DimSample[0], Pos, Dir, Pos1, Pos2) == 0) return 0 ;
+
+  /* ordering intersection positions */
+	
+  OrderPositions(Dir, Pos1, Pos2);	
+
+  if((Pos1[2] > DimSample[2]/2.) && (Pos2[2] > DimSample[2]/2.)) return 0 ;
+  if((Pos1[2] < - DimSample[2]/2.) && (Pos2[2] < - DimSample[2]/2.)) return 0 ;
+  if((fabs(Pos1[2]) <= DimSample[2]/2.) && (fabs(Pos2[2]) <= DimSample[2]/2.)) return 1 ;/* both through cylinder walls */
+		
+  if( (Pos2[2] <= DimSample[2]/2.) && (Pos2[2] >= - DimSample[2]/2.) ) /* exit cylinder wall */
+    {
+      if(Pos1[2] >= DimSample[2]/2.)   /* entrance top */
+      {
+	      if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos2, Dir, Pos1) == 0) return 0 ;
+	      return 1 ;
+      }
+      if(Pos1[2] <= - DimSample[2]/2.) /* entrance bottom */
+      {
+	      if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos2, Dir, Pos1) == 0) return 0 ;
+	      return 1;
+      }
+      else return 0 ;
+    }
+
+  if((Pos1[2] >= DimSample[2]/2.) && (Pos2[2] <= - DimSample[2]/2.)) /* entrance top exit bottom */
+    {
+      if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos, Dir, Pos1) == 0) return 0 ;
+      if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos, Dir, Pos2) == 0) return 0 ;
+      return 1;
+    }
+
+  if((Pos1[2] <= - DimSample[2]/2.) && (Pos2[2] >= DimSample[2]/2.)) /* entrance bottom exit top */
+    {
+      if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos, Dir, Pos1) == 0) return 0 ;
+      if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos, Dir, Pos2) == 0) return 0 ;
+      return 1;
+    }
+
+  if( (Pos1[2] >= - DimSample[2]/2.) && (Pos1[2] <= DimSample[2]/2.) ) /* entrance cylinder wall */
+    {
+      if(Pos2[2] >= DimSample[2]/2.) /* exit top */
+      {
+	      if(IntersectionWithHorizontalPlane(DimSample[2]/2., Pos1, Dir, Pos2) == 0) return 0 ;
+	      return 1;
+      }
+      if(Pos2[2] <= - DimSample[2]/2.) /* exit bottom */
+      {
+	      if(IntersectionWithHorizontalPlane(- DimSample[2]/2., Pos1, Dir, Pos2) == 0) return 0 ;
+	      return 1;
+      }
+      else return 0 ;
+    }
+  else return 0 ;
+}
+
+/*************************************************************************/
+/* 'IntersectionWithHorCyl'                                              */
+/* gives coordinates of intersections with a horizontal cylinder         */
+/* using the function 'IntersectionWithCylinder'                         */
+/* (Author: K. Lieutenant)                                               */
+/*************************************************************************/
+long IntersectionWithHorCyl(const double length, const double diameter, const VectorType Pos, const VectorType Dir,
+			                      VectorType Pos1, VectorType Pos2)
+{
+  long       rc=FALSE;                  
+  VectorType DimSmplV={0.0,0.0,0.0},
+             PosV= {0.0,0.0,0.0},
+             DirV= {0.0,0.0,0.0},
+             Pos1V={0.0,0.0,0.0},
+             Pos2V={0.0,0.0,0.0};
+
+  // fill structure defining size 
+  DimSmplV[0] = diameter;
+  DimSmplV[2] = length;
+
+  // rotate position and direction 90° about y-axis
+  PosV[0] = -Pos[2]; PosV[1] = Pos[1]; PosV[2] = Pos[0]; 
+  DirV[0] = -Dir[2]; DirV[1] = Dir[1]; DirV[2] = Dir[0]; 
+
+  // call function for vertical cylinder 
+  rc=IntersectionWithCylinder(DimSmplV, PosV, DirV, Pos1V, Pos2V);
+
+  // rotate back intersection positions (-90° about y-axis)
+  Pos1[0] = Pos1V[2]; Pos1[1] = Pos1V[1]; Pos1[2] = -Pos1V[0]; 
+  Pos2[0] = Pos2V[2]; Pos2[1] = Pos2V[1]; Pos2[2] = -Pos2V[0]; 
+
+  return rc;
+}
+
 /*****************************************************************************/
 /* 'IntersectionWithSphere'  gives coordinates of intersections with a sphere */
 /* (Author: G. Zsigmond)                                                                     */
+/*************************************************************************/
 long IntersectionWithSphere(const VectorType DimSample, const VectorType Pos, const VectorType Dir,
 			    VectorType Pos1, VectorType Pos2)
 {
@@ -743,6 +809,7 @@ double b, c, delta, khi1, khi2 ;
 }
 
 
+
 /****************************************************************/
 /* 'PlaneLineIntersect'                                         */
 /* 'PlaneLineIntersect2'                                        */
@@ -755,6 +822,7 @@ double b, c, delta, khi1, khi2 ;
 /*                       'Result' will contain the point        */
 /*                  FALSE if the line is parallel to plane      */
 /* (Author: F. Streffer)                                        */
+/***********************************************************************************/
 int PlaneLineIntersect(const VectorType LineOffset, const VectorType LineDir,
                        const VectorType PlaneNormalVector, const double PlaneDistane,
                        VectorType Result)
@@ -776,32 +844,13 @@ int PlaneLineIntersect(const VectorType LineOffset, const VectorType LineDir,
   return TRUE;
 }
 
-/***************************************/
-/* IntersectionWithHorizontalPlane		*/
-/* Z:		position of the plane		*/
-/* PosVect: point on line				*/
-/* Dir:		flight direction			*/
-/* (Author: G. Zsigmond)                                                           */
-
-long IntersectionWithHorizontalPlane(const double Z , const VectorType PosVect, const VectorType Dir,
-				     VectorType Result)
-{
-	if(Dir[2] ==0.) return 0 ;
-
-	CopyVector(Dir, Result) ;
-	MultiplyByScalar(Result, (Z - PosVect[2])/Dir[2]) ;
-	AddVector(Result, PosVect) ;
-
-	return 1;
-}
-
-
 /*********************************************************************/
 /*  PlaneLineIntersect2                                              */
 /*                                                                   */
 /* function returns TRUE, 'Result' contains the point                */
 /* if line is parallel to plane, 'Result' contains very high values  */
 /* (Author: G. Zsigmond)                                             */
+/***********************************************************************************/
 int PlaneLineIntersect2(const VectorType LineOffset, const VectorType LineDir,
                        const VectorType PlaneNormalVector, const double PlaneDistane,
                        VectorType Result)
@@ -828,10 +877,30 @@ int PlaneLineIntersect2(const VectorType LineOffset, const VectorType LineDir,
 }
 
 
+/***************************************/
+/* IntersectionWithHorizontalPlane		*/
+/* Z:		position of the plane		*/
+/* PosVect: point on line				*/
+/* Dir:		flight direction			*/
+/* (Author: G. Zsigmond)                                                           */
 /***********************************************************************************/
-/** local functions                                                               **/
-/***********************************************************************************/
+long IntersectionWithHorizontalPlane(const double Z , const VectorType PosVect, const VectorType Dir,
+				     VectorType Result)
+{
+	if(Dir[2] ==0.) return 0 ;
 
+	CopyVector(Dir, Result) ;
+	MultiplyByScalar(Result, (Z - PosVect[2])/Dir[2]) ;
+	AddVector(Result, PosVect) ;
+
+	return 1;
+}
+
+
+
+/***********************************************************************************/
+/* solving quadratic equation (for trajectory under gravity)                       */
+/***********************************************************************************/
 #ifdef VERS27
 /*******************************************************************/
 /* THIS FUNCTION SOLVES THE QUADRATIC EQUATION
@@ -1015,3 +1084,29 @@ double SolveQuadraticEq (double A, double B, double C) {
 }	
 
 #endif
+
+
+
+/***********************************************************************************/
+/** local functions                                                               **/
+/***********************************************************************************/
+
+/***********************************************************************************/
+/* ordering points on a trajectory so that Dir shows from Pos1 to Pos2 */
+/***********************************************************************************/
+int OrderPositions(const VectorType Dir, VectorType Pos1, VectorType Pos2) 
+{
+  VectorType propag, V;
+
+  CopyVector(Pos2, propag); SubVector(propag, Pos1);
+
+  if(ScalarProduct(propag, Dir) == 0.) return 0;
+  if(ScalarProduct(propag, Dir) < 0.)
+    {
+      CopyVector(Pos1, V) ;
+      CopyVector(Pos2, Pos1) ;
+      CopyVector(V, Pos2) ;
+    }
+  return 1;
+}
+
