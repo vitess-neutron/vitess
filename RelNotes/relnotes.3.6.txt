@@ -20,7 +20,7 @@ The main new features in existing modules are:
 - The source module can now be used for all CANS sources (using 'source_long_pulsed').
 - 'read_in' and 'writout' can now handle binary files (in VITESS or McStas format) or SSW files as used in MCNP (in addition to MCPL files and VITESS/McStas ASCII files).
 - The guide can be curved and diverging/converging at the same time, and MCPL files can be written containing information of the neutron absorption, which can be used as the basis for subsequent shielding simulations (using MCNP, Geant, ...).
-- The monochromator can rotate about a vertical axis; and monochromators put behind each other are treated correctly now.
+- The monochromator can rotate about a vertical axis, a horizontal axis (PST) or oscillate along the x-axis (Doppler drive).
 - The disc chopper can be set to create random flight times of the neutron at the chopper position (which facilitates simulation of TOF instruments on continuous sources).
 - The velocity selector has now windows, where the neutrons have to pass.
 - The reflectometer sample is described now much more realisticly: it contains an absorbing substrate and the unreflected beam is also handled; this enables realistic virtual experiments. (Corresponding extensions will be realized for all samples in upcoming versions.) 

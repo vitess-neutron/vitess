@@ -274,7 +274,7 @@ int Mon2D::FillMonitor(Neutron* pNeutr)
   }
   if (filterParam2 > NO_PAR)
   { 
-    ParValue = DetermineParameter(filterParam1, pNeutr);
+    ParValue = DetermineParameter(filterParam2, pNeutr);
     if (ParValue < filterVarMin2 || ParValue > filterVarMax2)
       bPar2=FALSE;  
     else
