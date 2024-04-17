@@ -7,11 +7,11 @@ Welcome to GitLab Page of the simulation program '**VITESS**' (Virtual Instrumen
 
 ### Latest versions
 
-The current **VITESS** version is 3.4. It can be downloaded [here](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
+The current **VITESS** version is 3.6. It can be downloaded [here](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
 
 As new features, it allows reading and writing neutron data in MCLP and MCNPX format and contains the description of the ESS Butterfly-1 moderator. We invite you to download and install the new release and give us feedback on your experiences. Please also take a look at the version history. 
 
-**VITESS** 3.5 is in active development. If you are interested in testing it, checkout the develop branch or download an up-to-date snapshot [here](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
+**VITESS** 4.0 is in active development. If you are interested in testing it, checkout the develop branch or download an up-to-date snapshot [here](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
 
 
 ### Concept of VITESS
