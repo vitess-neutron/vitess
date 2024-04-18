@@ -174,3 +174,15 @@ package:
   artifacts:
     paths:
       - Downloads/
+
+pages:
+  stage: build
+  image: rockylinux:8
+  only:
+    - master
+  script:
+    - cp -r WWW public
+    - echo '/vitess/ /vitess/vitess.html 301' > public/_redirects
+  artifacts:
+    paths:
+    - public
