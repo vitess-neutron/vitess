@@ -180,6 +180,7 @@ pages:
   image: rockylinux:8
   only:
     - master
+    - develop
   script:
     - cp -r WWW public
     - echo '/vitess/ /vitess/vitess.html 301' > public/_redirects
