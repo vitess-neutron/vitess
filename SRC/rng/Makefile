@@ -8,8 +8,8 @@ AUXI.c = $(AUXI.o:.o=.c)
 RNG_O.c = $(RNG_O.o:.o=.c)
 INCL = -I.
 
-COPTFLAGS = $(INCL) -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
-CDEBFLAGS = $(INCL) -Wall
+COPTFLAGS = $(CFLAGS) $(INCL) -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CDEBFLAGS = $(CFLAGS) $(INCL) -Wall
 
 SYS = $(shell uname)
 

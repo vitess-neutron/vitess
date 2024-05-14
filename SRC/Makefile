@@ -15,16 +15,26 @@ TODAY := $(shell date '+%Y-%m-%d')
 FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
 CC = cc
-CFLAGS = -O3 -pthread -Wall -Wno-cast-qual -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
+ARCHFLAGS =
+CFLAGS = $(ARCHFLAGS) -O3 -pthread -Wall -Wno-cast-qual -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
 CXX = c++
 CXXFLAGS = $(CFLAGS)
-CPPFLAGS=
+CPPFLAGS =
 LDFLAGS = -L. -L"$(GSLPATH)"
 LDLIBS = -lvitess -lgslran -lm
 AR = ar
-ARFLAGS = rv
+ARFLAGS = rsv
 INSTALL = install
 RM = rm -f
+LN = ln -s
+
+DARWIN_UNIVERSAL = NO
+ifeq ($(SYS),Darwin)
+ifeq ($(ARCH),arm64)
+DARWIN_UNIVERSAL = YES
+ARCHFLAGS = -arch x86_64 -arch arm64
+endif
+endif
 
 ifndef NOG2
 CFLAGS += -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I"$(G2PATH)/include"
@@ -39,6 +49,7 @@ endif
 endif
 
 ifdef DEBUG
+CFLAGS := $(filter-out -O3,$(CFLAGS))
 CFLAGS += -g -O0 -DDEBUG=1
 endif
 
@@ -169,19 +180,27 @@ clean:
 	[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
 
 .PHONY: install
+ifeq ($(DARWIN_UNIVERSAL),YES)
+install: $(ALL)
+	for F in $(ALL); do \
+		$(INSTALL) $${F} $(MODULES_DIR)/$${F}_$(SYS)_arm64; \
+		$(LN) $${F}_$(SYS)_arm64 $(MODULES_DIR)/$${F}_$(SYS)_x86_64; \
+	done
+else
 install: $(ALL)
 	for F in $(ALL); do \
 		$(INSTALL) $${F} $(MODULES_DIR)/$${F}_$(SYS)_$(ARCH); \
 	done
+endif
 
 
 # build libraries
 $(G2PATH)/libg2.a:
-	cd $(G2PATH); ./configure $(G2OPTS)
+	cd $(G2PATH); ./configure $(G2OPTS) CC=cc CXX=c++ CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
 	$(MAKE) -C "$(G2PATH)" all
 
 $(GSLPATH)/libgslran.a:
-	$(MAKE) -C "$(GSLPATH)" libgslran.a
+	$(MAKE) -C "$(GSLPATH)" libgslran.a CC=cc CXX=c++ CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
 
 libvitess.a: $(COMMON)
 	$(AR) $(ARFLAGS) $@ $^
