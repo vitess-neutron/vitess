@@ -99,7 +99,7 @@ compile-darwin:
     - sudo hdiutil detach /Volumes/XQuartz-2.8.2
     - tar xzf libgd-2.3.3.tar.gz
     - cd libgd-2.3.3
-    - ./configure --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib CC="cc" CXX="c++" CFLAGS="-arch x86_64 -arch arm64" CXXFLAGS="-arch x86_64 -arch arm64"
+    - ./configure --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib --disable-shared CC="cc" CXX="c++" CFLAGS="-arch x86_64 -arch arm64" CXXFLAGS="-arch x86_64 -arch arm64"
     - make
     - sudo make install
     - cd ..
