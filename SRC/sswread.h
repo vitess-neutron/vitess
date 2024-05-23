@@ -30,6 +30,11 @@
 extern "C" {
 #endif
 
+  #define SSW_MCNP_NOTFOUND 0
+  #define SSW_MCNP6 1
+  #define SSW_MCNPX 2
+  #define SSW_MCNP5 3
+
   typedef struct {
     void * internal;
   } ssw_file_t;
@@ -95,6 +100,8 @@ extern "C" {
   int32_t conv_mcnpx_pdg2ssw(int32_t);
   int32_t conv_mcnp6_pdg2ssw(int32_t);
 
+  void ssw_internal_grabhdr(const char * filename, int is_gzip, int64_t hdrlen,
+                            unsigned char * hdrbuf);
 #ifdef __cplusplus
 }
 #endif

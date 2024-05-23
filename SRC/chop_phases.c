@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "defines.h"
+#include "init.h"
 
 
 /************************************/
@@ -44,7 +44,6 @@ static double FMin(double a, double b) { return a < b ? a : b; }  // return mini
 /*********************************/
 /** Global and Static Variables **/
 /*********************************/
-McCompID  _eModule = MCN_TOOL_CHOP;
 char   sBuffer[129];
 double dRpm, dRotFreq,     // Rotat. frequency in rpm and Hz                     
        dRepRate,           // Repetition rate of the pulse in Hz                     
@@ -100,6 +99,7 @@ int main(int argc, char* argv[])
 
 	double dLdMinFM, dLdMaxFA;
 
+	_eModule = MCN_TOOL_CHOP;
 	pOutFile = stdout;
 
 	OwnInit(argc, argv);		

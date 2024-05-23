@@ -35,12 +35,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "general.h"
 #include "init.h"
 #include "softabort.h"
 #include "convert.h"
 #include "mcpl.h"
-#include "sswread.c"
+#include "sswread.h"
 
 
 /******************************/

@@ -52,11 +52,6 @@
 //Should be large enough to hold first record in all supported files:
 #define SSWREAD_STDBUFSIZE 1024
 
-#define SSW_MCNP_NOTFOUND 0
-#define SSW_MCNP6 1
-#define SSW_MCNPX 2
-#define SSW_MCNP5 3
-
 void ssw_error(const char * msg) {
   ;//printf("ERROR: %s\n",msg);
   exit(1);

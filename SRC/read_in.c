@@ -30,7 +30,7 @@
 #include "softabort.h"
 #include "mcpl.h"
 #include "trace.h"
-#include "sswread.c"
+#include "sswread.h"
 #include "random_sampler.h"
 
 #define NF_MAX         3
