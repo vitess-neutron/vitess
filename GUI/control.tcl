@@ -106,7 +106,7 @@ proc showModulesAgain {{delall 0}} {
   if {[getSystem] == "unix"} {
     # Give a hint of the overall geometry, otherwise we see a stamp
     # sized window with Linux. We may not specify the exact size, sorry;
-    # In conjunction with KDE the result is 
+    # In conjunction with KDE the result is
     # "maximize to full window vertically".
     wm geometry $XRoot 800x600
   }
@@ -218,7 +218,7 @@ proc pasteModPars {} {
 # mMenue $w.fil ... produces $w.fil.menu
 ###
 proc controlMenu {w} {
-  global neededModulesSET menuColor
+  global neededModulesSET menuColor instrumentfile
   global AvailableSET SourceDirectory Htmlhelp tcl_platform
 
   mMenu $w.fil File
@@ -231,14 +231,16 @@ proc controlMenu {w} {
   pack $w.fil $w.copa $w.plo $w.con $w.tool $w.opt $w.hel -side left -ipadx 2m
 
   set lmenu {
-    {c "LOAD Instrument" {loadAll gui}}
-    {c "SAVE Instrument" {storeAll gui}}
-    {c "SAVE As" {storeAll gui newfile.gui}} s
-    {c "ADD Packet" {addPacket}}
-    {c "INSERT Packet" {insertPacketWindow}}
-    {c "SAVE Packet" {savePacketWindow}} s
-    {c "SAVE to Directory" saveDirectory} s
-    {c "Import Pipe" {importPipe}}
+    {c "New instrument" {deleteAllModules}}
+    {c "Load instrument" {loadAll gui}}
+    {c "Save" {storeAll gui "" $instrumentfile 1}}
+    {c "Save as" {storeAll gui newfile.gui}} s
+    {c "Load example file" {loadAll gui examples}} s
+    {c "Add packet" {addPacket}}
+    {c "Insert packet" {insertPacketWindow}}
+    {c "Save packet" {savePacketWindow}} s
+    {c "Save to directory" saveDirectory} s
+    {c "Import pipe" {importPipe}}
     {m "Export as" mex} s
     {c "Generate Series" {genSeries .gser}} s
     {c "Merge Results" {mergeRes .mres}} s
@@ -278,7 +280,12 @@ proc controlMenu {w} {
         {c "Plot using Template" {plotTemplateCmdWindow}} s\
         {c "Close gnuplot Windows" {closeCmdHandles}} s\
         {c "New Template" {newTemplate}}\
-        {c "Edit Template" {editTemplate}}
+        {c "Edit Template" {editTemplate}} s\
+        {c "Set python as default" {setDefaultPlotApp "python"}}\
+        {c "Set gnuplot as default" {setDefaultPlotApp "gnuplot"}}\
+        {c "Set grplot as default" {setDefaultPlotApp "grplot"}}\
+        {c "Set tcl as default" {setDefaultPlotApp "tcl"}}
+
   }
   eval popMenu $w.plo.menu $lmenu
 
@@ -289,7 +296,7 @@ proc controlMenu {w} {
 
   set clist {ascii2bin
     define_direction direct_view guide_shape mirror_coating surface_file gener_hkl gener_bispectral
-    standard_deviation rvitess lattice_dist 
+    standard_deviation rvitess lattice_dist
   }
   set htmlist $clist
   lappend htmlist crysanalyzerspec chop_phases chop_phases dist_time
@@ -299,7 +306,7 @@ proc controlMenu {w} {
     "Define Direction"
     "Direct View" "Guide Shape" "Generate Reflectivity Files" "Generate Surface Files" "Complete hkl Lines" "Generate Extraction System"
     "Standard Deviation" "Read and Visualise Output"
-    "Lattice Distances" 
+    "Lattice Distances"
     "Cryst. Analyzer Spectrom."
     "Compute Chopper Phases" "Design Chopper System"
     "Distance Time Plot"
@@ -548,13 +555,14 @@ proc setOptions {} {
   setFontSizes
 
   set hfontfamily $sserif
-  set hfonttype bold
+  set hfonttype normal
+  # normal, bold
 
   set bfontfamily $sserif
-  set bfonttype bold
+  set bfonttype normal
 
   set lfontfamily $serif
-  set lfonttype bold
+  set lfonttype normal
 
   set tfontfamily $sserif
   set tfonttype normal
@@ -695,7 +703,8 @@ proc trVar {n e op} {
 
 proc showBeef {w} {
   global bgColor canvasColor buttonColor xcontrolDefaultsESET \
-      maxModule DummyEntry Mlf Amf Textw Messagew Tth sserif XRoot FontSizeIndex
+      maxModule DummyEntry Mlf Amf Textw Messagew Tth sserif XRoot FontSizeIndex\
+      versionNumber headerColor
 
   set XRoot $w
   frame $w.mbar -relief raised -bd 2 -bg $bgColor
@@ -703,7 +712,7 @@ proc showBeef {w} {
 
   # This is the place where main GUI elements are created.
   # Global setups like sizes and limits are set here.
-  set t "VITESS 3.6"
+  set t "VITESS $versionNumber"
   set maxModule 100
   set DummyEntry "--inactive--"
 
@@ -786,15 +795,18 @@ proc showBeef {w} {
   controlMenu $w.mbar
 
   label $w.bm.hlab -bg $bgColor -fg steelblue
-  setInstrumentfile 1
+  setInstrumentfile "MyInstrument"
   bind $w.bm.hlab <ButtonPress> setInstrumentName
 
   set blf [bigLabelFont]
   upvar #0 MainBitmap bitm
   if {[info exists bitm] && $bitm != "" && ![catch {glob $bitm}]} {
     image create photo image1 -file $bitm
-    label $w.bm.c -image image1 -bd 1 -relief sunken
-    pack $w.bm.c $w.bm.hlab -padx .5m -pady .5m
+    image create photo smallImage
+    smallImage copy image1 -subsample 2 2
+    label $w.bm.c -image smallImage
+    label $w.bm.text1 -text "Version $versionNumber" -bg $bgColor
+    pack $w.bm.hlab $w.bm.c $w.bm.text1 -side left -padx 2.2c
   } else {
     canvas $w.bm.c -width $cmw -height $vbh -bg $canvasColor \
 	-highlightbackground $canvasColor
@@ -803,7 +815,7 @@ proc showBeef {w} {
   }
 
   set blf [bigLabelFont -3]
-  label $w.bm.notice -bg $bgColor -fg steelblue -font $blf -text "Click parameter names for help!"
+  label $w.bm.notice -bg $bgColor -fg steelblue -font $blf -text "Click parameter names for help!" -fg $headerColor
   pack $w.bm.notice -side right
   bind $w.bm.notice <ButtonPress> {showHelpItem VITESS-GUI}
 
@@ -851,12 +863,12 @@ proc showBeef {w} {
   pack $wb.stop.stop $wb.stop.kill -side left -ipadx 1m
 
   set wb $w.h.r
-  bButton $wb.del Fresh deleteAllModules
+  bButton $wb.save Save {storeAll gui "" $instrumentfile 1}
   bButton $wb.exit Exit confirmedExit
   frame  $wb.dummy
-  pack $wb.del -fill x
-  pack $wb.dummy -fill x -anchor w -pady 12m
-  pack $wb.del $wb.exit -fill x
+  pack $wb.save -fill x
+  # pack $wb.dummy -fill x -anchor w -pady 12m
+  # pack $wb.del $wb.exit -fill x
   saveLastState
   set LastWin $wb.exit
   bind $LastWin <Destroy> windowManagerExit
@@ -912,7 +924,7 @@ proc doSnapshot {} {
 
 proc watchdogMonitor {} {
   global WatchSeconds PipeActive LastCheck
-  
+
   set tsec $WatchSeconds
   if {! $PipeActive} {
     set do_snap 1

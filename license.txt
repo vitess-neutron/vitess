@@ -10,6 +10,3 @@ Of course we did our best to extinct errors from this
 program, but know for sure some bugs still exist.
 So, use this simulation package at your own risk.
 
-VITESS is maintained by a group of developers now, please visit
-http://www.helmholtz-berlin.de/vitess
-

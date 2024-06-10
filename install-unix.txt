@@ -6,7 +6,7 @@ Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
         former Hahn-Meitner-Institut Berlin
 
 Modules:
-	Klaus Lieutenant   (klaus.lieutenant@helmholtz-berlin.de)
+	Klaus Lieutenant   (k.lieutenant@fz-juelich.de)
         Andreas Houben
 	Géza Zsigmond      (geza.zsigmond@psi.ch)
 	Sergey Manoshin
@@ -37,7 +37,7 @@ We assume you change that to a name with .tar.gz ending like vitess.tar.gz if ne
 
 You may compare the CRC32, MD5 or SHA1 checksums of the downloaded vitess.tar.gz with those given at
 
-https://www.helmholtz-berlin.de/vitess
+https://vitess.fz-juelich.de/
 
 Linux
 -----
@@ -91,13 +91,13 @@ Solaris and Tru64, too.
 
 VITESS relies on the pseudorandom number generators from the GNU Scientific Library.
 We provide these in the rng sub directory, see rng/README.txt.
-Another prerequisite for some modules is the g2 library provided, 
+Another prerequisite for some modules is the g2 library provided,
 see g2-0.72/Readme.vitess on how to compile this library.
 
 The Perl script  mmake.pl  in the SRC directory may be used to generate a
 GNU Makefile adopted to the local Unix, like configure does for other software.
 As some modules need GD graphics routines, which rely on auxiliary libraries,
-mmake.pl looks for these and gives hints if they are missing on your system. 
+mmake.pl looks for these and gives hints if they are missing on your system.
   (As an extra this script generates a nmake file vitess.mak
   suitable for Microsoft Studio compilers.)
 Just call
@@ -161,7 +161,7 @@ in that directory.
 They need a copied own directory with vitess files for that purpose.
 
 It's easy to provide this. Let us assume root unzipped the latest version
-to /opt/vitess3.4, she or he may provide a call script like 
+to /opt/vitess3.4, she or he may provide a call script like
 /usr/local/bin/vitess3.4 for users in the default PATH.
 
 Do as root then

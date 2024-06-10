@@ -284,8 +284,8 @@ rename makeModuleSets {}
 ### Input parameters
 ###
 set inputESET {
-  {infilename browsefile "" {"input file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -f} r dat}
-  {outfilename parbrowsefile "no_file" {"output file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -F}}
+  {infilename browsefile "" {"Input file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'Input file'." "" -f} r dat}
+  {outfilename parbrowsefile "no_file" {"output file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'Input file'." "" -F}}
   {defdirectory browsedir "" {"parameter\ndirectory" "This is the one and only directory for parameter files. All these files should reside in one directory, to make the reproduction of a simulation on other systems feasable."} w "" 1 d}
 
   {random_seed float 1 {"random\nseed" "random number generator initialization" "" -Z}}
@@ -514,7 +514,7 @@ set cwsASET {
     {"time of\nmeasurement [s]" "not necessary: the number of neutrons for the given time range is calculated in each module, if the time is not zero." "" A} ge0}
   {deswl float "" {"desired\nwavelength [A]" "not necessary: (average) wavelength (at the sample) to be used in the measurement - not necessary, only needed to write optimal chopper phases to 'instrument.inf'" "" W}}
   {}
-  {trace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n 
+  {trace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n
                    1) 'write trace files': For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.\n
                    2) 'only trace trajectories': Only those trajectories are started in the second run that are found in the 'raytracing file'.\n
                    (This yields identical results at (or after) the site where the trajectories of interest were determined, only if there are no MC choices in the devices between source and the site of interest, i.e. no sample, no monochromator/analyser, no sm_ensemble, no bender with transmission between channels." "" k} {no "write trace files" "only trace trajectories"} {0 1 2}}
@@ -789,24 +789,24 @@ set read_inESET {
   {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
   {inform radio float {"storage format" "format of float values in writeout file" "" F} {exp float binary} {0 1 2}}
   {}
-  {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
-  {fname2 pareditablefile "" {"input\nfile 2" "Specifies the name of the ASCII 2nd input file containing trajectories.\n(Not for MCPL format)" "" B} r}
-  {fname3 pareditablefile "" {"input\nfile 3" "Specifies the name of the ASCII 3rd input file containing trajectories.\n(Not for MCPL format)" "" D} r}
+  {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st Input file containing trajectories." "" A} r "" 1}
+  {fname2 pareditablefile "" {"input\nfile 2" "Specifies the name of the ASCII 2nd Input file containing trajectories.\n(Not for MCPL format)" "" B} r}
+  {fname3 pareditablefile "" {"input\nfile 3" "Specifies the name of the ASCII 3rd Input file containing trajectories.\n(Not for MCPL format)" "" D} r}
   {}
   {ri_frc1 float "1.0" {"weight\nfor file 1" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" a}}
   {ri_frc2 float "0.0" {"weight\nfor file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
   {ri_frc3 float "0.0" {"weight\nfor file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
   {}
   {inrep int 1  {"repetition" "Number of times that the trajectories are read." "" R} ge1}
-  {maxEv float "" {"max events" "Maximum number of trajectories that are read. If 'Random sample' is set to 'Yes', the events will be random sampled from the total input file. If 'No', then the first 'max events' neutron trajectories of the file will be read." "" M}}
-  {sampleF radio No {"Random sample" "Sub-samples a VITESS file by choosing 'max events' neutrons randomly from the input file. Modify the general random seed for different samples. This option requires 'max events' to be larger than 0." "" J} {No Yes} {0 1}}
+  {maxEv float "" {"max events" "Maximum number of trajectories that are read. If 'Random sample' is set to 'Yes', the events will be random sampled from the total Input file. If 'No', then the first 'max events' neutron trajectories of the file will be read." "" M}}
+  {sampleF radio No {"Random sample" "Sub-samples a VITESS file by choosing 'max events' neutrons randomly from the Input file. Modify the general random seed for different samples. This option requires 'max events' to be larger than 0." "" J} {No Yes} {0 1}}
   {ri_fact float "1.0" {"Intensity\nfactor" "The weight of each neutron trajectory from the MCNP simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {in_surf int ""  {"surface\nID" "Only for MCNP6: If a surface ID (greater -1) is given, only neutrons with this ID are read from file." "" s} ge-1}
   {incolor int -1  {"read in color" "Only for VITESS format: Read only events with a given color. A negative number means any color." "" C}}
   {}
   {ifname pareditablefile "" {"instrument\ninput file" "Specifies the instrument file of the previous part of the simulation." "" -I} r}
   {}
-  {intrace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n 
+  {intrace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n
                      1) 'write trace files': For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.\n
                      2) 'only trace trajectories': Only those trajectories are started in the second run that are found in the 'raytracing file'.\n
                      (This yields identical results at (or after) the site where the trajectories of interest were determined, only if there are no MC choices in the devices between source and the site of interest, i.e. no sample, no monochromator/analyser, no sm_ensemble, no bender with transmission between channels." "" t} {no "write trace files" "only trace trajectories"} {0 1 2}}
@@ -2059,7 +2059,7 @@ set flipper_gradientESET {
   {ny int 2 {"in Y\ndirection" "Number of domains in the Y direction" "" D} gt0}
   {nz int 2 {"in Z\ndirection" "Number of domains in the Z direction" "" E} gt0}
 
-  {"Rotation of Precession Volume" header}  
+  {"Rotation of Precession Volume" header}
   {rotproc float 0 {"horizontal\noffset [deg]" "Horizontal (around axis OZ) angle of the field volume" "" i}}
 
   {"Output Frame" header}
@@ -2231,7 +2231,7 @@ set rotating_fieldESET {
 ###
 set quadr_fieldESET {
   {"Field range and strength" header}
-  {sf_bf pareditablefile field.dat {"field range file" "input file giving the range of the magnetic field" "" P}}
+  {sf_bf pareditablefile field.dat {"field range file" "Input file giving the range of the magnetic field" "" P}}
   {}
   {sf_mx float 0 {"magnetic\nfield X [Gs]" "x component of the magnetic field in Gauss" "" F}}
   {sf_my float 0 {"magnetic\nfield Y [Gs]" "y component of the magnetic field in Gauss" "" G}}
@@ -2844,7 +2844,7 @@ proc genFE {n} {
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the 1st parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  1     2     17    3     4      5     6      7   8   9   10     11       18       15      16          12    13    14}}
 }
 
@@ -2867,13 +2867,13 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
@@ -2930,14 +2930,14 @@ proc monitor1DCheckErr {{app _}} {
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
 set mA2 {
   {parameter2 radio pos_z {
     "parameter\non y-axis" "choose the parameter to be shown on the y-axis" "" Y}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set mAV {
@@ -2960,13 +2960,13 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
@@ -3703,7 +3703,7 @@ proc eval_elast2CheckErr {{app _}} {
 set eval_sansESET {
   {sn_ifile moneditablefile sans.eva {"intensity\nfile" "The output file containing the intensity distribution I(Q) at the detector (of this simulation)" "" i}}
   {sn_sfile moneditablefile "" {"S(Q) file" "The output file containing the result S(Q) calculated from this intensity distribution and that of the reference file as S(Q) = F_norm * I_smpl(Q) / I_ref(Q)" "" S}}
-  {sn_rfile pareditablefile "" {"reference\nfile" "The input file containing the intensity distribution I(Q) at the detector for isotropic scattering\n only needed for S(Q)" "" I}}
+  {sn_rfile pareditablefile "" {"reference\nfile" "The Input file containing the intensity distribution I(Q) at the detector for isotropic scattering\n only needed for S(Q)" "" I}}
   {sn_nbins int 100 {"number\nof bins" "number of bins determines the segmentation of the Q interval and therewith the number of values written to the spectrum file" "" n} 1 10000}
   {sn_mina float 0.001 {"minimum\n[1/Ang]" "lower bound of the Q-value interval" "" m} ge0}
   {sn_maxa float 1 {    "maximum\n[1/Ang]" "upper bound of the Q-value interval" "" M} gt0}
@@ -5190,6 +5190,19 @@ proc trimModules {w i rmlist deflist} {
   showModName
 }
 
+proc reorderModules {w deflist} {
+  # redefine saved entry variables for shifted module
+  foreach item $deflist {
+    global [set gvar [lindex $item 0]]
+    set $gvar [lindex $item 1]
+  }
+  # reactivate saved modules for new indices
+  reShowModules $w
+
+  # show given names of modules
+  showModName
+}
+
 proc moveDown {oldi} {
   global maxModule DummyEntry maxModule Mlf
   # check if there is some free room below
@@ -5243,6 +5256,114 @@ proc moveDown {oldi} {
   trimModules $w $oldi $rmlist $deflist
 }
 
+proc moveUp {oldi} {
+  set movei [expr {$oldi+1}]
+  moveDown $movei
+}
+
+proc swapWithPrevious {oldi} {
+  global maxModule DummyEntry Mlf
+  # Check if oldi is within a valid range
+  if {$oldi <= 1} {
+    puts "Cannot swap the first module with a previous module."
+    return
+  }
+
+  set prevI [expr {$oldi - 1}]
+  set allglob [info globals]
+  set w $Mlf
+
+  upvar #0 visM$oldi visOld
+  upvar #0 visM$prevI visPrev
+  upvar #0 mod$oldi modOld
+  upvar #0 mod$prevI modPrev
+
+  # Save current module states
+  set visOldVal [globVal visM$oldi]
+  set visPrevVal [globVal visM$prevI]
+  set modOldVal [globVal mod$oldi]
+  set modPrevVal [globVal mod$prevI]
+
+  # Prepare lists for variables to remove and define
+  set rmlist {}
+  set deflist {}
+
+  # Remove and define vis and mod variables for swapping
+  lappend rmlist visM$oldi mod$oldi visM$prevI mod$prevI
+  lappend deflist [list visM$oldi $visPrevVal] [list mod$oldi $modPrevVal]
+  lappend deflist [list visM$prevI $visOldVal] [list mod$prevI $modOldVal]
+
+  # Loop through all globals to swap specific module-related variables
+  set rOld _$oldi\$
+  set rPrev _$prevI\$
+  foreach n $allglob {
+    if {[regexp $rOld $n] || [regexp $rPrev $n]} {
+      lappend rmlist $n
+      if {[regexp $rOld $n]} {
+        regsub $rOld $n _$prevI newr
+        lappend deflist [list $newr [globVal $n]]
+      } elseif {[regexp $rPrev $n]} {
+        regsub $rPrev $n _$oldi newr
+        lappend deflist [list $newr [globVal $n]]
+      }
+    }
+  }
+
+  # Apply changes
+  reorderModules $w $deflist
+}
+
+proc swapWithFollowing {oldi} {
+  global maxModule DummyEntry Mlf
+  # Check if oldi is within a valid range
+  if {$oldi >= $maxModule} {
+    puts "Cannot swap the last module with an inactive module."
+    return
+  }
+
+  set follI [expr {$oldi + 1}]
+  set allglob [info globals]
+  set w $Mlf
+
+  upvar #0 visM$oldi visOld
+  upvar #0 visM$follI visFoll
+  upvar #0 mod$oldi modOld
+  upvar #0 mod$follI modFoll
+
+  # Save current module states
+  set visOldVal [globVal visM$oldi]
+  set visFollVal [globVal visM$follI]
+  set modOldVal [globVal mod$oldi]
+  set modFollVal [globVal mod$follI]
+
+  # Prepare lists for variables to remove and define
+  set rmlist {}
+  set deflist {}
+
+  # Remove and define vis and mod variables for swapping
+  lappend rmlist visM$oldi mod$oldi visM$follI mod$follI
+  lappend deflist [list visM$oldi $visFollVal] [list mod$oldi $modFollVal]
+  lappend deflist [list visM$follI $visOldVal] [list mod$follI $modOldVal]
+
+  # Loop through all globals to swap specific module-related variables
+  set rOld _$oldi\$
+  set rFoll _$follI\$
+  foreach n $allglob {
+    if {[regexp $rOld $n] || [regexp $rFoll $n]} {
+      lappend rmlist $n
+      if {[regexp $rOld $n]} {
+        regsub $rOld $n _$follI newr
+        lappend deflist [list $newr [globVal $n]]
+      } elseif {[regexp $rFoll $n]} {
+        regsub $rFoll $n _$oldi newr
+        lappend deflist [list $newr [globVal $n]]
+      }
+    }
+  }
+
+  # Apply changes
+  reorderModules $w $deflist
+}
 
 proc removeMod {oldi} {
   global maxModule DummyEntry Mlf
@@ -5332,6 +5453,86 @@ proc disableModule {{i ""} {reenable 0}} {
   }
 }
 
+proc duplicateModule {oldi} {
+  global maxModule DummyEntry Mlf
+  # Check if oldi is within a valid range
+  if {$oldi < 1 || $oldi >= $maxModule} {
+      puts "Cannot duplicate module outside the valid range."
+      return
+  }
+
+  #generate an empty module above
+  moveDown $oldi
+
+  set prevI [expr {$oldi + 1}]
+  set allglob [info globals]
+  set w $Mlf
+
+  upvar #0 visM$oldi visOld
+  upvar #0 visM$prevI visPrev
+  upvar #0 mod$oldi modOld
+  upvar #0 mod$prevI modPrev
+
+  # Save current module states
+  set visOldVal [globVal visM$prevI]
+  set visPrevVal [globVal visM$prevI]
+  set modOldVal [globVal mod$prevI]
+  set modPrevVal [globVal mod$prevI]
+
+  # Prepare lists for variables to remove and define
+  set rmlist {}
+  set deflist {}
+
+  # Remove and define vis and mod variables for swapping
+  lappend rmlist visM$oldi mod$oldi visM$prevI mod$prevI
+  lappend deflist [list visM$oldi $visPrevVal] [list mod$oldi $modPrevVal]
+  lappend deflist [list visM$prevI $visOldVal] [list mod$prevI $modOldVal]
+
+  # Loop through all globals to swap specific module-related variables
+  set rOld _$oldi\$
+  set rPrev _$prevI\$
+  foreach n $allglob {
+    if {[regexp $rOld $n] || [regexp $rPrev $n]} {
+      lappend rmlist $n
+      if {[regexp $rOld $n]} {
+        regsub $rOld $n _$prevI newr
+        lappend deflist [list $newr [globVal $n]]
+      } elseif {[regexp $rPrev $n]} {
+        regsub $rPrev $n _$oldi newr
+        lappend deflist [list $newr [globVal $n]]
+      }
+    }
+  }
+
+  # Apply changes
+  reorderModules $w $deflist
+}
+
+proc copyModulePars {ci} {
+  upvar #0 visM$ci current
+  global DummyEntry CopiedPars CopiedValues
+  if {$ci == $DummyEntry} return
+  set cp {}; set cv {}
+  foreach n [info globals] {
+    if [regexp (.+)_$ci\$ $n a pa] {
+      lappend cp $pa
+      lappend cv [globVal $n]
+    }
+  }
+  set CopiedPars($current) $cp
+  set CopiedValues($current) $cv
+}
+
+proc pasteModulePars {ci} {
+  upvar #0 visM$ci current
+  global CopiedPars CopiedValues
+  if [catch {set cp $CopiedPars($current); set cv $CopiedValues($current)}] return
+
+  foreach p $cp cci $cv {
+    gSet ${p}_$ci $cci
+  }
+}
+
 proc addModMenu {w i} {
   global DummyEntry menuColor labColor maxModule
 
@@ -5343,8 +5544,14 @@ proc addModMenu {w i} {
   for {set j $i} {$j <= $maxModule} {incr j} {
     set act [globVal mod$j]
     if {$act != "" && $act != $DummyEntry} {
-      lappend mlist s [list c "Move Down" [list moveDown $i]]\
-          [list c "Remove Module" [list removeMod $i]]
+      lappend mlist s [list c "Insert module above" [list moveDown $i]]\
+          [list c "Insert module below" [list moveUp $i]]\
+          [list c "Move Up" [list swapWithPrevious $i]]\
+          [list c "Move Down" [list swapWithFollowing $i]]\
+          [list c "Duplicate module" [list duplicateModule $i]]\
+          [list c "Copy module Pars" [list copyModulePars $i]]\
+          [list c "Paste module Pars" [list pasteModulePars $i]]\
+          [list c "Remove module" [list removeMod $i]]
       break
     }
   }
