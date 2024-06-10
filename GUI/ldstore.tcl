@@ -182,21 +182,22 @@ proc fileSettings {{saveit 0}} {
 proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
   # proto == 1 means normal store operation, including a protocol log
   # proto == 0 is for storage in a snap situation
-
-  if $proto conditionalOpenProtfile
+  if {$proto} {
+    conditionalOpenProtfile
+  }
   if {$extension == "gui"} {
     if {$as != ""} {
+      append as ".$extension"
       if [catch {open $as w} f] {
-	if $proto {outProtocol "can't open $as to write"}
-	return
+	      if $proto {outProtocol "can't open $as to write"} return
       }
       set fname $as
     } else {
       if {$prosal == ""} {
-	set prosal [globVal instrumentfile]
-	if {[file extension $prosal] == ""} {
-	  append prosal ".gui"
-	}
+	      set prosal [globVal instrumentfile]
+	      if {[file extension $prosal] == ""} {
+	        append prosal ".gui"
+	      }
       }
       if {[set f [openWriteFile gui $prosal fname]] == 0} return
     }
@@ -207,7 +208,9 @@ proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
       setInstrumentfile $n
     }
   } else {
-    if {[set f [openWriteFile $extension "" fname]] == 0} return
+    if {[set f [openWriteFile $extension "" $fname]] == 0} {
+      return
+    }
   }
   switch $extension {
     gui {
@@ -228,7 +231,7 @@ proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
   }
   close $f
   if $proto {
-    outProtocol "stored file $fname"
+    outProtocol "Stored in file: $fname"
     conditionalCloseProtfile
   }
   saveLastState
@@ -416,12 +419,12 @@ proc setInstrumentName {} {
 }
 
 proc setInstrumentfile {name} {
-  global instrumentfile
+  global instrumentfile headerColor
   regsub -all " " $name _ name
   set instrumentfile $name
   regexp {[0-9a-zA-ZäöüÄÖÜß_-]+} [file tail $instrumentfile] a
 
-  .x.bm.hlab configure -text "Instrument $a" -font [bigLabelFont -3]
+  .x.bm.hlab configure -text "Instrument: $a" -font [bigLabelFont -3] -fg $headerColor
 }
 
 proc optVal {com c} {
@@ -673,7 +676,7 @@ proc importPipe {} {
   set name [fileDialog open]
   if {$name == ""} return
   if [dontDoit "Your changes will be saved to a snapshot only. Continue importing a pipe?"] return
-     
+
   doImportPipe $name
 }
 
@@ -728,7 +731,7 @@ proc cleanupGlobalVariables {} {
       if {$he == "" || $he == "header"} continue
       lappend ENames($mod) [lindex $n 0]
     }
-    lappend ENames($mod) mmm ; # special module name entry 
+    lappend ENames($mod) mmm ; # special module name entry
   }
 
   foreach e [info globals] {
@@ -806,17 +809,19 @@ proc loadAll {extension {givenname ""}} {
   if {$name == ""} {
     set name [fileDialog open $extension]
     if {$name == ""} return
+  } elseif {$name == "examples"} {
+    set name [tk_getOpenFile -initialdir [file join [globVal SourceDirectory] "FILES/EXAMPLES"] -filetypes [getFileDialogTypes $extension]]
   }
 
   if [dontDoit "Your changes will be saved to a snapshot only. Continue loading?"] return
-     
+
 
   set f [openSaveFile $name "experiment description save file" version]
   if {$f == ""} return
 
   global defdirectory_ Mlf
 
-  if {$givenname == ""} {
+  if {$givenname == "" || $givenname == "examples"} {
     # remember old default directory
     set olddef $defdirectory_
 
@@ -875,8 +880,8 @@ proc loadAll {extension {givenname ""}} {
 
   removeTrailingDummies
 
-  if {$givenname == ""} {
-    setInstrumentfile $name
+  if {$givenname == "" || $givenname == "examples"} {
+    setInstrumentfile [file rootname $name]
 
     if [isWritableDirectory $nd] {
       # Ask if modified new default directory is ok
@@ -900,7 +905,7 @@ proc loadAll {extension {givenname ""}} {
   } else {
     global instrumentfile
     set oname $instrumentfile
-    setInstrumentfile $oname
+    setInstrumentfile [file rootname $oname]
     set defdirectory_ [file dirname $oname]
   }
 
@@ -919,7 +924,7 @@ proc deleteAllModules {} {
   deleteSomeModules $Mlf 1
   reShowModules $Mlf
   removeTrailingDummies
-  setInstrumentfile 1
+  setInstrumentfile "NewInstrument"
   gSet LastState
   helpFrame $Amf
   foreach e [info globals] {

@@ -117,10 +117,10 @@ proc showText {s {newl \n} {errchar "!"}} {
   if {$mode > 0} {
     if {$mode == 3} {
       $wt tag add big3 $LastMarker $ee
-      $wt tag configure big3 -relief sunken -foreground red -background white
+      $wt tag configure big3 -relief sunken -foreground white -background #AE0E36
     } else {
       $wt tag add big $LastMarker $ee
-      $wt tag configure big -relief sunken -background white
+      $wt tag configure big -relief sunken -background #6fc276
     }
   }
   set LastMarker $ee

@@ -6,7 +6,7 @@ Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
 former Hahn-Meitner-Institut Berlin
 
 Modules:
-	Klaus Lieutenant (klaus.lieutenant@helmholtz-berlin.de)
+	Klaus Lieutenant (k.lieutenant@fz-juelich.de)
         Andreas Houben
 	Geza Zsigmond    (geza.zsigmond@psi.ch)
 	Sergey Manoshin
@@ -20,7 +20,7 @@ GUI Software:
 
 README
 
-This program is a Tcl/Tk application. It has been developed on Unix and Windows, 
+This program is a Tcl/Tk application. It has been developed on Unix and Windows,
 and runs fine on both operating systems.
 
 Installation under Windows
@@ -30,7 +30,7 @@ This version came to you as a self extracting file, which has been produced with
 
 You may compare the checksums of the downloaded vitess.exe install program with those stated
 at the web site
-https://www.helmholtz-berlin.de/vitess
+https://vitess.fz-juelich.de/
 
 The installation does not need administrator privileges, all files are installed under
 one directory the installer has access to.
@@ -48,7 +48,7 @@ VITESS start command
 working directory
   C:\Programs\vitess
 
-CAVEAT: 
+CAVEAT:
 +-----------------------------------------------------------------------------+
 | Do not use folder names with blanks and other non-alphanumeric characters!  |
 | DO NOT USE C:\Program Files\                                                |
@@ -59,8 +59,8 @@ CAVEAT:
 To uninstall VITESS you might use the uninstall item in the command (sub-) menu
 (like START/VITESS/uninstall)
 or the windows uninstall procedure for software
-(START/settings/system/software or German 
- START/Einstellungen../Systemsteuerung/Software). 
+(START/settings/system/software or German
+ START/Einstellungen../Systemsteuerung/Software).
 
 Pipe Command Execution under Windows
 
@@ -70,8 +70,8 @@ temporary file sizes. Pipes in a MS-DOS shell are executed
 strictly serialized, with intermediate files storing
 command output. These intermediate files may be too big.
 With Tcl/Tk piped commands are executed (quasi-)pararallel,
-with small intermediate buffers in memory. 
-Solution: 
+with small intermediate buffers in memory.
+Solution:
 1) start pipes from the VITESS GUI
 2) Save the GUI setting with "save tcl" to a file e.g. C:\c.tcl
    Start a separate wish (C:\Programs\tcl\bin\tclsh.exe)
@@ -98,7 +98,7 @@ The 32 bit binary images work fine on Windows 7 64 bit systems, too.
 in bigger image files in any case.)
 
 You may compile new own modules without touching old binaries,
-and recompile everything with newer versions of Visual Studio. 
+and recompile everything with newer versions of Visual Studio.
 
 After installing Visual Studio, use the "Developer Command Prompt for VS 2017",
 cd to the SRC directory in that window, and do

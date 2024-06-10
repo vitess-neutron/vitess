@@ -49,9 +49,9 @@
   </p>
 
   <p>
-    where &mu;<sub>s</sub> = &sigma;<sub>s</sub> &rho; is the macroscopic scattering coefficient [cm<sup>-1</sup>], 
+    where &mu;<sub>s</sub> = &sigma;<sub>s</sub> &rho; is the macroscopic scattering coefficient [cm<sup>-1</sup>],
     i.e. the scattering cross section &sigma; multiplied by the particle density &rho;.
-    <i>Attenuation</i> means a wavelength and path length (before and after the scattering) dependent exponential factor: 
+    <i>Attenuation</i> means a wavelength and path length (before and after the scattering) dependent exponential factor:
     exp(-(&mu;<sub>abs</sub> x <i>pathlength</i>)), where &mu;<sub>abs</sub> ~ &lambda;.
     And the usual tabulated value for 1.798 &Aring; has to be converted to 1 &Aring; in order to calculate the input value <i>absorption coeff.</i>. <br />
     Note that there is currently no beam of unscattered neutrons - even if the scattering probability is low.
@@ -139,7 +139,7 @@
           If read from file, &Delta;&theta; and &Delta;&phi; are regarded as the full ranges, i.e. scattering takes place in the range
           [&theta; - &frac12; &Delta;&theta;, &theta;+ &frac12; &Delta;&theta;],[&phi; - &frac12; &Delta;&phi;,&phi; + &frac12; &Delta;&phi;] <br />
           If given as input parameter (VITESS 4), &Delta;&theta; and &Delta;&phi; are regarded as the ranges around the mean angles, i.e. scattering takes place in the range
-          [&theta; - &Delta;&theta;, &theta; + &Delta;&theta;],[&phi; - &Delta;&phi;,&phi; + &Delta;&phi;] 
+          [&theta; - &Delta;&theta;, &theta; + &Delta;&theta;],[&phi; - &Delta;&phi;,&phi; + &Delta;&phi;]
         </td>
         <td>0&deg; - 360&deg; or <br />0&deg; - 180&deg; (param.)</td>
         <td> -e, -f </td>
@@ -155,7 +155,7 @@
         <td>absorption coefficient<br>[1/cm/ &Aring;]</td>
         <td>
           Macroscopic absorption cross section of the sample per wavelength <br />
-          This is the attenuation constant per unit wavelength (corresponding to 1 Angstrom) <br /> 
+          This is the attenuation constant per unit wavelength (corresponding to 1 Angstrom) <br />
           It is:  1/ (density * absorption_cross_section).
         </td>
         <td> &gt; 0 </td>
@@ -435,7 +435,7 @@
             In SANS, neutrons are always scattered in a cone around the positive x-axis <br />
             This parameter defines the edge of the cone, i.e. the maximal deviation from the forward direction.
           </td>
-          <td>0° - 180°</td>
+          <td>0ï¿½ - 180ï¿½</td>
           <td>-M</td>
         </tr>
 
@@ -473,12 +473,12 @@
     Anything after the # character is interpreted as a comment.)
   </p>
   <pre>
-  2.0 0.0 0.0        # sample position relative to the coordinate system defined by the preceding module is: 2 cm along the x-axis  
-  cub                # sample has the geometry of a cuboid  
-  0.1 1.0 1.0        # thickness, height and width of the cuboid are 0.1 x 1 x 1 cm  
-  1.0 0.0 0.0        # orientation of the cuboid: thickness is in x-direction, height in z-direction (vector need not be normalised)  
-  S 500.0            # sperical particles of radius 500 &Aring;  
-  1.0E10 3.0E10 0.03 # scattering length densities: particles 10<sup>10</sup> 1/cm&sup2;, solution 3x10<sup>10</sup> 1/cm&sup2;, 3 % vol. frac. of particles  
+  2.0 0.0 0.0        # sample position relative to the coordinate system defined by the preceding module is: 2 cm along the x-axis
+  cub                # sample has the geometry of a cuboid
+  0.1 1.0 1.0        # thickness, height and width of the cuboid are 0.1 x 1 x 1 cm
+  1.0 0.0 0.0        # orientation of the cuboid: thickness is in x-direction, height in z-direction (vector need not be normalised)
+  S 500.0            # sperical particles of radius 500 &Aring;
+  1.0E10 3.0E10 0.03 # scattering length densities: particles 10<sup>10</sup> 1/cm&sup2;, solution 3x10<sup>10</sup> 1/cm&sup2;, 3 % vol. frac. of particles
   0.0 0.5 0.05       # Scattering cross sections: incoherent=0, total=0.5 cm<sup>-1</sup> and absorption=0.05 cm<sup>-1</sup>&Aring;<sup>-1</sup>
   </pre>
 
@@ -752,7 +752,7 @@
       </tr>
       <tr>
         <td>sample file</td>
-        <td>The sample file describes the geometry, position and scattering properties of the sample. In VITESS 3 it is mandatory. 
+        <td>The sample file describes the geometry, position and scattering properties of the sample. In VITESS 3 it is mandatory.
             An example is the file 'glass.psq' from the folder 'FILES/sample_files' in the installation directory </td>
         <td>    </td>
         <td> -S </td>
@@ -772,7 +772,7 @@
           The default is a coverage of 4&pi;.
         </td>
         <td>
-          Example: 20° to 160° scattering to the right in +/-20° vert.:<br /> &theta;=90°, &Delta;&theta;=70°<br /> &phi;=180° &Delta;&phi;=20°
+          Example: 20ï¿½ to 160ï¿½ scattering to the right in +/-20ï¿½ vert.:<br /> &theta;=90ï¿½, &Delta;&theta;=70ï¿½<br /> &phi;=180ï¿½ &Delta;&phi;=20ï¿½
         </td>
         <td>
           -D, -d, <br>
@@ -828,12 +828,12 @@
     Anything after the # character is interpreted as a comment.)
   </p>
   <pre>
-  100.0 0.0 0.0        # sample position relative to the coordinate system defined by the preceding module 
+  100.0 0.0 0.0        # sample position relative to the coordinate system defined by the preceding module
   cyl                  # sample geometry (cyl, bal or cub)
-  2.0 10.0             # radius and height of the cylinder in cm 
+  2.0 10.0             # radius and height of the cylinder in cm
   1.0 0.0 0.0          # orientation of the cylinder; need not be normalised
   D                    # S(Q) data from file
-  SiO_300.str          # file containing the structure factor data for the unit cell 
+  SiO_300.str          # file containing the structure factor data for the unit cell
   0.0082 0.0824 0.0139 # Scattering cross sections: incoherent, total and absorption
   </pre>
 
@@ -957,9 +957,9 @@
     generic offspecular look-up table is provided in the FILES folder.
   </p>
   <p>
-    The reflectometry sample can now handle incoherent isotropic scattering. 
-    It requires information on the scattering path length mu, with P=&mu;*x being the scattering probability (0.00288 1/cm for D<sub>2</sub>O), and on some detector parameters. 
-    Besides, if the ratio between the area containing the specular signal and the total detector area is known, 
+    The reflectometry sample can now handle incoherent isotropic scattering.
+    It requires information on the scattering path length mu, with P=&mu;*x being the scattering probability (0.00288 1/cm for D<sub>2</sub>O), and on some detector parameters.
+    Besides, if the ratio between the area containing the specular signal and the total detector area is known,
     this is used to scale the incoherent trajectories such that eval_elast can provide the correct backgroun level without additional data treatment inside and outside the specular signal area.
   </p>
   <p>
@@ -1029,7 +1029,7 @@
         <td>
           &theta;=0 means: no reflection, sample parallel to incoming beam<br>
           positive q.value means: reflection towards the positive z- or positive y-direction resp.<br>
-          for reflection by 2 &alpha; into the negative direction choose angles of &theta; = 180° - &alpha;
+          for reflection by 2 &alpha; into the negative direction choose angles of &theta; = 180ï¿½ - &alpha;
         </td>
         <td>-90&deg; .....90&deg;<br>typical. +1&deg;....+4&deg; </td>
         <td> -a </td>
@@ -1347,10 +1347,10 @@
             which extends from [&theta;-&Delta;&theta;, &theta;+&Delta;&theta;] and [&phi;-&Delta;&phi;, &phi;+&Delta;&phi;].<br>
             &theta; is the scattering angle defined as the angle between +x-axis (main flight direction of the neutrons) and the vector <b>R</b> describing the flight direction after scattering.
             &phi; is the direction on the cone defined as the angle between the +y-axis and the projection of R to the yz-plane. (x,y and z form a right-handed system.)<br>
-            The default is Theta=DelTheta=90°, Phi=DelPhi=180° corresponding to a coverage of 4&pi;.
+            The default is Theta=DelTheta=90ï¿½, Phi=DelPhi=180ï¿½ corresponding to a coverage of 4&pi;.
           </td>
           <td>
-            Example: 20° to 160° scattering to the right in +/-20° vert.:<br /> &theta;=90°, &Delta;&theta;=70°<br /> &phi;=180° &Delta;&phi;=20°
+            Example: 20ï¿½ to 160ï¿½ scattering to the right in +/-20ï¿½ vert.:<br /> &theta;=90ï¿½, &Delta;&theta;=70ï¿½<br /> &phi;=180ï¿½ &Delta;&phi;=20ï¿½
           </td>
           <td>-D, -d,<br>-P, -p</td>
         </tr>
@@ -1401,13 +1401,13 @@
     (Anything after the # character is interpreted as a comment.)
   </p>
   <pre>
-  100.0 0.0 0.0            # sample position relative to the coordinate system defined by the preceding module 
-  cyl                      # sample geometry (cyl, bal or cub) 
-  2.0 10.0                 # radius and height of the cylinder in cm 
-  1.0 0.0 0.0              # orientation of the cylinder; need not be normalised 
-  Al_300.str               # file containing the structure factor data for the unit cell. If the format is neither .str nor .laz, the meaning of individual columns needs to be specified (see below). 
-  0.000494 0.09057 0.01392 # macroscopic cross sections: incoherent, total and absorption 
-  66.38                    # unit cell volume in cubic Angstrom 
+  100.0 0.0 0.0            # sample position relative to the coordinate system defined by the preceding module
+  cyl                      # sample geometry (cyl, bal or cub)
+  2.0 10.0                 # radius and height of the cylinder in cm
+  1.0 0.0 0.0              # orientation of the cylinder; need not be normalised
+  Al_300.str               # file containing the structure factor data for the unit cell. If the format is neither .str nor .laz, the meaning of individual columns needs to be specified (see below).
+  0.000494 0.09057 0.01392 # macroscopic cross sections: incoherent, total and absorption
+  66.38                    # unit cell volume in cubic Angstrom
   6 13 0 17 0 1            # Structure file format, if the file is not given as .str or .laz. The last number is the scale factor that is needed to express the squared structure factor in barn, if it is given in a different unit in the used structure factor file.
   </pre>
 
@@ -1476,7 +1476,7 @@
           The structure factor file contains information to determine the scattering probability for each reflection.
           It can be given as a .dat, .laz, .lau format or in another format.
           In the latter case the meaning of individual columns must be specified by the 'Structure file format' parameters (see below), otherwise they are set by the program. <br />
-          In VITESS format (.str), each line contains: <i>d</i> and <i>M |F<sub>d</sub>|² f<sub>dw</sub></i> (see FILES folder).
+          In VITESS format (.str), each line contains: <i>d</i> and <i>M |F<sub>d</sub>|ï¿½ f<sub>dw</sub></i> (see FILES folder).
         </td>
         <td>    </td>
         <td> -s </td>
@@ -1501,8 +1501,8 @@
         <td>
           If the structure factor file has the extension .str (VITESS) or .laz or .lau (Laue Format), the columns (where the values can be found in the table) are set in the program.
           Otherwise, the meaning of individual columns needs to be specified to calculate the scattering probabilily. <br />
-          Columns can be set for:  Miller indices <i>h k l</i>, structure factor <i>F<sub>d</sub></i>, square of the structure factor <i>|F<sub>d</sub>|²</i>, Multiplicity <i>M</i> and Debye-Waller factor <i>F<sub>dw</sub></i>. <br />
-          The VITESS format assumes d-spacing in the first and <i>M |F|² F<sub>d</sub></i> in the second column.
+          Columns can be set for:  Miller indices <i>h k l</i>, structure factor <i>F<sub>d</sub></i>, square of the structure factor <i>|F<sub>d</sub>|ï¿½</i>, Multiplicity <i>M</i> and Debye-Waller factor <i>F<sub>dw</sub></i>. <br />
+          The VITESS format assumes d-spacing in the first and <i>M |F|ï¿½ F<sub>d</sub></i> in the second column.
         </td>
         <td>&ge; 0 <br />0: not in file</td>
         <td> -C, -F, -Q, -M, -W </td>
@@ -1631,7 +1631,7 @@
         </td>
         <td> -D, -d, <br>&nbsp;-P, -p</td>
         <td>
-          Example: 20° to 160° scattering to the right in +/-20° vert.:<br /> &theta;=90°, &Delta;&theta;=70°<br /> &phi;=180° &Delta;&phi;=20°
+          Example: 20ï¿½ to 160ï¿½ scattering to the right in +/-20ï¿½ vert.:<br /> &theta;=90ï¿½, &Delta;&theta;=70ï¿½<br /> &phi;=180ï¿½ &Delta;&phi;=20ï¿½
         </td>
       </tr>
       <tr>
@@ -1692,7 +1692,7 @@
     <tr align="center"><td><B>nxs_sample.par</B></td></tr>
     <tr>
       <td>
-        <pre> 
+        <pre>
   10.0 0.0 0.0    # sample position in [cm] the coordinate system of the preceding module   (-x, -y, -z)
   cub             # sample geometry (cyl, bal or cub)                                       (-G)
   2.0 1.0 2.3     # thickness or radius, height and widthheight of the sample in [cm]       (-t, -h, -w)
@@ -1760,20 +1760,20 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
   The first official sample_nxs module was release with Vitess 2.11. This sample_nxs version 1.1 was created to take advantage of an updated nxs library. Besides the implementation into Vitess, a sample module for McStas has been realised and is available from the <a href="http://www.mcstas.org/">McStas repository</a>. Furthermore, a <a href="http://geant4.cern.ch/">Geant4</a> module, called <a href="http://nxsg4.web.cern.ch/nxsg4/">NXSG4</a>, for proper simulations of thermal and cold neutrons through crystalline matter was developed. Last but not least, a number of users have successfully applied the nxs routines for their research activities. The list below references publications about the development and applications of nxs: <BR><BR>
   <UL>
     <LI><a name="boin2011">M. Boin, A. Hilger, N. Kardjilov, S.Y. Zhang, E.C. Oliver, J.A. James, C. Randau &amp; R.C. Wimpory (2011)</a>, <em>J. Appl. Cryst.</em> <b>44</b>(5), 1040-1046, <a href="http://dx.doi.org/10.1107/S0021889811025970">doi:10.1107/S0021889811025970</a>
-    <LI><a name="strobl2011">Strobl, M.; Hilger, A.; Boin, M.; Kardjilov, N.; Wimpory, R.; Clemens, D.; Mühlbauer, M.; Schillinger, B.; Wilpert, T.; Schulz, C.; Rolfs, K.; Davies, C. M.; O'Dowd, N.; Tiernan, P. & Manke, I. (2011)</a>, <em>Nucl. Instrum. Methods Phys. Res., Sect. A</em> <b>651</b>, 149-155, <a href="http://dx.doi.org/10.1016/j.nima.2010.12.121">doi:10.1016/j.nima.2010.12.121</a>
+    <LI><a name="strobl2011">Strobl, M.; Hilger, A.; Boin, M.; Kardjilov, N.; Wimpory, R.; Clemens, D.; Mï¿½hlbauer, M.; Schillinger, B.; Wilpert, T.; Schulz, C.; Rolfs, K.; Davies, C. M.; O'Dowd, N.; Tiernan, P. & Manke, I. (2011)</a>, <em>Nucl. Instrum. Methods Phys. Res., Sect. A</em> <b>651</b>, 149-155, <a href="http://dx.doi.org/10.1016/j.nima.2010.12.121">doi:10.1016/j.nima.2010.12.121</a>
     <LI><a name="boin2012a">M. Boin (2012)</a>, <em>J. Appl. Cryst.</em> <b>45</b>, 603-607, <a href="http://dx.doi.org/10.1107/S0021889812016056">doi:10.1107/S0021889812016056</a>
     <LI><a name="boin2012b">M. Boin, R.C. Wimpory, A. Hilger, N. Kardjilov, S.Y. Zhang, M. Strobl (2012)</a>, <em>J. Phys.: Conf. Ser.</em> <b>340</b>, 012022, <a href="http://dx.doi.org/10.1088/1742-6596/340/1/012022">doi:10.1088/1742-6596/340/1/012022</a>
     <LI><a name="kittelmann2014">Kittelmann, T.; Stefanescu, I.; Kanaki, K.; Boin, M.; Hall-Wilton, R. & Zeitelhack, K. (2014)</a>, <em>J. Phys.: Conf. Ser.</em> <b>513</b>, 022017, <a href="http://dx.doi.org/10.1088/1742-6596/513/2/022017">doi:10.1088/1742-6596/513/2/022017</a>
     <LI><a name="peetermans2014">Peetermans, S.; Tamaki, M.; Hartmann, S.; Kaestner, A.; Morgano, M. & Lehmann, E. H. (2014)</a>, <em>Nucl. Instrum. Methods Phys. Res., Sect. A</em> <b>757</b>, 28-32, <a href="http://dx.doi.org/10.1016/j.nima.2014.04.033">doi:10.1016/j.nima.2014.04.033</a>
   </UL>
 
-  It is further planned to continue the development of the Vitess module to provide additional capabilities such as strain, texture and multiple scattering as it has been done for McStas [e.g. <a href="#boin2011">Boin et al., 2011</a>]. More up-to-date information is posted on <a href="http://www.helmholtz-berlin.de/people/boin/nxs_en.html">http://www.helmholtz-berlin.de/people/boin/nxs_en.html</a>.
+  It is further planned to continue the development of the Vitess module to provide additional capabilities such as strain, texture and multiple scattering as it has been done for McStas [e.g. <a href="#boin2011">Boin et al., 2011</a>].</a>.
 
 
   <h4><a name="references">5. References</a></h4>
   <UL>
     <LI><a name="binder1970">K. Binder (1970)</a>, <em>Phys. Stat. Sol. B</em> <b>41</b>(5), 767-779, <a href="http://dx.doi.org/10.1002/pssb.19700410233">doi:10.1002/pssb.19700410233</a>
-    <LI><a name="granada1984">J.R. Granada (1984)</a>, <em>Z. Naturforsch. Teil A</em> <b>39</b>, 1160-–1167.
+    <LI><a name="granada1984">J.R. Granada (1984)</a>, <em>Z. Naturforsch. Teil A</em> <b>39</b>, 1160-ï¿½1167.
     <LI><a name="grosse1995"> R.W. Grosse-Kunstleve (1995)</a>, <em>SgInfo - a Comprehensive Collection of ANSI C Routines for the Handling of Space Groups</em>, <a href="http://cci.lbl.gov/sginfo/">http://cci.lbl.gov/sginfo/</a>
     <LI><a name="vogel2000">S.C. Vogel (2000)</a>, PhD thesis, Christian-Albrecht University, Kiel, Germany.
     <LI><a name="freund1983">A.K. Freund (1983)</a>, <em>Nucl. Instr. Meth.</em> <b>213</b>, 495-501.
@@ -1830,7 +1830,7 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
           The structure factor file contains information to determine the scattering probability for each reflection.
           It can be given as a .dat, .laz, .lau format or in another format.
           In the latter case the meaning of individual columns must be specified by the 'Structure file format' parameters (see below), otherwise they are set by the program. <br />
-          In VITESS format (.dat), each line contains: h k l  |F<sub>hkl</sub>|² (see FILES folder). <br />
+          In VITESS format (.dat), each line contains: h k l  |F<sub>hkl</sub>|ï¿½ (see FILES folder). <br />
           The program expect a complete list, i.e. that is all relevant combination of positive and negative h, k and l values.
           If this is not the case, the tool 'Complete hkl list' can be used to generate a file with all combination from a file with only positive numbers.
         </td>
@@ -1920,7 +1920,7 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
       <tr>
         <td> output angle <br> horizontal, vertical <br> [deg] </td>
         <td> a frame rotation about the Z axis and then a rotation about the (new) Y axis defines a new orientation for the neutrons written to the output </td>
-        <td> hor: -180° ... 180° <br /> vert: -90° ... 90° <br /> default: 0° 0°  </td>
+        <td> hor: -180ï¿½ ... 180ï¿½ <br /> vert: -90ï¿½ ... 90ï¿½ <br /> default: 0ï¿½ 0ï¿½  </td>
         <td> -u -U </td>
       </tr>
       <tr>
@@ -1928,8 +1928,8 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td>
           If the structure factor file has the extension .dat (VITESS) or .laz or .lau (Laue Format), the columns (where the values can be found in the table) are set in the program.
           Otherwise, the meaning of individual columns needs to be specified to calculate the scattering probabilily. <br />
-          Columns can be set for:  Miller indices <i>h k l</i>, structure factor <i>F</i>, square of the structure factor <i>|F|²</i> and the Debye-Waller factor <i>F<sub>dw</sub></i>. <br />
-          The VITESS format assumes the Miller indices in columns 2 to 4 and <i>|F<sub>hkl</sub></i>|² in the fifth column.
+          Columns can be set for:  Miller indices <i>h k l</i>, structure factor <i>F</i>, square of the structure factor <i>|F|ï¿½</i> and the Debye-Waller factor <i>F<sub>dw</sub></i>. <br />
+          The VITESS format assumes the Miller indices in columns 2 to 4 and <i>|F<sub>hkl</sub></i>|ï¿½ in the fifth column.
         </td>
         <td> &ge; 0 <br />0: not in file</td>
         <td> -H -K -L<br />-F -Q -W </td>

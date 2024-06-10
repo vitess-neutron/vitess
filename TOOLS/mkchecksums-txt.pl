@@ -40,7 +40,6 @@ print "VITESS $id\nSubversion Revision $1.\n\nWeblinks\n\n";
 
 foreach $ext (qw(exe tar.gz 7z)) {
   my $vn = "$v.$ext";
-  print "https://www.helmholtz-berlin.de/files/fromme/$vn\n";
   $_ = `cksum $vn`;
   chomp;
   push @CRC, $_;

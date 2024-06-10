@@ -1,30 +1,30 @@
 <!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-            
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=iso-8859-1">
-            
+
   <meta name="Author" content="geza">
   <title>VITESS Supermirror Ensemble</title>
 </head>
   <body>
-   <b><font size="+3">VITESS Supermirror-Ensemble</font></b>   
+   <b><font size="+3">VITESS Supermirror-Ensemble</font></b>
 <p>
 This module simulates an ensemble of mirror or supermirror (SM) planes of up to 50
 elements. This can be used for the simulation of more complicated optical systems,
 with branch geometry. For example one can use 4 elements as a normal guide
 and put one transparent element into this tilted by an angle relative to
-the main (beam) axis and use it as polarizer. Both sides of the supermirror plates reflect. 
+the main (beam) axis and use it as polarizer. Both sides of the supermirror plates reflect.
 <br />
-Shapes and positions of the SM elements have to be given in the file "geometry and reflectivity data". 
-Size and shape of each element are defíned by giving the four corners in a plane perpendicular to the beam.
-The center of each mirror is then moved to his final position; then two rotations are executed to get the mirror in the right orientation. 
+Shapes and positions of the SM elements have to be given in the file "geometry and reflectivity data".
+Size and shape of each element are defï¿½ned by giving the four corners in a plane perpendicular to the beam.
+The center of each mirror is then moved to his final position; then two rotations are executed to get the mirror in the right orientation.
 A triangular shape can also be treated: 3 'corners' have to be co-linear for that.
 </p>
 <p>
 The algorithm calculates the angle of inclination for each trajectory and decides about reflection or transmission depending on the reflectivity.
-The reflectivity model that is used for the sm_ensemlbe module depends on the format of the parameter file. If the file format is the old one, then 
+The reflectivity model that is used for the sm_ensemlbe module depends on the format of the parameter file. If the file format is the old one, then
 for angles below theta_c, a reflectivity of 1 is assumed, for angles above thetaCSM, reflectivity of 0 is used. These parameters are used in the old
 file format. For angles between theta_c and thetaCSM, the reflectivity decreases linearly from 1 to R. <br>
 If the new file format is used, then only the m number is given for spin-up and spin-down neutrons, respectively. The module then calculated the reflectivity
@@ -54,7 +54,7 @@ Visualisation of neutron paths or collision points is available. The module will
         <td>File format</td>
         <td>For differences between the old and the new file formats, see below. Its best to stick to the new format if a specific subtrate material is chosen.</td>
         <td>-F</td>
-      </tr>	
+      </tr>
 
 	<tr>
         <td>Subtrate coating</td>
@@ -87,25 +87,25 @@ Visualisation of neutron paths or collision points is available. The module will
         <td>A rotation about the Z axis and then a rotation about the (new)Y axis defines a new orientation for the neutrons written to the output.</td>
         <td>-h, -v</td>
       </tr>
-     
+
        <tr>
         <td>Visualisation window</td>
         <td>Horizontal and vertical coordinates of the custom visualisation window.</td>
         <td>-w, -W, -a, -A</td>
-      </tr>		
+      </tr>
 
 	<tr>
         <td>Cutoff probability</td>
         <td>The minimum probability still used for the custom visualisation</td>
         <td>-b</td>
-      </tr>	
+      </tr>
 
 	   <tr>
         <td>stop at collisions</td>
         <td>At this number of collisions it stops and writes out the trajectory for custom visualisation. This can be used for localising the coordinates of the 1th, 2nd, 3rd, etc. collisions.</td>
         <td>-M</td>
       </tr>
-	
+
 	   <tr>
         <td>visualisation</td>
         <td>If 'yes' (1), it writes out the collisions into a file "collisions.dat".<br>
@@ -119,18 +119,18 @@ Visualisation of neutron paths or collision points is available. The module will
         <td>-o</td>
       </tr>
 
-         
-  </tbody>  
+
+  </tbody>
 </table>
 </p>
-      
+
 <p>
 <img src="DefineGeomSME.gif" height="759" width="498">
 </p>
 <h4> Figure 1: geometry definitions </h4>
 <br/>
 
-<h3><font size="+2"> Parameter file describing the mirrors in module 'sm_ensemble' </font></h3> 
+<h3><font size="+2"> Parameter file describing the mirrors in module 'sm_ensemble' </font></h3>
 <h3><font size="+2"> Old format </font></h3>
 
 <p>
@@ -151,7 +151,7 @@ Visualisation of neutron paths or collision points is available. The module will
 
       <tr>
         <td>y<sub>i</sub>, z<sub>i</sub> i=1,..,4<br>[cm]</td>
-        <td>defines shape and size of a mirror element: <br> 
+        <td>defines shape and size of a mirror element: <br>
             the positions of the corners of a quadrangle are given in a plane perpendicular to the beam <br>
             you can also form a triangle if 3 'corners' are co-linear(cf. figure above)</td>
         <td>any</td>
@@ -160,35 +160,35 @@ Visualisation of neutron paths or collision points is available. The module will
       <tr>
         <td>X Y Z<br>[cm]</td>
         <td>X,Y,Z defines the position of the mirror:
-            The element (defined by y<sub>1</sub> to z<sub>4</sub>) is supposed to arranged around the origin (0,0,0). 
+            The element (defined by y<sub>1</sub> to z<sub>4</sub>) is supposed to arranged around the origin (0,0,0).
             This point of the mirror is now translated to its rigth place in the final geometry by a shift by the vector (X,Y,Z). </td>
         <td>1: on <br> 0: off</td>
       </tr>
 
       <tr>
-        <td>H/° V/°<br>[deg]</td>
+        <td>H/ï¿½ V/ï¿½<br>[deg]</td>
         <td>Rotation angles which define the final normal vector of the mirror. <br>
             It is first rotated (in a horizontal plane) about the z-axis by an angle 'H'.  <br>
             Then it is rotated (in a vertikal plane) about the new y-axis by an angle 'V'. <br>
-        <td>-180° to 180°</td>
+        <td>-180ï¿½ to 180ï¿½</td>
       </tr>
 
       <tr>
-        <td>h/° v/°<br>[deg]</td>
+        <td>h/ï¿½ v/ï¿½<br>[deg]</td>
         <td>is the full width of a rectangular distribution expected for the variations in the plane orientation. <br>
             For each trajectory a deviation from the average orientation in the given range is determined by a Monte Carlo choice. <br>
-        <td>theoretically<br>-180° to 180°</td>
+        <td>theoretically<br>-180ï¿½ to 180ï¿½</td>
       </tr>
 
       <tr>
         <td>thetaC<br>[rad]</td>
-        <td>angle up to which 1 Å neutrons are totally reflected, corresponding to m=1</td>
+        <td>angle up to which 1 ï¿½ neutrons are totally reflected, corresponding to m=1</td>
         <td>typically: 0.00173</td>
       </tr>
 
       <tr>
         <td>theta_csm<br>[rad]</td>
-        <td>angle up to which 1 Å neutrons are reflected, corresponding to the m-value</td>
+        <td>angle up to which 1 ï¿½ neutrons are reflected, corresponding to the m-value</td>
         <td>m*0.00173</td>
       </tr>
 
@@ -202,19 +202,19 @@ Visualisation of neutron paths or collision points is available. The module will
       </tr>
 
       <tr>
-        <td>µ*d</td>
-        <td>wavelength <b>dependent</b> part of the attenuation (in case óf transmission)<br>
+        <td>ï¿½*d</td>
+        <td>wavelength <b>dependent</b> part of the attenuation (in case ï¿½f transmission)<br>
             d is the thickness of the mirror in cm<br/>
-            µ is the macroscopic attenuation (in 1/cm) for 1 Å neutrons</td>
+            ï¿½ is the macroscopic attenuation (in 1/cm) for 1 ï¿½ neutrons</td>
         <td>> 0.0<br/>
             0.017 for Si</td>
       </tr>
 
       <tr>
-        <td>µ_incoh*d</td>
-        <td>wavelength <b>independent</b> part of the attenuation (in case óf transmission)<br>
+        <td>ï¿½_incoh*d</td>
+        <td>wavelength <b>independent</b> part of the attenuation (in case ï¿½f transmission)<br>
             d is the thickness of the mirror in cm<br/>
-            µ_incoh is the macroscopic attenuation (in 1/cm)</td>
+            ï¿½_incoh is the macroscopic attenuation (in 1/cm)</td>
         <td>> 0.0<br/>
             0.020 for Si</td>
       </tr>
@@ -224,8 +224,8 @@ Visualisation of neutron paths or collision points is available. The module will
         <td>name given by the user to the walls (no real input)</td>
         <td>any text</td>
       </tr>
-         
-  </tbody>  
+
+  </tbody>
 </table>
 </p>
 <br/>
@@ -234,7 +234,7 @@ Visualisation of neutron paths or collision points is available. The module will
 <h3><font size="+2"> New format </font></h3>
 
 The new format makes use of the available empirical description of the mirror reflectivities valid for mirror coatings
-produced by Swiss Neutronics. Apart from geometrical information, in this format only the thickness d and the m-number 
+produced by Swiss Neutronics. Apart from geometrical information, in this format only the thickness d and the m-number
 for spin-up and spin-down neutrons has to be given. This format can only be used if sapphire or silicon is chosen as
 mirror subtrate!
 
@@ -256,7 +256,7 @@ mirror subtrate!
 
       <tr>
         <td>y<sub>i</sub>, z<sub>i</sub> i=1,..,4<br>[cm]</td>
-        <td>defines shape and size of a mirror element: <br> 
+        <td>defines shape and size of a mirror element: <br>
             the positions of the corners of a quadrangle are given in a plane perpendicular to the beam <br>
             you can also form a triangle if 3 'corners' are co-linear(cf. figure above)</td>
         <td>any</td>
@@ -265,24 +265,24 @@ mirror subtrate!
       <tr>
         <td>X Y Z<br>[cm]</td>
         <td>X,Y,Z defines the position of the mirror:
-            The element (defined by y<sub>1</sub> to z<sub>4</sub>) is supposed to arranged around the origin (0,0,0). 
+            The element (defined by y<sub>1</sub> to z<sub>4</sub>) is supposed to arranged around the origin (0,0,0).
             This point of the mirror is now translated to its rigth place in the final geometry by a shift by the vector (X,Y,Z). </td>
         <td>1: on <br> 0: off</td>
       </tr>
 
       <tr>
-        <td>H/° V/°<br>[deg]</td>
+        <td>H/ï¿½ V/ï¿½<br>[deg]</td>
         <td>Rotation angles which define the final normal vector of the mirror. <br>
             It is first rotated (in a horizontal plane) about the z-axis by an angle 'H'.  <br>
             Then it is rotated (in a vertikal plane) about the new y-axis by an angle 'V'. <br>
-        <td>-180° to 180°</td>
+        <td>-180ï¿½ to 180ï¿½</td>
       </tr>
 
       <tr>
-        <td>h/° v/°<br>[deg]</td>
+        <td>h/ï¿½ v/ï¿½<br>[deg]</td>
         <td>is the full width of a rectangular distribution expected for the variations in the plane orientation. <br>
             For each trajectory a deviation from the average orientation in the given range is determined by a Monte Carlo choice. <br>
-        <td>theoretically<br>-180° to 180°</td>
+        <td>theoretically<br>-180ï¿½ to 180ï¿½</td>
       </tr>
 
       <tr>
@@ -302,22 +302,22 @@ mirror subtrate!
         <td>m value for the spin-down neutrons. Critical angle is then 0.1*m*&lambda;.</td>
         <td>typically: 0 - 7</td>
       </tr>
-  </tbody>  
+  </tbody>
 </table>
 </p>
-   
-<h2>Examples:</h2> 
 
-<h3>Example 1: Polarizing V Cavity</h3> 
+<h2>Examples:</h2>
+
+<h3>Example 1: Polarizing V Cavity</h3>
 <p>
 A V type cavity is a transmission polarization device, by which a wide neutron band with large divergence can be polarized.
-Here it is realized as a single V cavity using an FeSi supermirror, which shows total reflectivity up to m=1 and zero reflectivity above m=4 for spin-up 
+Here it is realized as a single V cavity using an FeSi supermirror, which shows total reflectivity up to m=1 and zero reflectivity above m=4 for spin-up
 and total reflectivity up to m=0.6 and zero reflectivity above m=0.7 for spin-down neutrons (cf. figure and table).
 </p>
-  
+
 <p>
 <img src="Cavity.gif" alt="Figure 2a: V cavity" name="Grafik 2" border="0" width="557" height="351" align="bottom">
-</p>  
+</p>
 <p>
 <img src="ReflCurve.jpg" alt="Figure 2b: reflectivity curve" name="Grafik 3" border="0" width="599" height="418" align="middle">
 </p>
@@ -332,7 +332,7 @@ and total reflectivity up to m=0.6 and zero reflectivity above m=0.7 for spin-do
 1      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.4992   0.0    90.000    0.0   0.0   0.0     0.00173   0.00173   0.99   100.00    100.00         0.00173    0.00173    0.99  100.00     100.00     ----- right side   -----
 1      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000   1.5    90.000  -90.0   0.0   0.0     0.00173   0.00519   0.88   100.00    100.00         0.00173    0.00519    0.88  100.00     100.00     ----- up           -----
 1      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000  -1.5    90.000   90.0   0.0   0.0     0.00173   0.00519   0.88   100.00    100.00         0.00173    0.00519    0.88  100.00     100.00     ----- down         -----
-on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y       Z      H/°      V/°   h/°   v/° Up: theta_c  theta_csm  R_csm   µ*d      µ_incoh*d  Down: theta_c theta_csm  R_csm     µ*d    µ_incoh*d         wall
+on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y       Z      H/ï¿½      V/ï¿½   h/ï¿½   v/ï¿½ Up: theta_c  theta_csm  R_csm   ï¿½*d      ï¿½_incoh*d  Down: theta_c theta_csm  R_csm     ï¿½*d    ï¿½_incoh*d         wall
 </pre>
 <br/>
 
@@ -344,52 +344,52 @@ on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y 
 2      20.0  1.5     -20.0  1.5     -20.0  -1.5      20.0  -1.5      20.0   0.4992   0.0    90.000    0.0   0.0   0.0     0.03	1	1	 ----- right side   -----
 2      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000   1.5    90.000  -90.0   0.0   0.0     0.03	3	3	 ----- up           -----
 2      20.0  0.9984  -20.0  0.9984  -20.0  -0.9984   20.0  -0.9984   20.0   0.0000  -1.5    90.000   90.0   0.0   0.0     0.03	3	3	 ----- down         -----
-on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y       Z      H/°      V/°   h/°   v/°     d	m up	m down	   wall
+on/off  y1   z1        y2   z2        y3    z3        y4    z4         X      Y       Z      H/ï¿½      V/ï¿½   h/ï¿½   v/ï¿½     d	m up	m down	   wall
 </pre>
 
 
 <br/>
 <br/>
 
-<h3>Example 2: Extraction System</h3> 
+<h3>Example 2: Extraction System</h3>
 <p>
 The following example shows the realization of a bi-spectral extraction system consisting of 3 vertical m=3 supermirrors and 2 horizontal m=2 supermirrors.
-The vertical mirrors are 0.77° and 0.19° inclined (relative to the beamline) in the direction shown in the figure. <br/>
+The vertical mirrors are 0.77ï¿½ and 0.19ï¿½ inclined (relative to the beamline) in the direction shown in the figure. <br/>
 5 numbers have to be given to define the reflectivity curve (s. Table below), both for up- and down-neutrons. Note that apart from
 the second mirror, all others do not transmit neutrons.
 </p>
-   
+
 <p>
 <img src="ExtractionSystem.png" name="Grafik" border="0" width="418" height="281" align="bottom">
 </p>
 <h4> Figure 3: Bispectral extraction system </h4>
 <br/>
-   
+
 
 <h3><font size="+2"> Old format </font></h3>
 <pre>
-1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.88   200.0   200.0       --left--- 
-1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88     0.00024   0.00150        0.00173  0.00519  0.88   0.00024    0.00150   --center--- 
-1     252.5     5.0  -252.5     5.0  -252.5     -5.0   252.5    -5.0    394.5     2.163  0.00   90.19    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.88   200.0   200.0       --right--- 
-1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.95   200.0   200.0       --top--- 
-1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.95   200.0   200.0       --bot--- 
-on/off  y1      z1      y2      z2      y3       z3      y4      z4        X       Y      Z       H/°      V/°    h/°   v/° Up: theta_c  theta_csm  R_csm   µ*d      µ_incoh*d  Down: theta_c theta_csm R_csm   µ*d    µ_incoh*d     wall
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.88   200.0   200.0       --left---
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.00173   0.00519   0.88     0.00024   0.00150        0.00173  0.00519  0.88   0.00024    0.00150   --center---
+1     252.5     5.0  -252.5     5.0  -252.5     -5.0   252.5    -5.0    394.5     2.163  0.00   90.19    0.00    0.00  0.00     0.00173   0.00519   0.88   200.0     200.0            0.00173  0.00519  0.88   200.0   200.0       --right---
+1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.95   200.0   200.0       --top---
+1       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.00173   0.00346   0.95   200.0     200.0            0.00173  0.00346  0.95   200.0   200.0       --bot---
+on/off  y1      z1      y2      z2      y3       z3      y4      z4        X       Y      Z       H/ï¿½      V/ï¿½    h/ï¿½   v/ï¿½ Up: theta_c  theta_csm  R_csm   ï¿½*d      ï¿½_incoh*d  Down: theta_c theta_csm R_csm   ï¿½*d    ï¿½_incoh*d     wall
 </pre>
-   
+
 <h3><font size="+2"> New format </font></h3>
 <pre>
-2     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.05	5	5       --left--- 
-1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.05	3	3      --center--- 
-2     252.5     5.0  -252.5     5.0  -252.5     -5.0   252.5    -5.0    394.5     2.163  0.00   90.19    0.00    0.00  0.00     0.05	3	3       --right--- 
-2       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.05   	3  	3        --top--- 
-2       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.05	2	2        --bot--- 
-on/off  y1      z1      y2      z2      y3       z3      y4      z4        X       Y      Z       H/°      V/°    h/°   v/° Thickness	m up	m down     wall
+2     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -7.347  0.00   90.77    0.00    0.00  0.00     0.05	5	5       --left---
+1     323.5     5.0  -323.5     5.0  -323.5     -5.0   323.5    -5.0    323.5    -1.347  0.00   90.77    0.00    0.00  0.00     0.05	3	3      --center---
+2     252.5     5.0  -252.5     5.0  -252.5     -5.0   252.5    -5.0    394.5     2.163  0.00   90.19    0.00    0.00  0.00     0.05	3	3       --right---
+2       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0    5.0    00.00  -90.00    0.00  0.00     0.05   	3  	3        --top---
+2       3.0   323.5    -3.0   323.5   -11.74  -323.5    +0.87  -323.5   323.5     0.0   -5.0    00.00  -90.00    0.00  0.00     0.05	2	2        --bot---
+on/off  y1      z1      y2      z2      y3       z3      y4      z4        X       Y      Z       H/ï¿½      V/ï¿½    h/ï¿½   v/ï¿½ Thickness	m up	m down     wall
 </pre>
 
 
 
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
-  <a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a>   
+  <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
 <p><!-- hhmts start --><font size="-1">Last modified: Fri Jul&nbsp; 4 16:51:30
  MEST 2003</font><font size="-1">, G. Zs.</font><!-- hhmts end --> <br>
   &nbsp; </p>
