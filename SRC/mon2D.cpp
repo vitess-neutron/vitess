@@ -198,7 +198,7 @@ void Mon2D::OwnInit(int argc, char* argv[])
   {
     dataArray[i]       = (double*) malloc(nBinsY * sizeof(double));
     dataArrayError[i]  = (double*) malloc(nBinsY * sizeof(double));
-    dataArrayCounts[i] = (long*)   malloc(nBinsY * sizeof(int));
+    dataArrayCounts[i] = (long*)   malloc(nBinsY * sizeof(long));
   }
 
   for (int i=0; i <= nBinsX; i++)  BinPosX[i] = xMin + (xMax - xMin) * i / (double)nBinsX;
