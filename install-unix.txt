@@ -10,12 +10,12 @@ Modules:
         Andreas Houben
 	Géza Zsigmond      (geza.zsigmond@psi.ch)
 	Sergey Manoshin
-        Daniil Nekrassov   (daniil.nekrassov@helmholtz-berlin.de)
+        Daniil Nekrassov
 	Dietmar Wechsler
 	Friedrich Streffer
 
 GUI Software:
-	Michael Fromme     (fromme@helmholtz-berlin.de)
+	Michael Fromme
 
 
 README

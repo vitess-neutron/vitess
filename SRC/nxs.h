@@ -32,7 +32,7 @@ extern "C"
 
 
 /**
-    @author Mirko Boin, Helmholtz-Zentrum Berlin f&uuml; Materialien und Energy GmbH, <boin@helmholtz-berlin.de>
+    @author Mirko Boin, Helmholtz-Zentrum Berlin f&uuml; Materialien und Energy GmbH
 */
 
 

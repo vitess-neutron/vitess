@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@helmholtz-berlin.de
+### M. Fromme  
 ### June 1999
 
 proc reShowModules {w} {
