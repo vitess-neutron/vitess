@@ -1,6 +1,6 @@
 ### project VITESS
 ### HMI DN
-### M. Fromme fromme@helmholtz-berlin.de
+### M. Fromme  
 ###
 ### procedures to define and use a digest of instrument parameters
 
