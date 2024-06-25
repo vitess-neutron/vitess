@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@helmholtz-berlin.de
+### M. Fromme  
 
 ### Force entry filename to be plain file name.
 ### If a full directory path is given, ask to copy the

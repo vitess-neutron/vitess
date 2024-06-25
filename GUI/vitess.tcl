@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@helmholtz-berlin.de
+### M. Fromme  
 ### June 1999
 
 ### control variables lists and procedures for
@@ -4307,7 +4307,7 @@ First Xcontrol was adopted to the NEAT neutron scattering experiment,
 developed at HMI department I/DN.
 
 
-Contact: fromme@helmholtz-berlin.de
+Contact:  
 }
 
 helpItem External-Commands {

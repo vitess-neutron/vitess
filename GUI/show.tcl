@@ -796,7 +796,11 @@ proc showPlotFile {name {topt 0}} {
       if {"" != $defaultPlotApp} {
         switch $defaultPlotApp {
           python {plotWithTemplate $name "python"}
-          gnuplot {if {$ftype == "matrix"} {show2Dfile $name} else {gnuPlotCmd $gcmd $name $ftype}}
+          gnuplot {if {$ftype == "matrix"} {show2Dfile $name} else {
+            set gcmd [getGnuPlotApp]
+            gnuPlotCmd $gcmd $name $ftype
+            }
+          }
           grplot {if {$ftype == "matrix"} {plotWithTemplate $name "grplot2D"} else {plotWithTemplate $name "grplot1D"}}
           tcl {if {$ftype == "matrix"} {show2Dfile $name} else {showXYfile $name}}
         }
