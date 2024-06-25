@@ -1,6 +1,7 @@
 #ifndef SRC_MODCHAR_H
 #define SRC_MODCHAR_H
 
+#include "defines.h"
 
 /***********************************************/
 /* Definitions                                 */
