@@ -226,4 +226,5 @@ forceParamDir
 
 if {$argc > 0} {
   loadAll gui $argv
+  set defdirectory_ [pwd]
 }

@@ -208,7 +208,7 @@ proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
       setInstrumentfile $n
     }
   } else {
-    if {[set f [openWriteFile $extension "" $fname]] == 0} {
+	if {[set f [openWriteFile $extension "" fname]] == 0} {
       return
     }
   }
