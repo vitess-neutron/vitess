@@ -184,7 +184,7 @@ ifeq ($(DARWIN_UNIVERSAL),YES)
 install: $(ALL)
 	for F in $(ALL); do \
 		$(INSTALL) $${F} $(MODULES_DIR)/$${F}_$(SYS)_arm64; \
-		$(LN) $${F}_$(SYS)_arm64 $(MODULES_DIR)/$${F}_$(SYS)_x86_64; \
+		$(LN) $${F}_$(SYS)_arm64 $(MODULES_DIR)/$${F}_$(SYS)_x86_64 || true; \
 	done
 else
 install: $(ALL)
