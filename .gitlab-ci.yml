@@ -152,10 +152,11 @@ test-rocky8:
   needs:
     - job: compile-rocky8
   before_script:
-    - dnf install -y python3 python3-pyyaml
+    - dnf install -y python3 python3-pyyaml gd
   script:
     - cp -rf artifacts-Rocky8-x86_64/MODULES .
-    - python3 TOOLS/check_yaml.py
+    - python3 tests/check_yaml.py
+    - tests/check_examples.sh
 
 package:
   stage: package
