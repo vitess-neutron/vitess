@@ -163,7 +163,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
         append fc "set GSL_RNG_$vv=$t\n"
       }
     }
-    sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
+    sh  {set fc "\#!/bin/sh\n\[ -z \"\$V\" \] && V=$ExeDirectory\n\[ -z \"\$P\" \] && P=$pdir\n\[ -z \"\$L\" \] && L=$logf\n"}
     grd {
       set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"
       if {"" != [set v [entryVal random_gen]]} {
@@ -341,7 +341,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   # split module commands to allow  editing for modes tcl, pl, and py
   switch $mode {
     bat {append fc "\ntype P:\\$logtmp* > P:\\result.txt\ndel P:\\$logtmp*"}
-    sh  {append fc "\ncat $logf? > \$P/result.txt\ncat $logf?? >> \$P/result.txt\nrm $logf*"}
+    sh  {append fc "\nrm -f \$P/result.txt\ncat \${L}?? >> \$P/result.txt\nrm \${L}*"}
     grd {
       set s ""
       foreach v $usedIdices {
