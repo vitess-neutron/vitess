@@ -12,3 +12,5 @@ __pycache__/
 MODULES/*_Darwin_x86_64
 MODULES/*_Linux_x86_64
 MODULES/*.exe
+SRC/g2-0.72/
+*.un~

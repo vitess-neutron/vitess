@@ -46,7 +46,9 @@ private slots:
     void enableModule();
     void enableAllModules();
     void removeModule();
-    void insertModule();
+    void insertModule(int i);
+    void insertModuleAbove();
+    void insertModuleBelow();
     void infoModule();
 private:
     Ui::ModulTable *ui;

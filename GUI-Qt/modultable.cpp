@@ -95,7 +95,9 @@ void ModulTable::showContextMenu(const QPoint& pos)
     QPoint globalPos = header->mapToGlobal(pos);
     QMenu moduleMenu;
     //connect slots to menu actions
-    moduleMenu.addAction("Move Down",this,SLOT(insertModule()));
+    // moduleMenu.addAction("Move Down",this,SLOT(insertModule()));
+    moduleMenu.addAction("Insert module above",this,SLOT(insertModuleAbove()));
+    moduleMenu.addAction("Insert module below",this,SLOT(insertModuleBelow()));
     moduleMenu.addAction("Remove Module",this,SLOT(removeModule()));
     moduleMenu.addSeparator();
     moduleMenu.addAction("Disable Module",this,SLOT(disableModule()));
@@ -134,9 +136,8 @@ void ModulTable::enableAllModules()
 }
 
 //move down  insert modul in table
-void ModulTable::insertModule()
+void ModulTable::insertModule(int index)
 {
-    int index=ui->tableWidget->currentRow();
     ui->tableWidget->insertRow(index);
     QToolButton *tBut = new QToolButton();
     //button menu indicator is not shown (little arrow in buttom right button corner)
@@ -165,6 +166,18 @@ void ModulTable::insertModule()
     emit insertCombo(index);
 }
 
+
+void ModulTable::insertModuleAbove()
+{
+    int index=ui->tableWidget->currentRow();
+    insertModule(index);
+}
+
+void ModulTable::insertModuleBelow()
+{
+    int index=ui->tableWidget->currentRow();
+    insertModule(index+1);
+}
 
 void ModulTable::infoModule()
 {
