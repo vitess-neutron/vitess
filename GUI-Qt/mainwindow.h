@@ -18,6 +18,7 @@
 #include <QScrollArea>
 #include <QElapsedTimer>
 #include <QProgressDialog>
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;
@@ -101,6 +102,7 @@ private slots:
         void browseBut_clicked();
         void editBut_clicked();
         void paramBut_clicked();
+        void plotBut_clicked();
 
         //buttons output area
         void on_pushBig_clicked();

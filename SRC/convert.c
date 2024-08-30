@@ -34,12 +34,12 @@ VtRndGen RndGen_Txt2ID(const char* sText)
 {
   VtRndGen eID=VT_RAN3;
 
-       if (strcmp(sText, "ran3"   )==0) eID=VT_RAN3   ;
-  else if (strcmp(sText, "taus"   )==0) eID=VT_TAUS   ;
-  else if (strcmp(sText, "gfsr4"  )==0) eID=VT_GFSR4  ;
-  else if (strcmp(sText, "mt19937")==0) eID=VT_MT19937;
-  else if (strcmp(sText, "ranlux" )==0) eID=VT_RANLUX ;
-  
+       if (strcmp(sText, "ran3"   )==0 || strcmp(sText, "VT_RAN3")==0) eID=VT_RAN3   ;
+  else if (strcmp(sText, "taus"   )==0 || strcmp(sText, "VT_TAUS")==0) eID=VT_TAUS   ;
+  else if (strcmp(sText, "gfsr4"  )==0 || strcmp(sText, "VT_GFSR4")==0) eID=VT_GFSR4  ;
+  else if (strcmp(sText, "mt19937")==0 || strcmp(sText, "VT_MT19937")==0) eID=VT_MT19937;
+  else if (strcmp(sText, "ranlux" )==0 || strcmp(sText, "VT_RANLUX")==0) eID=VT_RANLUX ;
+
   return eID;
 }
 
@@ -139,107 +139,107 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_OPT_MAIN     : strcpy(sCompName, "Opt_Main");          break;
 	  case MCN_OPT_PIPE     : strcpy(sCompName, "Opt_GenerPipe");     break;
 	  case MCN_OPT_FOM      : strcpy(sCompName, "Opt_FoM");           break;
-    default:                strcpy(sCompName, "unknown component"); 
+    default:                strcpy(sCompName, "unknown component");
   }
 }
 McCompID Name2CompID (const char* sCompName)
 {
   McCompID eComp;
 
-       if (strcmp(sCompName, "Source")==0)            eComp=MCN_SOURCE       ;
-  else if (strcmp(sCompName, "SourceSimple")==0)      eComp=MCN_SRC_SMPL     ;
-  else if (strcmp(sCompName, "SourceConst")==0)       eComp=MCN_SRC_CWS      ;
-  else if (strcmp(sCompName, "SourceTOF")==0)         eComp=MCN_SRC_TOF      ;
-  else if (strcmp(sCompName, "SourceSP")==0)          eComp=MCN_SRC_SP       ;
-  else if (strcmp(sCompName, "SourceLP")==0)          eComp=MCN_SRC_LP       ;
-  else if (strcmp(sCompName, "EventsIn")==0)          eComp=MCN_READ_IN      ;
-  else if (strcmp(sCompName, "Space")==0)             eComp=MCN_SPACE        ;
-  else if (strcmp(sCompName, "Slit")==0)              eComp=MCN_SLIT         ;
-  else if (strcmp(sCompName, "Window")==0)            eComp=MCN_WINDOW       ;
-  else if (strcmp(sCompName, "WindowMult")==0)        eComp=MCN_WND_MULT     ;
-  else if (strcmp(sCompName, "Grid")==0)              eComp=MCN_GRID         ;
-  else if (strcmp(sCompName, "Lens")==0)              eComp=MCN_LENSE        ;
-  else if (strcmp(sCompName, "Mirror")==0)            eComp=MCN_MIRROR       ;
-  else if (strcmp(sCompName, "MirrorPolarizing")==0)  eComp=MCN_MIRROR_POL   ;
-  else if (strcmp(sCompName, "MirrorElliptic")==0)    eComp=MCN_MIRROR_ELLI  ;
-  else if (strcmp(sCompName, "MirrorEmsemble")==0)    eComp=MCN_SM_ENSEMBLE  ;
-  else if (strcmp(sCompName, "Collimator")==0)        eComp=MCN_COLLIMATOR   ;
-  else if (strcmp(sCompName, "CollimatorSoller")==0)  eComp=MCN_COLL_SOLLER  ;
-  else if (strcmp(sCompName, "CollimatorRadial")==0)  eComp=MCN_COLL_RADIAL  ;
-  else if (strcmp(sCompName, "CollimatorVirtual")==0) eComp=MCN_COLL_VIRT    ;
-  else if (strcmp(sCompName, "Guide")==0)             eComp=MCN_GUIDE        ;
-  else if (strcmp(sCompName, "GuideIdeal")==0)        eComp=MCN_GUIDE_IDEAL  ;
-  else if (strcmp(sCompName, "Bender")==0)            eComp=MCN_BENDER       ;
-  else if (strcmp(sCompName, "ChopperDisc")==0)       eComp=MCN_CHOP_DISC    ;
-  else if (strcmp(sCompName, "ChopperFermi")==0)      eComp=MCN_CHOP_FERMI   ;
-  else if (strcmp(sCompName, "VelocitySelector")==0)  eComp=MCN_VEL_SELECT   ;
-  else if (strcmp(sCompName, "MonochrAnalyzer")==0)   eComp=MCN_MONO_ANA     ;
-  else if (strcmp(sCompName, "Monochromator")==0)     eComp=MCN_MONOCHROM    ;
-  else if (strcmp(sCompName, "PolarizerHe3")==0)      eComp=MCN_POL_HE3      ;
-  else if (strcmp(sCompName, "PolarizerSM")==0)       eComp=MCN_POL_SM       ;
-  else if (strcmp(sCompName, "FlipperCoil")==0)       eComp=MCN_FLIP_COIL    ;
-  else if (strcmp(sCompName, "FlipperGradient")==0)   eComp=MCN_FLIP_GRAD    ;
-  else if (strcmp(sCompName, "ResonatorDrabkin")==0)  eComp=MCN_RES_DRABKIN  ;
-  else if (strcmp(sCompName, "MagnField")==0)         eComp=MCN_FIELD_PREC   ;
-  else if (strcmp(sCompName, "MagnFieldRotating")==0) eComp=MCN_FIELD_ROT    ;
-  else if (strcmp(sCompName, "MagnFieldSESANS")==0)   eComp=MCN_FIELD_SESANS ;
-  else if (strcmp(sCompName, "CaptureFlux")==0)       eComp=MCN_CAPTURE      ;
-  else if (strcmp(sCompName, "BeamStop")==0)          eComp=MCN_BEAMSTOP     ;
-  else if (strcmp(sCompName, "SampleEnvironment")==0) eComp=MCN_SMPL_ENVIRO  ;
-  else if (strcmp(sCompName, "Detector")==0)          eComp=MCN_DETECTOR     ;
-  else if (strcmp(sCompName, "Screen")==0)            eComp=MCN_SCREEN       ;
-  else if (strcmp(sCompName, "EventsOut")==0)         eComp=MCN_WRITEOUT     ;
-  else if (strcmp(sCompName, "SampleElasticIsotr")==0)eComp=MCN_SMPL_EL_ISO  ;
-  else if (strcmp(sCompName, "SampleInelastic")==0)   eComp=MCN_SMPL_INELAST ;
-  else if (strcmp(sCompName, "SampleSnglCrystal")==0) eComp=MCN_SMPL_SNGL_X  ;
-  else if (strcmp(sCompName, "SamplePowder")==0)      eComp=MCN_SMPL_POWDER  ;
-  else if (strcmp(sCompName, "SampleSofQ")==0)        eComp=MCN_SMPL_S_Q     ;
-  else if (strcmp(sCompName, "SampleNXS")==0)         eComp=MCN_SMPL_NXS     ;
-  else if (strcmp(sCompName, "SampleSANS")==0)        eComp=MCN_SMPL_SANS    ;
-  else if (strcmp(sCompName, "SampleReflect")==0)     eComp=MCN_SMPL_REFL    ;
-  else if (strcmp(sCompName, "Frame")==0)             eComp=MCN_FRAME        ;
-  else if (strcmp(sCompName, "Filter")==0)            eComp=MCN_FILTER       ;
-  else if (strcmp(sCompName, "Filter2D")==0)          eComp=MCN_FILTER2D     ;
-  else if (strcmp(sCompName, "Reset")==0)             eComp=MCN_RESET        ;
-  else if (strcmp(sCompName, "Visualization")==0)     eComp=MCN_VISUAL       ;
-  else if (strcmp(sCompName, "Monitor1D")==0)         eComp=MCN_MONITOR1     ;
-  else if (strcmp(sCompName, "Mon1D")==0)             eComp=MCN_MON1         ;
-  else if (strcmp(sCompName, "Mon1D-Brill")==0)       eComp=MCN_MON1_BRL     ;
-  else if (strcmp(sCompName, "Mon1D-Pol")==0)         eComp=MCN_MON1_POL     ;
-  else if (strcmp(sCompName, "Monitor2D")==0)         eComp=MCN_MONITOR2     ;
-  else if (strcmp(sCompName, "Mon2D_Pos")==0)         eComp=MCN_MON2_POS     ;
-  else if (strcmp(sCompName, "Mon2D_Div")==0)         eComp=MCN_MON2_DIV     ;
-  else if (strcmp(sCompName, "Mon2D_kDiv")==0)        eComp=MCN_MON2_KDIV    ;
-  else if (strcmp(sCompName, "Mon2D_R-Div")==0)       eComp=MCN_MON2_RDIV   ; 
-  else if (strcmp(sCompName, "Mon2D_Pos-Div")==0)     eComp=MCN_MON2_POSDIV  ;
-  else if (strcmp(sCompName, "Mon2D_Wl-Div")==0)      eComp=MCN_MON2_WLDIV   ;
-  else if (strcmp(sCompName, "Mon2D_Tof-Wl")==0)      eComp=MCN_MON2_TOFWL   ;
-  else if (strcmp(sCompName, "Mon2D-Pol_Pos")==0)     eComp=MCN_MON2_POL_POS ;
-  else if (strcmp(sCompName, "Eval1D_Elastic")==0)    eComp=MCN_EVAL1_ELAST  ;
-  else if (strcmp(sCompName, "Eval1D_Inelastic")==0)  eComp=MCN_EVAL1_INELAST;
-  else if (strcmp(sCompName, "Eval2D_Elastic")==0)    eComp=MCN_EVAL2_ELAST  ;
-  else if (strcmp(sCompName, "RunTime")==0)           eComp=MCN_RUNTIME      ;
-  else if (strcmp(sCompName, "Tool_Ascii2Bin")==0)    eComp=MCN_TOOL_A2B     ;
-  else if (strcmp(sCompName, "Tool_CrysAnaSpec")==0)  eComp=MCN_TOOL_CAS     ;
-  else if (strcmp(sCompName, "Tool_ChopPhase")==0)    eComp=MCN_TOOL_CHOP    ;
-  else if (strcmp(sCompName, "Tool_DefineDir")==0)    eComp=MCN_TOOL_DEF_DIR ;
-  else if (strcmp(sCompName, "Tool_DirectView")==0)   eComp=MCN_TOOL_DIR_VIEW;
-  else if (strcmp(sCompName, "Tool_GenBatch")==0)     eComp=MCN_TOOL_GEN_BAT; 
-  else if (strcmp(sCompName, "Tool_GenCoating")==0)   eComp=MCN_TOOL_GEN_COAT;
-  else if (strcmp(sCompName, "Tool_GenBatch")==0)     eComp=MCN_TOOL_GEN_BAT; 
-  else if (strcmp(sCompName, "Tool_GenHKL")==0)       eComp=MCN_TOOL_GEN_HKL; 
-  else if (strcmp(sCompName, "Tool_GenSurface")==0)   eComp=MCN_TOOL_GEN_SURF; 
-  else if (strcmp(sCompName, "Tool_StdDeviat")==0)    eComp=MCN_TOOL_STD_DEV ; 
-  else if (strcmp(sCompName, "Tool_LatticeDist")==0)  eComp=MCN_TOOL_LAT_DST ; 
-  else if (strcmp(sCompName, "Tool_GuideShape")==0)   eComp=MCN_TOOL_GUIDE   ; 
-  else if (strcmp(sCompName, "Tool_DistTimePlot")==0) eComp=MCN_TOOL_DST_TIME; 
-  else if (strcmp(sCompName, "Tool_AnalyzeMon2D")==0) eComp=MCN_TOOL_ANLZ_2D ; 
-  else if (strcmp(sCompName, "Opt_Main")==0)          eComp=MCN_OPT_MAIN     ; 
-  else if (strcmp(sCompName, "Opt_GenerPipe")==0)     eComp=MCN_OPT_PIPE     ; 
-  else if (strcmp(sCompName, "Opt_FoM")==0)           eComp=MCN_OPT_FOM      ; 
-  else                                             eComp=MCN_COMP_UNKNOWN ; 
+       if (strcmp(sCompName, "Source")==0  || strcmp(sCompName, "MCN_SOURCE")==0)            eComp=MCN_SOURCE       ;
+  else if (strcmp(sCompName, "SourceSimple")==0  || strcmp(sCompName, "MCN_SRC_SMPL")==0)      eComp=MCN_SRC_SMPL     ;
+  else if (strcmp(sCompName, "SourceConst")==0  || strcmp(sCompName, "MCN_SRC_CWS")==0)       eComp=MCN_SRC_CWS      ;
+  else if (strcmp(sCompName, "SourceTOF")==0  || strcmp(sCompName, "MCN_SRC_TOF")==0)         eComp=MCN_SRC_TOF      ;
+  else if (strcmp(sCompName, "SourceSP")==0  || strcmp(sCompName, "MCN_SRC_SP")==0)          eComp=MCN_SRC_SP       ;
+  else if (strcmp(sCompName, "SourceLP")==0  || strcmp(sCompName, "MCN_SRC_LP")==0)          eComp=MCN_SRC_LP       ;
+  else if (strcmp(sCompName, "EventsIn")==0  || strcmp(sCompName, "MCN_READ_IN")==0)          eComp=MCN_READ_IN      ;
+  else if (strcmp(sCompName, "Space")==0  || strcmp(sCompName, "MCN_SPACE")==0)             eComp=MCN_SPACE        ;
+  else if (strcmp(sCompName, "Slit")==0  || strcmp(sCompName, "MCN_SLIT")==0)              eComp=MCN_SLIT         ;
+  else if (strcmp(sCompName, "Window")==0  || strcmp(sCompName, "MCN_WINDOW")==0)            eComp=MCN_WINDOW       ;
+  else if (strcmp(sCompName, "WindowMult")==0  || strcmp(sCompName, "MCN_WND_MULT")==0)        eComp=MCN_WND_MULT     ;
+  else if (strcmp(sCompName, "Grid")==0  || strcmp(sCompName, "MCN_GRID")==0)              eComp=MCN_GRID         ;
+  else if (strcmp(sCompName, "Lens")==0  || strcmp(sCompName, "MCN_LENSE")==0)              eComp=MCN_LENSE        ;
+  else if (strcmp(sCompName, "Mirror")==0  || strcmp(sCompName, "MCN_MIRROR")==0)            eComp=MCN_MIRROR       ;
+  else if (strcmp(sCompName, "MirrorPolarizing")==0  || strcmp(sCompName, "MCN_MIRROR_POL")==0)  eComp=MCN_MIRROR_POL   ;
+  else if (strcmp(sCompName, "MirrorElliptic")==0  || strcmp(sCompName, "MCN_MIRROR_ELLI")==0)    eComp=MCN_MIRROR_ELLI  ;
+  else if (strcmp(sCompName, "MirrorEmsemble")==0  || strcmp(sCompName, "MCN_SM_ENSEMBLE")==0)    eComp=MCN_SM_ENSEMBLE  ;
+  else if (strcmp(sCompName, "Collimator")==0  || strcmp(sCompName, "MCN_COLLIMATOR")==0)        eComp=MCN_COLLIMATOR   ;
+  else if (strcmp(sCompName, "CollimatorSoller")==0  || strcmp(sCompName, "MCN_COLL_SOLLER")==0)  eComp=MCN_COLL_SOLLER  ;
+  else if (strcmp(sCompName, "CollimatorRadial")==0  || strcmp(sCompName, "MCN_COLL_RADIAL")==0)  eComp=MCN_COLL_RADIAL  ;
+  else if (strcmp(sCompName, "CollimatorVirtual")==0  || strcmp(sCompName, "MCN_COLL_VIRT")==0) eComp=MCN_COLL_VIRT    ;
+  else if (strcmp(sCompName, "Guide")==0  || strcmp(sCompName, "MCN_GUIDE")==0)             eComp=MCN_GUIDE        ;
+  else if (strcmp(sCompName, "GuideIdeal")==0  || strcmp(sCompName, "MCN_GUIDE_IDEAL")==0)        eComp=MCN_GUIDE_IDEAL  ;
+  else if (strcmp(sCompName, "Bender")==0  || strcmp(sCompName, "MCN_BENDER")==0)            eComp=MCN_BENDER       ;
+  else if (strcmp(sCompName, "ChopperDisc")==0  || strcmp(sCompName, "MCN_CHOP_DISC")==0)       eComp=MCN_CHOP_DISC    ;
+  else if (strcmp(sCompName, "ChopperFermi")==0  || strcmp(sCompName, "MCN_CHOP_FERMI")==0)      eComp=MCN_CHOP_FERMI   ;
+  else if (strcmp(sCompName, "VelocitySelector")==0  || strcmp(sCompName, "MCN_VEL_SELECT")==0)  eComp=MCN_VEL_SELECT   ;
+  else if (strcmp(sCompName, "MonochrAnalyzer")==0  || strcmp(sCompName, "MCN_MONO_ANA")==0)   eComp=MCN_MONO_ANA     ;
+  else if (strcmp(sCompName, "Monochromator")==0  || strcmp(sCompName, "MCN_MONOCHROM")==0)     eComp=MCN_MONOCHROM    ;
+  else if (strcmp(sCompName, "PolarizerHe3")==0  || strcmp(sCompName, "MCN_POL_HE3")==0)      eComp=MCN_POL_HE3      ;
+  else if (strcmp(sCompName, "PolarizerSM")==0  || strcmp(sCompName, "MCN_POL_SM")==0)       eComp=MCN_POL_SM       ;
+  else if (strcmp(sCompName, "FlipperCoil")==0  || strcmp(sCompName, "MCN_FLIP_COIL")==0)       eComp=MCN_FLIP_COIL    ;
+  else if (strcmp(sCompName, "FlipperGradient")==0  || strcmp(sCompName, "MCN_FLIP_GRAD")==0)   eComp=MCN_FLIP_GRAD    ;
+  else if (strcmp(sCompName, "ResonatorDrabkin")==0  || strcmp(sCompName, "MCN_RES_DRABKIN")==0)  eComp=MCN_RES_DRABKIN  ;
+  else if (strcmp(sCompName, "MagnField")==0  || strcmp(sCompName, "MCN_FIELD_PREC")==0)         eComp=MCN_FIELD_PREC   ;
+  else if (strcmp(sCompName, "MagnFieldRotating")==0  || strcmp(sCompName, "MCN_FIELD_ROT")==0) eComp=MCN_FIELD_ROT    ;
+  else if (strcmp(sCompName, "MagnFieldSESANS")==0  || strcmp(sCompName, "MCN_FIELD_SESANS")==0)   eComp=MCN_FIELD_SESANS ;
+  else if (strcmp(sCompName, "CaptureFlux")==0  || strcmp(sCompName, "MCN_CAPTURE")==0)       eComp=MCN_CAPTURE      ;
+  else if (strcmp(sCompName, "BeamStop")==0  || strcmp(sCompName, "MCN_BEAMSTOP")==0)          eComp=MCN_BEAMSTOP     ;
+  else if (strcmp(sCompName, "SampleEnvironment")==0  || strcmp(sCompName, "MCN_SMPL_ENVIRO")==0) eComp=MCN_SMPL_ENVIRO  ;
+  else if (strcmp(sCompName, "Detector")==0  || strcmp(sCompName, "MCN_DETECTOR")==0)          eComp=MCN_DETECTOR     ;
+  else if (strcmp(sCompName, "Screen")==0  || strcmp(sCompName, "MCN_SCREEN")==0)            eComp=MCN_SCREEN       ;
+  else if (strcmp(sCompName, "EventsOut")==0  || strcmp(sCompName, "MCN_WRITEOUT")==0)         eComp=MCN_WRITEOUT     ;
+  else if (strcmp(sCompName, "SampleElasticIsotr")==0  || strcmp(sCompName, "MCN_SMPL_EL_ISO")==0)eComp=MCN_SMPL_EL_ISO  ;
+  else if (strcmp(sCompName, "SampleInelastic")==0  || strcmp(sCompName, "MCN_SMPL_INELAST")==0)   eComp=MCN_SMPL_INELAST ;
+  else if (strcmp(sCompName, "SampleSnglCrystal")==0  || strcmp(sCompName, "MCN_SMPL_SNGL_X")==0) eComp=MCN_SMPL_SNGL_X  ;
+  else if (strcmp(sCompName, "SamplePowder")==0  || strcmp(sCompName, "MCN_SMPL_POWDER")==0)      eComp=MCN_SMPL_POWDER  ;
+  else if (strcmp(sCompName, "SampleSofQ")==0  || strcmp(sCompName, "MCN_SMPL_S_Q")==0)        eComp=MCN_SMPL_S_Q     ;
+  else if (strcmp(sCompName, "SampleNXS")==0  || strcmp(sCompName, "MCN_SMPL_NXS")==0)         eComp=MCN_SMPL_NXS     ;
+  else if (strcmp(sCompName, "SampleSANS")==0  || strcmp(sCompName, "MCN_SMPL_SANS")==0)        eComp=MCN_SMPL_SANS    ;
+  else if (strcmp(sCompName, "SampleReflect")==0  || strcmp(sCompName, "MCN_SMPL_REFL")==0)     eComp=MCN_SMPL_REFL    ;
+  else if (strcmp(sCompName, "Frame")==0  || strcmp(sCompName, "MCN_FRAME")==0)             eComp=MCN_FRAME        ;
+  else if (strcmp(sCompName, "Filter")==0  || strcmp(sCompName, "MCN_FILTER")==0)            eComp=MCN_FILTER       ;
+  else if (strcmp(sCompName, "Filter2D")==0  || strcmp(sCompName, "MCN_FILTER2D")==0)          eComp=MCN_FILTER2D     ;
+  else if (strcmp(sCompName, "Reset")==0  || strcmp(sCompName, "MCN_RESET")==0)             eComp=MCN_RESET        ;
+  else if (strcmp(sCompName, "Visualization")==0  || strcmp(sCompName, "MCN_VISUAL")==0)     eComp=MCN_VISUAL       ;
+  else if (strcmp(sCompName, "Monitor1D")==0  || strcmp(sCompName, "MCN_MONITOR1")==0)         eComp=MCN_MONITOR1     ;
+  else if (strcmp(sCompName, "Mon1D")==0  || strcmp(sCompName, "MCN_MON1")==0)             eComp=MCN_MON1         ;
+  else if (strcmp(sCompName, "Mon1D-Brill")==0  || strcmp(sCompName, "MCN_MON1_BRL")==0)       eComp=MCN_MON1_BRL     ;
+  else if (strcmp(sCompName, "Mon1D-Pol")==0  || strcmp(sCompName, "MCN_MON1_POL")==0)         eComp=MCN_MON1_POL     ;
+  else if (strcmp(sCompName, "Monitor2D")==0  || strcmp(sCompName, "MCN_MONITOR2")==0)         eComp=MCN_MONITOR2     ;
+  else if (strcmp(sCompName, "Mon2D_Pos")==0  || strcmp(sCompName, "MCN_MON2_POS")==0)         eComp=MCN_MON2_POS     ;
+  else if (strcmp(sCompName, "Mon2D_Div")==0  || strcmp(sCompName, "MCN_MON2_DIV")==0)         eComp=MCN_MON2_DIV     ;
+  else if (strcmp(sCompName, "Mon2D_kDiv")==0  || strcmp(sCompName, "MCN_MON2_KDIV")==0)        eComp=MCN_MON2_KDIV    ;
+  else if (strcmp(sCompName, "Mon2D_R-Div")==0  || strcmp(sCompName, "MCN_MON2_RDIV")==0)       eComp=MCN_MON2_RDIV   ;
+  else if (strcmp(sCompName, "Mon2D_Pos-Div")==0  || strcmp(sCompName, "MCN_MON2_POSDIV")==0)     eComp=MCN_MON2_POSDIV  ;
+  else if (strcmp(sCompName, "Mon2D_Wl-Div")==0  || strcmp(sCompName, "MCN_MON2_WLDIV")==0)      eComp=MCN_MON2_WLDIV   ;
+  else if (strcmp(sCompName, "Mon2D_Tof-Wl")==0  || strcmp(sCompName, "MCN_MON2_TOFWL")==0)      eComp=MCN_MON2_TOFWL   ;
+  else if (strcmp(sCompName, "Mon2D-Pol_Pos")==0  || strcmp(sCompName, "MCN_MON2_POL_POS")==0)     eComp=MCN_MON2_POL_POS ;
+  else if (strcmp(sCompName, "Eval1D_Elastic")==0  || strcmp(sCompName, "MCN_EVAL1_ELAST")==0)    eComp=MCN_EVAL1_ELAST  ;
+  else if (strcmp(sCompName, "Eval1D_Inelastic")==0  || strcmp(sCompName, "MCN_EVAL1_INELAST")==0)  eComp=MCN_EVAL1_INELAST;
+  else if (strcmp(sCompName, "Eval2D_Elastic")==0  || strcmp(sCompName, "MCN_EVAL2_ELAST")==0)    eComp=MCN_EVAL2_ELAST  ;
+  else if (strcmp(sCompName, "RunTime")==0  || strcmp(sCompName, "MCN_RUNTIME")==0)           eComp=MCN_RUNTIME      ;
+  else if (strcmp(sCompName, "Tool_Ascii2Bin")==0  || strcmp(sCompName, "MCN_TOOL_A2B")==0)    eComp=MCN_TOOL_A2B     ;
+  else if (strcmp(sCompName, "Tool_CrysAnaSpec")==0  || strcmp(sCompName, "MCN_TOOL_CAS")==0)  eComp=MCN_TOOL_CAS     ;
+  else if (strcmp(sCompName, "Tool_ChopPhase")==0  || strcmp(sCompName, "MCN_TOOL_CHOP")==0)    eComp=MCN_TOOL_CHOP    ;
+  else if (strcmp(sCompName, "Tool_DefineDir")==0  || strcmp(sCompName, "MCN_TOOL_DEF_DIR")==0)    eComp=MCN_TOOL_DEF_DIR ;
+  else if (strcmp(sCompName, "Tool_DirectView")==0  || strcmp(sCompName, "MCN_TOOL_DIR_VIEW")==0)   eComp=MCN_TOOL_DIR_VIEW;
+  else if (strcmp(sCompName, "Tool_GenBatch")==0  || strcmp(sCompName, "MCN_TOOL_GEN_BAT")==0)     eComp=MCN_TOOL_GEN_BAT;
+  else if (strcmp(sCompName, "Tool_GenCoating")==0  || strcmp(sCompName, "MCN_TOOL_GEN_COAT")==0)   eComp=MCN_TOOL_GEN_COAT;
+  else if (strcmp(sCompName, "Tool_GenBatch")==0  || strcmp(sCompName, "MCN_TOOL_GEN_BAT")==0)     eComp=MCN_TOOL_GEN_BAT;
+  else if (strcmp(sCompName, "Tool_GenHKL")==0  || strcmp(sCompName, "MCN_TOOL_GEN_HKL")==0)       eComp=MCN_TOOL_GEN_HKL;
+  else if (strcmp(sCompName, "Tool_GenSurface")==0  || strcmp(sCompName, "MCN_TOOL_GEN_SURF")==0)   eComp=MCN_TOOL_GEN_SURF;
+  else if (strcmp(sCompName, "Tool_StdDeviat")==0  || strcmp(sCompName, "MCN_TOOL_STD_DEV")==0)    eComp=MCN_TOOL_STD_DEV ;
+  else if (strcmp(sCompName, "Tool_LatticeDist")==0 || strcmp(sCompName, "MCN_TOOL_LAT_DST")==0)  eComp=MCN_TOOL_LAT_DST ;
+  else if (strcmp(sCompName, "Tool_GuideShape")==0 || strcmp(sCompName, "MCN_TOOL_GUIDE")==0)   eComp=MCN_TOOL_GUIDE   ;
+  else if (strcmp(sCompName, "Tool_DistTimePlot")==0 || strcmp(sCompName, "MCN_TOOL_DST_TIME")==0) eComp=MCN_TOOL_DST_TIME;
+  else if (strcmp(sCompName, "Tool_AnalyzeMon2D")==0 || strcmp(sCompName, "MCN_TOOL_ANLZ_2D")==0) eComp=MCN_TOOL_ANLZ_2D ;
+  else if (strcmp(sCompName, "Opt_Main")==0 || strcmp(sCompName, "MCN_OPT_MAIN")==0)          eComp=MCN_OPT_MAIN     ;
+  else if (strcmp(sCompName, "Opt_GenerPipe")==0 || strcmp(sCompName, "MCN_OPT_PIPE")==0)     eComp=MCN_OPT_PIPE     ;
+  else if (strcmp(sCompName, "Opt_FoM")==0 || strcmp(sCompName, "MCN_OPT_FOM")==0)           eComp=MCN_OPT_FOM      ;
+  else                                             eComp=MCN_COMP_UNKNOWN ;
 
-  return eComp; 
+  return eComp;
 }
 
 // reason for writing interaction point (all modules, internal)
@@ -265,18 +265,18 @@ VtReason Reason_Txt2ID(const char* sText)
 {
   VtReason eID=VT_NO_REASON;
 
-       if (strcmp(sText, "created"      )==0) eID=VT_CREATED   ;
-  else if (strcmp(sText, "outside"      )==0) eID=VT_OUTSIDE   ;
-  else if (strcmp(sText, "out of window")==0) eID=VT_OUT_OF_WND;
-  else if (strcmp(sText, "passed"       )==0) eID=VT_PASSED    ;
-  else if (strcmp(sText, "entered"      )==0) eID=VT_ENTERED   ;
-  else if (strcmp(sText, "transited"    )==0) eID=VT_TRANSIT   ;
-  else if (strcmp(sText, "reflected"    )==0) eID=VT_REFLECTED ;
-  else if (strcmp(sText, "scattered"    )==0) eID=VT_SCATTERED ;
-  else if (strcmp(sText, "absorbed"     )==0) eID=VT_ABSORBED  ;
-  else if (strcmp(sText, "exited"       )==0) eID=VT_EXITED    ;
-  else if (strcmp(sText, "detected"     )==0) eID=VT_DETECTED  ;
-  
+       if (strcmp(sText, "created"      )==0 || strcmp(sText, "VT_CREATED")==0) eID=VT_CREATED   ;
+  else if (strcmp(sText, "outside"      )==0 || strcmp(sText, "VT_OUTSIDE")==0) eID=VT_OUTSIDE   ;
+  else if (strcmp(sText, "out of window")==0 || strcmp(sText, "VT_OUT_OF_WND")==0) eID=VT_OUT_OF_WND;
+  else if (strcmp(sText, "passed"       )==0 || strcmp(sText, "VT_PASSED")==0) eID=VT_PASSED    ;
+  else if (strcmp(sText, "entered"      )==0 || strcmp(sText, "VT_ENTERED")==0) eID=VT_ENTERED   ;
+  else if (strcmp(sText, "transited"    )==0 || strcmp(sText, "VT_TRANSIT")==0) eID=VT_TRANSIT   ;
+  else if (strcmp(sText, "reflected"    )==0 || strcmp(sText, "VT_REFLECTED")==0) eID=VT_REFLECTED ;
+  else if (strcmp(sText, "scattered"    )==0 || strcmp(sText, "VT_SCATTERED")==0) eID=VT_SCATTERED ;
+  else if (strcmp(sText, "absorbed"     )==0 || strcmp(sText, "VT_ABSORBED")==0) eID=VT_ABSORBED  ;
+  else if (strcmp(sText, "exited"       )==0 || strcmp(sText, "VT_EXITED")==0) eID=VT_EXITED    ;
+  else if (strcmp(sText, "detected"     )==0 || strcmp(sText, "VT_DETECTED")==0) eID=VT_DETECTED  ;
+
   return eID;
 }
 
@@ -296,11 +296,11 @@ VtDirType DirType_Txt2ID(const char* sText)
 {
   VtDirType eID=NO_DIR;
 
-       if (strcmp(sText, "parameter directory"   )==0) eID=PAR_DIR  ;
-  else if (strcmp(sText, "installation directory")==0) eID=INSTL_DIR;
-  else if (strcmp(sText, "input directory"       )==0) eID=IN_DIR   ;
-  else if (strcmp(sText, "output directory"      )==0) eID=OUT_DIR  ;
-  
+       if (strcmp(sText, "parameter directory"   )==0 || strcmp(sText, "PAR_DIR")==0) eID=PAR_DIR  ;
+  else if (strcmp(sText, "installation directory")==0 || strcmp(sText, "INSTL_DIR")==0) eID=INSTL_DIR;
+  else if (strcmp(sText, "input directory"       )==0 || strcmp(sText, "IN_DIR")==0) eID=IN_DIR   ;
+  else if (strcmp(sText, "output directory"      )==0 || strcmp(sText, "OUT_DIR")==0) eID=OUT_DIR  ;
+
   return eID;
 }
 
@@ -319,10 +319,10 @@ VtAxis   Axis_Txt2ID(const char* sText)
 {
   VtAxis eID=NO_AXIS;
 
-       if (strcmp(sText, "X")==0 || strcmp(sText, "x")==0) eID=X_AXIS;
-  else if (strcmp(sText, "Y")==0 || strcmp(sText, "y")==0) eID=Y_AXIS;
-  else if (strcmp(sText, "Z")==0 || strcmp(sText, "z")==0) eID=Z_AXIS;
-  
+       if (strcmp(sText, "X")==0 || strcmp(sText, "x")==0 || strcmp(sText, "X_AXIS")==0) eID=X_AXIS;
+  else if (strcmp(sText, "Y")==0 || strcmp(sText, "y")==0 || strcmp(sText, "Y_AXIS")==0) eID=Y_AXIS;
+  else if (strcmp(sText, "Z")==0 || strcmp(sText, "z")==0 || strcmp(sText, "Z_AXIS")==0) eID=Z_AXIS;
+
   return eID;
 }
 
@@ -341,10 +341,10 @@ VtRotAxis RotAxis_Txt2ID(const char* sText)
 {
   VtRotAxis eID=NO_ROT_AX;
 
-       if (strcmp(sText, "X")==0 || strcmp(sText, "x")==0) eID=VT_ROT_X;
-  else if (strcmp(sText, "Y")==0 || strcmp(sText, "y")==0) eID=VT_ROT_Y;
-  else if (strcmp(sText, "Z")==0 || strcmp(sText, "z")==0) eID=VT_ROT_Z;
-  
+       if (strcmp(sText, "X")==0 || strcmp(sText, "x")==0 || strcmp(sText, "VT_ROT_X")==0) eID=VT_ROT_X;
+  else if (strcmp(sText, "Y")==0 || strcmp(sText, "y")==0 || strcmp(sText, "VT_ROT_Y")==0) eID=VT_ROT_Y;
+  else if (strcmp(sText, "Z")==0 || strcmp(sText, "z")==0 || strcmp(sText, "VT_ROT_Z")==0) eID=VT_ROT_Z;
+
   return eID;
 }
 
@@ -362,9 +362,9 @@ VtOrient Orient_Txt2ID(const char* sText)
 {
   VtOrient eID=NO_ORIENT;
 
-       if (strcmp(sText, "horizontal")==0) eID=HORIZONTAL;
-  else if (strcmp(sText, "vertical"  )==0) eID=VERTICAL  ;
-  
+       if (strcmp(sText, "horizontal")==0 || strcmp(sText, "HORIZONTAL")==0) eID=HORIZONTAL;
+  else if (strcmp(sText, "vertical"  )==0 || strcmp(sText, "VERTICAL")==0) eID=VERTICAL  ;
+
   return eID;
 }
 
@@ -383,10 +383,10 @@ VtDir DirInOut_Txt2ID(const char* sText)
 {
   VtDir eID=VT_NO_DIR;
 
-       if (strcmp(sText, "in"    )==0) eID=VT_IN    ;
-  else if (strcmp(sText, "out"   )==0) eID=VT_OUT   ;
-  else if (strcmp(sText, "inside")==0) eID=VT_INSIDE;
-  
+       if (strcmp(sText, "in"    )==0 || strcmp(sText, "VT_IN")==0) eID=VT_IN    ;
+  else if (strcmp(sText, "out"   )==0 || strcmp(sText, "VT_OUT")==0) eID=VT_OUT   ;
+  else if (strcmp(sText, "inside")==0 || strcmp(sText, "VT_INSIDE")==0) eID=VT_INSIDE;
+
   return eID;
 }
 
@@ -404,9 +404,9 @@ VtFrameGen FrameGen_Txt2ID(const char* sText)
 {
   VtFrameGen eID=VT_NO_FRAME;
 
-       if (strcmp(sText, "standard frame generation")==0) eID=VT_FRAME_STD ;
-  else if (strcmp(sText, "user defined frame"       )==0) eID=VT_FRAME_USER;
-  
+       if (strcmp(sText, "standard frame generation")==0 || strcmp(sText, "VT_FRAME_STD")==0) eID=VT_FRAME_STD ;
+  else if (strcmp(sText, "user defined frame"       )==0 || strcmp(sText, "VT_FRAME_USER")==0) eID=VT_FRAME_USER;
+
   return eID;
 }
 
@@ -424,9 +424,9 @@ VtShape  Shape_Txt2ID(const char* sText)
 {
   VtShape eID=VT_NO_SHAPE;
 
-       if (strcmp(sText, "rectangular")==0) eID=VT_SQUARE;
-  else if (strcmp(sText, "circular"   )==0) eID=VT_CIRCLE;
-  
+       if (strcmp(sText, "rectangular")==0 || strcmp(sText, "VT_SQUARE")==0) eID=VT_SQUARE;
+  else if (strcmp(sText, "circular"   )==0 || strcmp(sText, "VT_CIRCLE")==0) eID=VT_CIRCLE;
+
   return eID;
 }
 
@@ -447,12 +447,12 @@ VtCompAct CompAct_Txt2ID(const char* sText)
 {
   VtCompAct eID=NOT_EXIST;
 
-       if (strcmp(sText, "inactive"   )==0) eID=INACTIVE  ;
-  else if (strcmp(sText, "active"     )==0) eID=ACTIVE    ;
-  else if (strcmp(sText, "first part" )==0) eID=FIRST_PART ;
-  else if (strcmp(sText, "middle part")==0) eID=MIDDLE_PART;
-  else if (strcmp(sText, "last part"  )==0) eID=LAST_PART  ;
- 
+       if (strcmp(sText, "inactive"   )==0 || strcmp(sText, "INACTIVE")==0) eID=INACTIVE  ;
+  else if (strcmp(sText, "active"     )==0 || strcmp(sText, "ACTIVE")==0) eID=ACTIVE    ;
+  else if (strcmp(sText, "first part" )==0 || strcmp(sText, "FIRST_PART")==0) eID=FIRST_PART ;
+  else if (strcmp(sText, "middle part")==0 || strcmp(sText, "MIDDLE_PART")==0) eID=MIDDLE_PART;
+  else if (strcmp(sText, "last part"  )==0 || strcmp(sText, "LAST_PART")==0) eID=LAST_PART  ;
+
   return eID;
 }
 
@@ -470,9 +470,9 @@ VtDistr  Distr_Txt2ID(const char* sText)
 {
   VtDistr eID=LORENTZIAN;
 
-       if (strcmp(sText, "Lorentzian")==0) eID=LORENTZIAN;
-  else if (strcmp(sText, "Gaussian"  )==0) eID=GAUSSIAN  ;
-  
+       if (strcmp(sText, "Lorentzian")==0 || strcmp(sText, "LORENTZIAN")==0) eID=LORENTZIAN;
+  else if (strcmp(sText, "Gaussian"  )==0 || strcmp(sText, "GAUSSIAN")==0) eID=GAUSSIAN  ;
+
   return eID;
 }
 
@@ -493,14 +493,14 @@ VtAbsMat   AbsMat_Txt2ID(const char* sText)
 {
   VtAbsMat eID=VT_NO_MAT;
 
-       if (strcmp(sText, "ideal"         )==0) eID=VT_ABS_IDEAL;
-  else if (strcmp(sText, "ideal absorber")==0) eID=VT_ABS_IDEAL;
-  else if (strcmp(sText, "Gd"            )==0) eID=VT_ABS_GD   ;
-  else if (strcmp(sText, "gadolinium"    )==0) eID=VT_ABS_GD   ;
-  else if (strcmp(sText, "Bor"           )==0) eID=VT_ABS_B10  ;
-  else if (strcmp(sText, "bor10"         )==0) eID=VT_ABS_B10  ;
-  else if (strcmp(sText, "from file"     )==0) eID=VT_ABS_FILE ;
- 
+       if (strcmp(sText, "ideal"         )==0 || strcmp(sText, "VT_ABS_IDEAL")==0) eID=VT_ABS_IDEAL;
+  else if (strcmp(sText, "ideal absorber")==0 || strcmp(sText, "VT_ABS_IDEAL")==0) eID=VT_ABS_IDEAL;
+  else if (strcmp(sText, "Gd"            )==0 || strcmp(sText, "VT_ABS_GD")==0) eID=VT_ABS_GD   ;
+  else if (strcmp(sText, "gadolinium"    )==0 || strcmp(sText, "VT_ABS_GD")==0) eID=VT_ABS_GD   ;
+  else if (strcmp(sText, "Bor"           )==0 || strcmp(sText, "VT_ABS_B10")==0) eID=VT_ABS_B10  ;
+  else if (strcmp(sText, "bor10"         )==0 || strcmp(sText, "VT_ABS_B10")==0) eID=VT_ABS_B10  ;
+  else if (strcmp(sText, "from file"     )==0 || strcmp(sText, "VT_ABS_FILE")==0) eID=VT_ABS_FILE ;
+
   return eID;
 }
 
@@ -518,9 +518,9 @@ VtInstGeom  InstGeom_Txt2ID(const char* sText)
 {
   VtInstGeom eID=VT_NO_I_GEOM;
 
-       if (strcmp(sText, "direct geometry"  )==0) eID=VT_DIRECT_GEOM;
-  else if (strcmp(sText, "inverted geometry")==0) eID=VT_INVERT_GEOM;
-  
+       if (strcmp(sText, "direct geometry"  )==0 || strcmp(sText, "VT_DIRECT_GEOM")==0) eID=VT_DIRECT_GEOM;
+  else if (strcmp(sText, "inverted geometry")==0 || strcmp(sText, "VT_INVERT_GEOM")==0) eID=VT_INVERT_GEOM;
+
   return eID;
 }
 
@@ -548,16 +548,16 @@ VtSrcName SrcName_Txt2ID(const char* sText)
 {
   VtSrcName eID=ANYSOURCE;
 
-       if (strcmp(sText, "ESS" )==0) eID=ESS ;
-  else if (strcmp(sText, "SNS" )==0) eID=SNS ;
-  else if (strcmp(sText, "ISIS")==0) eID=ISIS;
-  else if (strcmp(sText, "CSNS")==0) eID=CSNS;
-  else if (strcmp(sText, "IPNS")==0) eID=IPNS;
-  else if (strcmp(sText, "HBS" )==0) eID=HBS ;
-  else if (strcmp(sText, "ILL" )==0) eID=ILL ;
-  else if (strcmp(sText, "HMI" )==0) eID=HMI ;
-  else if (strcmp(sText, "FRM2")==0) eID=FRM2;
-  
+       if (strcmp(sText, "ESS" )==0 || strcmp(sText, "ESS")==0) eID=ESS ;
+  else if (strcmp(sText, "SNS" )==0 || strcmp(sText, "SNS")==0) eID=SNS ;
+  else if (strcmp(sText, "ISIS")==0 || strcmp(sText, "ISIS")==0) eID=ISIS;
+  else if (strcmp(sText, "CSNS")==0 || strcmp(sText, "CSNS")==0) eID=CSNS;
+  else if (strcmp(sText, "IPNS")==0 || strcmp(sText, "IPNS")==0) eID=IPNS;
+  else if (strcmp(sText, "HBS" )==0 || strcmp(sText, "HBS")==0) eID=HBS ;
+  else if (strcmp(sText, "ILL" )==0 || strcmp(sText, "ILL")==0) eID=ILL ;
+  else if (strcmp(sText, "HMI" )==0 || strcmp(sText, "HMI")==0) eID=HMI ;
+  else if (strcmp(sText, "FRM2")==0 || strcmp(sText, "FRM2")==0) eID=FRM2;
+
   return eID;
 }
 
@@ -577,13 +577,12 @@ void      SrcKind_ID2Txt(char* sText, const VtSrcKind eID)
 VtSrcKind SrcKind_Txt2ID(const char* sText)
 {
   VtSrcKind eID=NO_SRC_KIND;
+       if (strcmp(sText, "simple source"    )==0 || strcmp(sText, "SRC_SIMPLE")==0) eID=SRC_SIMPLE;
+  else if (strcmp(sText, "continuous source")==0 || strcmp(sText, "SRC_CWS"   )==0) eID=SRC_CWS   ;
+  else if (strcmp(sText, "pulsed source"    )==0 || strcmp(sText, "SRC_PULSED")==0) eID=SRC_PULSED;
+  else if (strcmp(sText, "source ISIS"      )==0 || strcmp(sText, "SRC_ISIS"  )==0) eID=SRC_ISIS  ;
+  else if (strcmp(sText, "source ESS"       )==0 || strcmp(sText, "SRC_ESS"   )==0) eID=SRC_ESS   ;
 
-       if (strcmp(sText, "simple source"    )==0) eID=SRC_SIMPLE;
-  else if (strcmp(sText, "continuous source")==0) eID=SRC_CWS   ;
-  else if (strcmp(sText, "pulsed source"    )==0) eID=SRC_PULSED;
-  else if (strcmp(sText, "source ISIS"      )==0) eID=SRC_ISIS  ;
-  else if (strcmp(sText, "source ESS"       )==0) eID=SRC_ESS   ;
-  
   return eID;
 }
 
@@ -602,10 +601,10 @@ VtSrcType SrcType_Txt2ID(const char* sText)
 {
   VtSrcType eID=NO_TYPE;
 
-       if (strcmp(sText, "CWS" )==0) eID=CWS ;
-  else if (strcmp(sText, "SPSS")==0) eID=SPSS;
-  else if (strcmp(sText, "LPSS")==0) eID=LPSS;
-  
+       if (strcmp(sText, "CWS" )==0 || strcmp(sText, "CWS"   )==0) eID=CWS ;
+  else if (strcmp(sText, "SPSS")==0 || strcmp(sText, "SPSS"   )==0) eID=SPSS;
+  else if (strcmp(sText, "LPSS")==0 || strcmp(sText, "LPSS"   )==0) eID=LPSS;
+
   return eID;
 }
 
@@ -623,9 +622,9 @@ VtTS      TS_Txt2ID(const char* sText)
 {
   VtTS eID=VT_NO_TS;
 
-       if (strcmp(sText, "TS 1")==0) eID=VT_TS_1;
-  else if (strcmp(sText, "TS 2")==0) eID=VT_TS_2;
-  
+       if (strcmp(sText, "TS 1")==0 || strcmp(sText, "VT_TS_1")==0) eID=VT_TS_1;
+  else if (strcmp(sText, "TS 2")==0 || strcmp(sText, "VT_TS_2")==0) eID=VT_TS_2;
+
   return eID;
 }
 
@@ -645,11 +644,11 @@ VtModType ModType_Txt2ID(const char* sText)
 {
   VtModType eID=NO_MOD_TYPE;
 
-       if (strcmp(sText, "decoupled poisoned"  )==0) eID=POISONED ;
-  else if (strcmp(sText, "decoupled unpoisoned")==0) eID=DECOUPLED;
-  else if (strcmp(sText, "coupled"             )==0) eID=COUPLED  ;
-  else if (strcmp(sText, "multi-spectral"      )==0) eID=MULT_SPEC;
-  
+       if (strcmp(sText, "decoupled poisoned"  )==0 || strcmp(sText, "POISONED")==0) eID=POISONED ;
+  else if (strcmp(sText, "decoupled unpoisoned")==0 || strcmp(sText, "DECOUPLED")==0) eID=DECOUPLED;
+  else if (strcmp(sText, "coupled"             )==0 || strcmp(sText, "COUPLED")==0) eID=COUPLED  ;
+  else if (strcmp(sText, "multi-spectral"      )==0 || strcmp(sText, "MULT_SPEC")==0) eID=MULT_SPEC;
+
   return eID;
 }
 
@@ -667,13 +666,13 @@ VtModShape ModShape_Txt2ID(const char* sText)
 {
   VtModShape eID=VT_MOD_CIRCLE;
 
-       if (strcmp(sText, "rectangular")==0) eID=VT_MOD_SQUARE;
-  else if (strcmp(sText, "circular"   )==0) eID=VT_MOD_CIRCLE;
-  
+       if (strcmp(sText, "rectangular")==0 || strcmp(sText, "VT_MOD_SQUARE")==0) eID=VT_MOD_SQUARE;
+  else if (strcmp(sText, "circular"   )==0 || strcmp(sText, "VT_MOD_CIRCLE")==0) eID=VT_MOD_CIRCLE;
+
   return eID;
 }
 
-// definition of flight direction range 
+// definition of flight direction range
 void     Direct_ID2Txt(char* sText, const VtDirect eID)
 {
   switch (eID)
@@ -688,10 +687,10 @@ VtDirect Direct_Txt2ID(const char* sText)
 {
   VtDirect eID=VT_REAL_WND;
 
-       if (strcmp(sText, "by divergence"    )==0) eID=VT_DIVERGENCE;
-  else if (strcmp(sText, "by real window"   )==0) eID=VT_REAL_WND  ;
-  else if (strcmp(sText, "by virtual window")==0) eID=VT_VIRT_WND  ;
-  
+       if (strcmp(sText, "by divergence"    )==0 || strcmp(sText, "VT_DIVERGENCE")==0) eID=VT_DIVERGENCE;
+  else if (strcmp(sText, "by real window"   )==0 || strcmp(sText, "VT_REAL_WND")==0) eID=VT_REAL_WND  ;
+  else if (strcmp(sText, "by virtual window")==0 || strcmp(sText, "VT_VIRT_WND")==0) eID=VT_VIRT_WND  ;
+
   return eID;
 }
 
@@ -713,13 +712,13 @@ EssModVsn ModVsn_Txt2ID(const char* sText)
 {
   EssModVsn eID=NO_VERSION;
 
-       if (strcmp(sText, "2001_Mezei"      )==0) eID=MEZEI_2001      ;
-  else if (strcmp(sText, "2012_Zanini"     )==0) eID=ZANINI_2012     ;
-  else if (strcmp(sText, "2013_Schoenfeldt")==0) eID=SCHOENFELDT_2013;
-  else if (strcmp(sText, "2013_VarHeight"  )==0) eID=VARHEIGHT_2013  ;
-  else if (strcmp(sText, "2015_Butterfly2" )==0) eID=BUTTERFLY2_2015 ;
-  else if (strcmp(sText, "2016_Butterfly1" )==0) eID=BUTTERFLY1_2016 ;
-  
+       if (strcmp(sText, "2001_Mezei"      )==0 || strcmp(sText, "MEZEI_2001")==0) eID=MEZEI_2001      ;
+  else if (strcmp(sText, "2012_Zanini"     )==0 || strcmp(sText, "ZANINI_2012")==0) eID=ZANINI_2012     ;
+  else if (strcmp(sText, "2013_Schoenfeldt")==0 || strcmp(sText, "SCHOENFELDT_2013")==0) eID=SCHOENFELDT_2013;
+  else if (strcmp(sText, "2013_VarHeight"  )==0 || strcmp(sText, "VARHEIGHT_2013")==0) eID=VARHEIGHT_2013  ;
+  else if (strcmp(sText, "2015_Butterfly2" )==0 || strcmp(sText, "BUTTERFLY2_2015")==0) eID=BUTTERFLY2_2015 ;
+  else if (strcmp(sText, "2016_Butterfly1" )==0 || strcmp(sText, "BUTTERFLY1_2016")==0) eID=BUTTERFLY1_2016 ;
+
   return eID;
 }
 
@@ -740,9 +739,9 @@ VtTrace Trace_Txt2ID(const char* sText)
 {
   VtTrace eID=NO_TRACING;
 
-       if (strcmp(sText, "write trace files"      )==0) eID=WRITE_TRC_FILES;
-  else if (strcmp(sText, "only trace trajectories")==0) eID=ONLY_TRC_TRAJ  ;
-  
+       if (strcmp(sText, "write trace files"      )==0 || strcmp(sText, "WRITE_TRC_FILES")==0) eID=WRITE_TRC_FILES;
+  else if (strcmp(sText, "only trace trajectories")==0 || strcmp(sText, "ONLY_TRC_TRAJ")==0) eID=ONLY_TRC_TRAJ  ;
+
   return eID;
 }
 
@@ -764,13 +763,22 @@ VtPrgFormat PrgFormat_Txt2ID(const char* sText)
 {
   VtPrgFormat eID=VT_VITESS_FMT;
 
-       if (strcmp(sText, "VITESS")==0) eID=VT_VITESS_FMT;
-  else if (strcmp(sText, "McStas")==0) eID=VT_MCSTAS_FMT;
-  else if (strcmp(sText, "MCPL"  )==0) eID=VT_MCPL_FMT  ;
-  else if (strcmp(sText, "MCNPX" )==0) eID=VT_MCNPX_FMT ;
-  else if (strcmp(sText, "MCNP6" )==0) eID=VT_MCNP6_FMT ;
-  else if (strcmp(sText, "SSW"   )==0) eID=VT_SSW_FMT ;
-  
+       if (strcmp(sText, "VITESS")==0 || strcmp(sText, "VT_VITESS_FMT")==0) eID=VT_VITESS_FMT;
+  else if (strcmp(sText, "McStas")==0 || strcmp(sText, "VT_MCSTAS_FMT")==0) eID=VT_MCSTAS_FMT;
+  else if (strcmp(sText, "MCPL"  )==0 || strcmp(sText, "VT_MCPL_FMT"  )==0) eID=VT_MCPL_FMT  ;
+  else if (strcmp(sText, "MCNPX" )==0 || strcmp(sText, "VT_MCNPX_FMT" )==0) eID=VT_MCNPX_FMT ;
+  else if (strcmp(sText, "MCNP6" )==0 || strcmp(sText, "VT_MCNP6_FMT" )==0) eID=VT_MCNP6_FMT ;
+  else if (strcmp(sText, "SSW"   )==0 || strcmp(sText, "VT_SSW_FMT"   )==0) eID=VT_SSW_FMT ;
+
+  return eID;
+}
+
+VtSampling Sampling_Txt2ID(const char* sText)
+{
+  VtSampling eID=NO_SAMPLING;
+       if (strcmp(sText, "NO_SAMPLING")==0) eID = NO_SAMPLING;
+  else if (strcmp(sText, "SAMPLING"   )==0) eID = SAMPLING;
+
   return eID;
 }
 
@@ -789,10 +797,10 @@ VtDataFormat DataFormat_Txt2ID(const char* sText)
 {
   VtDataFormat eID=VT_FLOAT;
 
-       if (strcmp(sText, "exp"   )==0) eID=VT_EXPONENTIAL;
-  else if (strcmp(sText, "float" )==0) eID=VT_FLOAT      ;
-  else if (strcmp(sText, "binary")==0) eID=VT_BINARY     ;
-  
+       if (strcmp(sText, "exp"   )==0 || strcmp(sText, "VT_EXPONENTIAL")==0) eID=VT_EXPONENTIAL;
+  else if (strcmp(sText, "float" )==0 || strcmp(sText, "VT_FLOAT")==0) eID=VT_FLOAT      ;
+  else if (strcmp(sText, "binary")==0 || strcmp(sText, "VT_BINARY")==0) eID=VT_BINARY     ;
+
   return eID;
 }
 
@@ -810,11 +818,11 @@ VtSeparator Separator_Txt2ID(const char* sText)
 {
   VtSeparator eID=VT_BLANK;
 
-       if (strcmp(sText, "space"    )==0) eID=VT_BLANK    ;
-  else if (strcmp(sText, "Space"    )==0) eID=VT_BLANK    ;
-  else if (strcmp(sText, "tabulator")==0) eID=VT_TABULATOR;
-  else if (strcmp(sText, "Tabulator")==0) eID=VT_TABULATOR;
-  
+       if (strcmp(sText, "space"    )==0 || strcmp(sText, "VT_BLANK")==0) eID=VT_BLANK    ;
+  else if (strcmp(sText, "Space"    )==0 || strcmp(sText, "VT_BLANK")==0) eID=VT_BLANK    ;
+  else if (strcmp(sText, "tabulator")==0 || strcmp(sText, "VT_TABULATOR")==0) eID=VT_TABULATOR;
+  else if (strcmp(sText, "Tabulator")==0 || strcmp(sText, "VT_TABULATOR")==0) eID=VT_TABULATOR;
+
   return eID;
 }
 
@@ -839,13 +847,13 @@ VtTfmnSeq  TfmnSeq_Txt2ID(const char* sText)
 {
   VtTfmnSeq eID=VT_NO_SEQ;
 
-       if (strcmp(sText, "RTM")==0) eID=VT_RTM;
-  else if (strcmp(sText, "RMT")==0) eID=VT_RMT;
-  else if (strcmp(sText, "TRM")==0) eID=VT_TRM;
-  else if (strcmp(sText, "TMR")==0) eID=VT_TMR;
-  else if (strcmp(sText, "MTR")==0) eID=VT_MTR;
-  else if (strcmp(sText, "MRT")==0) eID=VT_MRT;
-  
+       if (strcmp(sText, "RTM")==0 || strcmp(sText, "VT_RTM")==0) eID=VT_RTM;
+  else if (strcmp(sText, "RMT")==0 || strcmp(sText, "VT_RMT")==0) eID=VT_RMT;
+  else if (strcmp(sText, "TRM")==0 || strcmp(sText, "VT_TRM")==0) eID=VT_TRM;
+  else if (strcmp(sText, "TMR")==0 || strcmp(sText, "VT_TMR")==0) eID=VT_TMR;
+  else if (strcmp(sText, "MTR")==0 || strcmp(sText, "VT_MTR")==0) eID=VT_MTR;
+  else if (strcmp(sText, "MRT")==0 || strcmp(sText, "VT_MRT")==0) eID=VT_MRT;
+
   return eID;
 }
 
@@ -871,17 +879,17 @@ VtWndAbs   WndAbs_Txt2ID(const char* sText)
 {
   VtWndAbs eID=VT_WABS_IDEAL;
 
-       if (strcmp(sText, "from file"     )==0) eID=VT_WABS_FILE ;
-  else if (strcmp(sText, "gadolinium"    )==0) eID=VT_WABS_GD   ;
-  else if (strcmp(sText, "cadmium"       )==0) eID=VT_WABS_CD   ;
-  else if (strcmp(sText, "bor10"         )==0) eID=VT_WABS_B10  ;
-  else if (strcmp(sText, "Bor10"         )==0) eID=VT_WABS_B10  ;
-  else if (strcmp(sText, "europium"      )==0) eID=VT_WABS_EU   ;
-  else if (strcmp(sText, "Eu"            )==0) eID=VT_WABS_EU   ;
-  else if (strcmp(sText, "silicon"       )==0) eID=VT_WABS_SI   ;
-  else if (strcmp(sText, "Silicon"       )==0) eID=VT_WABS_SI   ;
-  else if (strcmp(sText, "ideal absorber")==0) eID=VT_WABS_IDEAL;
-  
+       if (strcmp(sText, "from file"     )==0 || strcmp(sText, "VT_WABS_FILE")==0) eID=VT_WABS_FILE ;
+  else if (strcmp(sText, "gadolinium"    )==0 || strcmp(sText, "VT_WABS_GD")==0) eID=VT_WABS_GD   ;
+  else if (strcmp(sText, "cadmium"       )==0 || strcmp(sText, "VT_WABS_CD")==0) eID=VT_WABS_CD   ;
+  else if (strcmp(sText, "bor10"         )==0 || strcmp(sText, "VT_WABS_B10")==0) eID=VT_WABS_B10  ;
+  else if (strcmp(sText, "Bor10"         )==0 || strcmp(sText, "VT_WABS_B10")==0) eID=VT_WABS_B10  ;
+  else if (strcmp(sText, "europium"      )==0 || strcmp(sText, "VT_WABS_EU")==0) eID=VT_WABS_EU   ;
+  else if (strcmp(sText, "Eu"            )==0 || strcmp(sText, "VT_WABS_EU")==0) eID=VT_WABS_EU   ;
+  else if (strcmp(sText, "silicon"       )==0 || strcmp(sText, "VT_WABS_SI")==0) eID=VT_WABS_SI   ;
+  else if (strcmp(sText, "Silicon"       )==0 || strcmp(sText, "VT_WABS_SI")==0) eID=VT_WABS_SI   ;
+  else if (strcmp(sText, "ideal absorber")==0 || strcmp(sText, "VT_WABS_IDEAL")==0) eID=VT_WABS_IDEAL;
+
   return eID;
 }
 
@@ -899,9 +907,9 @@ VtOscill   Oscill_Txt2ID(const char* sText)
 {
   VtOscill eID=VT_OSC_OFF;
 
-       if (strcmp(sText, "oscillation off"         )==0) eID=VT_OSC_OFF  ;
-  else if (strcmp(sText, "randow phase oscillation")==0) eID=VT_RND_PHASE;
-  
+       if (strcmp(sText, "oscillation off"         )==0 || strcmp(sText, "VT_OSC_OFF")==0) eID=VT_OSC_OFF  ;
+  else if (strcmp(sText, "randow phase oscillation")==0 || strcmp(sText, "VT_RND_PHASE")==0) eID=VT_RND_PHASE;
+
   return eID;
 }
 
@@ -920,17 +928,17 @@ VtMultWndShape MultWndShape_Txt2ID(const char* sText)
 {
   VtMultWndShape eID=VT_MWND_AUTO;
 
-       if (strcmp(sText, "automatic"  )==0) eID=VT_MWND_AUTO  ;
-  else if (strcmp(sText, "spherical"  )==0) eID=VT_MWND_CIRCLE;
-  else if (strcmp(sText, "rectangular")==0) eID=VT_MWND_SQUARE;
-  
+       if (strcmp(sText, "automatic"  )==0 || strcmp(sText, "VT_MWND_AUTO")==0) eID=VT_MWND_AUTO  ;
+  else if (strcmp(sText, "spherical"  )==0 || strcmp(sText, "VT_MWND_CIRCLE")==0) eID=VT_MWND_CIRCLE;
+  else if (strcmp(sText, "rectangular")==0 || strcmp(sText, "VT_MWND_SQUARE")==0) eID=VT_MWND_SQUARE;
+
   return eID;
 }
 
 
 // GUIDES and MIRRORS
 // ------------------
-// guide walls : top, bottom ... 
+// guide walls : top, bottom ...
 void        GdeWall_ID2Txt(char* sText, const VtGdeWall eID)
 {
   switch (eID)
@@ -948,13 +956,13 @@ VtGdeWall   GdeWall_Txt2ID(const char* sText)
 {
   VtGdeWall eID=GW_INIT;
 
-       if (strcmp(sText, "top"   )==0) eID=GW_TOP   ;
-  else if (strcmp(sText, "bottom")==0) eID=GW_BOTTOM;
-  else if (strcmp(sText, "lweft" )==0) eID=GW_LEFT  ;
-  else if (strcmp(sText, "right" )==0) eID=GW_RIGHT ;
-  else if (strcmp(sText, "exit"  )==0) eID=GW_EXIT  ;
-  else if (strcmp(sText, "init"  )==0) eID=GW_INIT  ;
-  
+       if (strcmp(sText, "top"   )==0 || strcmp(sText, "GW_TOP"   )==0) eID=GW_TOP   ;
+  else if (strcmp(sText, "bottom")==0 || strcmp(sText, "GW_BOTTOM"   )==0) eID=GW_BOTTOM;
+  else if (strcmp(sText, "lweft" )==0 || strcmp(sText, "GW_LEFT"   )==0) eID=GW_LEFT  ;
+  else if (strcmp(sText, "right" )==0 || strcmp(sText, "GW_RIGHT"   )==0) eID=GW_RIGHT ;
+  else if (strcmp(sText, "exit"  )==0 || strcmp(sText, "GW_EXIT"   )==0) eID=GW_EXIT  ;
+  else if (strcmp(sText, "init"  )==0 || strcmp(sText, "GW_INIT"   )==0) eID=GW_INIT  ;
+
   return eID;
 }
 
@@ -977,14 +985,14 @@ VtGdeShape  GdeShape_Txt2ID(const char* sText)
 {
   VtGdeShape eID=VT_CONSTANT;
 
-       if (strcmp(sText, "constant"     )==0) eID=VT_CONSTANT ;
-  else if (strcmp(sText, "linear"       )==0) eID=VT_LINEAR   ;
-  else if (strcmp(sText, "curved"       )==0) eID=VT_CURVED   ;
-  else if (strcmp(sText, "parabolic"    )==0) eID=VT_PARABOLIC;
-  else if (strcmp(sText, "elliptic"     )==0) eID=VT_ELLIPTIC ;
-  else if (strcmp(sText, "from file"    )==0) eID=VT_FROM_FILE;
-  else if (strcmp(sText, "curved+linear")==0) eID=VT_LIN_CURV ;
-  
+       if (strcmp(sText, "constant"     )==0 || strcmp(sText, "VT_CONSTANT")==0) eID=VT_CONSTANT ;
+  else if (strcmp(sText, "linear"       )==0 || strcmp(sText, "VT_LINEAR")==0) eID=VT_LINEAR   ;
+  else if (strcmp(sText, "curved"       )==0 || strcmp(sText, "VT_CURVED")==0) eID=VT_CURVED   ;
+  else if (strcmp(sText, "parabolic"    )==0 || strcmp(sText, "VT_PARABOLIC")==0) eID=VT_PARABOLIC;
+  else if (strcmp(sText, "elliptic"     )==0 || strcmp(sText, "VT_ELLIPTIC")==0) eID=VT_ELLIPTIC ;
+  else if (strcmp(sText, "from file"    )==0 || strcmp(sText, "VT_FROM_FILE")==0) eID=VT_FROM_FILE;
+  else if (strcmp(sText, "curved+linear")==0 || strcmp(sText, "VT_LIN_CURV")==0) eID=VT_LIN_CURV ;
+
   return eID;
 }
 
@@ -1002,9 +1010,9 @@ VtWaviDistr WaviDistr_Txt2ID(const char* sText)
 {
   VtWaviDistr eID=VT_WAVI_RECT;
 
-       if (strcmp(sText, "rectangular")==0) eID=VT_WAVI_RECT;
-  else if (strcmp(sText, "Gaussian"   )==0) eID=VT_WAVI_GAUSS  ;
-  
+       if (strcmp(sText, "rectangular")==0 || strcmp(sText, "VT_WAVI_RECT")==0) eID=VT_WAVI_RECT;
+  else if (strcmp(sText, "Gaussian"   )==0 || strcmp(sText, "VT_WAVI_GAUSS")==0) eID=VT_WAVI_GAUSS  ;
+
   return eID;
 }
 
@@ -1026,12 +1034,12 @@ VtMirrMat   MirrMat_Txt2ID(const char* sText)
 {
   VtMirrMat eID=VT_NO_MIRR_MAT;
 
-       if (strcmp(sText, "Other"   )==0 || strcmp(sText, "other"   )==0) eID=VT_MIRR_OTHER;
-  else if (strcmp(sText, "Silicon" )==0 || strcmp(sText, "silicon" )==0) eID=VT_MIRR_SI   ;
-  else if (strcmp(sText, "Sapphire")==0 || strcmp(sText, "sapphire")==0) eID=VT_MIRR_SAPPH;
-  else if (strcmp(sText, "Glass"   )==0 || strcmp(sText, "glass"   )==0) eID=VT_MIRR_GLASS;
-  else if (strcmp(sText, "B4C"     )==0                                ) eID=VT_MIRR_B4C;
- 
+       if (strcmp(sText, "Other"   )==0 || strcmp(sText, "other"   )==0 || strcmp(sText, "VT_MIRR_OTHER"   )==0) eID=VT_MIRR_OTHER;
+  else if (strcmp(sText, "Silicon" )==0 || strcmp(sText, "silicon" )==0 || strcmp(sText, "VT_MIRR_SI"   )==0) eID=VT_MIRR_SI   ;
+  else if (strcmp(sText, "Sapphire")==0 || strcmp(sText, "sapphire")==0 || strcmp(sText, "VT_MIRR_SAPPH"   )==0) eID=VT_MIRR_SAPPH;
+  else if (strcmp(sText, "Glass"   )==0 || strcmp(sText, "glass"   )==0 || strcmp(sText, "VT_MIRR_GLASS"   )==0) eID=VT_MIRR_GLASS;
+  else if (strcmp(sText, "B4C"     )==0 || strcmp(sText, "VT_MIRR_B4C"   )==0                                ) eID=VT_MIRR_B4C;
+
   return eID;
 }
 
@@ -1055,15 +1063,15 @@ VtListPar   ListPar_Txt2ID(const char* sText)
 {
   VtListPar eID=VT_LIST_PASS_LF;
 
-       if (strcmp(sText, "Trajectories passing the guide end"     )==0) eID=VT_LIST_PASS;
-  else if (strcmp(sText, "Trajectories passing the guide end (LF)")==0 || strcmp(sText, "Trajectories passing the guide end (with linefeed)"                  )==0) eID=VT_LIST_PASS_LF;
-  else if (strcmp(sText, "Only successful reflections"            )==0) eID=VT_LIST_REFL;
-  else if (strcmp(sText, "Only successful reflections (LF)"       )==0 || strcmp(sText, "Only successful reflections (with linefeed)"                         )==0) eID=VT_LIST_REFL_LF;
-  else if (strcmp(sText, "Traj. with at least 1 reflection"       )==0 || strcmp(sText, "Trajectories with at least one successful reflection"                )==0) eID=VT_LIST_T1SR;
-  else if (strcmp(sText, "Traj. with at least 1 reflection (LF)"  )==0 || strcmp(sText, "Trajectories with at least one successful reflection (with linefeed)")==0) eID=VT_LIST_T1SR_LF;
-  else if (strcmp(sText, "All trajectories"                       )==0) eID=VT_LIST_ALL;
-  else if (strcmp(sText, "All trajectories (LF)"                  )==0 || strcmp(sText, "All trajectories (with linefeed)"                                    )==0) eID=VT_LIST_ALL_LF;
-  
+       if (strcmp(sText, "Trajectories passing the guide end"     )==0 || strcmp(sText, "VT_LIST_PASS")==0) eID=VT_LIST_PASS;
+  else if (strcmp(sText, "Trajectories passing the guide end (LF)")==0 || strcmp(sText, "Trajectories passing the guide end (with linefeed)"                  )==0 || strcmp(sText, "VT_LIST_PASS_LF")==0) eID=VT_LIST_PASS_LF;
+  else if (strcmp(sText, "Only successful reflections"            )==0 || strcmp(sText, "VT_LIST_REFL")==0) eID=VT_LIST_REFL;
+  else if (strcmp(sText, "Only successful reflections (LF)"       )==0 || strcmp(sText, "Only successful reflections (with linefeed)"                         )==0 || strcmp(sText, "VT_LIST_REFL_LF")==0) eID=VT_LIST_REFL_LF;
+  else if (strcmp(sText, "Traj. with at least 1 reflection"       )==0 || strcmp(sText, "Trajectories with at least one successful reflection"                )==0 || strcmp(sText, "VT_LIST_T1SR")==0) eID=VT_LIST_T1SR;
+  else if (strcmp(sText, "Traj. with at least 1 reflection (LF)"  )==0 || strcmp(sText, "Trajectories with at least one successful reflection (with linefeed)")==0 || strcmp(sText, "VT_LIST_T1SR_LF")==0) eID=VT_LIST_T1SR_LF;
+  else if (strcmp(sText, "All trajectories"                       )==0 || strcmp(sText, "VT_LIST_ALL")==0) eID=VT_LIST_ALL;
+  else if (strcmp(sText, "All trajectories (LF)"                  )==0 || strcmp(sText, "All trajectories (with linefeed)"                                    )==0 || strcmp(sText, "VT_LIST_ALL_LF")==0) eID=VT_LIST_ALL_LF;
+
   return eID;
 }
 
@@ -1082,10 +1090,10 @@ VtListVbs   ListVbs_Txt2ID(const char* sText)
 {
   VtListVbs eID=VT_LSTM_EDGE;
 
-       if (strcmp(sText, "no"          )==0) eID=VT_LSTM_NO  ;
-  else if (strcmp(sText, "yes"         )==0) eID=VT_LSTM_YES ;
-  else if (strcmp(sText, "entry & exit")==0) eID=VT_LSTM_EDGE;
-  
+       if (strcmp(sText, "no"          )==0 || strcmp(sText, "VT_LSTM_NO"          )==0) eID=VT_LSTM_NO  ;
+  else if (strcmp(sText, "yes"         )==0 || strcmp(sText, "VT_LSTM_YES"          )==0) eID=VT_LSTM_YES ;
+  else if (strcmp(sText, "entry & exit")==0 || strcmp(sText, "VT_LSTM_EDGE"          )==0) eID=VT_LSTM_EDGE;
+
   return eID;
 }
 
@@ -1127,33 +1135,33 @@ VtPlotPar   PlotPar_Txt2ID(const char* sText)
 {
   VtPlotPar eID=KeyNone;
 
-       if (strcmp(sText, "Scattered (Mode)")==0) eID=iKeyMode         ;
-  else if (strcmp(sText, "Mode0"       )==0) eID=iKeyMode0        ;
-  else if (strcmp(sText, "Mode5"       )==0) eID=iKeyMode5        ;
-  else if (strcmp(sText, "Mode10"      )==0) eID=iKeyMode10       ;
-  else if (strcmp(sText, "RefCount"    )==0) eID=dKeyRefCount     ;
-  else if (strcmp(sText, "RefCountY"   )==0) eID=dKeyRefCountY    ;
-  else if (strcmp(sText, "RefCountZ"   )==0) eID=dKeyRefCountZ    ;
-  else if (strcmp(sText, "Plane"       )==0) eID=iKeyThisCollision;
-  else if (strcmp(sText, "Ref. Angle"  )==0) eID=dKeydegangular   ;
-  else if (strcmp(sText, "m"           )==0) eID=dKeym            ;
-  else if (strcmp(sText, "Reflectivity")==0) eID=dKeyreflectivity ;
-  else if (strcmp(sText, "DivY"        )==0) eID=dKeyDivY         ;
-  else if (strcmp(sText, "DivZ"        )==0) eID=dKeyDivZ         ;
-  else if (strcmp(sText, "Color"       )==0) eID=iKeyColor        ;
-  else if (strcmp(sText, "TOF"         )==0) eID=dKeyTime         ;
-  else if (strcmp(sText, "Wavelength"  )==0) eID=dKeyWavelength   ;
-  else if (strcmp(sText, "Probability" )==0) eID=dKeyProbability  ;
-  else if (strcmp(sText, "Position X"  )==0) eID=dKeyPositionX    ;
-  else if (strcmp(sText, "Position Y"  )==0) eID=dKeyPositionY    ;
-  else if (strcmp(sText, "Position Z"  )==0) eID=dKeyPositionZ    ;
-  else if (strcmp(sText, "Vector X"    )==0) eID=dKeyVectorX      ;
-  else if (strcmp(sText, "Vector Y"    )==0) eID=dKeyVectorY      ;
-  else if (strcmp(sText, "Vector Z"    )==0) eID=dKeyVectorZ      ;
-  else if (strcmp(sText, "Spin X"      )==0) eID=dKeySpinX        ;
-  else if (strcmp(sText, "Spin Y"      )==0) eID=dKeySpinY        ;
-  else if (strcmp(sText, "Spin Z"      )==0) eID=dKeySpinZ        ;
-  
+       if (strcmp(sText, "Scattered (Mode)")==0 || strcmp(sText, "iKeyMode")==0) eID=iKeyMode         ;
+  else if (strcmp(sText, "Mode0"       )==0 || strcmp(sText, "iKeyMode0")==0) eID=iKeyMode0        ;
+  else if (strcmp(sText, "Mode5"       )==0 || strcmp(sText, "iKeyMode5")==0) eID=iKeyMode5        ;
+  else if (strcmp(sText, "Mode10"      )==0 || strcmp(sText, "iKeyMode10")==0) eID=iKeyMode10       ;
+  else if (strcmp(sText, "RefCount"    )==0 || strcmp(sText, "dKeyRefCount")==0) eID=dKeyRefCount     ;
+  else if (strcmp(sText, "RefCountY"   )==0 || strcmp(sText, "dKeyRefCountY")==0) eID=dKeyRefCountY    ;
+  else if (strcmp(sText, "RefCountZ"   )==0 || strcmp(sText, "dKeyRefCountZ")==0) eID=dKeyRefCountZ    ;
+  else if (strcmp(sText, "Plane"       )==0 || strcmp(sText, "iKeyThisCollision")==0) eID=iKeyThisCollision;
+  else if (strcmp(sText, "Ref. Angle"  )==0 || strcmp(sText, "dKeydegangular")==0) eID=dKeydegangular   ;
+  else if (strcmp(sText, "m"           )==0 || strcmp(sText, "dKeym")==0) eID=dKeym            ;
+  else if (strcmp(sText, "Reflectivity")==0 || strcmp(sText, "dKeyreflectivity")==0) eID=dKeyreflectivity ;
+  else if (strcmp(sText, "DivY"        )==0 || strcmp(sText, "dKeyDivY")==0) eID=dKeyDivY         ;
+  else if (strcmp(sText, "DivZ"        )==0 || strcmp(sText, "dKeyDivZ")==0) eID=dKeyDivZ         ;
+  else if (strcmp(sText, "Color"       )==0 || strcmp(sText, "iKeyColor")==0) eID=iKeyColor        ;
+  else if (strcmp(sText, "TOF"         )==0 || strcmp(sText, "dKeyTime")==0) eID=dKeyTime         ;
+  else if (strcmp(sText, "Wavelength"  )==0 || strcmp(sText, "dKeyWavelength")==0) eID=dKeyWavelength   ;
+  else if (strcmp(sText, "Probability" )==0 || strcmp(sText, "dKeyProbability")==0) eID=dKeyProbability  ;
+  else if (strcmp(sText, "Position X"  )==0 || strcmp(sText, "dKeyPositionX")==0) eID=dKeyPositionX    ;
+  else if (strcmp(sText, "Position Y"  )==0 || strcmp(sText, "dKeyPositionY")==0) eID=dKeyPositionY    ;
+  else if (strcmp(sText, "Position Z"  )==0 || strcmp(sText, "dKeyPositionZ")==0) eID=dKeyPositionZ    ;
+  else if (strcmp(sText, "Vector X"    )==0 || strcmp(sText, "dKeyVectorX")==0) eID=dKeyVectorX      ;
+  else if (strcmp(sText, "Vector Y"    )==0 || strcmp(sText, "dKeyVectorY")==0) eID=dKeyVectorY      ;
+  else if (strcmp(sText, "Vector Z"    )==0 || strcmp(sText, "dKeyVectorZ")==0) eID=dKeyVectorZ      ;
+  else if (strcmp(sText, "Spin X"      )==0 || strcmp(sText, "dKeySpinX")==0) eID=dKeySpinX        ;
+  else if (strcmp(sText, "Spin Y"      )==0 || strcmp(sText, "dKeySpinY")==0) eID=dKeySpinY        ;
+  else if (strcmp(sText, "Spin Z"      )==0 || strcmp(sText, "dKeySpinZ")==0) eID=dKeySpinZ        ;
+
   return eID;
 }
 
@@ -1172,17 +1180,17 @@ VtPlotFilt  PlotFilt_Txt2ID(const char* sText)
 {
   VtPlotFilt eID=VT_PLOT_ALL;
 
-       if (strcmp(sText, "all"           )==0 || strcmp(sText, "All"           )==0) eID=VT_PLOT_ALL ;
-  else if (strcmp(sText, "only scattered")==0 || strcmp(sText, "Only scattered")==0) eID=VT_PLOT_SCAT;
-  else if (strcmp(sText, "only died"     )==0 || strcmp(sText, "Only died"     )==0) eID=VT_PLOT_DIED;
-  
+       if (strcmp(sText, "all"           )==0 || strcmp(sText, "All"           )==0 || strcmp(sText, "VT_PLOT_ALL")==0) eID=VT_PLOT_ALL ;
+  else if (strcmp(sText, "only scattered")==0 || strcmp(sText, "Only scattered")==0 || strcmp(sText, "VT_PLOT_SCAT")==0) eID=VT_PLOT_SCAT;
+  else if (strcmp(sText, "only died"     )==0 || strcmp(sText, "Only died"     )==0 || strcmp(sText, "VT_PLOT_DIED")==0) eID=VT_PLOT_DIED;
+
   return eID;
 }
 
 
 // MONOCHROMATOR + CHOPPERS
 // ------------------------
-// arrangement of monochromator  
+// arrangement of monochromator
 void          MonoArrange_ID2Txt(char* sText, const VtMonoArrange eID)
 {
   switch (eID)
@@ -1197,10 +1205,10 @@ VtMonoArrange MonoArrange_Txt2ID(const char* sText)
 {
   VtMonoArrange eID=SINGLE_CE;
 
-       if (strcmp(sText, "single CE"          )==0) eID=SINGLE_CE    ;
-  else if (strcmp(sText, "calculated CE array")==0) eID=CE_ARRAY_CALC;
-  else if (strcmp(sText, "CE array from file" )==0) eID=CE_ARRAY_FILE;
-  
+       if (strcmp(sText, "single CE"          )==0 || strcmp(sText, "SINGLE_CE"          )==0) eID=SINGLE_CE    ;
+  else if (strcmp(sText, "calculated CE array")==0 || strcmp(sText, "CE_ARRAY_CALC"          )==0) eID=CE_ARRAY_CALC;
+  else if (strcmp(sText, "CE array from file" )==0 || strcmp(sText, "CE_ARRAY_FILE"          )==0) eID=CE_ARRAY_FILE;
+
   return eID;
 }
 
@@ -1220,7 +1228,7 @@ VtMonoType  MonoType_Txt2ID(const char* sText)
 
        if (strcmp(sText, "reflection"  )==0 || strcmp(sText, "Reflection"  )==0) eID=REFL_MONO  ;
   else if (strcmp(sText, "transmission")==0 || strcmp(sText, "Transmission")==0) eID=TRANSM_MONO;
-  
+
   return eID;
 }
 
@@ -1240,10 +1248,10 @@ VtMonoMove  MonoMove_Txt2ID(const char* sText)
 {
   VtMonoMove eID=VT_MONO_FIX;
 
-       if (strcmp(sText, "no movement"             )==0) eID=VT_MONO_FIX;
-  else if (strcmp(sText, "rotation vert. axis"     )==0) eID=VT_MONO_ROT;
-  else if (strcmp(sText, "rotation hor. axis (PST)")==0) eID=VT_MONO_PST;
-  else if (strcmp(sText, "oscillation (Doppler)"   )==0) eID=VT_MONO_OSC;
+       if (strcmp(sText, "no movement"             )==0 || strcmp(sText, "VT_MONO_FIX"             )==0) eID=VT_MONO_FIX;
+  else if (strcmp(sText, "rotation vert. axis"     )==0 || strcmp(sText, "VT_MONO_ROT"             )==0) eID=VT_MONO_ROT;
+  else if (strcmp(sText, "rotation hor. axis (PST)")==0 || strcmp(sText, "VT_MONO_PST"             )==0) eID=VT_MONO_PST;
+  else if (strcmp(sText, "oscillation (Doppler)"   )==0 || strcmp(sText, "VT_MONO_OSC"             )==0) eID=VT_MONO_OSC;
 
   return eID;
 }
@@ -1264,12 +1272,12 @@ VtMonoFocus MonoFocus_Txt2ID(const char* sText)
 {
   VtMonoFocus eID=NO_FOCUSING;
 
-       if (strcmp(sText, "constant lambda" )==0) eID=CONST_LMBD;
-  else if (strcmp(sText, "spherical"       )==0) eID=SPHERICAL ;
-  else if (strcmp(sText, "vert. cylinder"  )==0) eID=VERT_CYL  ;
+       if (strcmp(sText, "constant lambda" )==0 || strcmp(sText, "CONST_LMBD" )==0) eID=CONST_LMBD;
+  else if (strcmp(sText, "spherical"       )==0 || strcmp(sText, "SPHERICAL" )==0) eID=SPHERICAL ;
+  else if (strcmp(sText, "vert. cylinder"  )==0 || strcmp(sText, "VERT_CYL" )==0) eID=VERT_CYL  ;
   else if (strcmp(sText, "double focussing")==0 ||
-           strcmp(sText, "double focusing") ==0) eID=DBL_FOC   ;
-  
+           strcmp(sText, "double focusing") ==0 || strcmp(sText, "DBL_FOC" )==0) eID=DBL_FOC   ;
+
   return eID;
 }
 
@@ -1288,10 +1296,10 @@ VtChnlShape ChnlShape_Txt2ID(const char* sText)
 {
   VtChnlShape eID=VT_NO_CHN_SHAPE;
 
-       if (strcmp(sText, "straight")==0) eID=VT_CHN_STR;
-  else if (strcmp(sText, "ideal"   )==0) eID=VT_CHN_IDEAL;
-  else if (strcmp(sText, "circular")==0) eID=VT_CHN_CIRC ;
-  
+       if (strcmp(sText, "straight")==0 || strcmp(sText, "VT_CHN_STR")==0) eID=VT_CHN_STR;
+  else if (strcmp(sText, "ideal"   )==0 || strcmp(sText, "VT_CHN_IDEAL")==0) eID=VT_CHN_IDEAL;
+  else if (strcmp(sText, "circular")==0 || strcmp(sText, "VT_CHN_CIRC")==0) eID=VT_CHN_CIRC ;
+
   return eID;
 }
 
@@ -1313,13 +1321,13 @@ VtSmplGeom  SmplGeom_Txt2ID(const char* sText)
 {
   VtSmplGeom eID=VT_CYL;
 
-       if (memcmp(sText, "cuboid"         , 3)==0) eID=VT_CUBE   ;
-  else if (memcmp(sText, "rectangular"    , 3)==0) eID=VT_CUBE   ;
-  else if (memcmp(sText, "cylinder"       , 3)==0) eID=VT_CYL    ;
-  else if (memcmp(sText, "sphere"         , 3)==0) eID=VT_SPHERE ;
-  else if (memcmp(sText, "ball"           , 3)==0) eID=VT_SPHERE ;
-  else if (memcmp(sText, "hollow-cylinder", 3)==0) eID=VT_HOL_CYL;
-  
+       if (memcmp(sText, "cuboid"         , 3)==0 || memcmp(sText, "VT_CUBE"         , 3)==0) eID=VT_CUBE   ;
+  else if (memcmp(sText, "rectangular"    , 3)==0 || memcmp(sText, "VT_CUBE"         , 3)==0) eID=VT_CUBE   ;
+  else if (memcmp(sText, "cylinder"       , 3)==0 || memcmp(sText, "VT_CYL"         , 3)==0) eID=VT_CYL    ;
+  else if (memcmp(sText, "sphere"         , 3)==0 || memcmp(sText, "VT_SPHERE"         , 3)==0) eID=VT_SPHERE ;
+  else if (memcmp(sText, "ball"           , 3)==0 || memcmp(sText, "VT_SPHERE"         , 3)==0) eID=VT_SPHERE ;
+  else if (memcmp(sText, "hollow-cylinder", 3)==0 || memcmp(sText, "VT_HOL_CYL"         , 3)==0) eID=VT_HOL_CYL;
+
   return eID;
 }
 
@@ -1351,20 +1359,20 @@ VtPtclGeom  PtclGeom_Char2ID(const char cID)
     case 'I': eID=VT_ISOTROPIC    ; break;
     default : eID=VT_NO_PTCL;
   }
-  
+
   return eID;
 }
 VtPtclGeom  PtclGeom_Txt2ID(const char* sText)
 {
   VtPtclGeom eID=VT_NO_PTCL;
 
-       if (strcmp(sText, "spheres"               )==0) eID=VT_PTCL_SPHERE;
-  else if (strcmp(sText, "polydispersive spheres")==0) eID=VT_PTCL_POLY_SPH;
-  else if (strcmp(sText, "ellipsoids"            )==0) eID=VT_PTCL_ELLIPS;
-  else if (strcmp(sText, "cylinders"             )==0) eID=VT_PTCL_CYL;
-  else if (strcmp(sText, "parallelepipeds"       )==0) eID=VT_PTCL_EPIPED;
-  else if (strcmp(sText, "isotropic scattering"  )==0) eID=VT_ISOTROPIC;
-  
+       if (strcmp(sText, "spheres"               )==0 || strcmp(sText, "VT_PTCL_SPHERE"               )==0) eID=VT_PTCL_SPHERE;
+  else if (strcmp(sText, "polydispersive spheres")==0 || strcmp(sText, "VT_PTCL_POLY_SPH"               )==0) eID=VT_PTCL_POLY_SPH;
+  else if (strcmp(sText, "ellipsoids"            )==0 || strcmp(sText, "VT_PTCL_ELLIPS"               )==0) eID=VT_PTCL_ELLIPS;
+  else if (strcmp(sText, "cylinders"             )==0 || strcmp(sText, "VT_PTCL_CYL"               )==0) eID=VT_PTCL_CYL;
+  else if (strcmp(sText, "parallelepipeds"       )==0 || strcmp(sText, "VT_PTCL_EPIPED"               )==0) eID=VT_PTCL_EPIPED;
+  else if (strcmp(sText, "isotropic scattering"  )==0 || strcmp(sText, "VT_ISOTROPIC"               )==0) eID=VT_ISOTROPIC;
+
   return eID;
 }
 
@@ -1382,9 +1390,9 @@ VtDataSrc   DataSrc_Txt2ID(const char* sText)
 {
   VtDataSrc eID=VT_NO_SRC;
 
-       if (strcmp(sText, "from file"  )==0) eID=VT_FR_FILE;
-  else if (strcmp(sText, "as function")==0) eID=VT_AS_FCT ;
-  
+       if (strcmp(sText, "from file"  )==0 || strcmp(sText, "VT_FR_FILE"  )==0) eID=VT_FR_FILE;
+  else if (strcmp(sText, "as function")==0 || strcmp(sText, "VT_AS_FCT"  )==0) eID=VT_AS_FCT ;
+
   return eID;
 }
 
@@ -1402,9 +1410,9 @@ VtMeasMode  MeasMode_Txt2ID(const char* sText)
 {
   VtMeasMode eID=VT_SAMPLE;
 
-       if (strcmp(sText, "sample"   )==0) eID=VT_SAMPLE   ;
-  else if (strcmp(sText, "reference")==0) eID=VT_REFERENCE;
-  
+       if (strcmp(sText, "sample"   )==0 || strcmp(sText, "VT_SAMPLE"   )==0 ) eID=VT_SAMPLE   ;
+  else if (strcmp(sText, "reference")==0 || strcmp(sText, "VT_REFERENCE"   )==0 ) eID=VT_REFERENCE;
+
   return eID;
 }
 
@@ -1425,9 +1433,9 @@ VtDetGeom   DetGeom_Txt2ID(const char* sText)
 {
   VtDetGeom eID=VT_NO_DET_GEOM;
 
-       if (strcmp(sText, "cylindrical")==0) eID=VT_DET_CYL ;
-  else if (strcmp(sText, "flat"       )==0) eID=VT_DET_FLAT;
-  
+       if (strcmp(sText, "cylindrical")==0 || strcmp(sText, "VT_DET_CYL")==0) eID=VT_DET_CYL ;
+  else if (strcmp(sText, "flat"       )==0 || strcmp(sText, "VT_DET_FLAT")==0) eID=VT_DET_FLAT;
+
   return eID;
 }
 
@@ -1445,9 +1453,9 @@ VtDetType   DetType_Txt2ID(const char* sText)
 {
   VtDetType eID=VT_NO_DET_TYPE;
 
-       if (strcmp(sText, "tubes"      )==0) eID=VT_DET_TUBE;
-  else if (strcmp(sText, "area/volume")==0) eID=VT_DET_AREA;
-  
+       if (strcmp(sText, "tubes"      )==0 || strcmp(sText, "VT_DET_TUBE")==0) eID=VT_DET_TUBE;
+  else if (strcmp(sText, "area/volume")==0 || strcmp(sText, "VT_DET_AREA")==0) eID=VT_DET_AREA;
+
   return eID;
 }
 
@@ -1466,12 +1474,12 @@ VtDetUse   DetUse_Txt2ID(const char* sText)
 {
   VtDetUse eID=VT_NO_DET_USE;
 
-       if (strcmp(sText, "normal"        )==0 
-        || strcmp(sText, "realistic"     )==0) eID=VT_DET_REAL;
-  else if (strcmp(sText, "grid off"      )==0) eID=VT_GRID_OFF;
-  else if (strcmp(sText, "efficiency off")==0) eID=VT_EFF_OFF;
-  else if (strcmp(sText, "monitor only"  )==0) eID=VT_MON_ONLY;
-  
+       if (strcmp(sText, "normal"        )==0
+        || strcmp(sText, "realistic"     )==0 || strcmp(sText, "VT_DET_REAL")==0) eID=VT_DET_REAL;
+  else if (strcmp(sText, "grid off"      )==0 || strcmp(sText, "VT_GRID_OFF")==0) eID=VT_GRID_OFF;
+  else if (strcmp(sText, "efficiency off")==0 || strcmp(sText, "VT_EFF_OFF")==0) eID=VT_EFF_OFF;
+  else if (strcmp(sText, "monitor only"  )==0 || strcmp(sText, "VT_MON_ONLY")==0) eID=VT_MON_ONLY;
+
   return eID;
 }
 
@@ -1489,9 +1497,9 @@ VtTubeShape TubeShape_Txt2ID(const char* sText)
 {
   VtTubeShape eID=VT_NO_TUBE_SHAPE;
 
-       if (strcmp(sText, "circular"   )==0) eID=VT_TUBE_CIRCLE;
-  else if (strcmp(sText, "rectangular")==0) eID=VT_TUBE_SQUARE;
-  
+       if (strcmp(sText, "circular"   )==0 || strcmp(sText, "VT_TUBE_CIRCLE")==0) eID=VT_TUBE_CIRCLE;
+  else if (strcmp(sText, "rectangular")==0 || strcmp(sText, "VT_TUBE_SQUARE")==0) eID=VT_TUBE_SQUARE;
+
   return eID;
 }
 
@@ -1512,12 +1520,12 @@ VtDetAbs   DetAbs_Txt2ID(const char* sText)
 {
   VtDetAbs eID=VT_NO_ABS_MAT;
 
-       if (strcmp(sText, "BF3 gas"  )==0) eID=VT_GAS_BF3  ;
-  else if (strcmp(sText, "3He gas"  )==0) eID=VT_GAS_HE3  ;
-  else if (strcmp(sText, "solid B10")==0) eID=VT_SOLID_B10;
-  else if (strcmp(sText, "solid Li6")==0) eID=VT_SOLID_LI6;
-  else if (strcmp(sText, "other"    )==0) eID=VT_ABS_OTHER;
-  
+       if (strcmp(sText, "BF3 gas"  )==0 || strcmp(sText, "VT_GAS_BF3")==0) eID=VT_GAS_BF3  ;
+  else if (strcmp(sText, "3He gas"  )==0 || strcmp(sText, "VT_GAS_HE3")==0) eID=VT_GAS_HE3  ;
+  else if (strcmp(sText, "solid B10")==0 || strcmp(sText, "VT_SOLID_B10")==0) eID=VT_SOLID_B10;
+  else if (strcmp(sText, "solid Li6")==0 || strcmp(sText, "VT_SOLID_LI6")==0) eID=VT_SOLID_LI6;
+  else if (strcmp(sText, "other"    )==0 || strcmp(sText, "VT_ABS_OTHER")==0) eID=VT_ABS_OTHER;
+
   return eID;
 }
 
@@ -1544,15 +1552,15 @@ VtMon1Par Mon1Par_Txt2ID(const char* sText)
 {
   VtMon1Par eID=NO_MON_PAR;
 
-       if (strcmp(sText, "lambda" )==0) eID=MON_LAMBDA;
-  else if (strcmp(sText, "time"   )==0) eID=MON_TIME  ;
-  else if (strcmp(sText, "div_y"  )==0) eID=MON_DIV_Y ;
-  else if (strcmp(sText, "div_z"  )==0) eID=MON_DIV_Z ;
-  else if (strcmp(sText, "pos_y"  )==0) eID=MON_Y     ;
-  else if (strcmp(sText, "pos_z"  )==0) eID=MON_Z     ;
-  else if (strcmp(sText, "energy" )==0) eID=MON_ENERGY;
-  else if (strcmp(sText, "div_rad")==0) eID=MON_DIV_YZ;
-  
+       if (strcmp(sText, "lambda" )==0 || strcmp(sText, "MON_LAMBDA")==0) eID=MON_LAMBDA;
+  else if (strcmp(sText, "time"   )==0 || strcmp(sText, "MON_TIME")==0) eID=MON_TIME  ;
+  else if (strcmp(sText, "div_y"  )==0 || strcmp(sText, "MON_DIV_Y")==0) eID=MON_DIV_Y ;
+  else if (strcmp(sText, "div_z"  )==0 || strcmp(sText, "MON_DIV_Z")==0) eID=MON_DIV_Z ;
+  else if (strcmp(sText, "pos_y"  )==0 || strcmp(sText, "MON_Y")==0) eID=MON_Y     ;
+  else if (strcmp(sText, "pos_z"  )==0 || strcmp(sText, "MON_Z")==0) eID=MON_Z     ;
+  else if (strcmp(sText, "energy" )==0 || strcmp(sText, "MON_ENERGY")==0) eID=MON_ENERGY;
+  else if (strcmp(sText, "div_rad")==0 || strcmp(sText, "MON_DIV_YZ")==0) eID=MON_DIV_YZ;
+
   return eID;
 }
 
@@ -1570,9 +1578,9 @@ VtMon2Par Mon2Par_Txt2ID(const char* sText)
 {
   VtMon2Par eID=NO_MON2_PAR;
 
-       if (strcmp(sText, "position"  )==0) eID=MON2_POS;
-  else if (strcmp(sText, "divergence")==0) eID=MON2_DIV;
-  
+       if (strcmp(sText, "position"  )==0 || strcmp(sText, "MON2_POS")==0) eID=MON2_POS;
+  else if (strcmp(sText, "divergence")==0 || strcmp(sText, "MON2_DIV")==0) eID=MON2_DIV;
+
   return eID;
 }
 
@@ -1606,27 +1614,27 @@ VtMonPar  MonPar_Txt2ID(const char* sText)
 {
   VtMonPar eID=NO_PAR;
 
-       if (strcmp(sText, "pos_x"    )==0) eID=POS_X    ;
-  else if (strcmp(sText, "pos_y"    )==0) eID=POS_Y    ;
-  else if (strcmp(sText, "pos_z"    )==0) eID=POS_Z    ;
-  else if (strcmp(sText, "div_y"    )==0) eID=DIV_Y    ;
-  else if (strcmp(sText, "div_z"    )==0) eID=DIV_Z    ;
-  else if (strcmp(sText, "lambda"   )==0) eID=LAMBDA   ;
-  else if (strcmp(sText, "energy"   )==0) eID=ENERGY   ;
-  else if (strcmp(sText, "time"     )==0) eID=TIME     ;
-  else if (strcmp(sText, "k_y"      )==0) eID=K_Y      ;
-  else if (strcmp(sText, "k_z"      )==0) eID=K_Z      ;
-  else if (strcmp(sText, "pos_r"    )==0 
-        || strcmp(sText, "r")        ==0) eID=POS_R    ;
-  else if (strcmp(sText, "pos_phi"  )==0 
-        || strcmp(sText, "phi")      ==0) eID=POS_PHI  ;
-  else if (strcmp(sText, "pos_theta")==0) eID=POS_THETA;
-  else if (strcmp(sText, "dir_phi"  )==0) eID=DIR_PHI  ;
-  else if (strcmp(sText, "dir_theta")==0) eID=DIR_THETA;
-  else if (strcmp(sText, "col_vert" )==0) eID=COL_VERT ;
-  else if (strcmp(sText, "col_hor"  )==0) eID=COL_HOR  ;
-  else if (strcmp(sText, "color"    )==0) eID=COLOR    ;
-  
+       if (strcmp(sText, "pos_x"    )==0 || strcmp(sText, "POS_X")==0) eID=POS_X    ;
+  else if (strcmp(sText, "pos_y"    )==0 || strcmp(sText, "POS_Y")==0) eID=POS_Y    ;
+  else if (strcmp(sText, "pos_z"    )==0 || strcmp(sText, "POS_Z")==0) eID=POS_Z    ;
+  else if (strcmp(sText, "div_y"    )==0 || strcmp(sText, "DIV_Y")==0) eID=DIV_Y    ;
+  else if (strcmp(sText, "div_z"    )==0 || strcmp(sText, "DIV_Z")==0) eID=DIV_Z    ;
+  else if (strcmp(sText, "lambda"   )==0 || strcmp(sText, "LAMBDA")==0) eID=LAMBDA   ;
+  else if (strcmp(sText, "energy"   )==0 || strcmp(sText, "ENERGY")==0) eID=ENERGY   ;
+  else if (strcmp(sText, "time"     )==0 || strcmp(sText, "TIME")==0) eID=TIME     ;
+  else if (strcmp(sText, "k_y"      )==0 || strcmp(sText, "K_Y")==0) eID=K_Y      ;
+  else if (strcmp(sText, "k_z"      )==0 || strcmp(sText, "K_Z")==0) eID=K_Z      ;
+  else if (strcmp(sText, "pos_r"    )==0
+        || strcmp(sText, "r")        ==0 || strcmp(sText, "POS_R")==0) eID=POS_R    ;
+  else if (strcmp(sText, "pos_phi"  )==0
+        || strcmp(sText, "phi")      ==0 || strcmp(sText, "POS_PHI")==0) eID=POS_PHI  ;
+  else if (strcmp(sText, "pos_theta")==0 || strcmp(sText, "POS_THETA")==0) eID=POS_THETA;
+  else if (strcmp(sText, "dir_phi"  )==0 || strcmp(sText, "DIR_PHI")==0) eID=DIR_PHI  ;
+  else if (strcmp(sText, "dir_theta")==0 || strcmp(sText, "DIR_THETA")==0) eID=DIR_THETA;
+  else if (strcmp(sText, "col_vert" )==0 || strcmp(sText, "COL_VERT")==0) eID=COL_VERT ;
+  else if (strcmp(sText, "col_hor"  )==0 || strcmp(sText, "COL_HOR")==0) eID=COL_HOR  ;
+  else if (strcmp(sText, "color"    )==0 || strcmp(sText, "COLOR")==0) eID=COLOR    ;
+
   return eID;
 }
 
@@ -1644,10 +1652,10 @@ VtMonNorm MonNorm_Txt2ID(const char* sText)
 {
   VtMonNorm eID = NO_NORM;
 
-       if (strcmp(sText, "bin size"      )==0) eID=NORM_BIN_SIZE;
-  else if (strcmp(sText, "yes"           )==0) eID=NORM_BIN_SIZE;
-  else if (strcmp(sText, "reference file")==0) eID=NORM_REF_FILE;
-  
+       if (strcmp(sText, "bin size"      )==0 || strcmp(sText, "NORM_BIN_SIZE")==0) eID=NORM_BIN_SIZE;
+  else if (strcmp(sText, "yes"           )==0 || strcmp(sText, "NORM_BIN_SIZE")==0) eID=NORM_BIN_SIZE;
+  else if (strcmp(sText, "reference file")==0 || strcmp(sText, "NORM_REF_FILE")==0) eID=NORM_REF_FILE;
+
   return eID;
 }
 
@@ -1672,16 +1680,16 @@ VtBrlPar  BrlPar_Txt2ID(const char* sText)
 {
   VtBrlPar eID=VT_LAMBDA;
 
-       if (strcmp(sText, "time"   )==0) eID=VT_TIME    ;
-  else if (strcmp(sText, "lambda" )==0) eID=VT_LAMBDA  ;
-  else if (strcmp(sText, "energy" )==0) eID=VT_ENERGY  ;
-  else if (strcmp(sText, "pos_y"  )==0) eID=VT_POS_Y   ;
-  else if (strcmp(sText, "pos_z"  )==0) eID=VT_POS_Z   ;
-  else if (strcmp(sText, "pos_rad")==0) eID=VT_POS_R   ;
-  else if (strcmp(sText, "div_y"  )==0) eID=VT_DIV_HOR ;
-  else if (strcmp(sText, "div_z"  )==0) eID=VT_DIV_VERT;
-  else if (strcmp(sText, "div_rad")==0) eID=VT_DIV_RAD ;
-  
+       if (strcmp(sText, "time"   )==0 || strcmp(sText, "VT_TIME")==0) eID=VT_TIME    ;
+  else if (strcmp(sText, "lambda" )==0 || strcmp(sText, "VT_LAMBDA")==0) eID=VT_LAMBDA  ;
+  else if (strcmp(sText, "energy" )==0 || strcmp(sText, "VT_ENERGY")==0) eID=VT_ENERGY  ;
+  else if (strcmp(sText, "pos_y"  )==0 || strcmp(sText, "VT_POS_Y")==0) eID=VT_POS_Y   ;
+  else if (strcmp(sText, "pos_z"  )==0 || strcmp(sText, "VT_POS_Z")==0) eID=VT_POS_Z   ;
+  else if (strcmp(sText, "pos_rad")==0 || strcmp(sText, "VT_POS_R")==0) eID=VT_POS_R   ;
+  else if (strcmp(sText, "div_y"  )==0 || strcmp(sText, "VT_DIV_HOR")==0) eID=VT_DIV_HOR ;
+  else if (strcmp(sText, "div_z"  )==0 || strcmp(sText, "VT_DIV_VERT")==0) eID=VT_DIV_VERT;
+  else if (strcmp(sText, "div_rad")==0 || strcmp(sText, "VT_DIV_RAD")==0) eID=VT_DIV_RAD ;
+
   return eID;
 }
 
@@ -1700,10 +1708,10 @@ VtBrlNorm BrlNorm_Txt2ID(const char* sText)
 {
   VtBrlNorm eID = BRL_ABS;
 
-       if (strcmp(sText,  "absolute" )==0) eID=BRL_ABS   ;
-  else if (strcmp(sText,  "transfer" )==0) eID=BRL_TRANSF;
-  else if (strcmp(sText,  "1% lambda")==0) eID=BRL_PCT   ;
-  
+       if (strcmp(sText,  "absolute" )==0 || strcmp(sText, "BRL_ABS")==0) eID=BRL_ABS   ;
+  else if (strcmp(sText,  "transfer" )==0 || strcmp(sText, "BRL_TRANSF")==0) eID=BRL_TRANSF;
+  else if (strcmp(sText,  "1% lambda")==0 || strcmp(sText, "BRL_PCT")==0) eID=BRL_PCT   ;
+
   return eID;
 }
 
@@ -1724,16 +1732,16 @@ VtFormat2D Format2D_Txt2ID(const char* sText)
 {
   VtFormat2D eID = NO_2D_FORMAT;
 
-       if (strcmp(sText, "matrix"        )==0) eID=MATRIX   ;
-  else if (strcmp(sText, "xyz"           )==0) eID=XYZ      ;
-  else if (strcmp(sText, "matrix compact")==0) eID=MATR_CMPT;
-  else if (strcmp(sText, "xyz compact   ")==0) eID=XYZ_CMPT ;
-  else if (strcmp(sText, "matrix integer")==0) eID=MATR_INT;
-  
+       if (strcmp(sText, "matrix"        )==0 || strcmp(sText, "MATRIX")==0) eID=MATRIX   ;
+  else if (strcmp(sText, "xyz"           )==0 || strcmp(sText, "XYZ")==0) eID=XYZ      ;
+  else if (strcmp(sText, "matrix compact")==0 || strcmp(sText, "MATR_CMPT")==0) eID=MATR_CMPT;
+  else if (strcmp(sText, "xyz compact   ")==0 || strcmp(sText, "XYZ_CMPT")==0) eID=XYZ_CMPT ;
+  else if (strcmp(sText, "matrix integer")==0 || strcmp(sText, "MATR_INT")==0) eID=MATR_INT;
+
   return eID;
 }
 
-// filter combination 
+// filter combination
 void       FiltComb_ID2Txt(char* sText, const VtFiltComb eID)
 {
   switch (eID)
@@ -1748,10 +1756,10 @@ VtFiltComb FiltComb_Txt2ID(const char* sText)
 {
   VtFiltComb eID=NO_FCOMB;
 
-       if (strcmp(sText, "OR"        )==0) eID = OR_OR_OR   ;
-  else if (strcmp(sText, "AND"       )==0) eID = AND_AND_AND;
-  else if (strcmp(sText, "AND_OR_AND")==0) eID = AND_OR_AND ;
-  
+       if (strcmp(sText, "OR"        )==0 || strcmp(sText, "OR_OR_OR")==0) eID = OR_OR_OR   ;
+  else if (strcmp(sText, "AND"       )==0 || strcmp(sText, "AND_AND_AND")==0) eID = AND_AND_AND;
+  else if (strcmp(sText, "AND_OR_AND")==0 || strcmp(sText, "AND_OR_AND")==0) eID = AND_OR_AND ;
+
   return eID;
 }
 
@@ -1771,11 +1779,11 @@ VtEvalPar EvalPar_Txt2ID(const char* sText)
 {
   VtEvalPar eID=VT_NO_EVAL;
 
-       if (strcmp(sText, "d-spacing"            )==0) eID = VT_EVAL_DSP  ;
-  else if (strcmp(sText, "momentum transfer Q"  )==0) eID = VT_EVAL_Q    ;
-  else if (strcmp(sText, "scattering angle"     )==0) eID = VT_EVAL_ANGLE;
-  else if (strcmp(sText, "wavelength difference")==0) eID = VT_EVAL_LMBD ;
-  
+       if (strcmp(sText, "d-spacing"            )==0 || strcmp(sText, "VT_EVAL_DSP")==0) eID = VT_EVAL_DSP  ;
+  else if (strcmp(sText, "momentum transfer Q"  )==0 || strcmp(sText, "VT_EVAL_Q")==0) eID = VT_EVAL_Q    ;
+  else if (strcmp(sText, "scattering angle"     )==0 || strcmp(sText, "VT_EVAL_ANGLE")==0) eID = VT_EVAL_ANGLE;
+  else if (strcmp(sText, "wavelength difference")==0 || strcmp(sText, "VT_EVAL_LMBD")==0) eID = VT_EVAL_LMBD ;
+
   return eID;
 }
 
@@ -1793,9 +1801,9 @@ VtEvalComb EvalComb_Txt2ID(const char* sText)
 {
   VtEvalComb eID=VT_NO_ECOMB;
 
-       if (strcmp(sText, "Scattering angle [deg] and wavelength [Ang]")==0) eID = VT_SCA_LMBD;
-  else if (strcmp(sText, "Scattering angle [deg] and TOF [ms]"        )==0) eID = VT_SCA_TOF ;
-  
+       if (strcmp(sText, "Scattering angle [deg] and wavelength [Ang]")==0 || strcmp(sText, "VT_SCA_LMBD")==0) eID = VT_SCA_LMBD;
+  else if (strcmp(sText, "Scattering angle [deg] and TOF [ms]"        )==0 || strcmp(sText, "VT_SCA_TOF")==0) eID = VT_SCA_TOF ;
+
   return eID;
 }
 
@@ -1819,15 +1827,15 @@ VtEvalSort EvalSort_Txt2ID(const char* sText)
 {
   VtEvalSort eID=VT_NO_SORT;
 
-       if (strcmp(sText, "Scattering angle"          )==0) eID = VT_SORT_X    ;
-  else if (strcmp(sText, "Scattering angle (reverse)")==0) eID = VT_SORT_X_R  ;
-  else if (strcmp(sText, "Wavelength/TOF"            )==0) eID = VT_SORT_Y    ;
-  else if (strcmp(sText, "Wavelength/TOF (reverse)"  )==0) eID = VT_SORT_Y_R  ;
-  else if (strcmp(sText, "Intensity"                 )==0) eID = VT_SORT_INT  ;
-  else if (strcmp(sText, "Intensity (reverse)"       )==0) eID = VT_SORT_INT_R;
-  else if (strcmp(sText, "Counts"                    )==0) eID = VT_SORT_CTS  ;
-  else if (strcmp(sText, "Counts (reverse)          ")==0) eID = VT_SORT_CTS_R;
-  
+       if (strcmp(sText, "Scattering angle"          )==0 || strcmp(sText, "VT_SORT_X")==0) eID = VT_SORT_X    ;
+  else if (strcmp(sText, "Scattering angle (reverse)")==0 || strcmp(sText, "VT_SORT_X_R")==0) eID = VT_SORT_X_R  ;
+  else if (strcmp(sText, "Wavelength/TOF"            )==0 || strcmp(sText, "VT_SORT_Y")==0) eID = VT_SORT_Y    ;
+  else if (strcmp(sText, "Wavelength/TOF (reverse)"  )==0 || strcmp(sText, "VT_SORT_Y_R")==0) eID = VT_SORT_Y_R  ;
+  else if (strcmp(sText, "Intensity"                 )==0 || strcmp(sText, "VT_SORT_INT")==0) eID = VT_SORT_INT  ;
+  else if (strcmp(sText, "Intensity (reverse)"       )==0 || strcmp(sText, "VT_SORT_INT_R")==0) eID = VT_SORT_INT_R;
+  else if (strcmp(sText, "Counts"                    )==0 || strcmp(sText, "VT_SORT_CTS")==0) eID = VT_SORT_CTS  ;
+  else if (strcmp(sText, "Counts (reverse)          ")==0 || strcmp(sText, "VT_SORT_CTS_R")==0) eID = VT_SORT_CTS_R;
+
   return eID;
 }
 
@@ -1845,9 +1853,9 @@ VtAngleSel AngleSel_Txt2ID(const char* sText)
 {
   VtAngleSel eID=VT_NO_SEL;
 
-       if (strcmp(sText, "direction")==0) eID = VT_SEL_DIR;
-  else if (strcmp(sText, "position" )==0) eID = VT_SEL_POS;
-  
+       if (strcmp(sText, "direction")==0 || strcmp(sText, "VT_SEL_DIR")==0) eID = VT_SEL_DIR;
+  else if (strcmp(sText, "position" )==0 || strcmp(sText, "VT_SEL_POS")==0) eID = VT_SEL_POS;
+
   return eID;
 }
 

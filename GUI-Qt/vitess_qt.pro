@@ -3,7 +3,6 @@
 # Project created by QtCreator 2020-10-28T10:39:26
 #
 #-------------------------------------------------
-
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -28,7 +27,10 @@ INCLUDEPATH += ../SRC
 
 # Needs to be changed
 # YAML-CPP was installed under windows in folder Programmieren
-INCLUDEPATH += C:\Programmieren\yaml-cpp\include
+#INCLUDEPATH += C:\Programmieren\yaml-cpp\include
+INCLUDEPATH += $${YAMLCPPPATH}/src
+INCLUDEPATH += $${YAMLCPPPATH}/build
+DEPENDPATH += $${YAMLCPPPATH}/build
 
 CONFIG += c++11
 
@@ -86,5 +88,4 @@ RESOURCES += \
 #else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../yaml-cpp/src/build/ -lyaml-cppd
 #else:unix: LIBS += -L$$PWD/../../yaml-cpp/src/build/ -lyaml-cpp
 
-INCLUDEPATH += $$PWD/../../yaml-cpp/src/build
-DEPENDPATH += $$PWD/../../yaml-cpp/src/build
+

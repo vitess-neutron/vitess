@@ -61,16 +61,16 @@ void      SrcName_ID2Txt(char* sText, const VtSrcName eID);
 VtSrcName SrcName_Txt2ID(const char* sText);
 
 void      SrcKind_ID2Txt(char* sText, const VtSrcKind eID);
-VtSrcKind SrcKind_Txt2ID(const char* sText); 
+VtSrcKind SrcKind_Txt2ID(const char* sText);
 
 void      SrcType_ID2Txt(char* sText, const VtSrcType eID);
-VtSrcType SrcType_Txt2ID(const char* sText); 
+VtSrcType SrcType_Txt2ID(const char* sText);
 
 void      TS_ID2Txt(char* sText, const VtTS eID);
 VtTS      TS_Txt2ID(const char* sText);
 
 void      ModType_ID2Txt(char* sText, const VtModType eID);
-VtModType ModType_Txt2ID(const char* sText); 
+VtModType ModType_Txt2ID(const char* sText);
 
 void       ModShape_ID2Txt(char* sText, const VtModShape eID);
 VtModShape ModShape_Txt2ID(const char* sText);
@@ -94,6 +94,8 @@ VtDataFormat DataFormat_Txt2ID(const char* sText);
 
 void        Separator_ID2Txt(char* sText, const VtSeparator eID);
 VtSeparator Separator_Txt2ID(const char* sText);
+
+VtSampling Sampling_Txt2ID(const char* sText);
 
 // Frame
 // -----
@@ -172,7 +174,7 @@ VtDataSrc   DataSrc_Txt2ID(const char* sText);
 void        MeasMode_ID2Txt(char* sText, const VtMeasMode eID);
 VtMeasMode  MeasMode_Txt2ID(const char* sText);
 
-// Detectors 
+// Detectors
 // ---------
 void        DetGeom_ID2Txt(char* sText, const VtDetGeom eID);
 VtDetGeom   DetGeom_Txt2ID(const char* sText);

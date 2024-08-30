@@ -13,9 +13,9 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
 {
     QLabel *label;
     QLineEdit *lEdit;
-    QComboBox *cBox;
+    QComboBox *cBox, *plotBox;
     QCheckBox *checkBox;
-    QPushButton *browseBut, *editBut;
+    QPushButton *browseBut, *editBut, *plotBut;
     QValidator *validator;
     QFormLayout *formLayout;
     bool ok;
@@ -43,7 +43,6 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
        bool flag= false;
        //        file, string, float, int, combo, switch
 
-
        switch (typeList.indexOf(mapParameter["type"]))            //check type
        {
        case 0:                                        //file
@@ -63,8 +62,30 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            editBut->setMinimumWidth(80);
            editBut->setFixedWidth(80);
            editBut->setText("Edit");
-           formLayout->addRow(browseBut,editBut);
-           gridLayout->addLayout(formLayout,row,2,1,1,Qt::AlignRight);    //span over 1 column
+                      // std::cout << mapParameter["plottable"].toStdString()=="true" << std::endl;
+          formLayout->addRow(browseBut, editBut);  // Add browseBut and editBut
+          gridLayout->addLayout(formLayout,row,2,1,1,Qt::AlignRight);   //span over 1 column
+          if (mapParameter["plottable"].compare("true", Qt::CaseInsensitive) == 0) {
+           formLayout = new QFormLayout;
+           plotBut = new QPushButton();
+           plotBut->setObjectName("plot_" + parName);
+           // plotBut->setMinimumWidth(80);
+           plotBut->setFixedWidth(100);
+           plotBut->setText("Plot");
+
+           plotBox = new QComboBox();
+           plotBox->setFocusPolicy(Qt::StrongFocus);
+           //cBox->installEventFilter(this);
+           plotBox->setObjectName("plotBox");
+           //combo items in default
+           QStringList plotOptions = {"grplot","gnuplot"};
+           foreach (QString str, plotOptions) plotBox->addItem(str);
+           plotBox->setCurrentText("grplot");
+
+          row++;
+          formLayout->addRow(plotBut, plotBox);             // Add plotBut if the condition is true
+          gridLayout->addLayout(formLayout,row,2,1,2,Qt::AlignRight);
+          } 
            row++;
            break;
        case 1:                                       //string
@@ -73,23 +94,23 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
        case 2:                                       //float
            if (flag == false)
            {
-               validator = new QDoubleValidator;
-               //wenn nur float Darstellung (nicht exponential)
-               //static_cast<QDoubleValidator*>(validator)->setNotation(QDoubleValidator::StandardNotation);
-               double val = mapParameter["min"].toDouble(&ok);          //min    minimum
-               if (ok)
-               {
-                   static_cast<QDoubleValidator*>(validator)->setBottom(val);
-                   label->setToolTip(label->toolTip() + "\nMinimum: " +mapParameter["min"]);
-               }
-               val = mapParameter["max"].toDouble(&ok);                 //max    maximum
-               if (ok)
-               {
-                   static_cast<QDoubleValidator*>(validator)->setTop(val);
-                   label->setToolTip(label->toolTip() + "\nMaximum: " +mapParameter["max"]);
-               }
-               validator->setLocale(QLocale::C);
-               flag = true;
+            validator = new QDoubleValidator;
+            //wenn nur float Darstellung (nicht exponential)
+            //static_cast<QDoubleValidator*>(validator)->setNotation(QDoubleValidator::StandardNotation);
+            double val = mapParameter["min"].toDouble(&ok);          //min    minimum
+            if (ok)
+            {
+                static_cast<QDoubleValidator*>(validator)->setBottom(val);
+                label->setToolTip(label->toolTip() + "\nMinimum: " +mapParameter["min"]);
+            }
+            val = mapParameter["max"].toDouble(&ok);                 //max    maximum
+            if (ok)
+            {
+                static_cast<QDoubleValidator*>(validator)->setTop(val);
+                label->setToolTip(label->toolTip() + "\nMaximum: " +mapParameter["max"]);
+            }
+            validator->setLocale(QLocale::C);
+            flag = true;
            }
        case 3:                                                               //int
            if (flag == false)
@@ -123,7 +144,8 @@ void getWidgetDesign(QString parName,QMap<QString,QString> mapParameter,
            //cBox->installEventFilter(this);
            cBox->setObjectName(parName);
            //combo items in default
-           foreach (QString str, mapParameter["default"].split(",")) cBox->addItem(str);
+           foreach (QString str, mapParameter["options"].split(",")) cBox->addItem(str);
+           cBox->setCurrentText(mapParameter["default"]);
            formLayout->addRow(label,cBox);
            gridLayout->addLayout(formLayout,row,index,1,1,Qt::AlignRight);
            break;

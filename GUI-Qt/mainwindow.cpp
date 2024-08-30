@@ -850,7 +850,8 @@ void MainWindow::changeParamWidget(QString filename,QString initName)
     //set filename from subparameter into matching lineEdit
     QFileInfo fileinfo(filename);
     int curInd = ui->stackedWidget->currentIndex();
-    ui->stackedWidget->widget(curInd)->findChild<QLineEdit*>(initName + "_file")->setText(fileinfo.fileName());
+    // TODO: LET IT SAVE THE NAME OF THE FILE. THIS LINE IS RESULTING IN SEG FAULT
+    // ui->stackedWidget->widget(curInd)->findChild<QLineEdit*>(initName + "_file")->setText(fileinfo.fileName());
 }
 
 
@@ -898,6 +899,63 @@ void MainWindow::editBut_clicked()
      textEdit->show();
 }
 
+void MainWindow::plotBut_clicked()
+{
+    QString str = qobject_cast<QPushButton *>(sender())->objectName().mid(5);
+     QString fileName = ui->stackedWidget->currentWidget()->findChild<QLineEdit *>(str)->text();
+     if (fileName == "") return;
+     else fileName = instrumentInDir + "/" + fileName;
+     qDebug() << "Plotting FileName=" << fileName.toStdString().c_str() <<"\n";
+
+     QProcess *plotProc = new QProcess(this);
+     connect(plotProc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), 
+            plotProc, &QObject::deleteLater);
+ 
+     auto plot_type = ui->stackedWidget->currentWidget()->findChild<QComboBox *>("plotBox")->currentText().toStdString().c_str();
+    if (fileName.endsWith(".dat", Qt::CaseInsensitive)) {
+     
+      if (strcmp(plot_type,"gnuplot")==0){
+    std::string cmd_filename = "testgnu.txt";
+    std::ofstream f(cmd_filename.c_str());        //std::ofstream
+    f <<
+           "set terminal qt\n"
+           // "unset pm3d\n"
+           "set title \"Example\"\n"
+           "set xlabel \"X coordinate\"\n"
+           "set ylabel \"Y coordinate\"\n"
+           "plot \"" << fileName.toStdString() << "\"\n";
+
+    f.close();
+
+    plotProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p testgnu.txt");
+      } else if (strcmp(plot_type,"grplot")==0){
+        std::string cmd = "grplot " + fileName.toStdString() + " columns:1 kind:line";
+
+        plotProc->start("/bin/sh", QStringList() << "-c" << QString::fromStdString(cmd));
+        }
+    }
+  else if (fileName.endsWith(".pos", Qt::CaseInsensitive)){
+    if (strcmp(plot_type,"gnuplot")==0){
+    string cmd_filename = "last_2Dplot.gnu";
+    ofstream f(cmd_filename.c_str());
+    f <<
+         "set terminal qt persist enhanced\n"
+         "set view map\n"
+         "set title \"" << fileName.toStdString() << "\"\n"
+         "set xlabel \"X coordinate\"\n"
+         "set ylabel \"Y coordinate\"\n"
+         // "load 'viridis.pal' \n"
+         "splot \"" << fileName.toStdString() << "\" u 1:2:3 with image\n";
+
+     plotProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p last_2Dplot.gnu");
+    } else if (strcmp(plot_type,"grplot")==0){
+    auto cmd = " grplot " + fileName.toStdString() + " kind:heatmap use_bins:1";
+      plotProc->start("/bin/sh", QStringList() << "-c" << QString::fromStdString(cmd));
+      }
+  } 
+
+
+}
 //Design gui from definition files
 void MainWindow::designModul(QString modulName)
 {
@@ -941,6 +999,9 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
             //get parameter name
             QString parName = QString::fromStdString(it->first.as<string>());
 
+            if (parName.toStdString() == "category"){
+                continue;
+            }
             //fill mapParam (defined in tools.h),
             //map of single parameter definition keys: type,descr,default,min,max,column,prefix
             //with values from modul definition file
@@ -971,17 +1032,21 @@ void MainWindow::getModulParameter(YAML::Node& configParam,QString modulName)
             if( scrollArea->widget()->findChild<QPushButton*>("edit_" + parName))
                 connect(scrollArea->widget()->findChild<QPushButton*>("edit_" + parName),
                         SIGNAL(clicked()),this,SLOT(editBut_clicked()));
+            if( scrollArea->widget()->findChild<QPushButton*>("plot_" + parName))
+                connect(scrollArea->widget()->findChild<QPushButton*>("plot_" + parName),
+                        SIGNAL(clicked()),this,SLOT(plotBut_clicked()));
+
 
             //for sub parameter create separate widget Parameter class, get values from matching file
             //under /YAML/parameter/<parameter>.yaml. Design parameter window.
             if( scrollArea->widget()->findChild<QPushButton*>(parName))
             {
-                //create widget for subparameter
+            //     //create widget for subparameter
                 paramWindow[parName] = new Parameter();
                 paramWindow[parName]->setWindowModality(Qt::ApplicationModal);
                 //get configuration yaml file for subparameter in subdirectory
-                QString yamlPath = VitessDir + "/YAML/parameter/";
-                QString filename = yamlPath + parName.toLower() + ".yaml";
+                QString yamlPath = VitessDir + "/YAML/subwindow/";
+                QString filename = yamlPath +  QString::fromStdString(configParamDef["filename"].as<string>());
                 //design subwidget
                 paramWindow[parName]->designParameterWin(filename);
                 //connect parameter window save button
@@ -1404,7 +1469,7 @@ void MainWindow::checkIsValide()
     //check if input in lineEdit is valide
     QLineEdit *testEdit = qobject_cast<QLineEdit *>(sender());
     //palette.setColor(QPalette::Base,Qt::white);
-    testEdit->setStyleSheet(" QLineEdit {background-color:lightyellow;}");
+    testEdit->setStyleSheet(" QLineEdit {background-color:#FFFFFF;}");
     if (!testEdit->hasAcceptableInput() && testEdit->text() != "" )
        //palette.setColor(QPalette::Base,Qt::red);
         testEdit->setStyleSheet(" QLineEdit {background-color:red;}");
@@ -1452,18 +1517,19 @@ void MainWindow::on_actionPlot_File_triggered()
 void MainWindow::on_action2D_Plot_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,"Open Instrument",instrumentOutDir);
-    string cmd_filename = "testgnu.txt";
+    string cmd_filename = "last_2Dplot.gnu";
     ofstream f(cmd_filename.c_str());
     f <<
-         "set terminal qt\n"
-         "set pm3d map\n"
+         "set terminal qt persist enhanced\n"
+         "set view map\n"
          "set title \"" << fileName.toStdString() << "\"\n"
          "set xlabel \"X coordinate\"\n"
          "set ylabel \"Y coordinate\"\n"
-         "splot \"" << fileName.toStdString() << "\"\n";
+         "load 'viridis.pal' \n"
+         "splot \"" << fileName.toStdString() << "\" u 1:2:3 with image\n";
 
      QProcess *gnuProc = new QProcess;
-     gnuProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p testgnu.txt");
+     gnuProc->start("/bin/sh",QStringList() << "-c" << "gnuplot -p last_2Dplot.gnu");
 
 }
 
