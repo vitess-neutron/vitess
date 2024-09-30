@@ -16,7 +16,7 @@ FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
 CC = cc
 ARCHFLAGS =
-CFLAGS = $(ARCHFLAGS) -O3 -pthread -Wall -Wno-cast-qual -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
+CFLAGS = $(ARCHFLAGS) -O3 -pthread -Wall -Wno-cast-qual -Wno-incompatible-pointer-types -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
 CXX = c++
 CXXFLAGS = $(CFLAGS)
 CPPFLAGS =
