@@ -8,24 +8,44 @@ body {
 }
 
 header {
-    background-color: #dce2ff;
-    color: #333;
-    padding: 10px 10px;
+    background-color: #ffffff;
+    color: #023d6b;
+    padding-top: 0px; 
+    padding-right: 1%;
+    padding-bottom: 0px;
+    padding-left: 1%;
     text-align: center;
     position: fixed;
-    width: 100%;
+    width: 98%;
     top: 0;
     left: 0;
-    z-index: 1000;
+    display: flex; /* Use flexbox to arrange items horizontally */
+    align-items: center; /* Align items vertically in the center */
+    justify-content: space-between; /* Space out the logos and center the title */
 }
 
 header h1 {
     margin: 0;
     font-size: 2em;
+    text-align: center;
+}
+
+/* Ensure the logo remains small */
+.logo {
+    max-width: 100px; /* Set the desired maximum width */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: 15px; /* Add some space between the logo and the title */
+}
+
+/* Styling for the website title */
+.site-title {
+    font-size: 24px; /* Set font size of the title */
+    color: #023d6b; /* Text color */
+    margin: 0; /* Remove default margin */
 }
 
 nav {
-    background-color: #487bf5;
+    background-color: #023d6b;
     overflow: hidden;
     position: fixed;
     width: 100%;
@@ -44,7 +64,7 @@ nav a {
 }
 
 nav a:hover {
-    background-color: #dce2ff;
+    background-color: #adbde3;
     color: #000;
 }
 
@@ -70,19 +90,12 @@ section {
 }
 
 h2 {
-    color: #444;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 10px;
-}
-
-h2 {
-    color: #444;
-    border-bottom: 2px solid #ddd;
+    color: #023d6b;
     padding-bottom: 10px;
 }
 
 footer {
-    background-color: #dce2ff;
+    background-color: #adbde3;
     color: #333;
     text-align: center;
     padding: 10px 0;
@@ -114,7 +127,7 @@ td {
 }
 
 th {
-    background-color: #dce2ff;
+    background-color: #adbde3;
 }
 
 .sidebar {
