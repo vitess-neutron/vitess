@@ -498,7 +498,8 @@ void UpdateMon(long iBnch)
   /* Spectrum */
   if (pFile != NULL)
   {
-    WriteHeader1DB(pFile, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, sOption, sUnit[eKind]);
+    WriteHeader1DB(pFile, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, 
+                          sOption, sUnit[eKind], MinX, MaxX);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;

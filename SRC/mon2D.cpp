@@ -469,12 +469,16 @@ void Mon2D::WriteOut(long iBnch)
       fNorm = (double) nBunches / (double) iBnch;
 
     if (analysePol) 
-    { WriteHeader2DB(fMonitor, FALSE, format, "polarisation", bWeight, iBnch, nBunches, IntTot, nTrajTot,  nBinsX, sParX,  nBinsY, sParY);
+    { WriteHeader2DB(fMonitor, FALSE, format, "polarisation", bWeight, iBnch, nBunches, IntTot, nTrajTot,  
+                     nBinsX, sParX, xMin, xMax,  
+                     nBinsY, sParY, yMin, yMax);
       WriteOutput2DB(fMonitor,        format,                 bWeight,  nBinsX, BinPosX,  nBinsY, BinPosY,  fNorm,  
                      dataArrayPol, dataArrayError, dataArrayCounts);
     }
     else
-    { WriteHeader2DB(fMonitor, FALSE, format, "Intensity",    bWeight, iBnch, nBunches, IntTot, nTrajTot,  nBinsX, sParX,  nBinsY, sParY);
+    { WriteHeader2DB(fMonitor, FALSE, format, "Intensity",    bWeight, iBnch, nBunches, IntTot, nTrajTot,  
+                     nBinsX, sParX, xMin, xMax,  
+                     nBinsY, sParY, yMin, yMax);
       WriteOutput2DB(fMonitor,        format,                 bWeight,  nBinsX, BinPosX,  nBinsY, BinPosY,  fNorm,  
                      dataArray, dataArrayError, dataArrayCounts);
     }

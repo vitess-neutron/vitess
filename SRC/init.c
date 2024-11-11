@@ -91,7 +91,8 @@ long     SourceSize;         /* input file size */
 
 double   wei_min=0.0;        /* Minimal weight for tracing neutron */
 long     keygrav=1;
-short    bTrace=TRUE,        /* criterion: write trace files             */
+short    bInit =FALSE,       /* criterion: function Init() has been carried out already  */
+         bTrace=TRUE,        /* criterion: write trace files             */
          bOldFrame=FALSE,    /* criterion: co-ordinate system of prev. module used for current module */
          bSepRate =TRUE,     /* criterion: write separate count rates    */
          bTest    =FALSE,    /* criterion: test run (without trajectories)   */
@@ -1841,6 +1842,20 @@ short CheckEOB(Neutron* pNeut)
      WriteNeutron(pNeut);
   }
   return rc;
+}
+
+
+void  SetReset(ParChange* pChange)
+{
+  pChange->cChange='R';
+}
+
+short IsReset(const ParChange* pChange)
+{
+  if (pChange->cChange=='R')
+    return TRUE;
+  else
+    return FALSE;
 }
 
 

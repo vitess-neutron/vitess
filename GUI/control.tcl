@@ -352,6 +352,7 @@ proc controlMenu {w} {
       {c "mirror"             {showHelpItem mirror.html}} \
       {c "monitor"            {showHelpItem monitor.html}} \
       {c "monochromator"      {showHelpItem monochromator.html}} \
+      {c "new_module"         {showHelpItem new_module.html}} \
       {c "optical_elements"   {showHelpItem optical_elements.html}} \
       {c "polariser"          {showHelpItem polariser.html}} \
       {c "resonator_drabkin"  {showHelpItem resonator_drabkin.html}} \

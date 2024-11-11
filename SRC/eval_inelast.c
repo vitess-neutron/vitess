@@ -544,7 +544,8 @@ void UpdateMon(long iBnch, long nBunches, char FileNameEnergy_up [256], char Fil
   // write spectra 
   if (pFileTOF != NULL)
   {
-    WriteHeader1DB(pFileTOF, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntTOF[jj], nTrjTotT[jj], sPar[0], sUnit[0]);
+    WriteHeader1DB(pFileTOF, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntTOF[jj], nTrjTotT[jj],
+                             sPar[0], sUnit[0], MinTOF, MaxTOF);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;
@@ -567,7 +568,8 @@ void UpdateMon(long iBnch, long nBunches, char FileNameEnergy_up [256], char Fil
 
   if (pFileEnergy != NULL)
   {
-    WriteHeader1DB(pFileEnergy, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntE[jj], nTrjTotE[jj], sPar[1], sUnit[1]);
+    WriteHeader1DB(pFileEnergy, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntE[jj], nTrjTotE[jj],
+                                sPar[1], sUnit[1], MinE, MaxE);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;

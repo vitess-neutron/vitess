@@ -213,7 +213,8 @@ int main(int argc, char *argv[])
   // writes S(Q) file if Q values agree and both values ar non-zero
   if (bSofQ)
   {
-    WriteHeader1DB(pSofQFile, TRUE, "S(Q)", ANY_COLOR, nBunches, nBunches, nBins, IntTot, nTrjTot, "Q", "1/Ang");
+    WriteHeader1DB(pSofQFile, TRUE, "S(Q)", ANY_COLOR, nBunches, nBunches, nBins, IntTot, nTrjTot, 
+                              "Q", "[1/Ang]", Qmin, Qmax);
 
     for(ibin = 0; ibin < nBins; ibin++)
     {	
@@ -465,7 +466,8 @@ void UpdateMon(long iBnch)
   /* Spectrum */
   if (pIntFile != NULL)
   {
-    WriteHeader1DB(pIntFile, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, "Q", "1/Ang");
+    WriteHeader1DB(pIntFile, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, 
+                             "Q", "[1/Ang]", Qmin, Qmax);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;

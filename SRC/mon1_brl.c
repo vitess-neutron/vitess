@@ -622,7 +622,8 @@ void UpdateMon(long iBnch)
 
   if (pFileMon!=NULL)
   {
-    WriteHeader1DB(pFileMon, FALSE, "brilliance", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, sParN[eBrlPar], sUnit[eBrlPar]);
+    WriteHeader1DB(pFileMon, FALSE, "brilliance", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, 
+                             sParN[eBrlPar], sUnit[eBrlPar], PosT[0], PosT[nBins]);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;

@@ -185,9 +185,13 @@ int main(int argc, char *argv[])
 my_exit:
   // writes and closes monitor file 
   if (index_yz==Y_AXIS)
-    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nBinsLmd, "wavelength/Ang", nBinsDiv, "y-divergence/deg");
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, 
+                             nBinsLmd, "wavelength [Ang]",   wl_min,  wl_max,  
+                             nBinsDiv, "y-divergence [deg]", div_min, div_max);
   else if (index_yz == Z_AXIS) 
-    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, nBinsLmd, "wavelength/Ang", nBinsDiv, "z-divergence/deg");
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, 
+                             nBinsLmd, "wavelength [Ang]",   wl_min,  wl_max,  
+                             nBinsDiv, "z-divergence [deg]", div_min, div_max);
   else
     Error("Analysis direction does not have a proper value");
 

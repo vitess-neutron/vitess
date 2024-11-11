@@ -147,7 +147,9 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file 
-  WriteHeader2D(fMonitor, format, "Intensity", bProbactiv,  nBinsY, "k_y/(1/Ang)", nBinsZ, "k_z/(1/Ang)");
+  WriteHeader2D(fMonitor, format, "Intensity", bProbactiv,  
+                          nBinsY, "k_y [1/Ang]", DivKyMin, DivKyMax,  
+                          nBinsZ, "k_z [1/Ang]", DivKzMin, DivKzMax);
   // WriteOutput2D(fMonitor, format,           bProbactiv,  nBinsY, BinPosY,           nBinsZ, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
   WriteOutput2D(fMonitor, format,  bProbactiv,  
                 nBinsY, BinPosY,   nBinsZ, BinPosZ,  
