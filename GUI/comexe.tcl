@@ -163,7 +163,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
         append fc "set GSL_RNG_$vv=$t\n"
       }
     }
-    sh  {set fc "\#!/bin/sh\n\[ -z \"\$V\" \] && V=$ExeDirectory\n\[ -z \"\$P\" \] && P=$pdir\n\[ -z \"\$L\" \] && L=$logf\n"}
+    sh  {set fc "\#!/bin/sh\n\[ -z \"\$V\" \] && V=$ExeDirectory\n\[ -z \"\$P\" \] && P=$pdir\n\[ -z \"\$L\" \] && L=$logf\n\[ -z \"\${SUFFIX}\" \] && SUFFIX=\"_`uname -s`_`uname -m`\"\n\n"}
     grd {
       set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"
       if {"" != [set v [entryVal random_gen]]} {
@@ -337,11 +337,18 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
     default {}
   }
+  # replace hard-coded ExeSuffix with _$SUFFIX
+  if {$mode == "sh"} {
+    regsub -all "$sys" $fc "\${SUFFIX}" fc
+  }
 
   # split module commands to allow  editing for modes tcl, pl, and py
   switch $mode {
     bat {append fc "\ntype P:\\$logtmp* > P:\\result.txt\ndel P:\\$logtmp*"}
-    sh  {append fc "\nrm -f \$P/result.txt\ncat \${L}?? >> \$P/result.txt\nrm \${L}*"}
+    sh  {
+      append fc "\nrm -f \$P/result.txt\ncat \${L}?? >> \$P/result.txt\nrm \${L}*"
+      regsub -all " \\| " $fc " | \\\n" fc
+    }
     grd {
       set s ""
       foreach v $usedIdices {
