@@ -108,6 +108,7 @@ typedef enum
 	MCN_WND_MULT     = 222,
 	MCN_GRID         = 224,
 	MCN_LENSE        = 230,
+  MCN_PRISM        = 231,
 	MCN_MIRROR       = 240,
 	MCN_MIRROR_POL   = 242,
 	MCN_MIRROR_ELLI  = 244,
@@ -1198,6 +1199,18 @@ VtCuboid;
 
 typedef struct
 {
+  VectorType vCntr;     // Center of the prism
+  VectorType vNormal;   // Normal vector for orientation
+  VectorType vVertices[6];  // Vertices for two triangular faces (3 bottom + 3 top)
+  double     PrismHeight;   // Distance between the triangular faces (vertical height of the prism)
+  double     BaseWidth;     // Width of the triangular base (x direction)
+  double     BaseHeight;    // Height of the triangular base (z direction)
+  double     rotAngle;      // Rotation angle around the central axis
+}
+VtPrism;
+
+typedef struct
+{
   VectorType vCntr;
   VectorType vNormal;
   double     Length;
@@ -1274,6 +1287,8 @@ typedef struct
   int          nCircles;
   VtCuboid*    pCuboid;
   int          nCuboids;
+  VtPrism*     pPrism;
+  int          nPrisms;
   VtHull*      pHull;
   int          nHulls;
   VtCylinder*  pCylinder;

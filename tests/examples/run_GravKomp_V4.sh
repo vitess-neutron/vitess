@@ -1,0 +1,9 @@
+#!/bin/sh
+[ -z "$V" ] && V=/tmp/vitess/MODULES
+[ -z "$P" ] && P=/tmp/vitess/FILES/EXAMPLES/GravKomp_V4
+[ -z "$L" ] && L=/tmp/vitess6661859cvpipelog
+SUFFIX="$(uname -s)_$(uname -m)"
+$V/source_${SUFFIX} -S1 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N1 --L${L}01 -a$P/ReactorCold.mod -n1e6 -l1 -m18 -M20 -d1 -b0.0 -c0.0 -y0.5 -z0.5 -D200 -w3 -h1 -i0 -s200 -X0 -Y0 -V1 -P0 -A0 -k0 | $V/space_${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N2 --L${L}02 -d1000 -M0 -m0 | $V/mon2_posdiv_${SUFFIX} -q2 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N3 --L${L}03 -O$P/z_divz_prism_1.dat -w-3 -h-0.2 -W3 -H0.2 -y100 -z100 -p1 -e0 -F1 -l-1.0 -L-1.0 | $V/monitor2D_${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N4 --L${L}04 -O$P/lambda_pos_prism_1.dat -X5 -Y2 -w17 -h-5 -W21 -H5 -x100 -y400 -p0 -e0 -F1 -l-1.0 -L-1.0 -I0 -J0 -C0 -P0 -r1 -s0 -t0 | $V/slit_${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N5 --L${L}05 -d0 -W3 -H1 | $V/prism_${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N6 --L${L}06 -b0.035 -h0.025 -z3 -P16 -k40 -y1 -N2 -S10 -s10 -D1 | $V/mon2_posdiv_${SUFFIX} -q2 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N7 --L${L}07 -O$P/z_divz_prism_2.dat -w-1 -h-0.2 -W1 -H0.2 -y100 -z100 -p1 -e0 -F1 -l-1.0 -L-1.0 | $V/monitor2D_${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N8 --L${L}08 -O$P/lambda_pos_prism_2.dat -X5 -Y2 -w17 -h-5 -W21 -H5 -x100 -y400 -p0 -e0 -F1 -l-1.0 -L-1.0 -I0 -J0 -C0 -P0 -r1 -s0 -t0 | $V/space_${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N9 --L${L}09 -d1200 -M0 -m0 | $V/mon2_posdiv_${SUFFIX} -q2 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N10 --L${L}10 -O$P/z_divz_sample.dat -w-3 -h-0.2 -W3 -H0.2 -y100 -z100 -p1 -e0 -F1 -l-1.0 -L-1.0 | $V/monitor2D_${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N11 --L${L}11 -O$P/lambda_pos_sample.dat -X5 -Y2 -w17 -h-5 -W21 -H5 -x100 -y400 -p0 -e0 -F1 -l-1.0 -L-1.0 -I0 -J0 -C0 -P0 -r1 -s0 -t0 --Fno_file
+rm -f $P/result.txt
+cat ${L}?? >> $P/result.txt
+rm ${L}*

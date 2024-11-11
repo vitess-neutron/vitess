@@ -94,6 +94,7 @@ void DrawOpenRect     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr,
                        double InnerWidth, double InnerHeight);
 void DrawCircle       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double AngleBeg, double AngleEnd);
 void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double rotAngle); 
+void DrawPrism        (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, VectorType vVertices[6], double PrismHeight); 
 void DrawHull         (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, 
                        double WidthIn,  double WidthOut, double HeightIn, double HeightOut, double rotAngle); 
 void DrawCylinder     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius);

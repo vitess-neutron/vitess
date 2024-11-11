@@ -1307,6 +1307,24 @@ void WriteGeomData(VectorType vBegPos, double Length)
              		   stGeometry.pCuboid[k].Height, stGeometry.pCuboid[k].rotAngle);
       }
 
+      /* Prisms */
+      for (k = 0; k < stGeometry.nPrisms; k++)
+      {
+          const char* sDescr;
+          sDescr = "";
+          if (k == 0 || k == (stGeometry.nPrisms - 1)) sDescr = stGeometry.pDescr;
+          else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+
+          // Transforming the center and orientation vectors
+          Transform(vAbsCntr, stGeometry.pPrism[k].vCntr, vBegPos);
+          Transform(vDir,     stGeometry.pPrism[k].vNormal, vNull);
+
+          // Drawing the prism with the base vertices and height
+          DrawPrism(pGeomFile, sDescr, vAbsCntr, vDir, 
+                    stGeometry.pPrism[k].vVertices,    // Array of vertices for the triangular faces
+                    stGeometry.pPrism[k].PrismHeight);  // Height of the prism (distance between the triangular faces)
+      }
+
       /* Hulls */
       for (k=0; k < stGeometry.nHulls; k++)
       {
@@ -1687,6 +1705,21 @@ void DrawCuboid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vector
   fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
 	  Length/100.0, Width/100.0, Height/100.0, rotAngle, pDescr);
+}
+
+void DrawPrism(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
+               VectorType vVertices[6], double PrismHeight)
+{
+  fprintf(pGeomFile, "Prism         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f   %s\n",
+                     vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  
+                     vDir[0], vDir[1], vDir[2],
+                     vVertices[0][0]/100.0, vVertices[0][1]/100.0, vVertices[0][2]/100.0,
+                     vVertices[1][0]/100.0, vVertices[1][1]/100.0, vVertices[1][2]/100.0,
+                     vVertices[2][0]/100.0, vVertices[2][1]/100.0, vVertices[2][2]/100.0,
+                     vVertices[3][0]/100.0, vVertices[3][1]/100.0, vVertices[3][2]/100.0,
+                     vVertices[4][0]/100.0, vVertices[4][1]/100.0, vVertices[4][2]/100.0,
+                     vVertices[5][0]/100.0, vVertices[5][1]/100.0, vVertices[5][2]/100.0,
+                     PrismHeight/100.0, pDescr);
 }
 
 void DrawHull(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,

@@ -115,6 +115,7 @@ pol_mirror \
 polariser_he3 \
 polariser_sm \
 precessionfield \
+prism  \
 read_in \
 resonator_drabkin \
 rotating_field \

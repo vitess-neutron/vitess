@@ -67,6 +67,7 @@ const char
 // circle gray
   *CircleAppearance="<Material diffuseColor='.7 .7 .7' specularColor='.2 .2 .2'/>",
   *CUBEMAT="<Material diffuseColor='.9 .9 0' emissiveColor='.1 .1 .33' transparency='.5'/>",
+  *PRISMAT="<Material diffuseColor='.9 .9 0' emissiveColor='.1 .1 .33' transparency='.5'/>",
 // rectangle, blue
   *RECTMAT="<Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/>",
   *TRIANGLEMAT="<Material diffuseColor='0.1 0.1 0.9' emissiveColor='.1 .1 .33' transparency='.5'/>",
@@ -97,11 +98,12 @@ typedef enum {
   GT_Ellipsoid      = 11, // cut of an ellipsoid
   GT_OpenRectangle  = 12, // rectangle with spare inner rectangle
   GT_Triangle       = 13, // triangle given by 3 * x,y,z coordinates
-  GT_CylSlice       = 14  // slice from a cylinder hull
+  GT_CylSlice       = 14, // slice from a cylinder hull
+  GT_Prism          = 15  // Prism with triangular base  
 } GType;
 
 // GTMAX must be highest number of GType
-#define GTMAX 14
+#define GTMAX 15
 
 /*
    x along neutron beam
@@ -176,11 +178,11 @@ void setVI(int *v, const char *s) {
 
 void parseX3dOptionFile() {
   FILE *xf;
-  char *p, *q, line[256];
+  char *p, *q, line[512];
   int v;
   if (! x3d_option_filename) return;
   xf = fopen(x3d_option_filename, "r");
-  while (fgets(line, 255, xf)) {
+  while (fgets(line, 511, xf)) {
     if ((p = strchr(line, '#')))
       *p = 0;
     if (! (p = strchr(line, '='))) continue;
@@ -213,6 +215,8 @@ void parseX3dOptionFile() {
       GVS(abelmat,LABELMAT);
       GVS(ineappearance,LineAppearance);
       break;
+    case 'p':
+      GVS(rismat,PRISMAT);
     case 'r':
       GVS(ectmat,RECTMAT);
       break;
@@ -451,6 +455,10 @@ void defineMaterials () {
   sprintf(buf, "<Shape DEF='rectangle'><Rectangle2D/><Appearance>%s</Appearance></Shape>", RECTMAT);
   x3d_new[GT_Rectangle] = strdup(buf);
 
+  x3d_old[GT_Prism] = "<Shape USE='prism'/>";
+  sprintf(buf, "<Shape DEF='prism'><Prism/><Appearance>%s</Appearance></Shape>", PRISMAT);
+  x3d_new[GT_Prism] = strdup(buf);
+
 }
 
 char *shapeString(char *buf, int vtype, char *appearance) {
@@ -465,6 +473,7 @@ char *shapeString(char *buf, int vtype, char *appearance) {
   case GT_Cylinder:  xtype = "Cylinder"; break;
   case GT_Sphere:    xtype = "Sphere"; break;
   case GT_Rectangle: xtype = "Rectangle2D"; break;
+  case GT_Prism:     xtype = "Prism"; break;
   default:
     *buf = 0;
   }
@@ -693,7 +702,7 @@ void restrictPoint(float *fa) {
   }
 }
 
-#define MAXARGS 16
+#define MAXARGS 26
 
 typedef
 
@@ -736,7 +745,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   char *rs, *p, *q;
 
  next_line:
-  while ((rs = fgets(line,255,gf))) {
+  while ((rs = fgets(line,511,gf))) {
     if (strchr(line, '#')) continue;
     if ((p = strchr(line, ' ')) || (p = strchr(line, '\t')))
       break;
@@ -793,6 +802,10 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
       vtype = GT_OpenRectangle;  nargs = 10;
     }
     break;
+  case 'P':
+    if (0 == strcmp(rs, "rism")) {
+      vtype = GT_Prism;  nargs = 25;
+    }
   case 'R':
     if (0 == strcmp(rs, "ectangle")) {
       vtype = GT_Rectangle;  nargs = 9;
@@ -880,6 +893,14 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
     if (vtype == GT_Triangle) {
       swapYZ(7,8); // 3. point
     }
+  } else if (vtype == GT_Prism){
+    swapYZ(7,8);
+    swapYZ(10,11);
+    swapYZ(13,14);
+    swapYZ(16,17);
+    swapYZ(19,20);
+    swapYZ(22,23);
+
   } else if (vtype != GT_Sphere) {
     // all these have a direction vector in elements 3,4,5
     swapYZ(4,5); // direction
@@ -924,8 +945,10 @@ void geom2X3D(char *fn) {
   FILE *gf;
   char *mods, *scales, *appearance;
   const char *shape;
-  static char line[256], trans[64], scaleb[64], rots[64], shapestr[256],
+  static char line[512], trans[64], scaleb[64], rots[64], shapestr[256],
     b1[16], b2[16], b3[16], b4[16], b5[16], b6[16],
+    b7[16], b8[16], b9[16], b10[16], b11[16], b12[16],
+    b13[16], b14[16], b15[16], b16[16], b17[16], b18[16],
     used_before[GTMAX+1];  // denotes if a base geometric element has been defined so far
   static float fa[MAXARGS];
   int vtype, vvtype, len, opentrans, ngeom = 0, firstmodule=1;
@@ -1018,6 +1041,22 @@ void geom2X3D(char *fn) {
       fprintf (outf, ">%s", shape);
       postTrans(opentrans);
       break;
+
+    case GT_Prism:
+      fprintf (outf, "<Transform translation='%s'>", trans);
+      fprintf (outf,
+               "<Shape><IndexedFaceSet coordIndex='0 1 2 -1 3 4 5 -1 0 1 4 3 -1 1 2 5 4 -1 2 0 3 5 -1' solid='false'>"
+               "<Coordinate point='%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s'/></IndexedFaceSet>"
+               "<Appearance>%s</Appearance>"
+               "</Shape></Transform>\n",
+                sS5(fa[6], b1), sS5(fa[7], b2), sS5(fa[8], b3),
+                sS5(fa[9], b4), sS5(fa[10], b5), sS5(fa[11], b6),
+                sS5(fa[12], b7), sS5(fa[13], b8), sS5(fa[14], b9),
+                sS5(fa[15], b10), sS5(fa[16], b11), sS5(fa[17], b12),
+                sS5(fa[18], b13), sS5(fa[19], b14), sS5(fa[20], b15),
+                sS5(fa[21], b16), sS5(fa[22], b17), sS5(fa[23], b18),
+               appearance ? appearance : PRISMAT);
+    break;
 
     case GT_Cylinder:
       // X3D Cylinder has default orientation 0 1 0
@@ -1569,7 +1608,7 @@ void writeTrajectories() {
 int main (int argc, char **argv) {
 
   char *arg, *p, *s;
-  static char line[256];
+  static char line[512];
   int i, hi;
   p_hashentry ph;
   FILE *f;
@@ -1643,7 +1682,7 @@ int main (int argc, char **argv) {
     if (! (f = fopen(infilename[i], "r")))
       myexit1("unable to read %s\n", infilename[i]);
 
-    while (fgets(line,255,f)) {
+    while (fgets(line,511,f)) {
       if ((p = strchr(line, '#'))) {
         const char *tests = "unit_length=";
         if ((s = strstr(p,tests))) {
