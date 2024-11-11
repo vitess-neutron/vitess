@@ -554,8 +554,14 @@ void UpdateMon(long iBnch)
       f_norm = (double) nBunches / (double) iBnch;
 
     switch (eComb)
-    { case VT_SCA_LMBD: WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot,  nBinsX, "scat_ang [deg]", nBinsY, "wavelength [Ang]"); break;
-      case VT_SCA_TOF : WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot,  nBinsX, "scat_ang [deg]", nBinsY, "TOF [ms]");         break;
+    { case VT_SCA_LMBD: WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot, 
+			                                 nBinsX, "scat_ang [deg]"  , MinX, MaxX, 
+			                                 nBinsY, "wavelength [Ang]", MinY, MaxY); 
+		                    break;
+      case VT_SCA_TOF : WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot,  
+				                               nBinsX, "scat_ang [deg]", MinX, MaxX,  
+				                               nBinsY, "TOF [ms]"      , MinY, MaxY);        
+				                break;
       default         : Error("Evaluation parameter unknown");
     }
 

@@ -142,6 +142,7 @@ spacewindow_multiple \
 spin_reset \
 standard_deviation \
 surface_file \
+template \
 velselect \
 window \
 writeout

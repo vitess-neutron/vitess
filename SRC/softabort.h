@@ -27,7 +27,7 @@ extern int finishSoftabort;
   static int HandlerEnabled;
   void enableHandler() {
     if (HandlerEnabled) return;
-    hS = CreateEvent( NULL, TRUE, FALSE, hName);
+    hS = CreateEvent( NULL, TRUE, FALSE, (LPCWSTR)hName);
     /*
     if (hS == NULL) {
       fprintf(LogFilePtr, "CreateEvent failed [%x]\n", GetLastError());

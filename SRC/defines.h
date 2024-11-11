@@ -95,6 +95,7 @@ VtRndGen;
 typedef enum
 {
   MCN_COMP_UNKNOWN =   0,
+	MCN_TEMPLATE     =  50,
 	MCN_SOURCE       = 100,
 	MCN_SRC_SMPL     = 110,
 	MCN_SRC_CWS      = 120,
@@ -800,6 +801,19 @@ typedef enum
 VtDetAbs;
 
 
+// Ensembles and Unions
+// --------------------
+// mirror data format
+typedef enum
+{	
+  VT_MIRR_NO_FMT =-1,
+  VT_MIRR_FMT_OLD= 0,
+  VT_MIRR_FMT_NEW= 1,
+  VT_MIRR_STL_CAD= 2,
+}
+VtMirrFormat;
+
+
 // Monitors, Filter and Evaluation
 // -------------------------------
 // monitor parameter for mon1 and monpol1
@@ -1051,6 +1065,29 @@ typedef struct
 	VectorType     Spin;
 }
 Neutron;
+
+typedef struct
+{
+	char           sParID[2];    // e.g. "-Z" for '--Z', "A " for '-A' 
+	unsigned long  iCompID;      // ID of the component/module
+	char           cChange;      // 'C' for parameter change, 'R' for 'reset'
+	short          iModuleNo;    // position in the row of modules in the pipe
+	double         Value;        // double parameter value
+	long           nValue;       // integer parameter value
+  long           bInteger;
+	double         Unused;
+	VectorType     vUnused1;
+	VectorType     vUnused2;
+	VectorType     vUnused3;
+}
+ParChange;
+
+typedef union
+{
+  Neutron   Traj;
+  ParChange Trigger;
+}
+VtEvent;
 
 typedef struct
 {

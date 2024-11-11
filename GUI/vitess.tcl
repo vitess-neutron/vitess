@@ -161,7 +161,6 @@ proc makeModuleSets {} {
     {collimator {collimator collimator_radial collimator_soller} collimator}
     {detector {detector screen} {detector screen}}
     {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
-    {external_command}
     {filter {filter filter2D} {filter filter2D}}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {frame {} frame}
@@ -169,6 +168,7 @@ proc makeModuleSets {} {
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
     {mirror {pol_mirror mirror_elliptical sm_ensemble} {pol_mirror mirror_elliptical sm_ensemble}}
     {monochr_analyser {ma_flat_new ma_focus_new ma_focus_dat_new ma_flat ma_focus ma_focus_dat} monochromator monochromator monochromator monochr_analyser monochr_analyser monochr_analyser}
+    {new_module {external_command template_module} {external_command template}}
     {optical_elements {lense prism} {lense prism} }
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {resonator_drabkin {} resonator_drabkin}
@@ -780,6 +780,22 @@ set external_commandESET {
   {Options header}
   {extern_shortopt longstring "" {"option\nstring" "This option string is passed as it is to the external command."}}
   {extern_optfile pareditablefile "" {"option\nfile" "File with options for the external command. This file may contain several lines, which are concatenated to a blank separated string."}}
+}
+
+
+### Template Module
+set template_moduleESET {
+  {tmpt_fname pareditablefile "file.dat" {"file" "name of the .... file" "" F} r}
+  {tmpt_flag1 select no {"switch" "Flag 1: Description of switch 1" "" a} {{"flag 1" 0}}}
+  {tmpt_nitem int    1 {"number\nof items" "Description of the number of items" "" n} 1 100 1}
+  {tmpt_nvals int    1 {"number\nof values" "Description of the number of values" "" N} 1}
+  {}
+  {"Dimension" header}
+  {tmpt_par_a float "" {"par A [unit]" "Description of parameter A" "" A} ge0}
+  {tmpt_par_b float "" {"par B [unit]" "Description of parameter A" "" B} ge0}
+  {tmpt_dist float ""  {"distance\nto device [cm]" "Distance from the origin to the device (along the x-axis)" "" D} ge0}
+  {}
+  {tmpt_dir radio N    {"axis" "axis of .... direction (N: no direction)" "" Q} {X Y Z N} {0 1 2 -1}}
 }
 
 

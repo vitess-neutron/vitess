@@ -45,7 +45,8 @@ extern char          sModuleName[MOD_NAME_LEN+1],  /* name of the module        
 extern double        wei_min;        /* Minimal weight for tracing neutron */
 extern long          keygrav;
 extern long          idum;           /* random number specific */
-extern short         bOldFrame,      /* criterion: new co-ordinate system set for current module */
+extern short         bInit,          /* criterion: function Init() has been carried out already  */
+                     bOldFrame,      /* criterion: new co-ordinate system set for current module */
                      bTest,          /* criterion: test run (without trajectories)   */
                      bVisInstalled,  /* criterion: visualization routines installed  */
                      bBlowUp,        /* criterion: width and height extended by factor 'BlowUp' in visualization  */
@@ -109,6 +110,8 @@ void  InitNeutron     (Neutron* pNeut);
 void  SetEOB          (Neutron* pNeut);
 short IsEOB           (Neutron* pNeut);
 short CheckEOB        (Neutron* pNeut);
+void  SetReset        (ParChange* pChange);
+short IsReset         (const ParChange* pChange);
 
 double GetTotInt       (short iMon);
 void  OutputBufferFlush(int final);

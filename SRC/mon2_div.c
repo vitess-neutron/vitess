@@ -312,7 +312,8 @@ void UpdateMon(long iBnch)
 
     // writes header and data
     WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,  
-                   nBinsY, "div_y [deg]", nBinsZ, "div_z [deg]");
+                   nBinsY, "div_y [deg]", DivYmin, DivYmax, 
+                   nBinsZ, "div_z [deg]", DivZmin, DivZmax);
 
     WriteOutput2DB(fMonitor, eFormat, bProbactiv,  
                    nBinsY, BinPosY,   nBinsZ, BinPosZ,  f_norm, 
