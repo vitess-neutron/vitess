@@ -15,18 +15,16 @@ eval_inelast:                    # source module that will be executed
       type:    "title"
       default: "Output files"
   - sFileTof:
-      type:    "file"
-      plottable: true
-      descr:   "TOF spectrum"
-      tooltip: "Filename for the TOF spectrum data file."
-      default: "tof_sp.dat"
+      type:    "string"
+      descr:   "TOF spectra files label"
+      tooltip: "Label used as a base to define output file-names for the TOF spectra datafiles."
+      default: "tof_sp"
       prefix:  "-E"
   - sFileE:
-      type:    "file"
-      plottable: true
-      descr:   "energy spectrum"
-      tooltip: "Filename for the energy spectrum data file. "
-      default: "energy_sp.dat"
+      type:    "string"
+      descr:   "energy spectra files label"
+      tooltip: "Label used as a base to define output file-names for the energy spectra datafiles."
+      default: "energy_sp"
       prefix:  "-G"
 
   - Title_Range:

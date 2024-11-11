@@ -2026,7 +2026,7 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
   &Delta;&Omega; is the solid angle within which neutrons are scattered.
 
   <p>
-    &mu;<sub>scat</sub> and &mu;<sub>abs</sub> are both calculated as scattering cross section multiplied with density, assuming in both cases that the cross sections given as input are the usual tabular values at &lambda; = 1.8 &Acirc;.<br />
+    &sigma;<sub>coh</sub> and &sigma;<sub>inc</sub> are both calculated from the respective linear coefficients, using the density, assuming in both cases that the linear coefficients given as input are the usual tabular values at &lambda; = 1.8 &Acirc;.<br />
   </p>
   <p>
       The geometrical parameters of the sample are: position, horizontal
@@ -2111,46 +2111,6 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
       </tr>
 
       <tr>
-        <td> coherent scattering cross section <br>[barns]       </td>
-        <td>
-          Macroscopic coherent scattering cross section of the sample<br />
-        </td>
-        <td>from tables, example for water: 7.7456 [barns]</td>
-        <td> -s </td>
-      </tr>
-      <tr>
-        <td> incoherent scattering cross section <br>[barns]     </td>
-        <td>
-          Macroscopic incoherent cross section of the sample<br />
-        </td>
-        <td>from tables, example for water: 160.52 [barns]</td>
-        <td> -Q </td>
-      </tr>
-      <tr>
-        <td> absorption cross section <br>[barns]     </td>
-        <td>
-          Macroscopic absorption cross section of the sample<br />
-        </td>
-        <td>from tables, example for water: 0.6652 [barns]</td>
-        <td> -m </td>
-      </tr>
-      <tr>
-        <td> Molar mass of the compound <br> [g/mol]     </td>
-        <td>
-          Total molar mass of the compound calculated as stechiometric sum of the molar masses <br />
-        </td>
-        <td>from tables, example for water: 18 [g/mol]</td>
-        <td> -B </td>
-      </tr>
-      <tr>
-        <td> Density of the compound <br>[g/cm<sup>3</sup>]     </td>
-        <td>
-          Density of the compound<br />
-        </td>
-        <td>from tables, example for water: 1 [g/cm<sup>3</sup>]</td>
-        <td> -C </td>
-      </tr>
-      <tr>
         <td>D1, D2, D3<br>[&Aring;]</td>
         <td>
           Cartesian coefficients defining the dispersion relation of excitations as given in section C.
@@ -2185,6 +2145,30 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td> If this integer &gt; 1, the neutron is used multiple times to obtain better statistics. </td>
         <td>&ge; 1<br />default: 1</td>
         <td> -A </td>
+      </tr>
+      <tr>
+        <td> Linear incoherent-scattering coefficient <br>[1/cm]     </td>
+        <td>
+          Linear incoherent-scattering coefficient <br />
+        </td>
+        <td>from tables</td>
+        <td> -Q </td>
+      </tr>
+      <tr>
+        <td> Molar mass of the compound <br> [g/mol]     </td>
+        <td>
+          Total molar mass of the compound calculated as stechiometric sum of the molar masses <br />
+        </td>
+        <td>from tables, example for water: 18 [g/mol]</td>
+        <td> -B </td>
+      </tr>
+      <tr>
+        <td> Density of the compound <br>[g/cm<sup>3</sup>]     </td>
+        <td>
+          Density of the compound<br />
+        </td>
+        <td>from tables, example for water: 1 [g/cm<sup>3</sup>]</td>
+        <td> -C </td>
       </tr>
     </tbody>
   </table>
@@ -2240,6 +2224,22 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         </td>
         <td>0&deg; - 360&deg; or <br />0&deg; - 180&deg; (param.)</td>
         <td> -e -f </td>
+      </tr>
+      <tr>
+        <td> Scattering coefficient <br>[1/cm]       </td>
+        <td>
+           Scattering coefficient of the sample &lambda; = 1.8 &Aring;<br />
+        </td>
+        <td>from tables</td>
+        <td> -s </td>
+      </tr>
+      <tr>
+        <td> Absorption linear coefficient<br>[1/cm]     </td>
+        <td>
+          Absorption coefficient of the sample at &lambda; = 1 &Aring;<br />
+        </td>
+        <td>from tables</td>
+        <td> -m </td>
       </tr>
       <tr>
         <td> position <br> [cm] </td>

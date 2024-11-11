@@ -3,13 +3,14 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
+/* 1.0            Gï¿½za Zsigmond                                                             */
 /* 1.1  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.2  MAY 2004  G. Zsigmond    normalize with repetition                                  */
 /* 1.3  JUL 2004  G. Zsigmond    error warning for sample position                          */
 /* 1.4  JUL 2004  G. Zsigmond    including hollow cylinder sample                           */
 /* 1.5  Feb 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.6  Oct 2021  K. Lieutenant  option: parameters from input instead of from file         */
+/* 1.7  Oct 2024  N. Violini     spin dependent scattering (coh and incoh)                  */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -37,8 +38,9 @@ void   SetSamplePar();                                        // Reads sample pa
 void   CalcAndWritePar(SampleType *pSample);                  // Calculates arrays from input parameters and writes to log file
 void   SetGeometry(char* sColor);                             // Fills the structure stGeometry for visualization 
 void   OutputTransform(VectorType Pos, VectorType Dir);       // Co-ordinate transformation to output frame
-long   S_q_w(double *wl, double *prob, VectorType Dir);       // S(q,w) scattering: new neutron variables
+long   S_q_w(double *wl, double *prob, VectorType Dir, int inc_flag);       // S(q,w) scattering: new neutron variables
 double FunctionS_q_w(VectorType q, double energy);            // FunctionS_q_w(q, energy) 
+double FunctionS_q_w_inc(VectorType q, double energy);        // FunctionS_q_w(q, energy) incoherent case
 double Dispersion(VectorType q);                              // Energy dispersion   
 double BoseFactor(double T, double w);                        // Bose factor if w in ueV
 
@@ -62,7 +64,11 @@ VtSmplGeom eGeom=VT_NO_GEOM;           // file -G        [-]   geometry paramete
 VectorType ScatMain ={0.0,0.0,0.0}, // file -L -E -F [deg]  mean wavelength and hor. and vert. direction (Theta, Phi) of the scattered neutron
            ScatRange={0.0,0.0,0.0}; // file -l -e -f [deg]  variation in wavelength, hor. and vert. direction of the scattered neutron
 double     AbsorptionC=0.0,            // file -m       [1/cm] Macroscopic absorption cross section 
-           ScatteringC=0.0;            // file -s       [1/cm] Macroscopic total scattering cross section 
+           ScatteringT=0.0,            // file -s       [1/cm] Macroscopic total scattering cross section 
+           ScatteringI = 0.0,                  // file -r       [1/cm] Macroscopic incoherent scattering cross section
+           mol_mass = 1.0,                     // file -B       [g/mol] Molar mass of the compound
+           density = 1.0;                      // file -C       [g/cm^3] Macroscopic density of the compound
+double mu_sci = 0.0, mu_scc = 0.0, mu_sca = 0.0, mu_abs = 0.0;
 VectorType PosSample={0.0,0.0,0.0};    // file -X -Y -Z  [cm]  center position of the sample
 double     AnglSmplHor =0.0,           // file -o       [rad]  horizontal angle of the sample orientation, relative to standard orientation
            AnglSmplVert=0.0;           // file -O       [rad]  vertical angle of the sample orientation, relative to standard orientation
@@ -87,8 +93,8 @@ double     ProbCutoff=0.0,             //                      neutron weight, b
 double     RotMatrixSample [3][3],     //                      rotation matrix to transfer to coordinate system of the sample
            RotMatrixOut    [3][3],     //                      rotation matrix to transfer to the output coordinate system
            RotMatrixScatter[3][3];     //                      rotation matrix to transfer into coordinate system of the scattering direction
-
-
+double     ScatteringC = 0.0;          //                      coherent scattering cross section of the sample 
+int n_flipped = 0, n_non_flipped = 0, n_coh = 0;
 /******************************/
 /** Main Program             **/
 /******************************/
@@ -98,16 +104,24 @@ int main(int argc, char **argv)
   double     TOF=0.0,   WL=0.0, Prob=0.0, 
              PathLength   =0.0, PathLengthHol   =0.0, 
              MaxPathLength=0.0, MaxPathLengthHol=0.0;
+
+  double tmp_rand = 0.0, sf_probability = 0.0;
+ 
+  // flag used to distinguish between coherent and incoherent S(Q,omega)
+  int inc_flag=0;
+  void spin_flip(VectorType Spin);
   VectorType Pos1f ={0.0,0.0,0.0}, Pos2f=  {0.0,0.0,0.0}, Pos3f={0.0,0.0,0.0}, Pos4f={0.0,0.0,0.0}, 
              Pos1v ={0.0,0.0,0.0}, Pos2v=  {0.0,0.0,0.0}, Pos3v={0.0,0.0,0.0}, Pos4v={0.0,0.0,0.0},   
              propag={0.0,0.0,0.0}, propag1={0.0,0.0,0.0},                              // propagation vectors e.g. from entry to point of scattering to calculate TOF
-             Pos   ={0.0,0.0,0.0}, Dir=    {0.0,0.0,0.0}, Pos_final={0.0,0.0,0.0};
+             Pos   ={0.0,0.0,0.0}, Dir=    {0.0,0.0,0.0}, Pos_final={0.0,0.0,0.0},
+             SpinVector;
   Neutron	   InNeutron, OutNeutron;
 
   // initialisation
   // --------------
   InitNeutron(&OutNeutron);
   InitNeutron(&InNeutron);
+  InitVector(SpinVector);
 
   _eModule = MCN_SMPL_INELAST;
 
@@ -145,6 +159,11 @@ int main(int argc, char **argv)
         MaxPathLengthHol = PathLengthHol = 0.0; 
         NormVectorX(InputNeutrons[i].Vector);
         CopyNeutron(&InputNeutrons[i], &InNeutron);
+
+        /* reads the incident neutron spin as a vector */
+        CopyVector(InputNeutrons[i].Spin, SpinVector);
+        /* initialises the incoherent flag to default */
+        inc_flag=0;
 
         /* translates and rotates into frame of the sample  */
         SubVector(InputNeutrons[i].Position, PosSample) ;
@@ -244,8 +263,7 @@ int main(int argc, char **argv)
           CopyVector(Pos1v, Pos) ;						/*scattering position */
 
           /* attenuation untill scattering normalized to maximal path */
-          Prob *= (double) exp(-PathLength * AbsorptionC * WL - PathLength * ScatteringC) ;
-          //Prob *= MaxPathLength * ScatteringC ; 
+          Prob *= (double) exp(-PathLength * mu_abs * WL - PathLength * mu_sca) ;
 
           /* point of scattering for trajectory visualization */
           if (bVisTraj==TRUE)
@@ -258,9 +276,34 @@ int main(int argc, char **argv)
             WriteScatIAP(&ScatNeut, VT_SCATTERED, RotMatrixSample, PosSample);
           }
 
+          // decides if incoherent scattering or not */
+          tmp_rand = MonteCarlo(0.,1.);
+          if (tmp_rand < ScatteringI/ScatteringT)
+          {
+            inc_flag=1;
+            // flip spin of incoherent scattering with probability 2/3 */
+            sf_probability = MonteCarlo(0.,1.);
+            if (sf_probability < 2.0/3.0)
+            {
+              spin_flip(SpinVector);
+              n_flipped ++;
+            }
+            else
+            {
+              n_non_flipped ++;
+            }
+            /* attenuation due to incoherent scattering cross section */
+            Prob *= (double) exp(-PathLength * mu_abs * WL - PathLength * mu_sci) ;
+          }
+          //* attenuation due to coherent scattering cross section */ 
+          else
+          {
+            Prob *= (double) exp(-PathLength * mu_abs * WL - PathLength * mu_scc ) ;
+            n_coh ++;
+          }
           /* S(q,w) scattering: new neutron variables*/ 
           Prob *= WL ;
-          if (S_q_w(&WL, &Prob, Dir) == 0) goto getlost2 ;
+          if (S_q_w(&WL, &Prob, Dir, inc_flag) == 0) goto getlost2 ;
           Prob *= 1/WL ;
 
           CHECK;
@@ -330,7 +373,7 @@ int main(int argc, char **argv)
           if (PathLengthHol != 0.) 
             CopyVector(Pos4v, Pos2v);  /* for hollow cylinder option: set output position to where it crosses the outer cylinder if crossed  */
 	
-          Prob *= exp(-PathLength * AbsorptionC * WL - PathLength * ScatteringC);
+          Prob *= exp(-PathLength * AbsorptionC * WL - PathLength * ScatteringT);
 
           /* Output matters */
           CopyVector(Pos2v, propag);
@@ -351,6 +394,7 @@ int main(int argc, char **argv)
 
           CopyVector(Pos2v, OutNeutron.Position) ;
           CopyVector(Dir, OutNeutron.Vector) ;
+          CopyVector(SpinVector, OutNeutron.Spin);
 
           /* writes output binary file */
           WriteNeutron(&OutNeutron) ;
@@ -368,7 +412,14 @@ int main(int argc, char **argv)
    
   // Finish: write log, geometry and instrument file, free memory
   // ------------------------------------------------------------
-my_exit:
+  fprintf(LogFilePtr, " Number of spin-flipped neutrons in incoherent scattering        : %d \n", n_flipped);
+  fprintf(LogFilePtr, " Number of non-spin-flipped neutrons in incoherent scattering    : %d \n", n_non_flipped);
+  fprintf(LogFilePtr, " Number of neutrons in coherent scattering    : %d \n", n_coh);
+  fprintf(LogFilePtr, " total scat. cross-section   : %9.4f    [barns]\n", ScatteringT);
+  fprintf(LogFilePtr, " coh. scat. cross-section    : %9.4f    [barns]\n", ScatteringC);
+  fprintf(LogFilePtr, " inc. scat. cross-section    : %9.4f    [barns]\n", ScatteringI);
+  fprintf(LogFilePtr, " abs. cross-section          : %9.4f    [barns]\n", AbsorptionC);
+  my_exit:
   /* write geometry file */
   SetGeometry("white");
   
@@ -395,6 +446,9 @@ void OwnInit(int argc, char *argv[])
   ProbCutoff=wei_min ;
 	
   /* Scan all command line parameters */
+  //  abcdefghijklmnopqrstuvwxyz
+  //  abcdefghi  l  o q stu wxyz
+  //  ABCDEFG I  L  OPQRSTU WXYZ
   for (i=1; i<argc; i++)
   {
     if (argv[i][0]!='+')
@@ -438,6 +492,18 @@ void OwnInit(int argc, char *argv[])
           sscanf(&argv[i][2], "%ld", &Repetition) ;
           break;
 
+        /* coh and incoh scattering x-sections*/
+        case 'Q':
+          sscanf(&argv[i][2], "%lf", &mu_sci);
+          break;
+        /* molar mass and density of the compound*/
+        case 'B':
+          sscanf(&argv[i][2], "%lf", &mol_mass);
+          break;
+        case 'C':
+          sscanf(&argv[i][2], "%lf", &density);
+          break;
+
         /* Scattering parameters */
         case 'L':
           ScatMain[0] = atof(&argv[i][2]);
@@ -459,10 +525,10 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 's':
-          ScatteringC = atof(&argv[i][2]);
+          mu_sca = atof(&argv[i][2]);
           break;
         case 'm':
-          AbsorptionC = atof(&argv[i][2]);
+          mu_abs = atof(&argv[i][2]);
           break;
 
         /* sample position, size and orientation */
@@ -537,7 +603,7 @@ void OwnInit(int argc, char *argv[])
   }
 
   if (Temp > 0.0)
-    Beta = 1.0e-06 / (KB/E_C * Temp);   // 1/kT in 1/µeV 
+    Beta = 1.0e-06 / (KB/E_C * Temp);   // 1/kT in 1/ï¿½eV 
 
   if (pSmplFileName==NULL)
     Error("Parameter file name missing") ;  
@@ -572,7 +638,7 @@ void SetSamplePar()
   int    nLen=sizeof(sLine)-1, iFrm=-1;
   double f_lmd =0.0, f_h   =0.0, f_v  =0.0,
          f_dlmd=0.0, f_dh  =0.0, f_dv =0.0,
-         mu_sca=0.0, mu_abs=0.0,
+         mu_abs_f=0.0,
          x     =0.0,  y    =0.0, z    =0.0, 
          diamtr=0.0, height=0.0, width=0.0,
          off_h =0.0, off_v =0.0,
@@ -620,8 +686,7 @@ void SetSamplePar()
       if (ScatRange[0]==0.0 && f_dlmd!=0.0) ScatRange[0]= f_dlmd/2.0;
       if (ScatRange[1]==0.0 && f_dh  !=0.0) ScatRange[1]= f_dh/2.0;
       if (ScatRange[2]==0.0 && f_dv  !=0.0) ScatRange[2]= f_dv/2.0;
-      if (ScatteringC ==0.0 && mu_sca!=0.0) ScatteringC = mu_sca;
-      if (AbsorptionC ==0.0 && mu_abs!=0.0) AbsorptionC = mu_abs;
+      if (mu_abs ==0.0 && mu_abs_f!=0.0) AbsorptionC = mu_abs_f;
       if (PosSample[0]==0.0 && x     !=0.0) PosSample[0]= x     ;
       if (PosSample[1]==0.0 && y     !=0.0) PosSample[1]= y     ;
       if (PosSample[2]==0.0 && z     !=0.0) PosSample[2]= z     ;
@@ -709,6 +774,13 @@ void  CalcAndWritePar(SampleType* pSample)
   if (LengthVector(k_reference) == 0.)
     Error("Zero reference wavevector not allowed");
 
+  /* calculates coherent scattering cross section as ScatteringC = ScatteringT - ScatteringI */
+  ScatteringI = mu_sci / density / 6.023 / 0.1 * mol_mass;
+  ScatteringT = mu_sca / density / 6.023 / 0.1 * mol_mass;
+  ScatteringC = ScatteringT - ScatteringI;
+  mu_scc = mu_sca - mu_sci;
+  AbsorptionC = mu_abs / density / 6.023 / 0.1 * mol_mass;
+
   /* prints parameters into log file for verification */
   fprintf(LogFilePtr, "S(q,omega) parameters\n");
   fprintf(LogFilePtr, "  P1 (peak center)    : %9.4f ueV\n  P2 (peak width)     : %9.4f ueV\n  P3 (scale factor)   : %9.4f\n  P4 (ampl. 2nd peak) : %9.4f\n", P1, P2, P3, P4); 
@@ -728,7 +800,11 @@ void  CalcAndWritePar(SampleType* pSample)
   fprintf(LogFilePtr, "  final wavelength    : %9.4f +/-%9.4f Ang\n", ScatMain[0], ScatRange[0]);
   fprintf(LogFilePtr, "  final hor. angle    : %9.4f +/-%9.4f deg\n", ScatMain[1], ScatRange[1]);
   fprintf(LogFilePtr, "  final vert. angle   : %9.4f +/-%9.4f deg\n", ScatMain[2], ScatRange[2]);
-  fprintf(LogFilePtr, "  scat. & abs. coeff. : %9.4f    %9.4f 1/cm\n", ScatteringC, AbsorptionC) ;
+  fprintf(LogFilePtr, "  total scat. linear coeff.   : %9.4f    1/cm\n", mu_sca);
+  fprintf(LogFilePtr, "  coh. scat. linear coeff.    : %9.4f    1/cm\n", mu_scc);
+  fprintf(LogFilePtr, "  inc. scat. linear coeff.    : %9.4f    1/cm\n", mu_sci);
+  fprintf(LogFilePtr, "  abs. linear coeff.          : %9.4f    1/cm\n", mu_abs);
+  fprintf(LogFilePtr, "  density and molar mass      : %9.4f %9.4f    \n", density, mol_mass);
   fprintf(LogFilePtr, "  offset angles (h,v) : %9.4f %9.4f           deg\n", Degrees(AnglSmplHor), Degrees(AnglSmplVert));
   fprintf(LogFilePtr, "  reference-k (x,y,z) : %9.4f %9.4f %9.4f 1/Ang\n",   k_reference[0], k_reference[1], k_reference[2]);
 
@@ -823,7 +899,7 @@ void OutputTransform(VectorType Pos, VectorType Dir)
 /*******************************************************/
 /** S(q,w) scattering: new neutron variables          **/
 /*******************************************************/
-long S_q_w(double *wl, double *prob, VectorType Dir)
+long S_q_w(double *wl, double *prob, VectorType Dir, int inc_flag)
 {
   int		 j ;
   double q[3], dir_fin[3], dir_inc[3], DeltaHoriz, DeltaVert, energy ;
@@ -860,7 +936,10 @@ long S_q_w(double *wl, double *prob, VectorType Dir)
     for(j=0;j<3;j++) q[j]=dir_inc[j];
 
     fact = 1. / (*wl * sq(*wl)) /**/;
-    *prob	*= fact * fabs(FunctionS_q_w(q, energy)) ;
+    if (inc_flag == 0)
+      *prob *= ScatteringC * fact * fabs(FunctionS_q_w(q, energy));
+    if (inc_flag == 1)
+      *prob *= ScatteringI * fact * fabs(FunctionS_q_w_inc(q, energy));
   }
 
   return 1 ;
@@ -883,8 +962,10 @@ double	FunctionS_q_w(VectorType q, double energy)
   */
 
   /* normal vitess */
-  p =	2 * P3 * (       sq(P2) /(sq(energy - P1 - Dispersion(q)) + sq(P2)) 
-                 - P4 * sq(P2) /(sq(energy + P1 + Dispersion(q)) + sq(P2)));
+  p = 2 * (P2 / (sq(energy - P1 - Dispersion(q)) + sq(P2)) - P4 * P2/ (sq(energy + P1 + Dispersion(q)) + sq(P2)));
+
+  if (P4 == -1)
+    p /= 2.0;
 
   if (bBoseF == 1)
     p *= BoseFactor(Temp, energy);
@@ -892,7 +973,23 @@ double	FunctionS_q_w(VectorType q, double energy)
   return p;
 }
 
+/*******************************************************/
+/**	FunctionS_q_w_inc(q, energy)                          **/
+/*******************************************************/
+double FunctionS_q_w_inc(VectorType q, double energy)
+{
+  double p;
+  double energy_range;
 
+  energy_range = ENERGY_FROM_LAMBDA( ScatMain[0] + ScatRange[0]) - ENERGY_FROM_LAMBDA (ScatMain[0] - ScatRange[0]);
+
+  p = 1.0/energy_range;
+
+  if (bBoseF == 1)
+    p *= BoseFactor(Temp, energy);
+
+  return p;
+}
 /*******************************************************/
 /** Energy dispersion                                 **/
 /*******************************************************/
@@ -928,4 +1025,13 @@ double	BoseFactor(double T, double w)
 }
 	
 
-
+/*******************************************************/
+/** Spin flip function                                **/
+/*******************************************************/
+void spin_flip(VectorType Spin)
+{
+  // spin flipping function
+  if ( Spin[0] != 0) Spin[0] = - Spin[0];
+  if ( Spin[1] != 0) Spin[1] = - Spin[1];
+  if ( Spin[2] != 0) Spin[2] = - Spin[2];
+}
