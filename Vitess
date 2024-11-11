@@ -64,7 +64,7 @@ switch $tcl_platform(platform) {
         # mozilla -remote openURL(file:vitess.html)
         # otherwise change help.tcl accordingly
         set Browser ""
-        foreach b {firefox mozilla chrome netscape communicator konqueror} {
+        foreach b {firefox mozilla chrome netscape communicator konqueror xdg-open} {
           catch {
             catch {exec sh -c "which $b"} bb
             if {$bb != "" && [file exists $bb]} {
