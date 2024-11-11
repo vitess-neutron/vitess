@@ -1,18 +1,27 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="stylesheet" type="text/css" href="default.css">
   <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
   <title>Module Neutron Refraction Lense</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
 </head>
-<body>
 
+<body>
+  <a id="top"></a>
+  <h1> VITESS Modules to simulate Optical Elements</h1>
+  <p>
+    There are 2 VITESS modules to simulate neutrons in refractive elements:<br />
+    <a href="#lense"><b>lense</b></a> can be used to neutron lenses <br />
+    <a href="#prism"><b>prism</b></a> can be used to simulate prisms and arrays of identiccal prisms.<br />
+  </p>
+  <p>
   <br />
-  <h1>Optical Elements</h1>
-  
-  <br />
-  <h2> <font size="+1">VITESS Neutron Refraction Lense</font></h2>
+  <h2 id="lense"> <font size="+1">VITESS Neutron Refraction Lense</font></h2>
     <p>
       The module <b>lense</b> simulates an refractive neutron lense or a stack of such lenses.
     </p>
@@ -318,6 +327,122 @@
       </tbody>
     </table>
     <p>
+
+      <div class="back-to-top"><a href="#top">Back to Top</a></div>
+      <p>
+        <br />
+        <h2 id="prism"> <font size="+1">VITESS Neutron Refraction Prism Array</font></h2>
+          <p>
+            The module <b>prism</b> simulates a refractive neutron prism or a stack of such prisms.
+          </p>
+          <p>
+            The prism dimensions should be given as input: the base width and its height and the prism height. The orientation of the prism is such that the base is on the x-z plane. 
+            The critical angle of the prism is therefore fixed by its height and base dimensions.
+            In order to define a stack of prisms, the user should give as input the number of columns and rows forming the stack. This option is very important due to the very small refractive index of all materials for neutron waves.
+            
+            The prism can optionally attenuate neutron trajectories by setting the property 'Layer can absorb' to 'yes'. The simulation will then take into account the attenuation due to absoription cross section.
+            
+            A depiction of reflection and refraction at a material surface is provided in the figure taken from EPJ Web of Conferences 236, 04001 (2020).
+            As described in figure, the refraction index of neutrons through materials follows the law:
+            <p>
+              n = 1 - (&lambda; <sup>2</sup> / 2 &pi;) &rho;
+            </p>
+            Therefore the refraction gives rise to wavelength-dependent deviations of the neutrons.
+            The deviation power is determined by the coherent scattering lenght density (&rho;) of the material.
+
+            As an example, an array of 16 columns of prisms, whose base is 0.35 x 0.25 mm (W x H) with a typical value of 10<sup>-6</sup> [1/&Aring;<sup>2</sup>] is able to correct gravity effect for free-falling neutrons of nearly 20 &Aring; at an appropriate focal distance of nearly 10 m.
+
+          </p>
+          <p>
+            <img src="gravitational_corrector_sketch.png" name="Grafik" border="0" height="272" width="433" align="bottom" title="Description of the prism array">
+          </p>
+
+          <p>
+            <img src="refraction_sketch.png" name="Grafik" border="0" height="272" width="433" align="bottom">
+          </p>
+
+          <table cellpadding="2" cellspacing="2" border="1" width="100%">
+            <tbody>
+              <tr>
+                <td valign="top"><b>Parameter<br> Unit<br></b></td>
+                <td valign="top"><b>Description<br>      </b></td>
+                <td valign="top"><b>Range or Values<br>  </b></td>
+                <td valign="top"><b>Command Option<br>   </b></td>
+              </tr>
+      
+              <tr>
+                <td valign="top">Prism Base Width<br>[cm]</td>
+                <td valign="top">Dimension of each prism along the neutron beam direction x</td>
+                <td valign="top">&ge;0</td>
+                <td valign="top">-b</td>
+              </tr>
+              <tr>
+                <td valign="top">Prism Base Height<br>[cm]</td>
+                <td valign="top">Dimension of each prism along the vertical direction z</td>
+                <td valign="top">&gt;0</td>
+                <td valign="top">-h</td>
+              </tr>
+              <tr>
+                <td valign="top">Prism Height<br>[cm]</td>
+                <td valign="top">Dimension of each prism along the horizontal direction y</td>
+                <td valign="top">&gt;0</td>
+                <td valign="top">-z</td>
+              </tr>
+      
+              <tr>
+                <td valign="top">Number of columns<br>[#]</td>
+                <td valign="top">Number of prisms columns along the neutron beam direction x</td>
+                <td valign="top">&gt;1</td>
+                <td valign="top">-P</td>
+              </tr>
+              <tr>
+                <td valign="top">Number of rows<br>[#]</td>
+                <td valign="top">Number of prisms rows along the vertical direction z</td>
+                <td valign="top">&gt;1</td>
+                <td valign="top">-k</td>
+              </tr>
+              <tr>
+                <td valign="top">Layer can absorb</td>
+                <td valign="top">no: Layer absorption is neglected <br>yes: Non refracted neutrons pass to the next layer</td>
+                <td valign="top">'yes'<br />'no'</td>
+                <td valign="top">-y</td>
+              </tr>
+      
+              <tr>
+                <td valign="top">Scattering Length Density<br>[10 <sup>-6</sup> &Aring;<sup>-2</sup>]</td>
+                <td valign="top">Scattering length density of the material. Typical values in the range 10<sup>-6</sup>[&Aring;<sup>-2</sup>]</td>
+                <td valign="top">&gt;0</td>
+                <td valign="top">-N</td>
+              </tr>
+              <tr>
+                <td valign="top">Incoherent cross section<br>[barns]</td>
+                <td valign="top">
+                  Incoherent cross section of the material in barns.
+                </td>
+                <td valign="top">&ge;0</td>
+                <td valign="top">-S</td>
+              </tr>
+              <tr>
+                <td valign="top">Absorption cross section<br>[barns]</td>
+                <td valign="top">
+                  Absorption cross section of the material in barns.
+                </td>
+                <td valign="top">&ge;0</td>
+                <td valign="top">-s</td>
+              </tr>
+      
+              <tr>
+                <td valign="top">Density<br>[g/cm<sup>3</sup>]</td>
+                <td valign="top">
+                  Macroscopic Density of the material
+                </td>
+                <td valign="top">&gt;0</td>
+                <td valign="top">-D</td>
+              </tr>
+            </tbody>
+          </table>
+
+      <div class="back-to-top"><a href="#top">Back to Top</a></div>
 
       <hr><a href="vitess.html">Back to VITESS overview</a><br>
       <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>

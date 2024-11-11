@@ -169,7 +169,7 @@ proc makeModuleSets {} {
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
     {mirror {pol_mirror mirror_elliptical sm_ensemble} {pol_mirror mirror_elliptical sm_ensemble}}
     {monochr_analyser {ma_flat_new ma_focus_new ma_focus_dat_new ma_flat ma_focus ma_focus_dat} monochromator monochromator monochromator monochr_analyser monochr_analyser monochr_analyser}
-    {optical_elements {lense} {lense}}
+    {optical_elements {lense prism} {lense prism} }
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {resonator_drabkin {} resonator_drabkin}
     {sample {sample_elasticisotr sample_inelast sample_nxs sample_powder
@@ -3991,6 +3991,30 @@ set mirror_ellipticalESET {
   {himidi float 55.0 {"Air Himidity [%]" "Choose himidity of air" "" r} gt0}
 }
 # end new manoshine
+
+### prism
+###
+set prismESET {
+  {"Geometry description of each prism in the matrix" header}
+  {prw float 0.035 {"Prism base\nwidth [cm]" "Dimension of each prism along the neutron beam direction x [cm]" "" b} gt0}
+  {prh float 0.025 {"Prism base\nheight [cm]" "Dimension of each prism along the vertical direction z [cm]" "" h} gt0}
+  {eaw float 3 {"Prism height [cm]" "Width of each prism along the horizontal direction y [cm]" "" z} gt0}
+
+  {"Description of the prisms matrix" header}  
+  {noc int 16 {"Number of columns" "Number of prisms columns along the neutron beam direction x [#]" "" P} gt0}
+  {nor int 40 {"Number of rows" "Number of vertical layers of prisms [#]" "" k} gt0}
+  
+  {"Special option" header}
+  {abs radio yes {"Layer can absorb"
+    "no: Layer absorption is neglected,\nyes: Non refracted neutrons pass to the next layer" "" y}
+    {yes no} {1 0}}
+
+  {"Material description" header}
+  {scden float 2 {"Scattering \nLength Density [10^-6 Å^-2]" "Scattering length density of the material. Typical values in the range 10^-6 Å^-2" "" N} gt0}
+  {sci float 10 {"Incoherent c.\nsection[barns]" "Incoherent cross section" "" S} ge0}
+  {sca float 10 {"Absorption c.\nsection[barns]" "Absorption cross section" "" s} ge0}
+  {den float 1 {"Density [g/cm^3]" "Material density in g/cm^3" "" D} gt0}
+}
 
 ### Tool
 ### Compute Chopper Phases
