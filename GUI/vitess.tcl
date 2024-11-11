@@ -3360,6 +3360,11 @@ set sample_inelastESET {
   {}
   {temp float 1 {"temperature [K]" "temperature of the sample (only needed if use of the Bose factor is chosen)" "" T} gt0 "" 1}
   {reprate int 1 {repetition "number of trajectories generated per incoming trajectory" "" A} ge1 "" 1}
+  {"parameters to determine spin-flip due to incoherent scattering" header}
+  {msi float 0 {"Linear incoh-scattering\ncoeff.  [1/cm]" "Linear coefficient of incoherent scattering of the sample" "" Q} ge0 "" 1}
+  {mas float 1 {"Molecular\nmass [g/mol]" "Molecular mass of the sample" "" B} gt0 "" 1}
+  {den float 1 {"Density [g/cm^3]" "Macroscopic density of the sample" "" C} gt0 "" 1}
+
 }
 
 ### sample->ineleast
@@ -3769,8 +3774,8 @@ proc eval_sansCheckErr {{app _}} {
 ###   inelast
 
 set eval_inelastESET {
-  {tofile moneditablefile tofsp.eva {"TOF\nspectrum file" "Filename for the TOF spectrum datafile." "" E}}
-  {efile moneditablefile energysp.eva {"energy\nspectrum file" "Filename for the energy spectrum datafile." "" G}}
+  {tofile moneditablefile tofsp_up.eva {"TOF spectrum file\nspin up" "Filename for the TOF spectrum datafile of neutrons with spin up." "" E}}
+  {efile moneditablefile energysp_up.eva {"energy spectrum file\nspin up" "Filename for the energy spectrum datafile of neutrons with spin up." "" G}}
   {diroinv radio "direct geometry" {geometry "Choose geometry type of TOF instrument." "" A} {"direct geometry" "inverted geometry"} {0 1}}
   {tof_cor radio yes {"correct tof\nto distance" "direct geometry only: correct TOF for real flight path length from sample to detector" "" t}  {no yes} {0 1}}
   {}
@@ -3791,6 +3796,9 @@ set eval_inelastESET {
   {}
   {angdeg float 0  {"angle [deg]" "The user can select those neutrons which cross a smaller area on the detector surface by giving the angular position ('angle' relative to the X-axis) and width ('angle range') of a window in horizontal direction. In vertical direction no restriction is possible." "" j}}
   {angran float 180 {"angle\nrange [deg]" "(see angle description)" "" k} gt0}
+  {}
+  {toff_flip moneditablefile tofsp_down.eva {"TOF spectrum file\nspin down" "Filename for the TOF spectrum datafile of neutron spin down." "" H}}
+  {eff_flip moneditablefile energysp_down.eva {"energy spectrum file\spin down" "Filename for the energy spectrum datafile of neutron spin down." "" T}}
 }
 
 proc eval_inelastCheckErr {{app _}} {

@@ -33,6 +33,7 @@
 /*                               probability for 2 B/Li layers per detector layer       */
 /* 1.13 Mar 2020  K. Lieutenant  new central visualization parameters                   */
 /* 1.14 Jan 2022  K. Lieutenant  tidying up                                             */
+/* 1.15  Jun 2024  N. Violini    spin added to the output file                          */
 /****************************************************************************************/
 
 #include <stdio.h>
@@ -194,7 +195,7 @@ int main(int argc, char *argv[])
           {
             InputNeutrons[i].Color-=10000;
             if(DetOutFileName)
-            fprintf(pOutFile,"   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d\n",InputNeutrons[i].Position[0],InputNeutrons[i].Position[1],InputNeutrons[i].Position[2],InputNeutrons[i].Time,InputNeutrons[i].Probability,InputNeutrons[i].Color);
+            fprintf(pOutFile,"   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d     %f     %f     %f\n",InputNeutrons[i].Position[0],InputNeutrons[i].Position[1],InputNeutrons[i].Position[2],InputNeutrons[i].Time,InputNeutrons[i].Probability,InputNeutrons[i].Color, InputNeutrons[i].Spin[0], InputNeutrons[i].Spin[1], InputNeutrons[i].Spin[2] );
           }
           WriteNeutron(&InputNeutrons[i]);
           continue;
@@ -391,7 +392,7 @@ int main(int argc, char *argv[])
               NumDetected++;
               FluxDetected+=OutNeutron.Probability;
               if(!Detector.bArray && DetOutFileName)
-                fprintf(pOutFile,"   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d\n",OutNeutron.Position[0],OutNeutron.Position[1],OutNeutron.Position[2],OutNeutron.Time,OutNeutron.Probability,OutNeutron.Color);
+                fprintf(pOutFile,"   %10.4f  %10.4f  %10.4f   %10.4f     %2.3e     %d     %f     %f     %f\n",OutNeutron.Position[0],OutNeutron.Position[1],OutNeutron.Position[2],OutNeutron.Time,OutNeutron.Probability,OutNeutron.Color, OutNeutron.Spin[0],OutNeutron.Spin[1],OutNeutron.Spin[2]);
             }
 
             // write interaction point - only once per incoming trajectory
@@ -604,7 +605,7 @@ void  OwnInit(int argc, char *argv[])
           {
             pOutFile=OpenInputFile(DetOutFileName, TRUE, "w+");
             fprintf(pOutFile,"#Trajectories detector_eventmode \n");
-            fprintf(pOutFile,"#    pos_x [cm]   pos_y [cm]   pos_z [cm]  time [ms]    weight     color \n");
+            fprintf(pOutFile,"#    pos_x [cm]   pos_y [cm]   pos_z [cm]  time [ms]    weight     color      spin_x     spin_y    spin_z \n");
             fprintf(pOutFile,"#-------------------------------------------------------------------------\n");
           }
           break;
