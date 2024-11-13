@@ -1260,7 +1260,7 @@ void        MonoFocus_ID2Txt(char* sText, const VtMonoFocus eID)
     case SPHERICAL : strcpy(sText, "spherical"       ); break;
     case VERT_CYL  : strcpy(sText, "vert. cylinder"  ); break;
     case DBL_FOC   : strcpy(sText, "double focusing");  break;
-    default        : strcpy(sText, "");
+    default        : strcpy(sText, "no focusing"    );
   }
 }
 VtMonoFocus MonoFocus_Txt2ID(const char* sText)

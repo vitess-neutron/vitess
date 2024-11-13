@@ -1725,7 +1725,7 @@ set ma_flat_newESET {
   {parfile pareditablefile crys.par {"parameter file" "This files contains parameters describing a crystal element (CE)" "" P} r crs_new 1}
   {}
   {mode radio Reflection {"Geometry" "Choose between 'reflection' and 'transmission' geometry of the monochromator." "" X} {Reflection Transmission} {1 2}}
-  {trns radio blocked {"transmission" "Select if the neutrons that are not reflected by the crystal lattice shall be treated.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged." "" B} {blocked treated} {0 1}}
+  {trns radio blocked {"transmission" "Select if the neutrons that are not reflected by the crystals shall be treated.\nNote that in both cases the 'standard frame generation' rotates the co-ordinate to the reflected beam." "" B} {blocked treated} {0 1}}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
   {"Crystal parameters" header}
   {shoriz float 0.8 {"mosaic spread\nhoriz. [deg]" "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" m} ge0 "" 1}
@@ -1734,7 +1734,7 @@ set ma_flat_newESET {
   {refl float 1 {"peak\nreflectivity" "(Experimentally determined) peak reflectivity of this monochromator." "" R} gt0 "" 1}
   {"Rotation and Oscillation" header}
   {mo_move radio "no movement" {"movement" "Type of movement of the monochromator crystal(s)" "" b} {"no movement" "rotation vert. axis" "rotation hor. axis (PST)" "oscillation (Doppler)"} {0 1 2 3}}
-  {mo_rndt radio yes {"randomize\nTOF" "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored.\nUseful for a PST on a continuous source" "" K} {yes no} {1 0}}
+  {mo_rndt radio no {"randomize\nTOF" "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored.\nUseful for a PST on a continuous source" "" K} {yes no} {1 0}}
   {}
   {mo_freq float 0 {"frequency\n[Hz]" "Frequency of the monochromator rotation/oscillation" "" f}}
   {mo_phas float 0 {"initial\nphase [deg]" "Phase of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection" "" p}}
@@ -1756,14 +1756,18 @@ set ma_flat_newESET {
 set ma_focus_newESET [concat [globVal ma_flat_newESET] {
   {"Focusing" header}
   {focus_file pareditablefile lamb_foc.dat {"focus file" "The focus file defines position and size deviation as well as orientation of each crystal element.\nFor details see Help|Modules M|ma_focus_new.\nIt is output in the option 'ma_focus' and input for ma_focus_dat" "" G} w "" 1}
-  {fopt radio "double focusing" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"constant lambda" spherical "vert. cylinder" "double focusing"} {1 2 3 4}}
+  {fopt radio     "no focusing" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"no focusing" "constant lambda" spherical "vert. cylinder" "double focussing"} {0 1 2 3 4}}
   {}
   {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the crystal element matrix.\n1 for 'vert. cylinder'" "" H} gt0 "" 1}
   {cevnum int 18 {"number of CE\nvertical" "The number of rows of the crystal element matrix." "" V} gt0 "" 1}
+  {celnum int  1 {"number of CE\nlayers" "The number of crystal layers in a stack (along the incoming beam)" "" I} gt0 "" 1}
   {}
-  {chradius float 200 {"radius\nhoriz. [cm]" "Radius of focusing in horizontal direction for a double focusing monochromator." "" s} ge0 "" 1}
+  {chradius float 200 {"radius\nhor. [cm]" "Radius of focusing in horizontal direction for a double focusing monochromator." "" s} ge0 "" 1}
   {cradius float 200 {"radius\nvert. [cm]" "lambda-focusing: distance from the sample center to the bottom row of the CE-matrix.\nspherical      : radius of the sphere\nvert. cylinder : radius of the vertical cylinder\ndouble focusing: Radius of focusing in vertical direction." "" r} ge0 "" 1}
   {cangle float 0 {"angle\nvert. [deg]" "Angular offset  of the bottom row of the CE-matrix  relative to the monochromator center.\nThis parameter is not used for 'double focusing', (where a vertically symmetric arrangement is assumed)." "" a} 1}
+  {}
+  {spclayer float 0.0 {"spacing of\nlayers [cm]" "Only if number of layers > 1: Distance between two sequential crystal layers along the stacking direction (measured from center to center)" "" o} ge0 "" 1}
+  {decllayer float 0.0 {"max. layer\ndeclination [deg]" "Only if number of layers > 1: Max. hor. deviation DelZeta of the CE from the mean orientation Zeta. Values for the layers are set in [Zeta-DelZeta, Zeta+DelZeta]" "" J} "" 1}
   {}
   {gaphor float 0.0 {"gap between\ncolumns  [cm]" "Horizontal distance between columns of crystal elements\n(in the equatorial plane)" "" h} ge0 "" 1}
   {gapvert float 0.0 {"gap between\nrows  [cm]"  "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
@@ -1845,28 +1849,20 @@ set ma_flatESET {
 ###   focus initialization
 set ma_focusESET [concat [globVal ma_flatESET] {
   {focus_file pareditablefile lamb_foc.dat {"focus file" "" "" G} w "" 1}
-  {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry" "" g}
-    {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
+  {fopt radio "double focusing" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"constant lambda" spherical "vert. cylinder" "double focusing"} {1 2 3 4}}
   {}
-  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
-  {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element-matrix." "" V} gt0 "" 1}
+  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element matrix..\n1 for 'vert. cylinder'" "" H} gt0 "" 1}
+  {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element matrix." "" V} gt0 "" 1}
   {}
-  {chradius float 200 {"radius\nhoriz. [cm]"
-    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
-  {cradius float 200 {"radius\nvert. [cm]"
-    "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
-  {cangle float 0 {"angle\nvert. [deg]"
-    "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
+  {chradius float 200 {"radius\nhor. [cm]" "Radius of focussing in horizontal direction for a double focusing monochromator." "" s} ge0 "" 1}
+  {cradius float 200 {"radius\nvert. [cm]" "lambda-focusing: distance from the sample center to the bottom row of the CE-matrix.\nspherical      : radius of the sphere\nvert. cylinder : radius of the vertical cylinder\ndouble focusing: Radius of focusing in vertical direction." "" r} ge0 "" 1}
+  {cangle float 0 {"angle\nvert. [deg]" "Angular offset  of the bottom row of the CE-matrix  relative to the monochromator center.\nThis parameter is not used for 'double focusing', (where a vertically symmetric arrangement is assumed)." "" a} 1}
   {}
-  {gaphor float 0.0 {"gap between\ncolumns  [cm]"
-    "Horizontal distance between columns of crystal elements\n(in the equatorial plane" "" h} ge0 "" 1}
-  {gapvert float 0.0 {"gap between\nrows  [cm]"
-    "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
+  {gaphor float 0.0 {"gap between\ncolumns  [cm]" "Horizontal distance between columns of crystal elements\n(in the equatorial plane" "" h} ge0 "" 1}
+  {gapvert float 0.0 {"gap between\nrows  [cm]" "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
   {}
-  {devhor float 0.0 {"orient. dev.\nhor. [deg]"
-    "Horizontal deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
-  {devvert float 0.0 {"orient. dev.\nvert. [deg]"
-    "Vertical deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
+  {devhor float 0.0 {"orient. dev.\nhor. [deg]" "Horizontal deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
+  {devvert float 0.0 {"orient. dev.\nvert. [deg]" "Vertical deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
 }]
 
 ### Monochromator analyser
