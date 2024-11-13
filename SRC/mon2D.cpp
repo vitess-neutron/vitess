@@ -376,13 +376,11 @@ double Mon2D::DetermineParameter(VtMonPar id, Neutron* pNeutr)
       break;
     
     case K_Y:
-      divy = neutronVector.Phi();
-      paramValue = divy * 2. * M_PI / pNeutr->Wavelength; // ky: y component of the wave vector 
+      divy = neutronVector.DivY();
+      paramValue = divy * 2. * M_PI / pNeutr->Wavelength;  // ky: y component of the wave vector 
       break;
     case K_Z:
-      neutronVector.x[1] = 0;
-      if (neutronVector.x[2] > 0) divz = M_PI/2. - neutronVector.Theta(); 
-      else divz = M_PI/2. - (neutronVector.Theta() + M_PI);
+      divz = neutronVector.DivZ();
       paramValue = divz * 2. * M_PI / pNeutr->Wavelength;  // kz: z component of the wave vector
       break;
     

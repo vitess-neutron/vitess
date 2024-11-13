@@ -666,7 +666,7 @@ VtMonoFocus;
 // shape of Fermi chopper channels
 typedef enum
 {	
-	VT_NO_CHN_SHAPE=-1,
+  VT_NO_CHN_SHAPE=-1,
   VT_CHN_STR     = 0,
   VT_CHN_IDEAL   = 1,
   VT_CHN_CIRC    = 2
