@@ -155,7 +155,13 @@ set buttonColorFont white
 set menuButtonColor $c
 set canvasColor $c
 set headerColor  $buttonColor
-if {$tcl_platform(os) == "Darwin"} {set menuColor black} else {set menuColor $c}
+set menuColor $c
+# MacOS uses system buttons with default background
+if {$tcl_platform(os) == "Darwin"} {
+  set buttonColor #abb3be
+  set buttonColorFont black
+  set menuColor black
+}
 
 set itemlabwidth 16
 set fileentrywidth 48
