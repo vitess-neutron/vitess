@@ -362,7 +362,7 @@ proc insertPacketWindow {} {
 proc deleteSomeModules {w i} {
   # deactivate all modules with index ge $i
   global maxModule DummyEntry
-  for {} {$i <= $maxModule} {incr i} {
+  for {incr i} {$i <= $maxModule} {incr i} {
     removeSubwindows $w.g$i
     removeSubwindows $w.m$i
     upvar #0 separateW$i sepw
