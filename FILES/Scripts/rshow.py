@@ -42,6 +42,18 @@ def get_info(line):
     axis = parts[2]
     return float(nbin), axis
 
+def get_value(line, key):
+    try:
+        i = line.index(key)
+        i = line.index(":", i) + 1
+        try:
+            j = line.index("#", i)
+        except ValueError:
+            j = len(line)
+        return line[i:j].strip()
+    except ValueError:
+        return None
+
 def read_mfile(fn):
     """
     Reads data from a 2D monitor file and extracts relevant information.
@@ -77,25 +89,26 @@ def read_mfile(fn):
             content_lines.append(line.rstrip())
 
     hline = header_lines[0]
-    sitems = hline.split(":")
-    if "2D" in sitems[0]:
+    if "2D" in hline:
         ftype = "mon2D"
-    elif "1D" in sitems[0]:
+    elif "1D" in hline:
         ftype = "mon1D"
     else:
         print("Wrong type of file!")
         return 0
 
     nbiny, nbinz = 0, 0
+    xaxis, yaxis = "x", "y"
+    title = fn
     # parse
     try:
+        # old format
         if hline.startswith("#Monitor 2D Intensity"):
             split1 = hline.split("bins:")
             nbiny = int(split1[0].split(":")[-1])
             xaxis = split1[1].strip().split(" ")[0]
             nbinz = split1[1].strip().split(" ")[-1]
             yaxis = split1[2]
-
         for line in header_lines:
             if line.startswith("# x-axis"):
                 nbiny, xaxis = get_info(line)
@@ -103,9 +116,13 @@ def read_mfile(fn):
             if line.startswith("# y-axis"):
                 nbinz, yaxis = get_info(line)
                 continue
+        # new format
+        for line in header_lines:
+            xaxis = get_value(line, 'x_label') or xaxis
+            yaxis = get_value(line, 'y_label') or yaxis
+            title = get_value(line, 'title') or title
     except:
         print("Error parsing file, no labels will be used.")
-        xaxis, yaxis = "x", "y"
 
     bz = []
     counts = []
@@ -120,11 +137,11 @@ def read_mfile(fn):
     if ftype == "mon2D":
         by = np.array(by)
         bz = np.array(bz)
-        plot2D(np.array(counts), xaxis, yaxis, by, bz, fn)
+        plot2D(np.array(counts), xaxis, yaxis, by, bz, title)
 
     elif ftype == "mon1D":
         counts = np.array(counts)
-        plot1D(bz, counts[:,0], counts[:,1], xaxis, r"Intensity [n/s]", fn)
+        plot1D(bz, counts[:,0], counts[:,1], xaxis, r"Intensity [n/s]", title)
 
 if __name__ == "__main__":
     read_mfile(sys.argv[1])
