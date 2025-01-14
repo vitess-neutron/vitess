@@ -1,2 +1,2 @@
-#!/usr/bin/sh
+#!/bin/sh
 grplot $PFILENAME columns:1
