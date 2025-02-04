@@ -176,6 +176,31 @@
   </table>
 
   <p>
+    <b>Example of filter table file.</b>
+    <br><br>
+    This example demonstrates a filter table with a matrix of 11 rows by 11 columns. In this matrix, the central 3 x 3 region is assigned a probability value of 0, representing the absorption of neutron trajectories. The rest of the matrix has a value of 1, allowing trajectories to pass through while keeping the original probability.
+    Any number different from 1 would change the original probability. <br>
+
+    When used in 'position' mode, this filter creates an absorbing mask at the center of the defined y and z range. The values in the matrix can be any real number, but in this example, 0 and 1 are chosen to illustrate the creation of an absorbing region.
+
+    The range of y and z, as specified in the input parameters, determines the size of each bin in the matrix. The number of bins in the y and z directions corresponds to the rows and columns defined in the filter table file.
+
+    This example ensures that the filter accurately applies to the defined spatial region based on the provided configuration. <br><br>
+    
+    1 1 1 1 1 1 1 1 1 1 1 <br>
+    1 1 1 1 1 1 1 1 1 1 1 <br>
+    1 1 1 1 1 1 1 1 1 1 1 <br>
+    1 1 1 1 1 1 1 1 1 1 1 <br>
+    1 1 1 1 0 0 0 1 1 1 1 <br>
+    1 1 1 1 0 0 0 1 1 1 1 <br>
+    1 1 1 1 0 0 0 1 1 1 1 <br>
+    1 1 1 1 1 1 1 1 1 1 1 <br>
+    1 1 1 1 1 1 1 1 1 1 1 <br>
+    1 1 1 1 1 1 1 1 1 1 1 <br>
+    1 1 1 1 1 1 1 1 1 1 1 <br>
+  </p>
+
+  <p>
     <hr><a href="vitess.html">Back to VITESS overview</a><br>
     <a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
   </p>
