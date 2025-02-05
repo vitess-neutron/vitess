@@ -73,6 +73,9 @@ double     RotMatrixMain[3][3],          //           [-]    rotation matrix to 
 double     aPolData  [FLD_SIZE], 
            aTransData[FLD_SIZE];
 
+// value of Polarisation at the neutron wavelentgth taken from datafile when option numerical is given
+double aPolData_wl;
+
 
 /******************************/
 /** Main Program             **/
@@ -174,14 +177,16 @@ int main(int argc, char **argv)
           return 1;
         }
 
+        /* compute polarization and transmission location corresponding to the wavelength */
+        datanumber = (int) (WL * 100.);
+        if(datanumber > FLD_SIZE) goto getlost; 
+        if(!bCalc) aPolData_wl = aPolData[datanumber];
+
+
         if ( AbsorptionProbability( WL, spinState) == 1) {
           n_abs = n_abs + 1;
           goto getlost;
         }
-
-        /* compute polarization and transmission location corresponding to the wavelength */
-        datanumber = (int) (WL * 100.);
-        if(datanumber > FLD_SIZE) goto getlost;   
 
         /* translates into frame of the field domain */
         SubVector(Pos, PosMain); 
@@ -594,8 +599,8 @@ double AbsorptionProbability(double wavelength, int spinState) {
         
         Polarization = tanh(Nue * DimMain[2]);
     } else {  
-        /* Read from file */
-        ReadPolAndTrans();
+        /* Uses Polarisation from file */
+        Polarization = aPolData_wl;
     }
 
     /* Define absorption probability based on spin state */
