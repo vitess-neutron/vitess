@@ -48,7 +48,7 @@ compile-rocky8:
     OS: Rocky8
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel gd-devel zlib-devel
 
 compile-rocky9:
   extends: .compile-unix
@@ -57,7 +57,7 @@ compile-rocky9:
     OS: Rocky9
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel gd-devel zlib-devel
 
 compile-centos7:
   extends: .compile-unix
@@ -88,7 +88,7 @@ compile-fedora40:
     OS: Fedora40
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel gd-devel zlib-devel
 
 compile-darwin:
   extends: .compile-unix
@@ -103,6 +103,7 @@ compile-darwin:
     DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
     DARWIN_DATA_USER: "gitlab+deploy-token-92"
     DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
+    NOGD: 0
   before_script:
     - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
     - cd vitess-data

@@ -1,3 +1,0 @@
-auf daniel:
-zunächst SRC auf daddy kopieren
-env CFLAGS=-I/net/usr/include LDFLAGS=-L/net/usr/lib LIBS='-lgd -lgdk -lpng -lz -lXpm -lfreetype -lm -lttf' configure
