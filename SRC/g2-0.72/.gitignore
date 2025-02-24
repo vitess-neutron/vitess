@@ -1,0 +1,7 @@
+Makefile
+demo/Makefile
+config.log
+config.status
+include/
+g2_perl/Makefile.PL
+g2_python/Makefile

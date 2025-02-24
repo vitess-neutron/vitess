@@ -14,10 +14,10 @@ ARCH := $(shell uname -m)
 TODAY := $(shell date '+%Y-%m-%d')
 FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
-CC = cc
+CC ?= cc
 ARCHFLAGS =
 CFLAGS = $(ARCHFLAGS) -O3 -pthread -Wall -Wno-cast-qual -Wno-incompatible-pointer-types -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
-CXX = c++
+CXX ?= c++
 CXXFLAGS = $(CFLAGS)
 CPPFLAGS =
 LDFLAGS = -L. -L"$(GSLPATH)"
@@ -30,16 +30,23 @@ LN = ln -s
 
 DARWIN_UNIVERSAL = NO
 ifeq ($(SYS),Darwin)
+NOGD ?= 1
 ifeq ($(ARCH),arm64)
 DARWIN_UNIVERSAL = YES
 ARCHFLAGS = -arch x86_64 -arch arm64
 endif
+else
+NOGD ?= 0
 endif
 
 ifndef NOG2
-CFLAGS += -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I"$(G2PATH)/include"
+CFLAGS += -I"$(G2PATH)/include" -DDO_PNG -DDO_X11 -DVT_GRAPH
 LDFLAGS += -L"$(G2PATH)"
-LDLIBS += -lg2 -lgd -lpng -lz -lfreetype -lXpm -lX11
+LDLIBS += -lg2 -lpng -lz -lfreetype -lXpm -lX11
+ifeq ($(NOGD), 0)
+CFLAGS += -DDO_GD
+LDLIBS += -lgd
+endif
 G2OPTS =
 ifeq ($(SYS),Darwin)
 G2OPTS += --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
@@ -179,7 +186,7 @@ all: $(ALL)
 clean:
 	$(RM) *.o *.a $(ALL)
 	$(MAKE) -C "$(GSLPATH)" clean
-	[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
+	-[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
 
 .PHONY: install
 ifeq ($(DARWIN_UNIVERSAL),YES)
