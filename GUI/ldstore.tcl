@@ -180,6 +180,7 @@ proc fileSettings {{saveit 0}} {
 }
 
 proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
+  global defdirectory_
   # proto == 1 means normal store operation, including a protocol log
   # proto == 0 is for storage in a snap situation
   if {$proto} {
@@ -187,6 +188,10 @@ proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
   }
   if {$extension == "gui"} {
     if {$as != ""} {
+      if {![string match "$defdirectory_*" $as]} {
+          set original $as
+          set as "${defdirectory_}/${original}"
+      }
       append as ".$extension"
       if [catch {open $as w} f] {
 	      if $proto {outProtocol "can't open $as to write"} return
