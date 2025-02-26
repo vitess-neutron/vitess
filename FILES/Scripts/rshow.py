@@ -5,32 +5,54 @@ import numpy as np
 from numpy import ma
 import matplotlib.pyplot as plt
 
-def plot2D(counts, xaxis, yaxis, by, bz, fname):
+def plot2D(counts, xaxis, yaxis, by, bz, fname, cmap="viridis"):
+    """
+    Plots a 2D heatmap of `counts` with axes labeled.
+
+    Parameters:
+    - counts (2D array-like): Data to be visualized as an image.
+    - xaxis (str): Label for the x-axis.
+    - yaxis (str): Label for the y-axis.
+    - by (array-like): Bin edges or midpoints for the x-axis.
+    - bz (array-like): Bin edges or midpoints for the y-axis.
+    - fname (str): File name or descriptor; can influence saving behavior.
+    - cmap (str, optional): Colormap for the image. Default is "viridis".
+    """
+    
     plt.figure()
-    # counts = ma.masked_where(counts <= 0, counts)
-    plt.imshow(counts, origin="lower", extent=[min(by), max(by), min(bz), max(bz)])
+    plt.imshow(counts, origin="lower", extent=[np.min(by), np.max(by), np.min(bz), np.max(bz)], cmap=cmap, aspect='auto')
     plt.xlabel(xaxis)
     plt.ylabel(yaxis)
     plt.title(fname)
-    plt.colorbar()
-    plt.axis("equal")
+    plt.colorbar(label="Counts")
     plt.tight_layout()
     plt.show()
 
 def plot1D(x, counts, error, xaxis, yaxis, fname):
-    plt.figure()
-    plt.bar(x, counts, width=x[1]-x[0], color="black", alpha=0.3)
+    """
+    Plots a 1D histogram with error bars.
+
+    Parameters:
+    - x (array-like): Bin centers for the histogram.
+    - counts (array-like): Heights of the histogram bars.
+    - error (array-like): Uncertainty values for each bin.
+    - xaxis (str): Label for the x-axis.
+    - yaxis (str): Label for the y-axis.
+    - fname (str): File name or descriptor; can influence log scaling.
+    """
+    
+    if len(x) == 0 or len(counts) == 0 or len(error) == 0:
+        raise ValueError("Input arrays must not be empty.")
+    
     if (any(error<0)):
         print("Check your data because some error values are below zero!")
         error = np.abs(error)
+    
+    plt.figure()
+    plt.bar(x, counts, width=x[1]-x[0], color="black", alpha=0.3)
     plt.errorbar(x, counts, yerr=error, ls="dotted", marker=None, capsize=2,alpha=0.2)
     plt.xlabel(xaxis.capitalize())
     plt.ylabel(yaxis.capitalize())
-    if "loglog_" in fname:
-        plt.xscale('log')
-        plt.yscale('log')
-    elif "log_" in fname:
-        plt.yscale('log')
     plt.title(fname)
     plt.grid()
     plt.tight_layout()
@@ -121,6 +143,12 @@ def read_mfile(fn):
             xaxis = get_value(line, 'x_label') or xaxis
             yaxis = get_value(line, 'y_label') or yaxis
             title = get_value(line, 'title') or title
+            if 'x_range' in line:
+                x_range = get_value(line, 'x_range')
+                x_range = [float(x) for x in x_range.split(",")]
+            if 'y_range' in line:
+                y_range = get_value(line, 'y_range') or None
+                y_range = [float(y) for y in y_range.split(",")]
     except:
         print("Error parsing file, no labels will be used.")
 
@@ -132,12 +160,10 @@ def read_mfile(fn):
         z = np.fromstring(line, dtype=float, sep=" ")
         bz.append(z[0])
         counts.append(z[1:])
-
-
     if ftype == "mon2D":
         by = np.array(by)
         bz = np.array(bz)
-        plot2D(np.array(counts), xaxis, yaxis, by, bz, title)
+        plot2D(np.array(counts), xaxis, yaxis, x_range, y_range, title)
 
     elif ftype == "mon1D":
         counts = np.array(counts)
