@@ -48,9 +48,9 @@ void WriteHeader1D(FILE* fMonitor, const char *sFctType, short bWeight,
    fputs("# Data x        F(x)      DeltaF(x)  events\n", fMonitor);  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
  #else
    fprintf(fMonitor,"# title : 1D Monitor  %s:\n", bWeight==FALSE ? "(events)" : "(weight)");
-   fprintf(fMonitor,"# x_label : %s [%s]",         sPar,     sUnitX);
-   fprintf(fMonitor,"# y_label : %s [%s]",         sFctType, sUnitZ);
-   fprintf(fMonitor,"# x_range : %10.3f, %10.3f",  Xmin,     Xmax);
+   fprintf(fMonitor,"# x_label : %s [%s]\n",         sPar,     sUnitX);
+   fprintf(fMonitor,"# y_label : %s [%s]\n",         sFctType, sUnitZ);
+   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",  Xmin,     Xmax);
  #endif
 
   return;
@@ -81,9 +81,9 @@ void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCo
    fprintf(fMonitor, "# 1D %s %s\n# x-axis:%3d bins: %s [%s]\n", sOutType, sFctType, nBinsX, sPar, sUnit);
  #else
    fprintf(fMonitor, "# title : 1D %s:\n",         sOutType);
-   fprintf(fMonitor, "# x_label : %s [%s]",        sPar,     sUnitX);
-   fprintf(fMonitor, "# y_label : %s [%s]",        sFctType, sUnitZ);
-   fprintf(fMonitor, "# x_range : %10.3f, %10.3f", Xmin,     Xmax);
+   fprintf(fMonitor, "# x_label : %s [%s]\n",        sPar,     sUnitX);
+   fprintf(fMonitor, "# y_label : %s [%s]\n",        sFctType, sUnitZ);
+   fprintf(fMonitor, "# x_range : %10.3f, %10.3f\n", Xmin,     Xmax);
  #endif
 
   fprintf(fMonitor, "# Date: %s  Time: %s\n",          sDate, sTime);
@@ -128,10 +128,10 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, sho
    }
  #else
    fprintf(fMonitor,"# title : 2D Monitor %s  %s:\n",  sFctType, bWeight==FALSE ? "(events)" : "(weight)");
-   fprintf(fMonitor,"# x_label : %s",                  sAxisTitleX);
-   fprintf(fMonitor,"# y_label : %s",                  sAxisTitleY);
-   fprintf(fMonitor,"# x_range : %10.3f, %10.3f",      Xmin, Xmax);
-   fprintf(fMonitor,"# y_range :      %10.3e, %10.3e", Ymin, Ymax);
+   fprintf(fMonitor,"# x_label : %s\n",                  sAxisTitleX);
+   fprintf(fMonitor,"# y_label : %s\n",                  sAxisTitleY);
+   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",      Xmin, Xmax);
+   fprintf(fMonitor,"# y_range :      %10.3e, %10.3e\n", Ymin, Ymax);
  #endif
   
   return;
@@ -166,10 +166,10 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
    fprintf(fMonitor, "# 2D %s %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sOutType, sFctType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
  #else
    fprintf(fMonitor,"# title : 2D %s  %s  %s:\n", sOutType, sFctType, sUnitZ);
-   fprintf(fMonitor,"# x_label : %s",             sAxisTitleX);
-   fprintf(fMonitor,"# y_label : %s",             sAxisTitleY);
-   fprintf(fMonitor,"# x_range : %10.3f, %10.3f", Xmin,     Xmax);
-   fprintf(fMonitor,"# y_range :      %10.3e, %10.3e", Ymin, Ymax);
+   fprintf(fMonitor,"# x_label : %s\n",             sAxisTitleX);
+   fprintf(fMonitor,"# y_label : %s\n",             sAxisTitleY);
+   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n", Xmin,     Xmax);
+   fprintf(fMonitor,"# y_range :      %10.3e, %10.3e\n", Ymin, Ymax);
  #endif
 
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
