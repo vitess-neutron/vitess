@@ -180,7 +180,7 @@ proc makeModuleSets {} {
     {sm_ensemble {} sm_ensemble}
     {source {source_const_wave source_ILL source_FRM2 source_HMI
       source_short_pulsed source_SNS source_JPARC source_ISIS source_IPNS source_CSNS
-      source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS} source}
+      source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS source_vae} source}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
@@ -872,6 +872,15 @@ set writeoutESET {
   {filtDivMin float "" {"filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
   {filtDivMax float "" {"filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
 }
+
+### Read_In
+###
+set source_vaeESET {
+  {"Variational Autoencoder Source - Experimental" header}
+  {fname pareditablefile "vae_hbs.model" {"Model file" "Specifies the model to be used (ending .model in FILES/moderators)." "" M} r "" 1}
+  {nNeut int "10000" {"Number of neutrons" "Number of trajectories that are to be generated." "" n}}
+  {nBunches int "10" {"Bunches" "The total number of neutrons will be nNeut * nBunches." "" b}}
+  }
 
 ### spin_reset
 ###

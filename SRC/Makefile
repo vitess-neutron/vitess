@@ -60,6 +60,7 @@ CFLAGS := $(filter-out -O3,$(CFLAGS))
 CFLAGS += -g -O0 -DDEBUG=1
 endif
 
+
 # Vitess modules to build
 ALL = ascii2bin \
 beamstop \
@@ -153,6 +154,10 @@ template \
 velselect \
 window \
 writeout
+
+ifdef LIBTORCHPATH
+ALL += source_vae
+endif
 ifndef NOG2
 ALL += visual
 endif
@@ -262,6 +267,13 @@ window: window.c bender_inter_data.c
 
 spacewindow_multiple: spacewindow_multiple.c bender_inter_data.c
 
+ifdef LIBTORCHPATH
+# -D_GLIBCXX_USE_CXX11_ABI=0 might be necessary depending binaries
+source_vae: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/include -I$(LIBTORCHPATH)/include/torch/csrc/api/include
+source_vae: LDFLAGS += -L$(LIBTORCHPATH)/lib 
+source_vae: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/lib
+source_vae: source_vae.cpp
+endif
 
 # keep old module names for compatibility
 chopper_fermi_parallel: chopper_fermi

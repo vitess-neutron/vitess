@@ -140,6 +140,7 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_OPT_MAIN     : strcpy(sCompName, "Opt_Main");          break;
 	  case MCN_OPT_PIPE     : strcpy(sCompName, "Opt_GenerPipe");     break;
 	  case MCN_OPT_FOM      : strcpy(sCompName, "Opt_FoM");           break;
+    case MCN_SOURCE_VAE   : strcpy(sCompName, "VAE_Source");        break;
     case MCN_PRISM        : strcpy(sCompName, "Prism");             break;
     default:                strcpy(sCompName, "unknown component"); 
   }
@@ -240,6 +241,7 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "Opt_Main")==0 || strcmp(sCompName, "MCN_OPT_MAIN")==0)          eComp=MCN_OPT_MAIN     ;
   else if (strcmp(sCompName, "Opt_GenerPipe")==0 || strcmp(sCompName, "MCN_OPT_PIPE")==0)     eComp=MCN_OPT_PIPE     ;
   else if (strcmp(sCompName, "Opt_FoM")==0 || strcmp(sCompName, "MCN_OPT_FOM")==0)           eComp=MCN_OPT_FOM      ;
+  else if (strcmp(sCompName, "VAE_Source")==0 || strcmp(sCompName, "MCN_VAE_SOURCE")==0)        eComp=MCN_SOURCE_VAE   ; 
   else                                             eComp=MCN_COMP_UNKNOWN ;
 
   return eComp; 
