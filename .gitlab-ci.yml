@@ -39,56 +39,81 @@ workflow:
     paths:
       - artifacts-${OS}-${ARCH}/
 
-compile-rocky8:
+.compile-linux:
   extends: .compile-unix
+  variables:
+    LINUX_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-linux-data.git"
+    LINUX_DATA_USER: "gitlab+deploy-token-147"
+    LINUX_DATA_PASSWORD: "gldt-UDysz-dxdz-iXsSPQRy-"
+    LIBTORCHFILE: "libtorch-cxx11-abi-2.2.2.zip"
+    LIBTORCHPATH: "${CI_PROJECT_DIR}/vitess-data/libtorch"
+
+.linux_before_script: &linux_before_script
+  # FIXME: version from variable
+  - git clone -b vitess3.7 https://${LINUX_DATA_USER}:${LINUX_DATA_PASSWORD}@${LINUX_DATA_REPO} vitess-data
+  - cd vitess-data
+  - unzip "${LIBTORCHFILE}"
+  - cd ..
+
+compile-rocky8:
+  extends: .compile-linux
   rules:
     - when: on_success
   image: rockylinux:8
   variables:
     OS: Rocky8
     ARCH: x86_64
+    LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel gd-devel zlib-devel
+    - dnf install -y epel-release
+    - dnf install -y make gcc-toolset-12 libXpm-devel libXpm-devel gd-devel zlib-devel git unzip
+    - . /opt/rh/gcc-toolset-12/enable
+    - *linux_before_script
 
 compile-rocky9:
-  extends: .compile-unix
+  extends: .compile-linux
   image: rockylinux:9
   variables:
     OS: Rocky9
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel gd-devel zlib-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip
+    - *linux_before_script
 
 compile-centos7:
-  extends: .compile-unix
+  extends: .compile-linux
   image: centos:7
   variables:
     OS: CentOS7
     ARCH: x86_64
+    LIBTORCHPATH:
   before_script:
     - sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS*.repo
     - sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS*.repo
     - sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS*.repo
-    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel
+    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip
+    - *linux_before_script
 
 compile-ubuntu:
-  extends: .compile-unix
+  extends: .compile-linux
   image: ubuntu:latest
   variables:
     OS: Ubuntu
     ARCH: x86_64
   before_script:
     - apt-get update
-    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip
+    - *linux_before_script
 
 compile-fedora40:
-  extends: .compile-unix
+  extends: .compile-linux
   image: fedora:40
   variables:
     OS: Fedora40
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel gd-devel zlib-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip
+    - *linux_before_script
 
 compile-darwin:
   extends: .compile-unix
@@ -161,8 +186,17 @@ test-rocky8:
   image: rockylinux:8
   needs:
     - job: compile-rocky8
+  variables:
+    LINUX_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-linux-data.git"
+    LINUX_DATA_USER: "gitlab+deploy-token-147"
+    LINUX_DATA_PASSWORD: "gldt-UDysz-dxdz-iXsSPQRy-"
+    LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
+    LD_LIBRARY_PATH: "${CI_PROJECT_DIR}/vitess-data/libtorch/lib"
   before_script:
-    - dnf install -y python3 python3-pyyaml gd
+    - dnf install -y epel-release
+    - dnf install -y make gcc-toolset-12 libXpm gd zlib git unzip python3 python3-pyyaml
+    - . /opt/rh/gcc-toolset-12/enable
+    - *linux_before_script
   script:
     - cp -rf artifacts-Rocky8-x86_64/MODULES .
     - python3 tests/check_yaml.py

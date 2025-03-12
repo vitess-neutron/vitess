@@ -429,7 +429,7 @@ proc checkAll {} {
           }
         }
       }
-      if {! [regexp {^(source_|read_in)} $var]} {
+      if {! [regexp {^(source_|read_in|vae_)} $var]} {
         set infname [entryVal infilename]
         if {"" == $infname} {
           showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"
