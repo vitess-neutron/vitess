@@ -14,6 +14,7 @@ sample_inelast:
   - sParFile :
       type:    "file"
       plottable: false
+      editable: true
       descr:   "parameter file"
       tooltip: "File containing parameters of the sample\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-P"
@@ -92,21 +93,21 @@ sample_inelast:
       tooltip: "Macroscopic absorption scattering cross section of the sample"
       default: 0.6652
       column:  0
-      prefix:  "-m"    
+      prefix:  "-m"
   - mas      :                 # -B    18.0000 [g/mol]   Molar mass of the compound
       type:    "float"
       descr:   "Molar mass of the compound"
       tooltip: "Molar mass of the compound [g/mol]"
       default: 18.0000
       column:  0
-      prefix:  "-B"  
+      prefix:  "-B"
   - den      :                 # -C    1.0000 [g/cm^3]   Density of the compound
       type:    "float"
       descr:   "Density of the compound"
       tooltip: "Density of the compound [g/mol]"
       default: 1.0000
       column:  0
-      prefix:  "-C" 
+      prefix:  "-C"
   - bBoseFact:                 # -D    NO  flag: multiplication with the Bose factor
       type:    "switch"
       descr:   "Bose factor?"

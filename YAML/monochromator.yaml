@@ -9,15 +9,19 @@
 # prefix: prefix for parameter in pipe
 
 monochromator:
+  - category: "monochr_analyser"
+
   - sParFile :
       type:    "file"
       descr:   "parameter file"
       plottable: false
+      editable: false
       tooltip: "Input file containing parameters of the monochromators\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-P"
   - sGeomFile:
       type:    "file"
       plottable: false
+      editable: false
       descr:   "geometry file"
       tooltip: "File containing positions and orientations of the crystal elements relative to the central element (for details see Help|monochromator)\nIt is an output file if one of the implemented geometries is chosen; otherwise it is used as input defining the arrangement of the crystal elements."
       prefix:  "-G"

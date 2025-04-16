@@ -1,0 +1,76 @@
+template:
+  - category: "new_module"
+
+  - tmpt_fname:
+      type: "file"
+      plottable: false
+      editable: false
+      descr: "file"
+      tooltip: "name of the .... file"
+      default: "file.dat"
+      column: 0
+      prefix: "-F"
+
+  - tmpt_nitem:
+      type: "int"
+      descr: "number of items"
+      tooltip: "Description of the number of items"
+      default: 1
+      column: 0
+      prefix: "-n"
+      min: 1
+      max: 100
+
+  - tmpt_nvals:
+      type: "int"
+      descr: "number of values"
+      tooltip: "Description of the number of values"
+      default: 1
+      column: 1
+      prefix: "-N"
+      min: 1
+
+  - tmpt_flag1:
+      type: "switch"
+      descr: "Boolean Switch"
+      tooltip: "Flag 1: Description of switch 1"
+      default: false
+      column: 0
+      prefix: "-a"
+
+  - Title_param:
+      type: "title"
+      default: "Dimension"
+
+  - tmpt_par_a:
+      type: "float"
+      descr: "par A [unit]"
+      tooltip: "Description of parameter A"
+      default: 1.0
+      column: 0
+      prefix: "-A"
+
+  - tmpt_par_b:
+      type: "float"
+      descr: "par B [unit]"
+      tooltip: "Description of parameter B"
+      column: 1
+      prefix: "-B"
+
+  - tmpt_dist:
+      type: "float"
+      descr: "distance to device [cm]"
+      tooltip: "Distance from the origin to the device (along the x-axis)"
+      default: 1.0
+      column: 2
+      prefix: "-D"
+
+  - tmpt_dir:
+      type: "combo"
+      descr: "axis"
+      tooltip: "axis of .... direction"
+      enum: VtAxis
+      options: ["NO_AXIS", "X_AXIS", "Y_AXIS", "Z_AXIS"]
+      default: "NO_AXIS"
+      column: 0
+      prefix: "-Q"

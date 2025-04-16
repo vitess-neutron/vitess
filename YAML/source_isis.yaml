@@ -210,6 +210,7 @@ source:
   - TraceFile :                          # -r         [-]   name of the file containing the IDs for tracing
       type:    "file"
       plottable: false
+      editable: false
       descr:   "raytracing file"
       tooltip: "name of the file containing the IDs for tracing"
       prefix:  "-r"

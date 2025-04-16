@@ -9,18 +9,22 @@
 # prefix: prefix for parameter in pipe
 
 polariser_sm:
+  - category: "polariser"
+
   - Title_Files :
       type:    "title"
       default: "Reflectivity files"
   - sReflUpFile :                  # -U         [-]    name of the reflectivity file for the spin-up neutrons
       type:    "file"
       plottable: false
+      editable: false
       descr:   "Spin-up file"
       tooltip: "reflectivity file for the spin-up neutrons"
       prefix:  "-U"
   - sReflDownFile:                  # -D         [-]    name of the reflectivity file for the spin-down neutrons
       type:    "file"
       plottable: false
+      editable: false
       descr:   "spin-down file"
       tooltip: "reflectivity file for the spin-down neutrons"
       prefix:  "-D"
@@ -66,14 +70,14 @@ polariser_sm:
       tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
       prefix:  "-R"
   - FrameOutY    :                  # -E    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
-      type:    "int"
+      type:    "float"
       descr:   "output Y [cm]"
       default: 0
       column:  1
       tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
       prefix:  "-E"
   - FrameOutZ    :                  # -G    0.0  [cm]   position of the new origin  (in the co-ordinate of the old origin)
-      type:    "int"
+      type:    "float"
       descr:   "output Z [cm]"
       default: 0
       column:  2

@@ -14,12 +14,14 @@ sample_singcryst:
   - sParFile :
       type:    "file"
       plottable: false
+      editable: true
       descr:   "parameter file"
       tooltip: "File containing parameters of the single crystal sample\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-P"
   - sStructFile :
       type:    "file"
       plottable: false
+      editable: true
       descr:   "structure factor file"
       tooltip: "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program."
       prefix:  "-S"
@@ -250,7 +252,7 @@ sample_singcryst:
   - Title:
       type:    "title"
       default: "Structure factor file format"
-      
+
   - ColumnH   :
       type:    "int"
       descr:   "h column"

@@ -14,6 +14,7 @@ mon2_pos:
   - sMonFile:          #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position"
       type:    "file"
       plottable: true
+      editable: false
       descr:   "monitor file"
       tooltip: "monitor output file containing intensity as a function of y- and z-position"
       default: "sample.pos"

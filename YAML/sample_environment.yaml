@@ -12,12 +12,14 @@ sample_environment:
   - sParFile :                  # -F         [-]    parameter file name
       type:    "file"
       plottable: false
+      editable: true
       descr:   "parameter file"
       tooltip: "File containing parameters of the sample environment\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-F"
   - sStructFile:                # file       [-]    structure factor file name (of the sample environment material)
       type:    "file"
       plottable: false
+      editable: true
       descr:   "structure factor file"
       tooltip: "This file describes the material of the sample environment. It contains the d-spacing value and information to calculate the scattering cross-section of each reflection. It can be in .str (VITESS), .laz and .lau format."
       prefix:  "-s"

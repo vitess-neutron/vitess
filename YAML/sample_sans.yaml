@@ -12,8 +12,9 @@ sample_sans:
   - category:  "sample"
 
   - sParFile :                  # -S         [-]    parameter file name
-      type:    "file"
+      type: "file"
       plottable: false
+      editable: true
       descr:   "sample file"
       tooltip: "File containing parameters of the SANS sample\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-S"

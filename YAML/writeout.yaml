@@ -17,6 +17,7 @@ writeout:      # source module that will be executed
   - sOutFile:                #         -A  "trajectory output file"     "name of the trajectory output file"
       type:    "file"
       plottable: false
+      editable: false
       descr:   "trajectory output file"
       tooltip: "name of the trajectory output file"
       default: "events.out"

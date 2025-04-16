@@ -9,15 +9,19 @@
 # prefix: prefix for parameter in pipe
 
 sm_ensemble:
+  - category: "mirror"
+
   - sParFile :
-      type:    "file"
+      type: "file"
       plottable: false
+      editable: true
       descr:   "mirror file"
       tooltip: "name of the input file containing the geometry and properties of the mirrors"
       prefix:  "-P"
   - sCollisionFile:
-      type:    "file"
+      type: "file"
       plottable: true
+      editable: false
       descr:   "collision file"
       tooltip: "name of the output file containing all points of collisions with mirrors"
       prefix:  "-C"

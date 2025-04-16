@@ -135,6 +135,7 @@ source:
   - sModFile :                          # -r         [-]   name of the file containing the IDs for tracing
       type:    "file"
       plottable: false
+      editable: true
       descr:   "moderator file"
       tooltip: "name of the file containing the parameters of all moderators\nThis old way of reading the moderator parameters is kept for compatibility reasons. They are only used if they are not given as direct input parameters.\nThey will be saved in the instrument file (in yaml format)"
       prefix:  "-a"
@@ -279,6 +280,7 @@ source:
   - sTraceFile :                          # -r         [-]   name of the file containing the IDs for tracing
       type:    "file"
       plottable: false
+      editable: false
       descr:   "raytracing file"
       tooltip: "name of the file containing the IDs for tracing"
       prefix:  "-r"

@@ -14,6 +14,7 @@ sample_elasticisotr:
   - sParFile :                  # -F         [-]    parameter file name
       type:    "file"
       plottable: false
+      editable: true
       descr:   "parameter file"
       tooltip: "File containing parameters of the sample\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-P"

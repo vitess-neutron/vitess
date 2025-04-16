@@ -1,0 +1,192 @@
+grid:
+  - category: "spacewindow"
+
+  - Title_param:
+      type: "title"
+      default: "Geometry description"
+
+  - gridfile:
+      type: "file"
+      plottable: false
+      editable: true
+      descr: "grid description"
+      tooltip: "File that characterizes the positions and sizes of the apertures on the collimation disk"
+      default: ""
+      column: 0
+      prefix: "-I"
+
+  - circ:
+      type: "combo"
+      descr: "shape of the grid"
+      tooltip: "Shape of the holes and the collimator disk containing the holes"
+      enum: "VtShape"
+      options: ["VT_SQUARE", "VT_CIRCLE"]
+      default: "VT_SQUARE"
+      column: 0
+      prefix: "-N"
+
+  - keycolor:
+      type: "switch"
+      descr: "Crosstalk analysis"
+      tooltip: "Activate if you want to find the crosstalk between channels of grid system"
+      default: false
+      column: 1
+      prefix: "-K"
+
+  - dist:
+      type: "float"
+      descr: "distance to grid [cm]"
+      tooltip: "Distance from the previous module, e.g. the previous item of the grid system, to the current item"
+      default: 0
+      column: 0
+      prefix: "-D"
+      min: 0
+
+  - shifthor:
+      type: "float"
+      descr: "horizontal shift [cm]"
+      tooltip: "horizontal shift of the collimation disk"
+      default: 0
+      column: 1
+      prefix: "-d"
+      min: 0
+
+  - shiftver:
+      type: "float"
+      descr: "vertical shift [cm]"
+      tooltip: "vertical shift of the collimation disk, e.g. to consider the gravitation"
+      default: 0
+      column: 2
+      prefix: "-e"
+      min: 0
+
+  - imathick:
+      type: "float"
+      descr: "thickness of the disk [cm]"
+      tooltip: "Thickness of the material used for the collimation disk"
+      default: 0
+      column: 0
+      prefix: "-t"
+      min: 0
+
+  - outera:
+      type: "float"
+      descr: "size of the disk [cm]"
+      tooltip: "For circular outer shape : radius of the disk\nfor rectangular outer shape: width of the disk"
+      default: 5.0
+      column: 1
+      prefix: "-a"
+      min: 1.0e-6
+
+  - outerb:
+      type: "float"
+      descr: "vert. size of the disk [cm]"
+      tooltip: "For rectangular outer shape: height of the disk"
+      default: 5.0
+      column: 2
+      prefix: "-b"
+      min: 1.0e-6
+
+  - Title_param:
+      type: "title"
+      default: "Material of the grid disk"
+
+  - matfile:
+      type: "file"
+      plottable: false
+      editable: true
+      descr: "material description file"
+      tooltip: "File which characterizes the transmission of the material of the collimation disk."
+      default: ""
+      column: 0
+      prefix: "-C"
+
+  - mat:
+      type: "combo"
+      descr: "material"
+      tooltip: "Choose material, which was used to produce the collimator"
+      enum: "VtWndAbs"
+      options: ["VT_WABS_FILE", "VT_WABS_GD", "VT_WABS_CD", "VT_WABS_B10", "VT_WABS_EU", "VT_WABS_SI", "VT_WABS_IDEAL"]
+      default: "VT_WABS_IDEAL"
+      column: 0
+      prefix: "-c"
+
+  - Title_param:
+      type: "title"
+      default: "Deviation of parameters"
+
+  - distancedev:
+      type: "float"
+      descr: "distance to grid [cm]"
+      tooltip: "Deviation DelX of the distance from the previous module to the grid, range [X-DelX, X+DelX]"
+      default: 0.0
+      column: 0
+      prefix: "-X"
+      min: 0
+
+  - shifthordev:
+      type: "float"
+      descr: "horizontal shift [cm]"
+      tooltip: "Deviation DelZ of the horizontal position of the collimator disk range [Y-DelZ, Y+DelZ]"
+      default: 0.0
+      column: 1
+      prefix: "-y"
+      min: 0
+
+  - shiftvertdev:
+      type: "float"
+      descr: "vertical shift [cm]"
+      tooltip: "Deviation DelY of the vertical position of the collimator disk range [Y-DelY, Y+DelY]"
+      default: 0.0
+      column: 2
+      prefix: "-q"
+      min: 0
+
+  - winraddev:
+      type: "float"
+      descr: "size of window [cm]"
+      tooltip: "Deviation of the size DelS of the individual apertures in the collimation disk range [S-DelS, S+DelS]"
+      default: 0.0
+      column: 0
+      prefix: "-h"
+      min: 0
+
+  - wincenterdev:
+      type: "float"
+      descr: "center of window [cm]"
+      tooltip: "Deviation DelX of the individual apertures in the collimation disk range [X-DelX, X+DelX]"
+      default: 0.0
+      column: 1
+      prefix: "-H"
+      min: 0
+
+  - Title_param:
+      type: "title"
+      default: "Option: calculation of position and sizes of the grid system"
+
+  - distabs:
+      type: "float"
+      descr: "Pos. in grid system [cm]"
+      tooltip: "Distance from the first item in the grid system to the current item"
+      default: 0.0
+      column: 1
+      prefix: "-M"
+      min: 0
+
+  - disttotal:
+      type: "float"
+      descr: "Half length of grid system [cm]"
+      tooltip: "Half the distance from the beginning of the grid system to the focal point, usually the detector"
+      default: 0.0
+      column: 1
+      prefix: "-m"
+      min: 0
+
+  - wavemon:
+      type: "float"
+      descr: "standard wavelength [A]"
+      tooltip: "Wavelength for which the grid system is calculated"
+      default: 0.0
+      column: 2
+      prefix: "-n"
+      min: 0
