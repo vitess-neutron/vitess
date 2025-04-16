@@ -1,0 +1,99 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+mon2_wldiv:
+  - category:  "monitor"
+
+  - sMonFile:              #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position
+      type:    "file"
+      plottable: true
+      editable: false
+      descr:   "monitor file"
+      tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+      default: "rdiv.dat"
+      prefix:  "-O"
+
+  - min_y:
+      type: "float"
+      descr: "minimal radius [cm]"
+      tooltip: ""
+      default: 0.0
+      column: 0
+      prefix: "-w"
+      min: 0
+
+  - min_z:
+      type: "float"
+      descr: "minimal rdiv-value[deg]"
+      tooltip: ""
+      default: 0.0
+      column: 1
+      prefix: "-h"
+
+  - max_y:
+      type: "float"
+      descr: "maximal radius [cm]"
+      tooltip: ""
+      default: 2.0
+      column: 0
+      prefix: "-W"
+      min: 0
+
+  - max_z:
+      type: "float"
+      descr: "maximal rdiv-value[deg]"
+      tooltip: ""
+      default: 1.0
+      column: 1
+      prefix: "-H"
+
+  - number_ybins:
+      type: "int"
+      descr: "number of r-bins"
+      tooltip: "number of bins within the  radius range, max. 1000"
+      default: 100
+      column: 0
+      prefix: "-y"
+      min: 1
+      max: 1000
+
+  - number_zbins:
+      type: "int"
+      descr: "number of rdiv-bins"
+      tooltip: "number of bins within the radial divergence range, max. 1000"
+      default: 100
+      column: 1
+      prefix: "-z"
+      min: 1
+      max: 1000
+
+  - bProbWeight :              #     -p  "probability weight"       "Display  : YES: Beam intensity   NO: number of trajectories"
+      type:    "switch"
+      descr:   "probability weight"
+      tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
+      default:  yes
+      column:   0
+      prefix:  "-p"
+  - bExcl:                 #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+      type:    "switch"
+      descr:   "exclusive counts"
+      tooltip: "yes: only trajectories meeting the monitor conditions are written\nno : all are written"
+      default:  no
+      column:   1
+      prefix:  "-e"
+  - eFormat :              #     -F   VtFormat2D Format2D_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "file format"
+      tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits. \ninteger: integer numbers rounded from calculated intensity"
+      enum:     "VtFormat2D"
+      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+      default:  "MATRIX"
+      column:  2
+      prefix:  "-F"

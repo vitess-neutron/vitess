@@ -12,15 +12,17 @@ sample_nxs:
   - category:  "sample"
 
   - sSmplFile:                  # -S         [-]    parameter file name
-      type:    "file"
+      type: "file"
       plottable: false
+      editable: true
       descr:   "sample file"
-      tooltip: "File containing parameters of the powder sample (size, poition, orientation)\nSee HelpFile 'sample.html'"
+      tooltip: "File containing parameters of the powder sample (size, poition, orientation). See HelpFile 'sample.html'"
       prefix:  "-S"
   - sNxsFile :                  # -s           nxs structure factor file name (of the sample material)
-      type:    "file"
+      type: "file"
       plottable: false
-      descr:   "nxs parameter\nfile"
+      editable: true
+      descr:   "nxs parameter file"
       tooltip: "File containing information about the crystal (space group, atomic positions, ...)"
       prefix:  "-s"
 

@@ -26,6 +26,7 @@ eval_elast2:                    # source module that will be executed
   - sEvalFile:
       type:    "file"
       plottable: true
+      editable: false
       descr:   "evaluation file"
       tooltip: "Output file of the evaluation containing the intensity as a function of the chosen parameter"
       default: "evaluation.dat"

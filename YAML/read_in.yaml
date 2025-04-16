@@ -39,18 +39,21 @@ read_in:       # source module that will be executed
   - sFile1:                   # -A   NULL   [-]  ASCII 1st input file containing trajectories
       type:    "file"
       plottable: false
+      editable: true
       descr:   "ASCII input file 1"
       tooltip: "ASCII 1st input file containing trajectories"
       prefix:  "-A"
   - sFile2:                   # -B   NULL   [-]  ASCII 2nd input file containing trajectories
       type:    "file"
       plottable: false
+      editable: true
       descr:   "ASCII input file 2"
       tooltip: "ASCII 2nd input file containing trajectories"
       prefix:  "-B"
   - sFile3:                   # -D   NULL   [-]  ASCII 3nd input file containing trajectories
       type:    "file"
       plottable: false
+      editable: true
       descr:   "ASCII input file 3"
       tooltip: "ASCII 3nd input file containing trajectories"
       prefix:  "-D"
@@ -128,12 +131,14 @@ read_in:       # source module that will be executed
   - sInstrFile:               #
       type:    "file"
       plottable: false
+      editable: true
       descr:   "instrument input file"
       tooltip: "Specifies the instrument file (generated as instrument.inf) of the previous part of the simulation."
       prefix:  "--I"
   - sTraceFile:               #
       type:    "file"
       plottable: false
+      editable: true
       descr:   "raytracing file"
       tooltip: "Name of the file that contains the IDs of the trajectories for tracing."
       prefix:  "-T"

@@ -1,0 +1,97 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+mon2_kdiv:
+  - category:  "monitor"
+
+  - sMonFile:              #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position
+      type:    "file"
+      plottable: true
+      editable: false
+      descr:   "monitor file"
+      tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+      default: "kdiv.dat"
+      prefix:  "-O"
+
+  - min_ky:
+      type:    "float"
+      descr:   "minimal ky-value"
+      tooltip: ""
+      default: -0.1
+      column:  0
+      prefix:  "-w"
+
+  - min_kz:
+      type:    "float"
+      descr:   "minimal kz-value"
+      tooltip: ""
+      default: -0.1
+      column:  1
+      prefix:  "-h"
+
+  - max_ky:
+      type:    "float"
+      descr:   "maximal ky-value"
+      tooltip: ""
+      default: 0.1
+      column:  0
+      prefix:  "-W"
+
+  - max_kz:
+      type:    "float"
+      descr:   "maximal kz-value"
+      tooltip: ""
+      default: 0.1
+      column:  1
+      prefix:  "-H"
+
+  - number_ybins:
+      type:    "int"
+      descr:   "number of y-bins"
+      tooltip: "number of bins within the horizontal range, max. 1000"
+      default: 100
+      min:     1
+      max: 1000
+      column:  0
+      prefix:  "-y"
+
+  - number_zbins:
+      type:    "int"
+      descr:   "number of z-bins"
+      tooltip: "number of bins within vertical range, max. 1000"
+      default: 100
+      min:     1
+      max: 1000
+      column:  0
+      prefix:  "-z"
+
+  - bProbWeight :              #     -p  "probability weight"       "Display  : YES: Beam intensity   NO: number of trajectories"
+      type:    "switch"
+      descr:   "probability weight"
+      tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
+      default:  yes
+      column:   0
+      prefix:  "-p"
+  - bExcl:                 #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+      type:    "switch"
+      descr:   "exclusive counts"
+      tooltip: "yes: only trajectories meeting the monitor conditions are written\nno : all are written"
+      default:  no
+      column:   1
+      prefix:  "-e"
+  - eFormat :              #     -F   VtFormat2D Format2D_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "file format"
+      tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits. \ninteger: integer numbers rounded from calculated intensity"
+      enum:     "VtFormat2D"
+      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+      default:  "MATRIX"
+      column:  2
+      prefix:  "-F"

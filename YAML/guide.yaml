@@ -131,24 +131,28 @@ guide:
   - sReflLeft:                # -i          [-]   name of the reflectivity file for the left wall
       type:    "file"
       plottable: false
+      editable: true
       descr:   "file left plane"
       tooltip: "name of the reflectivity file for the left wall\nIt overwrites the m-value given for this plane."
       prefix:  "-i"
   - sReflRight:               # -I          [-]   name of the reflectivity file for the right wall
       type:    "file"
       plottable: false
+      editable: true
       descr:   "right plane"
       tooltip: "name of the reflectivity file for the right wall\nIt overwrites the m-value given for this plane."
       prefix:   "-I"
   - sReflTop:                 # -j          [-]   name of the reflectivity file for the top wall
       type:    "file"
       plottable: false
+      editable: true
       descr:   "top plane"
       tooltip: "name of the reflectivity file for the top wall\nIt overwrites the m-value given for this plane."
       prefix:   "-j"
   - sReflBottom:              # -J          [-]   name of the reflectivity file for the bottom wall
       type:    "file"
       plottable: false
+      editable: true
       descr:   "bottom plane"
       tooltip: "name of the reflectivity file for the bottom wall\nIf no file name is given here, the file of the top plane is used.\nBoth overwrite the m-value given for this plane."
       prefix:   "-J"
@@ -315,6 +319,7 @@ guide:
   - sPlotFile:                # -P          [-]   name of the file for writing each reflection as plot
       type:    "file"
       plottable: true
+      editable: true
       descr:   "filename"
       tooltip: "Name of the file for a list of reflections for plotting.\nGiving a filename activates this option."
       prefix:  "-P"

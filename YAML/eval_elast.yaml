@@ -25,6 +25,7 @@ eval_elast:            # source module that will be executed
   - sEvalFile:
       type:    "file"
       plottable: true
+      editable: false
       descr:   "evaluation file"
       tooltip: "Output file of the evaluation containing the intensity as a function of the chosen parameter"
       default: "evaluation.dat"
@@ -146,6 +147,7 @@ eval_elast:            # source module that will be executed
   - sIntFile:
       type:    "file"
       plottable: false
+      editable: false
       descr:   "integration file"
       tooltip: "Optional: output file containing integrated intensities (see Help|evaluation) "
       default: ""
@@ -153,6 +155,7 @@ eval_elast:            # source module that will be executed
   - sCtrlFile:
       type:    "file"
       plottable: false
+      editable: false
       descr:   "control file"
       tooltip: "Optional: file controlling the output of integrated intensities (only needed for that)"
       default: ""

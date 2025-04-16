@@ -12,15 +12,17 @@ monitor1:
   - category:  "monitor"
 
   - sMonFile:                 # -O    [-]   monitor output file containing intensity as a function of the chosen parameter
-      type:    "file"
+      type: "file"
       plottable: true
+      editable: false
       descr:   "monitor file"
       tooltip: "monitor output file containing intensity as a function of the time-of flight of the neutron"
       default: "monitor.dat"
       prefix:  "-O"
   - sRefFile:                 # -R    [-]   Reference input file containing data to normalize the monitor data
-      type:    "file"
+      type: "file"
       plottable: false
+      editable: true
       descr:   "reference file"
       tooltip: "Reference input file containing data to normalize the monitored TOF spectrum"
       prefix:  "-R"

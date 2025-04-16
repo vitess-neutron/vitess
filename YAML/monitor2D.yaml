@@ -14,6 +14,7 @@ monitor2D:                    # source module that will be executed
   - sMonFile :                # -O  2D output file name
       type:    "file"
       plottable: true
+      editable: false
       descr:   "monitor file"
       tooltip: "name of the 2D monitor output file"
       default: "monitor2D.dat"

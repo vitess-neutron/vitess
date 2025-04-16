@@ -1,0 +1,107 @@
+prism:
+  - category: "optical_elements"
+
+  - Title_param:
+      type: "title"
+      default: "Geometry description of each prism in the matrix"
+
+  - prw:
+      type: "float"
+      descr: "Prism base width [cm]"
+      tooltip: "Dimension of each prism along the neutron beam direction x [cm]"
+      default: 0.035
+      column: 0
+      prefix: "-b"
+      min: 1.0e-6
+
+  - prh:
+      type: "float"
+      descr: "Prism base height [cm]"
+      tooltip: "Dimension of each prism along the vertical direction z [cm]"
+      default: 0.025
+      column: 1
+      prefix: "-h"
+      min: 1.0e-6
+
+  - eaw:
+      type: "float"
+      descr: "Prism height [cm]"
+      tooltip: "Width of each prism along the horizontal direction y [cm]"
+      default: 3
+      column: 2
+      prefix: "-z"
+      min: 1.0e-6
+
+  - Title_param:
+      type: "title"
+      default: "Description of the prisms matrix"
+
+  - noc:
+      type: "int"
+      descr: "Number of columns"
+      tooltip: "Number of prisms columns along the neutron beam direction x [#]"
+      default: 16
+      column: 0
+      prefix: "-P"
+      min: 1
+
+  - nor:
+      type: "int"
+      descr: "Number of rows"
+      tooltip: "Number of vertical layers of prisms [#]"
+      default: 40
+      column: 1
+      prefix: "-k"
+      min: 1
+
+  - Title_param:
+      type: "title"
+      default: "Special option"
+
+  - abs:
+      type: "switch"
+      descr: "Layer can absorb"
+      tooltip: "no: Layer absorption is neglected, yes: Non refracted neutrons pass to the next layer"
+      default: true
+      column: 0
+      prefix: "-y"
+
+  - Title_param:
+      type: "title"
+      default: "Material description"
+
+  - scden:
+      type: "float"
+      descr: "Scattering  Length Density [10^-6 Å^-2]"
+      tooltip: "Scattering length density of the material. Typical values in the range 10^-6 Å^-2"
+      default: 2
+      column: 0
+      prefix: "-N"
+      min: 1.0e-6
+
+  - sci:
+      type: "float"
+      descr: "Incoherent c. section[barns]"
+      tooltip: "Incoherent cross section"
+      default: 10
+      column: 1
+      prefix: "-S"
+      min: 0
+
+  - sca:
+      type: "float"
+      descr: "Absorption c. section[barns]"
+      tooltip: "Absorption cross section"
+      default: 10
+      column: 2
+      prefix: "-s"
+      min: 0
+
+  - den:
+      type: "float"
+      descr: "Density [g/cm^3]"
+      tooltip: "Material density in g/cm^3"
+      default: 1
+      column: 0
+      prefix: "-D"
+      min: 1.0e-6

@@ -1,0 +1,145 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+monitorpol_pos:
+  - category:  "monitor"
+
+  - sMonFile:          #     -O  "monitor file"              "Monitor output file containing intensity as a function of y- and z-position"
+      type:    "file"
+      plottable: true
+      editable: false
+      descr:   "monitor file"
+      tooltip: "monitor output file containing intensity as a function of y- and z-position"
+      default: "p_pos.dat"
+      prefix:  "-O"
+
+  - min_y:
+      type: "float"
+      descr: "minimal y-value [cm]"
+      tooltip: ""
+      default: -6
+      column: 0
+      prefix: "-w"
+
+  - min_z:
+      type: "float"
+      descr: "minimal z-value [cm]"
+      tooltip: ""
+      default: -6
+      column: 1
+      prefix: "-h"
+
+  - max_y:
+      type: "float"
+      descr: "maximal y-value [cm]"
+      tooltip: ""
+      default: 6
+      column: 0
+      prefix: "-W"
+
+  - max_z:
+      type: "float"
+      descr: "maximal z-value [cm]"
+      tooltip: ""
+      default: 6
+      column: 1
+      prefix: "-H"
+
+  - number_ybins:
+      type: "int"
+      descr: "number of y-bins"
+      tooltip: "number of bins within the horizontal range, max. 1000"
+      default: 100
+      column: 0
+      prefix: "-y"
+      min: 1
+      max: 1000
+
+  - number_zbins:
+      type: "int"
+      descr: "number of z-bins"
+      tooltip: "number of bins within the vertical range, max. 1000"
+      default: 100
+      column: 1
+      prefix: "-z"
+      min: 1
+      max: 1000
+
+  - Title_Opt:
+      type:    "title"
+      default: "Options"
+  - bProbWeight :      #     -p  "probability weight"       "Display  : YES: Beam intensity   NO: number of trajectories"
+      type:    "switch"
+      descr:   "probability weight"
+      tooltip: "yes: the beam intensity is monitored \nno : the number of trajectories is monitored"
+      default:  yes
+      column:  0
+      prefix:  "-p"
+  - bExcl:             #     -e  "exclusive counts"         "Exclusion: YES: only neutrons meeting the monitor conditions are written   NO: all are written"
+      type:    "switch"
+      descr:   "exclusive counts"
+      tooltip: "yes: only trajctories meeting the monitor conditions are written \nno : all trajctories are written"
+      default:  no
+      column:  1
+      prefix:  "-e"
+  - eFormat :          #     -F    VtFormat2D Format2D_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "file format"
+      tooltip:  "file format for output:  matrix: 2D matrix   xyz: 3 columns x, y, f(x,y); \ncompact: only 1 line of header, minimal number of digits. \ninteger: integer numbers rounded from calculated intensity"
+      enum:     "VtFormat2D"
+      options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+      default:  "MATRIX"
+      column:  2
+      prefix:  "-F"
+
+  - Title_Filter:
+      type:    "title"
+      default: "Filter selection"
+  - FilterMinLambda:   #     -l  "filter lambda min [Ang]"  "minimal wavelength to be taken into account"
+      type:    "float"
+      descr:   "filter lambda min [Ang]"
+      tooltip: "minimal wavelength to be taken into account"
+      column:  0
+      prefix:  "-l"
+  - FilterMaxLambda:   #     -L  "filter lambda max [Ang]"  "maximal wavelength to be taken into account"
+      type:    "float"
+      descr:   "filter lambda max [Ang]"
+      tooltip: "maximal wavelength to be taken into account"
+      column:  1
+      prefix:  "-L"
+
+  - Title_param:
+      type: "title"
+      default: "Analysis direction"
+
+  - dirx:
+      type: "float"
+      descr: "direction X"
+      tooltip: "x component of the direction vector representing the quantization direction"
+      default: 1
+      column: 0
+      prefix: "-r"
+
+  - diry:
+      type: "float"
+      descr: "direction Y"
+      tooltip: "y component of the direction vector representing the quantization direction"
+      default: 0
+      column: 1
+      prefix: "-s"
+
+  - dirz:
+      type: "float"
+      descr: "direction Z"
+      tooltip: "z component of the direction vector representing the quantization direction"
+      default: 0
+      column: 2
+      prefix: "-t"
+

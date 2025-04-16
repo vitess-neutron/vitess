@@ -1,0 +1,193 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+monochr_analyser:
+  - category: "monochr_analyser"
+
+  - option:
+      type: int
+      descr: "Type of crystal simulation"
+      tooltip: "1: Crystal_flat, 2: Crystal_focus, 3: Crystal_focus_dat"
+      hidden: true
+      min: 1
+      max: 3
+      default: 2
+      prefix: "-O"
+
+  - Title_param:
+      type: "title"
+      default: "Monochromator Analyser"
+
+  - parfile :
+      type:    "file"
+      descr:   "parameter file"
+      default: "crys.par"
+      plottable: false
+      editable: false
+      tooltip: "This files contains parameters describing a crystal element (CE)"
+      prefix:  "-P"
+      category: "crs"
+      required: true
+
+  - reprate:
+      type: "int"
+      descr: "repetition rate"
+      tooltip: "If this integer > 1, the neutron is used multiple times for better statistics."
+      default: 1
+      column: 0
+      prefix: "-A"
+      min: 1
+      max: 1000000
+
+  - shoriz:
+      type: "float"
+      descr: "mosaic spread horiz. [deg]"
+      tooltip: "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]"
+      default: 0.8
+      column: 1
+      prefix: "-m"
+      min: 0
+
+  - svert:
+      type: "float"
+      descr: "mosaic spread vert. [deg]"
+      tooltip: "Vertical fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]"
+      default: 0.8
+      column: 1
+      prefix: "-M"
+      min: 0
+
+  - dspread:
+      type: "float"
+      descr: "d spread"
+      tooltip: "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal."
+      default: 0.00005
+      column: 2
+      prefix: "-D"
+      min: 0
+
+  - refl:
+      type: "float"
+      descr: "peak reflectivity"
+      tooltip: "(Experimentally determined) peak reflectivity of this monochromator."
+      default: 1
+      column: 0
+      prefix: "-R"
+      min: 1.0e-6
+
+  - dist:
+      type: "int"
+      descr: "d-distribution"
+      tooltip: "defines the d-spacing distribution function: 1: Lorentzian, 2: Gaussian"
+      min: 1
+      max: 2
+      default: 1
+      column: 0
+      prefix: "-d"
+
+  - focus_file :
+      type:    "file"
+      descr:   "focus file"
+      default: "lamb_foc.dat"
+      plottable: false
+      editable: true
+      tooltip: ""
+      prefix:  "-G"
+      required: true
+
+  - fopt:
+      type: "int"
+      descr: "focusing option"
+      tooltip: "choose the focusing geometry. 1: constant lambda, 2: spherical, 3: vert. cylinder, 4: double focusing"
+      min: 1
+      max: 4
+      default: 4
+      column: 1
+      prefix: "-g"
+
+  - cehnum:
+      type: "int"
+      descr: "number of CE horizontal"
+      tooltip: "The number of columns of the created crystal element matrix.. 1 for 'vert. cylinder'"
+      default: 10
+      column: 0
+      prefix: "-H"
+      min: 0
+
+  - cevnum:
+      type: "int"
+      descr: "number of CE vertical"
+      tooltip: "The number of rows of the created crystal element matrix."
+      default: 18
+      column: 1
+      prefix: "-V"
+      min: 0
+
+  - chradius:
+      type: "float"
+      descr: "radius hor. [cm]"
+      tooltip: "Radius of focussing in horizontal direction for a double focusing monochromator."
+      default: 200
+      column: 0
+      prefix: "-s"
+      min: 0
+
+  - cradius:
+      type: "float"
+      descr: "radius vert. [cm]"
+      tooltip: "lambda-focusing: distance from the sample center to the bottom row of the CE-matrix. spherical      : radius of the sphere vert. cylinder : radius of the vertical cylinder double focusing: Radius of focusing in vertical direction."
+      default: 200
+      column: 1
+      prefix: "-r"
+      min: 0
+
+  - cangle:
+      type: "float"
+      descr: "angle vert. [deg]"
+      tooltip: "Angular offset  of the bottom row of the CE-matrix  relative to the monochromator center. This parameter is not used for 'double focusing', (where a vertically symmetric arrangement is assumed)."
+      default: 0
+      column: 2
+      prefix: "-a"
+      min: 1
+
+  - gaphor:
+      type: "float"
+      descr: "gap between columns  [cm]"
+      tooltip: "Horizontal distance between columns of crystal elements (in the equatorial plane"
+      default: 0.0
+      column: 0
+      prefix: "-h"
+      min: 0
+
+  - gapvert:
+      type: "float"
+      descr: "gap between rows  [cm]"
+      tooltip: "Vertical distance between rows of crystal elements"
+      default: 0.0
+      column: 0
+      prefix: "-v"
+      min: 0
+
+  - devhor:
+      type: "float"
+      descr: "orient. dev. hor. [deg]"
+      tooltip: "Horizontal deviation from exact crystal orientation. Values in [-0.5*deviation,0.5*deviation]"
+      default: 0.0
+      column: 0
+      prefix: "-t"
+      min: 0
+
+  - devvert:
+      type: "float"
+      descr: "orient. dev. vert. [deg]"
+      tooltip: "Vertical deviation from exact crystal orientation. Values in [-0.5*deviation,0.5*deviation]"
+      default: 0.0
+      column: 0
+      prefix: "-T"

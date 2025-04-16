@@ -1,0 +1,245 @@
+resonator_drabkin:
+
+  - Title_param:
+      type: "title"
+      default: "Geometry description of the flipper"
+
+  - fx:
+      type: "float"
+      descr: "resonator X [cm]"
+      tooltip: "Dimension of the common precession volume - resonator size"
+      default: 10
+      column: 0
+      prefix: "-X"
+      min: 1.0e-6
+
+  - fy:
+      type: "float"
+      descr: "resonator Y [cm]"
+      tooltip: "Dimension of the common precession volume - resonator size"
+      default: 10
+      column: 0
+      prefix: "-Y"
+      min: 1.0e-6
+
+  - fz:
+      type: "float"
+      descr: "resonator Z [cm]"
+      tooltip: "Dimension of the common precession volume - resonator size"
+      default: 10
+      column: 0
+      prefix: "-V"
+      min: 1.0e-6
+
+  - px:
+      type: "float"
+      descr: "position center X [cm]"
+      tooltip: "Center position of the resonator"
+      default: 5
+      column: 0
+      prefix: "-k"
+
+  - py:
+      type: "float"
+      descr: "position center Y [cm]"
+      tooltip: "Center position of the resonator"
+      default: 0
+      column: 0
+      prefix: "-l"
+
+  - pz:
+      type: "float"
+      descr: "position center Z [cm]"
+      tooltip: "Center position of the resonator"
+      default: 0
+      column: 0
+      prefix: "-m"
+
+  - Title_param:
+      type: "title"
+      default: "Output Frame"
+
+  - ox:
+      type: "float"
+      descr: "output frame X [cm]"
+      tooltip: "Position of the output frame (in the input frame)"
+      default: 10
+      column: 0
+      prefix: "-p"
+
+  - oy:
+      type: "float"
+      descr: "output frame Y [cm]"
+      tooltip: "Position of the output frame (in the input frame)"
+      default: 0
+      column: 0
+      prefix: "-r"
+
+  - oz:
+      type: "float"
+      descr: "output frame Z [cm]"
+      tooltip: "Position of the output frame (in the input frame)"
+      default: 0
+      column: 0
+      prefix: "-s"
+
+  - Title_param:
+      type: "title"
+      default: "Number of domains"
+
+  - nx:
+      type: "int"
+      descr: "in X direction"
+      tooltip: "Number of domains in the X direction"
+      default: 20
+      column:
+      prefix: "-C"
+      min: 1
+
+  - ny:
+      type: "int"
+      descr: "in Y direction"
+      tooltip: "Number of domains in the Y direction"
+      default: 2
+      column:
+      prefix: "-D"
+      min: 1
+
+  - nz:
+      type: "int"
+      descr: "in Z direction"
+      tooltip: "Number of domains in the Z direction"
+      default: 2
+      column:
+      prefix: "-E"
+      min: 1
+
+  - Title_param:
+      type: "title"
+      default: "Periodical Magnetic Field"
+
+  - mf:
+      type: "float"
+      descr: "magnetic field - amplitude [Gs]"
+      tooltip: "Strength or amplitude of the periodical magnetic field, Gs=Gauss"
+      default: 500
+      column: 0
+      prefix: "-d"
+      min: 0
+
+  - rax:
+      type: "int"
+      descr: "periodical field parallel of axis"
+      tooltip: "axis to which the periodic magnetic field is parallel 0: x  1: y  2: z"
+      min: 0
+      max: 2
+      default: 1
+      column: 0
+      prefix: "-M"
+
+  - raxdi:
+      type: "int"
+      descr: "periodical field chaning law"
+      tooltip: "function of the variation of the periodic field amplitude: 0: Uniform, 1: Sinus,  2: Gauss"
+      min: 0
+      max: 2
+      default: 0
+      column: 1
+      prefix: "-v"
+
+  - mfd:
+      type: "float"
+      descr: "Deviation of amplitude [%]"
+      tooltip: "Deviation of amplitude of the periodical magnetic field in percent"
+      default: 0
+      column: 0
+      prefix: "-a"
+      min: 0
+
+  - mfds:
+      type: "float"
+      descr: "Sigma for gauss distr. [Gs]"
+      tooltip: "Sigma for gauss distribution of amplitude of the periodical magnetic field"
+      default: 1
+      column: 1
+      prefix: "-x"
+      min: 1.0e-6
+
+  - distra:
+      type: "int"
+      descr: "Amplitude distribution"
+      tooltip: "distribution of the periodic magnetic field amplitude: 0: Normal,  1: Uniform"
+      min: 0
+      max: 1
+      default: 1
+      column: 0
+      prefix: "-e"
+
+  - Title_param:
+      type: "title"
+      default: "Guide Magnetic Field"
+
+  - pmx:
+      type: "float"
+      descr: "component X [Gs]"
+      tooltip: "X component (projection in the axis 0X) of the permanent magnetic field, Gs=Gauss"
+      default: 0
+      column: 0
+      prefix: "-I"
+
+  - pmy:
+      type: "float"
+      descr: "component Y [Gs]"
+      tooltip: "Y component (projection in the axis 0Y) of the permanent magnetic field, Gs=Gauss"
+      default: 0
+      column: 1
+      prefix: "-A"
+
+  - pmz:
+      type: "float"
+      descr: "component Z [Gs]"
+      tooltip: "Z component (projection in the axis 0Z) of the permanent magnetic field, Gs=Gauss"
+      default: 0
+      column: 2
+      prefix: "-K"
+
+  - pmde:
+      type: "float"
+      descr: "additional random magnetic field [Gs]"
+      tooltip: "Amplitude of the additional random magnetic field"
+      default: 0
+      column: 0
+      prefix: "-q"
+      min: 0
+
+  - Title_param:
+      type: "title"
+      default: "Addition options"
+
+  - bfp:
+      type: "file"
+      plottable: false
+      editable: true
+      descr: "output file: polarisation"
+      tooltip: "Name of file for: results - polarisation"
+      default: "revp.dat"
+      column: 0
+      prefix: "-O"
+
+  - bff:
+      type: "file"
+      plottable: false
+      editable: true
+      descr: "output file: magnetic field"
+      tooltip: "Name of file for: results - magnetic field"
+      default: "revm.dat"
+      column: 0
+      prefix: "-N"
+
+  - outkey:
+      type: "switch"
+      descr: "output results"
+      tooltip: "Output intermediately results of simulations in the file RELATIVE OX axis"
+      default: false
+      column: 0
+      prefix: "-S"

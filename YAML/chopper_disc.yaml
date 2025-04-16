@@ -21,6 +21,7 @@ chopper_disc:
   - sParFile :                  # -S         [-]    parameter file name
       type:    "file"
       plottable: false
+      editable: true
       descr:   "chopper file"
       tooltip: "File containing geometry and properties of the chopper disc\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-C"

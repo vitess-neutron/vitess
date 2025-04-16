@@ -1,0 +1,172 @@
+pol_mirror:
+  - category: "mirror"
+
+  - pm_ufile:
+      type: "file"
+      plottable: false
+      editable: true
+      descr: "Up-reflectivity file"
+      tooltip: "reflectivity data file for Up neutrons"
+      default: "mirr3+.dat"
+      column: 0
+      prefix: "-U"
+
+  - pm_dfile:
+      type: "file"
+      plottable: false
+      editable: true
+      descr: "Down-reflectivity file"
+      tooltip: "reflectivity data file for Down neutrons"
+      default: "mirr1.dat"
+      column: 0
+      prefix: "-D"
+
+  - pm_obs:
+      type: "int"
+      descr: "mode"
+      tooltip: "mode: 1: transmitted beam treated   0: reflected beam treated"
+      min: 0
+      max: 1
+      default: 1
+      column: 0
+      prefix: "-T"
+
+  - Title_param:
+      type: "title"
+      default: "Mirror size"
+
+  - pm_dx:
+      type: "float"
+      descr: "length [cm]"
+      tooltip: "length of the polarising mirror (along beam axis)"
+      default: 60
+      column: 0
+      prefix: "-L"
+      min: 1.0e-6
+
+  - pm_dy:
+      type: "float"
+      descr: "width or height [cm]"
+      tooltip: "width or height of the polarising mirror"
+      default: 10
+      column: 1
+      prefix: "-W"
+      min: 1.0e-6
+
+  - Title_param:
+      type: "title"
+      default: "Mirror position and orientation"
+
+  - pm_x:
+      type: "float"
+      descr: "position X [cm]"
+      tooltip: "x center position of the polarizing mirror"
+      default: 100
+      column: 0
+      prefix: "-X"
+
+  - pm_y:
+      type: "float"
+      descr: "position Y [cm]"
+      tooltip: "y center position of the polarizing mirror"
+      default: 0
+      column: 1
+      prefix: "-Y"
+
+  - pm_z:
+      type: "float"
+      descr: "position Z [cm]"
+      tooltip: "z center position of the polarizing mirror"
+      default: 0
+      column: 2
+      prefix: "-Z"
+
+  - pm_voff:
+      type: "float"
+      descr: "inclination [deg]"
+      tooltip: "rotation angle of the polarizing mirror"
+      default: 1
+      column: 0
+      prefix: "-V"
+
+  - pm_ori:
+      type: "switch"
+      descr: "rotated about"
+      tooltip: "0: mirror is rotated about y-axis (vert. incl.), 1: z-axis (hor. decl.)"
+      min: 0
+      max: 1
+      default: 0
+      column: 0
+      prefix: "-O"
+
+  - Title_param:
+      type: "title"
+      default: "Analysis direction"
+
+  - pm_ax:
+      type: "float"
+      descr: "analysis dir. X [-]"
+      tooltip: "x direction vector component of the quantization direction"
+      default: 1
+      column: 0
+      prefix: "-a"
+
+  - pm_ay:
+      type: "float"
+      descr: "analysis dir. Y [-]"
+      tooltip: "y direction vector component of the quantization direction"
+      default: 0
+      column: 1
+      prefix: "-b"
+
+  - pm_az:
+      type: "float"
+      descr: "analysis dir. Z [-]"
+      tooltip: "z direction vector component of the quantization direction"
+      default: 0
+      column: 2
+      prefix: "-c"
+
+  - Title_param:
+      type: "title"
+      default: "Output frame"
+
+  - pm_ox:
+      type: "float"
+      descr: "output X [cm]"
+      tooltip: "x position of the output frame (in the input frame)"
+      default: 200
+      column: 0
+      prefix: "-x"
+
+  - pm_oy:
+      type: "float"
+      descr: "output Y [cm]"
+      tooltip: "y position of the output frame (in the input frame)"
+      default: 0
+      column: 1
+      prefix: "-y"
+
+  - pm_oz:
+      type: "float"
+      descr: "output Z [cm]"
+      tooltip: "z position of the output frame (in the input frame)"
+      default: 0
+      column: 2
+      prefix: "-z"
+
+  - pm_r1:
+      type: "float"
+      descr: "hor. rotation angle [deg]"
+      tooltip: "rotation angle of the output frame in horizontal direction (first rotation)"
+      default: 0
+      column: 0
+      prefix: "-h"
+
+  - pm_r2:
+      type: "float"
+      descr: "vert. rotation angle [deg]"
+      tooltip: "rotation angle of the output frame in vertical direction (second rotation)"
+      default: 0
+      column: 1
+      prefix: "-v"
