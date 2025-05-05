@@ -9,6 +9,10 @@
 
 #include "general.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define X(x) ISP[x][0]
 #define Y(x) ISP[x][1]
 #define Z(x) ISP[x][2]
@@ -48,5 +52,9 @@ int  PlaneLineIntersect2(const VectorType LineOffset, const VectorType LineDir, 
 long IntersectionWithHorizontalPlane(const double Z, const VectorType PosVect, const VectorType Dir, VectorType Result);
 
 double SolveQuadraticEq(double a, double b , double c);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif

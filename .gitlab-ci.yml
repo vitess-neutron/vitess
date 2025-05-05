@@ -86,6 +86,7 @@ compile-centos7:
   variables:
     OS: CentOS7
     ARCH: x86_64
+    NONCRYSTAL: 1
     LIBTORCHPATH:
   before_script:
     - sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS*.repo
@@ -207,6 +208,28 @@ test-rocky8:
   script:
     - cp -rf artifacts-Rocky8-x86_64/MODULES .
     - python3 tests/check_yaml.py
+    - tests/check_examples.sh
+
+test-darwin:
+  stage: test
+  image: macos:sonoma-xcode
+  tags:
+    - utm
+  needs:
+    - job: compile-darwin
+  variables:
+    DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
+    DARWIN_DATA_USER: "gitlab+deploy-token-92"
+    DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
+  before_script:
+    - git clone -b vitess3.7 https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data # FIXME: version from variable
+    - cd vitess-data
+    - sudo hdiutil attach XQuartz-2.8.2.dmg
+    - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
+    - sudo hdiutil detach /Volumes/XQuartz-2.8.2
+    - cd ..
+  script:
+    - cp -rf artifacts-Darwin-universal/MODULES .
     - tests/check_examples.sh
 
 package:

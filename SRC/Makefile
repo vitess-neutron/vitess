@@ -8,6 +8,7 @@ endif
 MODULES_DIR = ../MODULES
 GSLPATH = ./rng
 G2PATH = ./g2-0.72
+NCRYSTALPATH = ./ncrystal
 KDSOURCEPATH := ./kdsource
 
 SYS := $(shell uname -s)
@@ -62,6 +63,7 @@ endif
 ifdef DEBUG
 CFLAGS := $(filter-out -O3,$(CFLAGS))
 CFLAGS += -g -O0 -DDEBUG=1
+CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Debug
 endif
 
 
@@ -165,6 +167,9 @@ endif
 ifndef NOG2
 ALL += visual
 endif
+ifndef NONCRYSTAL
+ALL += sample_ncrystal
+endif
 
 # objects used by multiple modules
 COMMON = init.o \
@@ -197,6 +202,7 @@ clean:
 	$(MAKE) -C "$(GSLPATH)" clean
 	-[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
 	-$(RMDIR) "$(KDSOURCEPATH)/build" "$(KDSOURCEPATH)/install"
+	-$(RMDIR) "$(NCRYSTALPATH)/build" "$(NCRYSTALPATH)/install"
 
 .PHONY: install
 ifeq ($(DARWIN_UNIVERSAL),YES)
@@ -222,14 +228,24 @@ $(GSLPATH)/libgslran.a:
 	$(MAKE) -C "$(GSLPATH)" libgslran.a CC=$(CC) CXX=$(CXX) CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
 
 $(KDSOURCEPATH)/install/lib/libkdsource.a:
-	cd $(KDSOURCEPATH); cmake -DBUILD_SHARED_LIBS=OFF --install-prefix=$(realpath $(KDSOURCEPATH))/install -DCMAKE_INSTALL_LIBDIR=lib $(CMAKEFLAGS) -S . -B build
-	make -C "$(KDSOURCEPATH)/build" install
+	cmake -S"$(KDSOURCEPATH)" -B"$(KDSOURCEPATH)/build" -DCMAKE_INSTALL_PREFIX="$(realpath $(KDSOURCEPATH))/install" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF $(CMAKEFLAGS)
+	cmake --build $(KDSOURCEPATH)/build $(filter -j%,$(MAKEOPTS))
+	cmake --install $(KDSOURCEPATH)/build
+
+$(NCRYSTALPATH)/install/lib/libNCrystal.a:
+	cmake -S"$(NCRYSTALPATH)" -B"$(NCRYSTALPATH)/build" -DCMAKE_INSTALL_PREFIX="$(realpath $(NCRYSTALPATH))/install" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF $(CMAKEFLAGS)
+	cmake --build $(NCRYSTALPATH)/build $(filter -j%,$(MAKEOPTS))
+	cmake --install $(NCRYSTALPATH)/build
 
 libvitess.a: $(COMMON)
 	$(AR) $(ARFLAGS) $@ $^
 
 ifndef NOG2
 cpgplot.o: | $(G2PATH)/libg2.a
+endif
+
+ifndef NONCRYSTAL
+sample_ncrystal: | $(NCRYSTALPATH)/install/lib/libNCrystal.a
 endif
 
 $(ALL): | libvitess.a $(GSLPATH)/libgslran.a
@@ -266,6 +282,10 @@ read_in: CFLAGS += -I$(KDSOURCEPATH)/install/include
 read_in: LDFLAGS += -L$(KDSOURCEPATH)/install/lib
 read_in: LDLIBS += -lmcpl -lkdsource -lxml2
 read_in: read_in.c random_sampler.c | $(KDSOURCEPATH)/install/lib/libkdsource.a
+
+sample_ncrystal: CFLAGS += -I$(NCRYSTALPATH)/install/include
+sample_ncrystal: LDFLAGS += -L$(NCRYSTALPATH)/install/lib
+sample_ncrystal: LDLIBS += -lNCrystal -ldl
 
 sample_nxs: sample_nxs.c nxs.c sgclib.c sgfind.c sghkl.c sgio.c sgsi.c
 

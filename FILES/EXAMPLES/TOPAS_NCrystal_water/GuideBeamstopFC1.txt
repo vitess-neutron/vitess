@@ -1,0 +1,29 @@
+#
+#
+23.356944	8.088780464	12.03104408 superm2.dat superm2.dat superm2.dat superm2.dat
+24.356944	8.070932447	11.9970549  superm2.dat superm2.dat superm2.dat superm2.dat
+24.357944	8.070906958	11.99701068 superm2.dat superm2.dat superm2.dat superm2.dat
+25.357944	8.03772892	11.94248925 superm2.dat superm2.dat superm2.dat superm2.dat
+26.357944	7.989045308	11.86717324 superm2.dat superm2.dat superm2.dat superm2.dat
+26.359944	7.988932229	11.86700153 superm2.dat superm2.dat superm2.dat superm2.dat
+27.359944	7.924425343	11.77044892 superm2.dat superm2.dat superm2.dat superm2.dat
+28.359944	7.843736835	11.65217481 superm2.dat superm2.dat superm2.dat superm2.dat
+28.360944	7.843647889	11.65204545 superm2.dat superm2.dat superm2.dat superm2.dat
+29.360944	7.746255136	11.51135755 superm2.dat superm2.dat superm2.dat superm2.dat
+30.360944	7.631535673	11.34744505 superm3.dat superm3.dat superm3.dat superm3.dat
+30.362944	7.631288369	11.34709331 superm3.dat superm3.dat superm3.dat superm3.dat
+31.362944	7.498409857	11.15888321 superm3.dat superm3.dat superm3.dat superm3.dat
+31.363944	7.498267596	11.15868246 superm3.dat superm3.dat superm3.dat superm3.dat
+32.363944	7.346262386	10.94494502 superm3.dat superm3.dat superm3.dat superm3.dat
+33.363944	7.173934542	10.70417751 superm3.dat superm3.dat superm3.dat superm3.dat
+33.365944	7.173568572	10.7036677  superm3.dat superm3.dat superm3.dat superm3.dat
+34.365944	6.979367589	10.43393925 superm3.dat superm3.dat superm3.dat superm3.dat
+35.365944	6.761454687	10.13299765 superm3.dat superm3.dat superm3.dat superm3.dat
+35.366944	6.761224162	10.13268018 superm3.dat superm3.dat superm3.dat superm3.dat
+36.366944	6.517193845	9.797614008 superm3.dat superm3.dat superm3.dat superm3.dat
+37.366944	6.244012391	9.42482043  superm3.dat superm3.dat superm3.dat superm3.dat
+37.368944	6.243434328	9.424034121 superm3.dat superm3.dat superm3.dat superm3.dat
+37.868944	6.094669258	9.222034417 superm3.dat superm3.dat superm3.dat superm3.dat
+38.368944	5.93700829	9.008740771 superm3.dat superm3.dat superm3.dat superm3.dat
+39.368944	5.591947277	8.544844574 superm3.dat superm3.dat superm3.dat superm3.dat
+39.867	        5.403408011	8.29316668  superm3.dat superm3.dat superm3.dat superm3.dat

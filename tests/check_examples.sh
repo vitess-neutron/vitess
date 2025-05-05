@@ -7,6 +7,12 @@ V="${VITESS_DIR}/MODULES"
 cd "${TEST_DIR}/examples" || exit 1
 FAIL=0
 for PIPELINE in run*.sh; do
+    # workaround until souce_vae tests run on darwin
+    if [ "${PIPELINE}" = "run_SourceAI.sh" -a ! -x "${V}/source_vae_`uname -s`_`uname -m`" ]; then
+        echo "Skipping ${PIPELINE} (module not found)"
+        echo
+        continue
+    fi
     if [ -x "${PIPELINE}" ]; then
         NAME="$(basename "${PIPELINE#run_}" .sh)"
         CHECK="check_${NAME}.sh"

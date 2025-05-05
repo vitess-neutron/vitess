@@ -1,6 +1,10 @@
 #ifndef SOFTABORT_H
 #define SOFTABORT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef SOFTABORTMAIN
 int finishSoftabort = 0;
 #else
@@ -68,6 +72,10 @@ extern int finishSoftabort;
 #   define CHECK if (finishSoftabort) {goto my_exit;}
 # endif
 # define DECLARE_ABORT signal(SIGTERM, my_handler);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif
