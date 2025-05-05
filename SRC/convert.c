@@ -99,6 +99,7 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
 	  case MCN_SMPL_NXS     : strcpy(sCompName, "SampleNXS");         break;
 	  case MCN_SMPL_SANS    : strcpy(sCompName, "SampleSANS");        break;
 	  case MCN_SMPL_REFL    : strcpy(sCompName, "SampleReflect");     break;
+    case MCN_SMPL_NCRYSTAL: strcpy(sCompName, "SampleNCrystal");    break;
 	  case MCN_FRAME        : strcpy(sCompName, "Frame");             break;
 	  case MCN_FILTER       : strcpy(sCompName, "Filter");            break;
 	  case MCN_FILTER2D     : strcpy(sCompName, "Filter2D");          break;
@@ -201,6 +202,7 @@ McCompID Name2CompID (const char* sCompName)
   else if (strcmp(sCompName, "SampleNXS")==0  || strcmp(sCompName, "MCN_SMPL_NXS")==0)         eComp=MCN_SMPL_NXS     ;
   else if (strcmp(sCompName, "SampleSANS")==0  || strcmp(sCompName, "MCN_SMPL_SANS")==0)        eComp=MCN_SMPL_SANS    ;
   else if (strcmp(sCompName, "SampleReflect")==0  || strcmp(sCompName, "MCN_SMPL_REFL")==0)     eComp=MCN_SMPL_REFL    ;
+  else if (strcmp(sCompName, "SampleNCrystal")==0  || strcmp(sCompName, "MCN_SMPL_NCRYSTAL")==0)     eComp=MCN_SMPL_NCRYSTAL    ;
   else if (strcmp(sCompName, "Frame")==0  || strcmp(sCompName, "MCN_FRAME")==0)             eComp=MCN_FRAME        ;
   else if (strcmp(sCompName, "Filter")==0  || strcmp(sCompName, "MCN_FILTER")==0)            eComp=MCN_FILTER       ;
   else if (strcmp(sCompName, "Filter2D")==0  || strcmp(sCompName, "MCN_FILTER2D")==0)          eComp=MCN_FILTER2D     ;

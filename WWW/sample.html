@@ -21,7 +21,8 @@
     <a href="#sample_reflectom"><b>sample_reflectom</b></a> is used for reflectometer samples. <br />
     <a href="#sample_powder"><b>sample_powder</b></a> or <a href="#sample_nxs"><b>sample_nxs</b></a> can be used for powder samples. <br />
     <a href="#sample_singcryst"><b>sample_singcryst</b></a> simulates scattering of a single crystal. <br />
-    <a href="#sample_inelast"><b>sample_inelast</b></a> is used for inelastic virtual experiments
+    <a href="#sample_inelast"><b>sample_inelast</b></a> is used for inelastic virtual experiments. <br />
+    <a href="#sample_ncrystal"><b>sample_ncrystal</b></a> is used for virtual experiments leveraging the Ncrystal sample database. <br />
   </p>
   <p>
     In all cases, parameters of both the sample (position, size, ...) and the scattering have to be given, partly in files.
@@ -2387,6 +2388,272 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         \frac{1}{e^{-{\hbar \omega}/{k_B T}} - 1} : \omega\lt 0 \\
        \end{array}
     \right.\)
+  </p>
+
+  <div class="back-to-top"><a href="#top">Back to Top</a></div>
+
+  <br /><br />
+  <h2 id="sample_ncrystal"><font size="+1"> VITESS Module 'sample_ncrystal' for scattering with NCrystal sample database.</font></h2>
+  <p>
+    
+
+    This module integrates the NCrystal library into the Vitess simulation framework. <br>
+    This module facilitates advanced neutron transport simulations by enabling coherent and incoherent scattering, absorption, and spin-flip effects in materials described using NCrystal's scattering models.<br>
+  
+    The module computes scattering cross-sections (coherent and incoherent) for neutrons interacting with materials using NCrystal's S(q,w) scattering kernel.<br>
+    It supports neutron spin-flip processes during incoherent scattering.<br>
+    It handles multiple material geometries such as cylinders, spheres, and hollow cylinders.<br>
+    If the state of matter of the sample is solid, the crystal directions are set in the lab framework, indenpendentently from the scattering volume orientation. The two offset angles enable to align the scattering volume to the crystal axes, if this is desired.<br><br>
+
+    The neutron scattering follows this process:<br>
+    1. Vitess propagates the neutron until the scattering point.<br>
+    2. Ncrystal defines the probability of a scattering event and defines the final neutron properties.<br>
+    3. Vitess reads the neutron properties from NCrystal and propagates further.<br>
+
+    <h5>Workflow</h5>
+
+	  A material is initialized using the NCrystal configuration string (configString).<br>
+    The material information is logged.<br>
+
+    Scattering and absorption coefficients are derived for attenuation calculations.<br>
+    Coherent Scattering: The neutron's cross-section and scattering angles are computed.<br>
+    Incoherent Scattering: A spin-flip occurs probabilistically (2/3 chance), altering the neutron's spin vector.<br>
+    Energy Transfer: Using NCrystal's S(q,w) kernel, the energy change during scattering is applied to the neutron.<br>
+    Path lengths within the sample are computed based on material geometry.<br>
+    Probabilities are updated with attenuation factors using absorption and scattering coefficients.<br>
+
+	  Vitess updates neutron parameters (position, direction, spin, time of flight, and probability) after scattering.<br>
+	  Spin-flip statistics, coherent scattering counts, and missed hits are logged.<br>
+
+    <h5>The key function S(<b>q</b>,&omega;) </h5>
+
+    The function purpose is to compute the scattering cross section and energy transfer using NCrystal.<br>
+    It takes as input the neutron wavelength, probability and direction.<br>
+
+    It tracks the neutron spin vector and updates after scattering, taking into account the flipping probability of 2/3 for incoherent scattering.<br>
+
+    <h5>Sample material setup</h5>
+
+    To use NCrystal materials, Vitess generates a valid configuration string based on the following input, provided by the user in the module GUI:
+     
+    <table border="1" cellpadding="5" width="95%">
+      <tbody>
+        <tr>
+          <td valign="top" width="20%"><b>Parameter<br>Unit</b></td>
+          <td valign="top" width="50%"><b>Description</b></td>
+          <td valign="top" width="20%"><b>Range, Examples</b></td>
+          <td valign="top" width="10%"><b>Command Option</b></td>
+        </tr>
+        <tr>
+          <td>Material File</td>
+          <td>File containing the scattering information for the sample material. Must be a valid NCrystal configuration file.</td>
+          <td>e.g., `material.ncmat`</td>
+          <td>-f</td>
+        </tr>
+        <tr>
+          <td>Temperature <br>[K]</td>
+          <td>Temperature of the sample material, influencing the scattering kernel. This parameter is ignored when the state of matter is gas or liquid.</td>
+          <td>&gt; 0 K (e.g., 300)</td>
+          <td>-T</td>
+        </tr>
+        <tr>
+          <td>Solid sample <br>[yes/no]</td>
+          <td>If the sample is solid please insert the desired crystal axis directions. If no, 
+            please give default values.</td>
+          <td>yes/no</td>
+          <td>-s</td>
+        </tr>
+        <tr>
+          <td>d-Cutoff <br>[&Aring;]</td>
+          <td>Minimum d-spacing (in &Aring;) to include in the simulation for crystal materials.</td>
+          <td>&gt; 0 (e.g., 0.5)</td>
+          <td>-d</td>
+        </tr>
+        <tr>
+          <td>Crystal Mosaicity <br>[&deg;]</td>
+          <td>Degree of crystal mosaicity for the sample material.</td>
+          <td>&gt; 0&deg; (e.g., 0.1)</td>
+          <td>-m</td>
+        </tr>
+        <tr>
+          <td>Axis 2 dir tolerance <br>[&deg;]</td>
+          <td> NCrystal specified tolerance on the crystal axis n. 2. Default is 1e-4 rad = 0.0057 deg. (dirtol) </td>
+          <td>&gt; 0&deg; (e.g., 0.1)</td>
+          <td>-D</td>
+        </tr>
+        <tr>
+          <td>Repetition <br>[#]</td>
+          <td>Number of neutron trajectories simulated per incoming trajectory to improve statistics.</td>
+          <td>&ge; 1</td>
+          <td>-R</td>
+        </tr>
+        <tr>
+          <td>Sample Geometry</td>
+          <td>Defines the geometry of the sample. Supported types: cylinder, hollow cylinder, sphere, or cuboid.</td>
+          <td>`cylinder`, `hollow_cylinder`, `sphere`, `cuboid`</td>
+          <td>-G</td>
+        </tr>
+        <tr>
+          <td> X [cm] </td>
+          <td> Position of the sample center along the beam axis. </td>
+          <td> &ge; 0 </td>
+          <td> -X </td>
+        </tr>
+        <tr>
+          <td> Y [cm] </td>
+          <td> Horizontal position of the sample center in the lab frame (to the left). </td>
+          <td> &ge; 0 </td>
+          <td> -Y </td>
+        </tr>
+        <tr>
+          <td> Z [cm] </td>
+          <td> Vertical position of the sample center in the lab frame. </td>
+          <td> &ge; 0 </td>
+          <td> -Z </td>
+        </tr>
+        <tr>
+          <td>Thickness or Diameter <br>[cm]</td>
+          <td>Thickness (for cuboid) or diameter (for cylinder or sphere) of the sample material.</td>
+          <td>&gt; 0 (e.g., 1.0)</td>
+          <td>-t</td>
+        </tr>
+        <tr>
+          <td>Height <br>[cm]</td>
+          <td>Height of the sample material (applicable for cuboid or cylinder geometries).</td>
+          <td>&gt; 0 (e.g., 2.0)</td>
+          <td>-g</td>
+        </tr>
+        <tr>
+          <td>Inner Diameter or Width <br>[cm]</td>
+          <td>Inner diameter of a hollow cylinder or width of a cuboid sample.</td>
+          <td>&ge; 0 (e.g., 0.5)</td>
+          <td>-w</td>
+        </tr>
+        <tr>
+          <td>offset angle horiz. <br>[&deg;]</td>
+          <td>rotation angle of the sample about the z-axis in a horizontal plane (first rotation) to define its orientation.</td>
+          <td>-360 to 360</td>
+          <td>-o</td>
+        </tr>
+        <tr>
+          <td>offset angle vert. <br>[&deg;]</td>
+          <td>rotation angle of the sample about the (new) y-axis in a vertical direction (second rotation) to define its orientation.</td>
+          <td>-360 to 360</td>
+          <td>-O</td>
+        </tr>
+        <tr>
+          <td>Incident &lambda; <br>[&Aring;]</td>
+          <td>Incident neutron wavelength.</td>
+          <td>&gt; 0 &Aring;</td>
+          <td>-M</td>
+        </tr>
+        <tr>
+          <td> Axis 1 h [#] </td>
+          <td> This h-index specifies the crystallographic axis 'Axis 1'. </td>
+          <td> &ge; 0 </td>
+          <td> -h </td>
+        </tr>
+        <tr>
+          <td> Axis 1 k [#] </td>
+          <td> This k-index specifies the crystallographic axis 'Axis 1'. </td>
+          <td> &ge; 0 </td>
+          <td> -k </td>
+        </tr>
+        <tr>
+          <td> Axis 1 l [#] </td>
+          <td> This l-index specifies the crystallographic axis 'Axis 1'. </td>
+          <td> &ge; 0 </td>
+          <td> -l </td>
+        </tr>
+        <tr>
+          <td> Axis 1 dir x [#] </td>
+          <td> Unit vector component x defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates. </td>
+          <td> &ge; 0 </td>
+          <td> -a </td>
+        </tr>
+        <tr>
+          <td> Axis 1 dir y [#] </td>
+          <td> Unit vector component y defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates. </td>
+          <td> &ge; 0 </td>
+          <td> -b </td>
+        </tr>
+        <tr>
+          <td> Axis 1 dir z [#] </td>
+          <td> Unit vector component z defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates. </td>
+          <td> &ge; 0 </td>
+          <td> -c </td>
+        </tr>
+        <tr>
+          <td> Axis 2 h [#] </td>
+          <td> This h-index specifies the crystallographic axis 'Axis 2'. </td>
+          <td> &ge; 0 </td>
+          <td> -H </td>
+        </tr>
+        <tr>
+          <td> Axis 2 k [#] </td>
+          <td> This k-index specifies the crystallographic axis 'Axis 2'. </td>
+          <td> &ge; 0 </td>
+          <td> -K </td>
+        </tr>
+        <tr>
+          <td> Axis 2 l [#] </td>
+          <td> This l-index specifies the crystallographic axis 'Axis 2'. </td>
+          <td> &ge; 0 </td>
+          <td> -L </td>
+        </tr>
+        <tr>
+          <td> Axis 2 dir x [#] </td>
+          <td> Unit vector component x defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates. </td>
+          <td> &ge; 0 </td>
+          <td> -A </td>
+        </tr>
+        <tr>
+          <td> Axis 2 dir y [#] </td>
+          <td> Unit vector component y defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates. </td>
+          <td> &ge; 0 </td>
+          <td> -B </td>
+        </tr>
+        <tr>
+          <td> Axis 2 dir z [#] </td>
+          <td> Unit vector component z defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates. </td>
+          <td> &ge; 0 </td>
+          <td> -C </td>
+        </tr>
+        <tr>
+          <td> X' [cm] </td>
+          <td> Position of the output frame in the original frame along the beam axis. </td>
+          <td> &ge; 0 </td>
+          <td> -x </td>
+        </tr>
+        <tr>
+          <td> Y' [cm] </td>
+          <td> Horizontal position of the output frame in the original frame (to the left). </td>
+          <td> &ge; 0 </td>
+          <td> -y </td>
+        </tr>
+        <tr>
+          <td> Z' [cm] </td>
+          <td> Vertical position of the output frame in the original frame. </td>
+          <td> &ge; 0 </td>
+          <td> -z </td>
+        </tr>
+        <tr>
+          <td> horiz. angle [deg] </td>
+          <td> Rotation angle of the output frame about the z-axis in the horizontal (first rotation) plane. Rotation (0, 0) means along the original beam axis (x-axis). </td>
+          <td> -360 to 360 </td>
+          <td> -u </td>
+        </tr>
+        <tr>
+          <td> vert. angle [deg] </td>
+          <td> Rotation angle of the output frame about the (new) y-axis in a vertical direction (second rotation). Rotation (0, 0) means along the original beam axis (x-axis). </td>
+          <td> -360 to 360 </td>
+          <td> -U </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    For more information about NCrystal, please visit the repository pagea at <a href="https://github.com/mctools/ncrystal" target="_blank">https://github.com/mctools/ncrystal</a>.
+
   </p>
 
   <hr>

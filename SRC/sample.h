@@ -4,6 +4,10 @@
 #include "intersection.h"
 #include "general.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************/
 /**   Global Variables       **/
 /******************************/
@@ -21,9 +25,9 @@ extern double* F2Val;
 /** Prototypes               **/
 /******************************/
 void InitSample  (SampleType *Sample);
-void FillSample(SampleType* pSample, const VtSmplGeom eGeom, 
-                const double Xpos,   const double Ypos,  const double Zpos, 
-                const double Xdir,   const double Ydir,  const double Zdir, 
+void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
+                const double Xpos,   const double Ypos,  const double Zpos,
+                const double Xdir,   const double Ydir,  const double Zdir,
                 const double SizeD,  const double SizeH, const double SizeW, const double SizeT);
 
 void SetSampleGeometry(SampleType *Sample, double CubeRotAngle);
@@ -41,5 +45,9 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
                              long* pNisp, VtDir eDir);
 
 int ReadStructureFile(const char* sStructFile, int tag, DoublePair* structFactorLookup[]);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif

@@ -1,0 +1,10 @@
+#
+#
+40.067	5.324209017	8.187846357 superm3.dat superm3.dat superm3.dat superm3.dat		
+40.967	4.939864598	7.680378636 superm3.dat superm3.dat superm3.dat superm3.dat		
+41.967	4.448089178	7.04111059  superm3.dat superm3.dat superm3.dat superm3.dat		
+41.974	4.444357512	7.036308793 superm3.dat superm3.dat superm3.dat superm3.dat		
+42.96	3.867536194	6.304698032 superm3.dat superm3.dat superm3.dat superm3.dat		
+42.967	3.863022664	6.299065648 superm3.dat superm3.dat superm3.dat superm3.dat		
+43.967	3.132826607	5.412133137 superm3.dat superm3.dat superm3.dat superm3.dat		
+44.257	2.878751256	5.117387627 superm3.dat superm3.dat superm3.dat superm3.dat		

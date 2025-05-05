@@ -1,0 +1,343 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter label
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+sample_ncrystal:
+    - category: "sample"
+
+    - Title_param:
+        type: "title"
+        default: "NCrystal Config string definition"
+
+    - sParFile:
+        type: "file"
+        plottable: false
+        descr: "material file"
+        tooltip: "File that contains the sample scattering information."
+        default: "scatter_default.ncmat"
+        column: 0
+        prefix: "-f"
+
+    - temp:
+        type: "float"
+        descr: "Temperature [K]"
+        tooltip: "Temperature of the sample. Ignored when state of matter is gas or liquid."
+        default: 1
+        column: 0
+        prefix: "-T"
+        min: 0
+
+    - staofm:
+        type: "switch"
+        descr: "Solid sample"
+        tooltip: "If the sample is solid please insert the desired crystal axis directions. If no, please give default values."
+        default: "yes"
+        column: 0
+        prefix: "-s"
+        options: {"no": 0, "yes": 1}
+
+    - Title_param:
+        type: "title"
+        default: "Crystal parameters"
+
+    - dcutoff:
+        type: "float"
+        descr: "d-cutoff [Ang]"
+        tooltip: "Minimum d-spacing (in Å) to consider in the simulation."
+        default: 0.5
+        column: 0
+        prefix: "-d"
+        min: 0
+
+    - mos:
+        type: "float"
+        descr: "crystal mosaicity"
+        tooltip: "Crystal mosaicity to consider in the simulation."
+        default: 0
+        column: 1
+        prefix: "-m"
+        min: 0
+
+    - dirtol:
+        type: "float"
+        descr: "Axis 2 dir tolerance [deg]"
+        tooltip: "NCrystal specified tolerance on the crystal axis n. 2. Default is 1e-4 rad = 0.0057 deg."
+        default: 0.0057
+        column: 2
+        prefix: "-D"
+        min: 0
+
+    - Title_param:
+        type: "title"
+        default: "Crystal directions"
+
+    - inh:
+        type: "float"
+        descr: "Axis 1 h"
+        tooltip: "This h-index specifies the crystallographic axis 'Axis 1'."
+        default: 0
+        column: 0
+        prefix: "-h"
+        min: 0
+
+    - ink:
+        type: "float"
+        descr: "Axis 1 k"
+        tooltip: "This k-index specifies the crystallographic axis 'Axis 1'."
+        default: 0
+        column: 1
+        prefix: "-k"
+        min: 0
+
+    - inl:
+        type: "float"
+        descr: "Axis 1 l"
+        tooltip: "This l-index specifies the crystallographic axis 'Axis 1'."
+        default: 0
+        column: 2
+        prefix: "-l"
+        min: 0
+
+    - inx:
+        type: "float"
+        descr: "Axis 1 dir x"
+        tooltip: "Unit vector component x defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates."
+        default: 0
+        column: 0
+        prefix: "-a"
+        min: 0
+
+    - iny:
+        type: "float"
+        descr: "Axis 1 dir y"
+        tooltip: "Unit vector component y defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates."
+        default: 0
+        column: 1
+        prefix: "-b"
+        min: 0
+
+    - inz:
+        type: "float"
+        descr: "Axis 1 dir z"
+        tooltip: "Unit vector component z defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates."
+        default: 0
+        column: 2
+        prefix: "-c"
+        min: 0
+
+    - ouh:
+        type: "float"
+        descr: "Axis 2 h"
+        tooltip: "This h-index specifies the crystallographic axis 'Axis 2'."
+        default: 0
+        column: 0
+        prefix: "-H"
+        min: 0
+
+    - ouk:
+        type: "float"
+        descr: "Axis 2 k"
+        tooltip: "This k-index specifies the crystallographic axis 'Axis 2'."
+        default: 0
+        column: 1
+        prefix: "-K"
+        min: 0
+
+    - oul:
+        type: "float"
+        descr: "Axis 2 l"
+        tooltip: "This l-index specifies the crystallographic axis 'Axis 2'."
+        default: 0
+        column: 2
+        prefix: "-L"
+        min: 0
+
+    - oux:
+        type: "float"
+        descr: "Axis 2 dir x"
+        tooltip: "Unit vector component x defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates."
+        default: 0
+        column: 0
+        prefix: "-A"
+        min: 0
+
+    - ouy:
+        type: "float"
+        descr: "Axis 2 dir y"
+        tooltip: "Unit vector component y defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates."
+        default: 0
+        column: 1
+        prefix: "-B"
+        min: 0
+
+    - ouz:
+        type: "float"
+        descr: "Axis 2 dir z"
+        tooltip: "Unit vector component z defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates."
+        default: 0
+        column: 2
+        prefix: "-C"
+        min: 0
+
+    - Title_param:
+        type: "title"
+        default: "Repetitions of the same neutron event"
+
+    - reprate:
+        type: "int"
+        descr: "repetition"
+        tooltip: "number of trajectories generated per incoming trajectory."
+        default: 1
+        column: 0
+        prefix: "-R"
+        condition: "ge1"
+
+    - Title_param:
+        type: "title"
+        default: "Sample shape"
+
+    - cyl:
+        type: "switch"
+        descr: "sample geometry"
+        tooltip: "geometry of the sample: cylinder, hollow cylinder, sphere, or cuboid"
+        default: "cylinder"
+        column: 0
+        prefix: "-G"
+        options: {"cylinder": 1, "hollow-cylinder": 2, "sphere": 3, "cuboid": 4}
+
+    - Title_param:
+        type: "title"
+        default: "Sample position and size"
+
+    - x1:
+        type: "float"
+        descr: "X [cm]"
+        tooltip: "position of the sample centre"
+        default: 50
+        column: 0
+        prefix: "-X"
+
+    - y1:
+        type: "float"
+        descr: "Y [cm]"
+        tooltip: "position of the sample centre"
+        default: 0
+        column: 1
+        prefix: "-Y"
+
+    - z1:
+        type: "float"
+        descr: "Z [cm]"
+        tooltip: "position of the sample centre"
+        default: 0
+        column: 2
+        prefix: "-Z"
+
+    - trad:
+        type: "float"
+        descr: "thickness or diameter [cm]"
+        tooltip: "thickness of the sample in x direction or diameter in case of cylinder or sphere"
+        default: 3.0
+        column: 0
+        prefix: "-t"
+        min: 0
+
+    - hei:
+        type: "float"
+        descr: "height [cm]"
+        tooltip: "height of sample in z direction if cuboid or cylinder, no relevance if sphere"
+        default: 3.0
+        column: 1
+        prefix: "-g"
+        min: 0
+
+    - wid:
+        type: "float"
+        descr: "inner diameter or width [cm]"
+        tooltip: "inner diameter of hollow cylinder or width of sample - inactive for full cylinder option"
+        default: 3.0
+        column: 2
+        prefix: "-w"
+        min: 0
+
+    - hoff:
+        type: "float"
+        descr: "offset angle horiz. [deg]"
+        tooltip: "rotation angle of the sample about the z-axis in a horizontal plane (first rotation) to define its orientation"
+        default: 0.0
+        column: 0
+        prefix: "-o"
+
+    - voff:
+        type: "float"
+        descr: "offset angle vert. [deg]"
+        tooltip: "rotation angle of the sample about the (new) y-axis in a vertical direction (second rotation) to define its orientation"
+        default: 0.0
+        column: 1
+        prefix: "-O"
+
+    - Title_param:
+        type: "title"
+        default: "Incident neutron parameters"
+
+    - lam:
+        type: "float"
+        descr: "incident lambda"
+        tooltip: "incident neutron wavelength"
+        default: 1.0
+        column: 0
+        prefix: "-M"
+        min: 0
+
+    - Title_param:
+        type: "title"
+        default: "Output frame"
+
+    - x2:
+        type: "float"
+        descr: "X' [cm]"
+        tooltip: "position of the output frame in the original frame along the beam axis"
+        default: 50.0
+        column: 0
+        prefix: "-x"
+        min: 0
+
+    - y2:
+        type: "float"
+        descr: "Y' [cm]"
+        tooltip: "horizontal position of the output frame in the original frame (to the left)"
+        default: 0.0
+        column: 1
+        prefix: "-y"
+        min: 0
+
+    - z2:
+        type: "float"
+        descr: "Z' [cm]"
+        tooltip: "vertical position of the output frame in the original frame"
+        default: 0.0
+        column: 2
+        prefix: "-z"
+        min: 0
+
+    - ha:
+        type: "float"
+        descr: "horiz. angle [deg]"
+        tooltip: "rotation angle of the output frame about the z-axis in horizontal (first rotation) plane. Rotation (0, 0) means along the original beam axis (x-axis)"
+        default: 0.0
+        column: 0
+        prefix: "-u"
+
+    - va:
+        type: "float"
+        descr: "vert. angle [deg]"
+        tooltip: "rotation angle of the output frame about the (new) y-axis in a vertical direction (second rotation). Rotation (0, 0) means along the original beam axis (x-axis)"
+        default: 0.0
+        column: 1
+        prefix: "-U"

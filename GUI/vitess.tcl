@@ -32,6 +32,15 @@
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
 
+set darkMode [exec osascript -e {tell application "System Events" to get dark mode of appearance preferences}]
+if {$darkMode eq "true"} {
+    set fgColor black
+    set bgColor #f2f2fb
+} else {
+    set fgColor black
+    set bgColor #f2f2fb
+}
+
 set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
@@ -172,8 +181,8 @@ proc makeModuleSets {} {
     {optical_elements {lense prism} {lense prism} }
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {resonator_drabkin {} resonator_drabkin}
-    {sample {sample_elasticisotr sample_inelast sample_nxs sample_powder
-      sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
+    {sample {sample_elasticisotr sample_inelast sample_ncrystal sample_nxs sample_powder
+      sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast sample_ncrystal
       sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {sample_environment {} sample_environment}
@@ -3430,6 +3439,55 @@ set ineESET {
 }
 
 
+### sample
+###   ncrystal
+
+set sample_ncrystalESET {
+  {"NCrystal Config string definition" header}
+  {refile parbrowsefile "scatter_default.ncmat" {"material\nfile" "File that contains the sample scattering information." "" f} r dat}
+  {temp float 1 {"Temperature [K]" "Temperature of the sample. Ignored when state of matter is gas or liquid." "" T}  gt0 "" 1}
+  {staofm radio yes {"Solid sample" "If the sample is solid please insert the desired crystal axis directions. If no, please give default values." "" s}  {no yes} {0 1}}
+  {"Crystal parameters" header}
+  {dcutoff float 0.5 {"d-cutoff [Ang]" "Minimum d-spacing (in Å) to consider in the simulation." "" d} gt0 "" 1}
+  {mos float 0 {"crystal mosaicity" "Crystal mosaicity to consider in the simulation." "" m} gt0 "" 1}
+    {dirtol float 0.0057 {"Axis 2 dir\ntolerance [deg]" "NCrystal specified tolerance on the crystal axis n. 2. Default is 1e-4 rad = 0.0057 deg." "" D} gt0 "" 1}
+  {"Crystal directions" header}
+  {inh float 0 {"Axis 1\nh" "This h-index specifies the crystallographic axis 'Axis 1'." "" h} ge0}
+  {ink float 0 {"Axis 1\nk" "This k-index specifies the crystallographic axis 'Axis 1'." "" k} ge0}
+  {inl float 0 {"Axis 1\nl" "This l-index specifies the crystallographic axis 'Axis 1'." "" l} ge0}
+  {inx float 0 {"Axis 1\ndir x" "Unit vector component x defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates." "" a} ge0}
+  {iny float 0 {"Axis 1\ndir y" "Unit vector component y defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates." "" b} ge0}
+  {inz float 0 {"Axis 1\ndir z" "Unit vector component z defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates." "" c} ge0}
+  {ouh float 0 {"Axis 2\nh" "This h-index specifies the crystallographic axis 'Axis 2'." "" H} ge0}
+  {ouk float 0 {"Axis 2\nh" "This k-index specifies the crystallographic axis 'Axis 2'." "" K} ge0}
+  {oul float 0 {"Axis 2\nl" "This l-index specifies the crystallographic axis 'Axis 2'." "" L} ge0}
+  {oux float 0 {"Axis 2\ndir x" "Unit vector component x defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates." "" A} ge0}
+  {ouy float 0 {"Axis 2\ndir y" "Unit vector component y defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates." "" B} ge0}
+  {ouz float 0 {"Axis 2\ndir z" "Unit vector component z defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates." "" C} ge0}
+  {"Repetitions of the same neutron event" header}
+  {reprate int 1 {repetition "number of trajectories generated per incoming trajectory" "" R} ge1 "" 1}
+  {"Sample shape" header}
+  {cyl radio "cylinder" {"sample\ngeometry" "geometry of the sample: cylinder, hollow cylinder sphere or cuboid" "" G} {cylinder hollow-cylinder sphere cuboid} {1 2 3 4}}
+  {"Sample position and size" header}
+  {x1 float 50 {"X [cm]" "position of the sample centre" "" X}}
+  {y1 float 0 {"Y [cm]" "position of the sample centre" "" Y}}
+  {z1 float 0 {"Z [cm]" "position of the sample centre" "" Z}}
+  {trad float 3 {"thickness or\ndiameter [cm]" "thickness of the sample in x direction or diameter in case of cylinder or sphere" "" t} gt0 "" 1}
+  {hei float 3 {"height [cm]" "heigtht of sample in z direction if cuboid or cylinder, no relevance if sphere" "" g} ge0 "" 1}
+  {wid float 3 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option" "" w} ge0 "" 1}
+  {hoff float 0 {"offset angle\nhoriz. [deg]" "rotation angle of the sample about the z-axis in a horizontal plane (first rotation) to define its orientation" "" o}}
+  {voff float 0 {"offset angle\nvert. [deg]" "rotation angle of the sample about the (new) y-axis in a vertical direction (second rotation) to define its orientation" "" O}}
+  {"Incident neutron parameters" header}
+  {lam float 1 {"incident\nlambda" "incident neutron wavelength" "" M} ge0}
+  {"Output frame" header}
+  {x2 float 50 {"X' [cm]" "position of the output frame in the original frame along the beam axis" "" x} ge0}
+  {y2 float  0 {"Y' [cm]" "horizontal position of the output frame in the original frame (to the left)" "" y} ge0}
+  {z2 float  0 {"Z' [cm]" "vertical position of the output frame in the original frame" "" z} ge0}
+  {ha float 0 {"horiz. angle\n[deg]" "rotation angle of the output frame about the z-axis in horizontal (first rotation) plane\nrotation (0, 0) means along the original beam axix (x axis)" "" u}}
+  {va float 0 {"vert. angle\n[deg]" "rotation angle of the output frame about the (new) y-axis in a vertical direction (second rotation)\nrotation (0, 0) means along the original beam axix (x axis)" "" U}}
+  }
+
+
 ### sample_reflectom
 ###
 
@@ -4432,7 +4490,7 @@ proc cleanupModView {} {
 
 proc highlightSelectedModule {{i -1}} {
   # highlight selected module
-  global maxModule Mlf bgColor entryColor
+  global maxModule Mlf bgColor fgColor entryColor
   for {set ii 0} {$ii < $maxModule} {incr ii} {
     if [winfo exists $Mlf.g$ii.label] {
       if {$ii == $i} {
@@ -4448,7 +4506,7 @@ proc highlightSelectedModule {{i -1}} {
 ###
 proc checkModVar {i {wishedmode ""}} {
 
-  global DummyEntry Amf Mlf bgColor VisibleModule
+  global DummyEntry Amf Mlf bgColor fgColor VisibleModule
   set VisibleModule $i
   set w $Mlf.g$i
   set varName mod$i
@@ -4488,8 +4546,8 @@ proc checkModVar {i {wishedmode ""}} {
 	helpFrame $wm
       } else {
 	fGroup $wm.h $wm.$var
-	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor
-        entry $wm.h.mname -width 6 -bg $bgColor -textvariable mmm_$i
+	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor -fg $fgColor
+        entry $wm.h.mname -width 6 -bg $bgColor -fg $fgColor -textvariable mmm_$i
         bind  $wm.h.mname <KeyRelease> "showModName $i"
         bind  $wm.h.mname <Leave> "showModName $i"
         pack $wm.h.mname -side left
@@ -5187,10 +5245,10 @@ proc editFile {var param ext app} {
 
   fGroup $w.v $w.b
   if {[set serializeproc [getSerializeProc $ext]] == ""} {
-    global bgColor
+    global bgColor fgColor
     text $w.v.text -relief raised -bd 2 \
 	-height 32 -width 80\
-	-font [monoFont] -bg $bgColor\
+	-font [monoFont] -bg $bgColor -fg $fgColor\
 	-setgrid 1\
 	-yscrollcommand "$w.v.yscroll set"
     yscroll $w.v "$w.v.text yview"
@@ -5587,7 +5645,7 @@ proc pasteModulePars {ci} {
 }
 
 proc addModMenu {w i} {
-  global DummyEntry menuColor labColor maxModule
+  global DummyEntry menuColor labColor bgColor fgColor maxModule
 
   # start popup menu with module number title
   set mlist [list [list S "Module $i"]]
@@ -5629,7 +5687,7 @@ proc addModMenu {w i} {
       destroy $w.c
     }
   } else {
-    menubutton $w -text $ti -font [headerFont] -bg $labColor -relief raised -menu $w.c
+    menubutton $w -text $ti -font [headerFont] -bg $bgColor -fg $fgColor -relief raised -menu $w.c
   }
   menu $w.c -bg $menuColor -tearoff 0
   eval popMenu $w.c $mlist
@@ -5638,7 +5696,7 @@ proc addModMenu {w i} {
 ### moduleMenus
 ###
 proc moduleMenus {{n 1}} {
-  global AvailableSET maxModule DummyEntry Mlf bgColor labColor radioColor menuColor menuButtonColor tcl_platform
+  global AvailableSET maxModule DummyEntry Mlf bgColor fgColor labColor radioColor menuColor menuButtonColor tcl_platform
   set fn [headerFont]
   set lfn [labelFont]
   set tfn [textFont]
@@ -5659,9 +5717,9 @@ proc moduleMenus {{n 1}} {
   } elseif {! [winfo exists $w]} {
     Frame $w
     button $w.cross -image fcross -command removeDigest
-    button $w.right -image fright -command digestView
+    button $w.right -image fright -command digestView -bg $bgColor -fg $fgColor
     label $w.l -text "Instrument Digest"\
-	-font $lfn -bg $menuButtonColor
+	-font $lfn -bg $bgColor -fg $fgColor
     pack $w.cross -side left  -anchor w
     pack $w.right -side right -padx 1 -anchor w
     pack $w.l -side top -fill x -anchor w
@@ -5686,19 +5744,20 @@ proc moduleMenus {{n 1}} {
 
     if {$tcl_platform(os) == "Darwin"} {
       # add a label we will adopt for disabled modules
-      label $w.right -text $i -font $fn -bg $labColor
+      label $w.right -text $i -font $tfn -bg $bgColor -fg $fgColor
       bind $w.right <ButtonPress> "checkModVar $i here"
     } else {
-      button $w.right -image fright -command "checkModVar $i here"
+      button $w.right -image fright -command "checkModVar $i here" \
+      -bg $bgColor -fg $fgColor
     }
 
-    label $w.nlabel -font $tfn -bg $bgColor
+    label $w.nlabel -font $tfn -bg $bgColor -fg $fgColor
 
     set wm $w.opt.menu
     menubutton $w.opt -textvariable $varName -indicatoron 1 \
-	-menu $wm -font $lfn -relief raised -bd 2 -width 18 \
-	-highlightthickness 2 -anchor c -bg $menuButtonColor
-    menu $wm -tearoff 0 -bg $menuColor
+	-menu $wm -font $lfn -bg $bgColor -fg $fgColor -relief raised -bd 2 -width 18 \
+	-highlightthickness 2 -anchor c
+    menu $wm -tearoff 0 -bg $bgColor -fg $fgColor
     $wm add radiobutton -label $DummyEntry -variable $varName \
 	-command $cm -font $lfn
     foreach label $AvailableSET {
@@ -5709,7 +5768,7 @@ proc moduleMenus {{n 1}} {
       } else {
 	set subm $wm.$j
 	$wm add cascade -label $j -menu $subm -font $lfn
-	menu $subm -tearoff 0
+	menu $subm -tearoff 0 -bg $bgColor -fg $fgColor
 	foreach jj $subl {
 	  $subm add radiobutton -label $jj -variable $varName \
 	      -command $cm -font $lfn
@@ -5724,7 +5783,6 @@ proc moduleMenus {{n 1}} {
 
   disableModule ;  # set all modules enabled
 }
-
 
 # Unset temporary help variables used here, variables matching single characters,
 # or with Add in the end are deleted by setAll.

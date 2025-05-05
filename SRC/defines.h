@@ -148,6 +148,7 @@ typedef enum
 	MCN_SMPL_NXS     = 660,
 	MCN_SMPL_SANS    = 670,
 	MCN_SMPL_REFL    = 680,
+  MCN_SMPL_NCRYSTAL= 690,
 	MCN_FRAME        = 710,
 	MCN_FILTER       = 720,
 	MCN_FILTER2D     = 722,
