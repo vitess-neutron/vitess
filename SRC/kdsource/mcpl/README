@@ -1,0 +1,37 @@
+This is a source distribution of MCPL - Monte Carlo Particle Lists.
+
+Included are the core utilities for reading and writing .mcpl files: A binary
+format with lists of particle state information, for interchanging and
+reshooting events between various Monte Carlo simulation applications. The core
+utilities include both command line tools and programming interfaces for C/C++
+and python.
+
+MCPL I/O hooks for Geant4 (geant4.cern.ch) and MCNP (SSW files) are included in
+this distribution. Basic hooks for TRIPOLI-4 (STORAGE) and MCNP (PTRAC) are
+included as well. Hooks for McStas (mcstas.org) and McXtrace (mcxtrace.org) are
+already included directly upstream in those applications. Afew examples of how
+to use the Geant4 hooks, or how to interact with MCPL filesfrom standalone C
+code, are also provided. Refer to the FILES file for moreinformation about
+included files, and refer to the INSTALL file for build instructions.
+
+MCPL and most code distributed here was written 2015-2019 by Thomas Kittelmann
+(thomas.kittelmann@ess.eu). The MCNP-SSW converters were written in close
+collaboration with Esben Klinkby (esbe@dtu.dk), and the McStas and McXtrace
+converters were written by Erik B. Knudsen (erkn@fysik.dtu.dk) and Peter
+Willendrup (pkwi@fysik.dtu.dk). The PHITS converters were written in close
+collaboration with Douglas Di Julio (douglas.dijulio@esss.se).
+
+See the file LICENSE for usage conditions.
+
+A substantial effort went into developing MCPL. If you use it for your work, we
+would appreciate it if you would use the following reference in your work:
+
+   T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
+   Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012
+
+The latest version of MCPL and further instructions and documentation can be
+found at https://mctools.github.io/mcpl/.
+
+Note that instructions for installation and setup of third-party products like
+Geant4, McStas and MCNP are beyond the scope of this file. Please refer to the
+products own instructions for more information.

@@ -1,0 +1,124 @@
+/*******************************************************************************
+*
+* McStas, neutron ray-tracing package
+*         Copyright 1997-2002, All rights reserved
+*         Risoe National Laboratory, Roskilde, Denmark
+*         Institut Laue Langevin, Grenoble, France
+*
+* Component: Monitor_tracks
+*
+* %I
+* Written by: Osiris Inti Abbate
+* Date: Ago 2021
+* Origin: Balseiro Institute
+*
+* Detector-like component that writes neutron state parameters into an mcpl-format
+* binary, virtual-source neutron file.
+*
+* %D
+* Detector-like component that writes neutron state parameters into an mcpl-format
+* binary, virtual-source neutron file.
+*
+* MCPL is short for Monte Carlo Particle List, and is a format for sharing events
+* between e.g. MCNP(X), Geant4 and McStas.
+*
+* Example: Monitor_tracks(pt="n", filename="source.mcpl", xwidth=10, yheight=10)
+*
+* %VALIDATION
+*
+* %BUGS
+*
+* %P
+* INPUT PARAMETERS:
+*
+* pt       [str]  Particle type. "n" for neutron (default), "p" for photon.
+* filename [str]  Name of MCPL file to write. If not given, the component name will be used to create one.
+* xwidth   [cm]   Detector width.
+* yheight  [cm]   Detector height.
+*
+* %D
+*
+* %E
+*******************************************************************************/
+
+DEFINE COMPONENT Monitor_tracks
+DEFINITION PARAMETERS ()
+SETTING PARAMETERS (string pt="n", string filename="", xwidth=0.0, yheight=0.0)
+OUTPUT PARAMETERS (outfile, I, p2, N)
+/* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */ 
+
+SHARE
+%{
+	#include "mcpl.h"
+%}
+
+DECLARE
+%{
+	mcpl_outfile_t outfile;
+	double I, p2;
+	int N;
+	mcpl_particle_t* part;
+%}
+
+INITIALIZE
+%{  
+	if(strlen(filename) == 0) strcat(strcpy(filename, NAME_CURRENT_COMP), "_tracks");
+	outfile = mcpl_create_outfile(filename);
+	mcpl_hdr_set_srcname(outfile,"McStas Monitor_tracks");
+	mcpl_enable_universal_pdgcode(outfile, pt2pdg(pt[0]));
+
+	part = mcpl_get_empty_particle(outfile);
+
+	I = p2 = N = 0;
+%}
+
+TRACE
+%{
+    PROP_Z0;
+    
+	if(-xwidth/2<x && x<xwidth/2 && -yheight/2<y && y<yheight/2){
+		double v2 = (vx*vx + vy*vy + vz*vz);
+		double E = 1e-9 * VS2E * v2;
+		double v = sqrt(v2);
+		part->ekin = E;
+		part->position[0] = x*100.0; part->position[1] = y*100.0; part->position[2] = z*100.0;
+		part->direction[0] = vx/v; part->direction[1] = vy/v; part->direction[2] = vz/v;
+		part->weight = p;
+		double dir2 = part->direction[0]*part->direction[0]+part->direction[1]*part->direction[1]+part->direction[2]*part->direction[2];
+		if(dir2 != 1){
+			double dir = sqrt(dir2);
+			part->direction[0] /= dir;
+			part->direction[1] /= dir;
+			part->direction[2] /= dir;
+		}
+		mcpl_add_particle(outfile, part);
+	
+		I += p;
+		p2 += p*p;
+		N++;
+	
+		SCATTER;
+	}
+%}
+
+SAVE
+%{
+	printf("Monitor_tracks %s: I err N %lf %lf %d\n", NAME_CURRENT_COMP, I, sqrt(p2), N);
+%}
+
+FINALLY
+%{
+	mcpl_closeandgzip_outfile(outfile);
+%}
+
+MCDISPLAY
+%{
+	multiline(5,
+		-1.0, -1.0, 0.0,
+		 1.0, -1.0, 0.0,
+		 1.0,  1.0, 0.0,
+		-1.0,  1.0, 0.0,
+		-1.0, -1.0, 0.0);
+%}
+
+END

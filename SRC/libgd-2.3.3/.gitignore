@@ -1,0 +1,11 @@
+Makefile
+.deps
+.libs
+*.lo
+*.la
+/config.log
+/config.status
+/config/gdlib.pc
+/src/config.h
+/libtool
+/src/stamp-h1

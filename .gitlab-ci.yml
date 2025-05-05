@@ -66,7 +66,7 @@ compile-rocky8:
     LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
   before_script:
     - dnf install -y epel-release
-    - dnf install -y make gcc-toolset-12 libXpm-devel libXpm-devel gd-devel zlib-devel git unzip
+    - dnf install -y make gcc-toolset-12 libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel
     - . /opt/rh/gcc-toolset-12/enable
     - *linux_before_script
 
@@ -77,7 +77,7 @@ compile-rocky9:
     OS: Rocky9
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel
     - *linux_before_script
 
 compile-centos7:
@@ -91,7 +91,10 @@ compile-centos7:
     - sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS*.repo
     - sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS*.repo
     - sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS*.repo
-    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip
+    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip libxml2-devel
+    - curl -LOs https://github.com/Kitware/CMake/releases/download/v3.28.5/cmake-3.28.5-linux-x86_64.sh
+    - chmod +x cmake-3.28.5-linux-x86_64.sh
+    - ./cmake-3.28.5-linux-x86_64.sh --skip-license --prefix=/usr/local
     - *linux_before_script
 
 compile-ubuntu:
@@ -102,7 +105,7 @@ compile-ubuntu:
     ARCH: x86_64
   before_script:
     - apt-get update
-    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev
     - *linux_before_script
 
 compile-fedora40:
@@ -112,7 +115,7 @@ compile-fedora40:
     OS: Fedora40
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip cmake libxml2-devel
     - *linux_before_script
 
 compile-darwin:
@@ -130,7 +133,8 @@ compile-darwin:
     DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
     NOGD: 0
   before_script:
-    - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
+    # - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
+    - git clone -b vitess3.7 https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
     - cd vitess-data
     - sudo hdiutil attach XQuartz-2.8.2.dmg
     - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
@@ -141,6 +145,9 @@ compile-darwin:
     - make
     - sudo make install
     - cd ..
+    - tar xzf cmake.tgz
+    - sudo cp -a CMake.app /Applications/
+    - sudo ln -s /Applications/CMake.app/Contents/bin/cmake /usr/local/bin/cmake
     - cd ..
   artifacts:
     paths:
@@ -194,7 +201,7 @@ test-rocky8:
     LD_LIBRARY_PATH: "${CI_PROJECT_DIR}/vitess-data/libtorch/lib"
   before_script:
     - dnf install -y epel-release
-    - dnf install -y make gcc-toolset-12 libXpm gd zlib git unzip python3 python3-pyyaml
+    - dnf install -y make gcc-toolset-12 libXpm gd zlib git unzip python3 python3-pyyaml libxml2
     - . /opt/rh/gcc-toolset-12/enable
     - *linux_before_script
   script:
