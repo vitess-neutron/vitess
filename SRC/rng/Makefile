@@ -13,6 +13,13 @@ CDEBFLAGS = $(CFLAGS) $(INCL) -Wall
 
 SYS = $(shell uname)
 
+ifndef PREFIX
+    PREFIX = /usr/local
+endif
+INCLUDEDIR = $(PREFIX)/include/gsl
+LIBDIR = $(PREFIX)/lib
+BINDIR = $(PREFIX)/bin
+
 ifeq ($(SYS),Linux)
  UVERS=1
 else
@@ -68,3 +75,8 @@ all: gsltestlib gsltest
 clean :
 	-rm *.o
 	-rm *.a
+
+install: libgslran.a
+	install -d $(LIBDIR) $(INCLUDEDIR)
+	install libgslran.a $(LIBDIR)
+	install gsl/gsl_errno.h  gsl/gsl_math.h  gsl/gsl_message.h  gsl/gsl_randist.h  gsl/gsl_rng.h  gsl/gsl_types.h $(INCLUDEDIR)

@@ -1,0 +1,144 @@
+v1.4.0 2022-08-16
+      * Major update to CMake code, which first and foremost makes it possible
+        for downstream CMake-based projects to use find_package( MCPL ) and
+        through that get access to variables MCPL-related variables and build
+        targets (i.e. the MCPL::mcpl target for projects needing to include
+        mcpl.h and link against the compiled mcpl library). This is done in
+        response to a request from Paul Romano (github issue #58).
+      * The new minimum CMake version required is 3.10. Users having issues with
+        this or other of the new CMake-related changes are recommended to stick
+        with release 1.3.2 for now (and open issues in the tracker at
+        https://github.com/mctools/mcpl/issues in case the problem is suspected
+        to be on the MCPL side of things).
+      * Now using the GNUInstallDirs module to determine locations of files in
+        the installation. This is considered best practice, and also provides
+        a fine-grained control to users who might need it.
+      * Changed the default to NOT build and install the examples and Geant4
+        hooks. These can still be enabled explicitly as needed of course with
+        -DBUILD_EXAMPLES=ON and/or -DBUILD_WITHG4=ON.
+      * Now attempting to use RPATH's in mcpltool and other installed examples
+        (to potentially help users avoid messing with LD_LIBRARY_PATH to run
+        commands such as mcpltool). To prevent this, set -DMODIFY_RPATH=OFF.
+      * All shebangs (#!/usr/bin/env python3) in Python scripts now refer to
+        python3 rather than merely python (github issue #55). Users having
+        issues with this due to being on very old platforms are recommended to
+        stick with release 1.3.2 for now (and open issues in the tracker at
+        https://github.com/mctools/mcpl/issues in case the problem is suspected
+        to not be related to having an ancient platform).
+      * Replaced a strncpy call in mcpl.c with memcpy, to avoid a compilation
+        warning under some conditions. Beyond fixing a potential compilation
+        warning, there should be no changes to functionality.
+
+v1.3.2 2020-02-09
+      * Fix time conversion bug in phits2mcpl and mcpl2phits, where ms<->ns
+        factors had been mistakenly inverted (github issue #53). Thanks to
+        Douglas Di Julio (ESS) for reporting.
+      * Reorder link flags in documentation and "fat" Makefile to be correctly
+        placed after the compilation objects. This fixes modern GCC compilation
+        using as-needed flag, which is the default on Ubuntu (github issue #51).
+
+v1.3.1 2019-06-29
+      * Fix length of all data arrays in Python API in the last particle block
+        in all files, making pymcpltool --stats work again for files with more
+        than blocklength particles (github issue #49).
+      * Python API accepts pathlib.Path objects introduced in Python 3.4 (github
+        issue #50).
+
+v1.3.0 2019-06-21
+      * Introduce support for PHITS. This is done via mcpl2phits and phits2mcpl
+        command line tools for conversions to and from PHITS binary dump
+        files. Thanks to Douglas Di Julio (ESS) for help in adding this new feature.
+      * Introduce new --forcemerge option for the mcpltool and an associated
+        mcpl_forcemerge_files function in the C API.  This makes it possible to
+        merge particles from otherwise incompatible files, at the heavy price of
+        discarding descriptive metadata like comments and blobs. This is
+        intended as a last-resort solution (github issue #43).
+      * Add new public function mcpl_transfer_last_read_particle, which makes it
+        possible to perform non-lossy filtering or merging of files using custom
+        C code (github issue #18).
+      * Fix pymcpltool --stats sum(weights) bug with python3 (github issue #46)
+      * Handle unexpected records at the end of SSW headers gracefully (github
+        issue #45).
+
+v1.2.3 2018-09-26
+      * ssw2mcpl: Support MCNP 6.2.
+
+v1.2.2 2018-03-07
+      * mcpl.py: Fix issues in MCPLParticleBlock.position() and
+        MCPLParticleBlock.polarisation() methods which could result in
+        exceptions or warnings being emitted for certain input files or for
+        certain versions of python and numpy.
+
+v1.2.1 2018-01-23
+      * Correct _POSIX_C_SOURCE to address FreeBSD compilation (github issue #33).
+      * mcpl.py: Work around issues in numpy v1.14 to fix MCPLParticleBlock.position() and
+        MCPLParticleBlock.polarisation() methods (github issue #34).
+      * CMakeLists.txt: Always use absolute rpath (for OSX).
+      * Fix gcc7 compilation.
+
+v1.2.0 2017-07-02
+      * Add pure python module for MCPL access, stat collection and
+        plotting. Also add a pure-python mcpltool which provides readonly access
+        to MCPL files, and includes statistics and plotting capabilities. Supports
+        both python2 and python3.
+      * Add --text option to mcpltool/pymcpltool, for producing column-based
+        ascii files from MCPL particle data.
+      * mcpl_repair now detects and treats truncated files properly.
+      * Particle listings no longer show weight columns when file has a
+        universal weight.
+      * Fixed casing of method names in comments in G4MCPLGenerator and G4MCPLWriter.
+      * Sanity check that endianness field in files is indeed "L" or "B".
+      * Minor code fixes caught in static analysis with clang analyze.
+      * Minor fixes in textual output.
+
+v1.1.0 2017-03-29
+      * Introduced new and more precise unit vector packing scheme. Consequently,
+        MCPL_FORMATVERSION was increased from 2 to 3. Files in the old format
+        remain fully functional.
+      * Merging: Add mcpl_merge_files function which merges any number of
+        existing files into a new one and rename mcpl_merge to
+        mcpl_merge_inplace (the old obsolete form still works for now, but prints
+        a warning when used). The mcpltool --merge interface is updated
+        correspondingly. Gzipped files can now be merged directly. Warn users if
+        merging a file with itself and error for safety if output of extractions
+        or merges already exists.
+      * MCNP SSW support: Format decoding now relies purely on layout of fortran
+        records, allowing more files to be read, even from some custom
+        compilations of MCNP. Also replaced a static read buffer with a dynamic
+        one, fixing errors experienced by some users and support MCNP5 for the
+        first time. File load printouts are improved slightly and all warnings
+        about untested code paths now include a request for feedback.
+      * ssw2mcpl: Embed more useful meta-data in MCPL header.
+      * mcpl2ssw: Reference SSW file can now be gzipped.
+      * Add option for universal weights in MCPL files, to save 4 or 8 bytes
+        per particle in output from unweighted simulations.
+      * Add MCPL_VERSION_STR macro to mcpl.h for convenience.
+      * Bugfix: mcpl_particle_t userflags field changed from int32_t to uint32_t.
+      * Obsolete *_rc versions of gzipping functions (old obsolete forms still
+        work for now, but print warnings when used).
+      * Fix spelling of mcpl_hdr_universel_pdgcode (old obsolete form still
+        works for now, but prints a warning when used).
+      * G4MCPLWriter: Fix capitalisation of StorePreStep/StorePostStep.
+      * Build system and documentation: Add INSTALL file with more details
+        concerning build and integration, and add a simple makefile for "fat"
+        tools. Also add src_fat/LICENSE.zlib with the zlib license and reference
+        it where relevant, and include the full text of the zlib license towards
+        the top of all autogenerated "fat" files. Smaller updates to README and
+        related files.
+      * Simplify internal MCPL particle I/O by using buffer.
+      * Fix rare issue where mcpltool --extract could distort unit vectors.
+      * Guard against overflow in particle position during file navigation
+      * Add a few more platform compatibility checks.
+      * Fix flag name in CMakeLists.txt affecting zlib support in SSW converters.
+      * Workaround incomplete C99 support in version 12 of intels C compiler.
+      * Add small sample MCPL file (example/example.mcpl) to release.
+
+v1.0.0 2016-09-07
+      * Identical to 0.99.1.
+
+v0.99.1 2016-09-04
+      * Release candidate for MCPL 1.0.0
+      * Add --extract flag for the mcpltool.
+
+v0.7.0 2016-08-25
+      * First github based public release of MCPL.

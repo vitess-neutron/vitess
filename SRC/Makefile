@@ -8,6 +8,7 @@ endif
 MODULES_DIR = ../MODULES
 GSLPATH = ./rng
 G2PATH = ./g2-0.72
+KDSOURCEPATH := ./kdsource
 
 SYS := $(shell uname -s)
 ARCH := $(shell uname -m)
@@ -26,7 +27,9 @@ AR = ar
 ARFLAGS = rsv
 INSTALL = install
 RM = rm -f
+RMDIR = rm -rf
 LN = ln -s
+CMAKEFLAGS = -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX)
 
 DARWIN_UNIVERSAL = NO
 ifeq ($(SYS),Darwin)
@@ -34,6 +37,7 @@ NOGD ?= 1
 ifeq ($(ARCH),arm64)
 DARWIN_UNIVERSAL = YES
 ARCHFLAGS = -arch x86_64 -arch arm64
+CMAKEFLAGS += "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
 endif
 else
 NOGD ?= 0
@@ -49,7 +53,7 @@ LDLIBS += -lgd
 endif
 G2OPTS =
 ifeq ($(SYS),Darwin)
-G2OPTS += --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
+G2OPTS += --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib --disable-shared
 CFLAGS += -I/opt/X11/include
 LDFLAGS += -L/opt/X11/lib
 endif
@@ -189,9 +193,10 @@ all: $(ALL)
 
 .PHONY: clean
 clean:
-	$(RM) *.o *.a $(ALL)
+	-$(RM) *.o *.a $(ALL)
 	$(MAKE) -C "$(GSLPATH)" clean
 	-[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
+	-$(RMDIR) "$(KDSOURCEPATH)/build" "$(KDSOURCEPATH)/install"
 
 .PHONY: install
 ifeq ($(DARWIN_UNIVERSAL),YES)
@@ -210,11 +215,15 @@ endif
 
 # build libraries
 $(G2PATH)/libg2.a:
-	cd $(G2PATH); ./configure $(G2OPTS) CC=cc CXX=c++ CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
+	cd $(G2PATH); ./configure $(G2OPTS) --disable-shared CC=$(CC) CXX=$(CXX) CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
 	$(MAKE) -C "$(G2PATH)" all
 
 $(GSLPATH)/libgslran.a:
-	$(MAKE) -C "$(GSLPATH)" libgslran.a CC=cc CXX=c++ CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
+	$(MAKE) -C "$(GSLPATH)" libgslran.a CC=$(CC) CXX=$(CXX) CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
+
+$(KDSOURCEPATH)/install/lib/libkdsource.a:
+	cd $(KDSOURCEPATH); cmake -DBUILD_SHARED_LIBS=OFF --install-prefix=$(realpath $(KDSOURCEPATH))/install -DCMAKE_INSTALL_LIBDIR=lib $(CMAKEFLAGS) -S . -B build
+	make -C "$(KDSOURCEPATH)/build" install
 
 libvitess.a: $(COMMON)
 	$(AR) $(ARFLAGS) $@ $^
@@ -253,7 +262,10 @@ monochromator: monochromator.cpp monochrclass.cpp
 
 opt_sim: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
 
-read_in: read_in.c random_sampler.c
+read_in: CFLAGS += -I$(KDSOURCEPATH)/install/include
+read_in: LDFLAGS += -L$(KDSOURCEPATH)/install/lib
+read_in: LDLIBS += -lmcpl -lkdsource -lxml2
+read_in: read_in.c random_sampler.c | $(KDSOURCEPATH)/install/lib/libkdsource.a
 
 sample_nxs: sample_nxs.c nxs.c sgclib.c sgfind.c sghkl.c sgio.c sgsi.c
 

@@ -1,0 +1,184 @@
+// Data file for TRIPOLI-4
+
+// *: Choose one or more options
+// #: Choose between exclusionary options
+// <KWORD>: Replace with keyword
+
+// Define problem geometry
+GEOMETRY
+	TITLE title
+*   TYPE num(type) // Geometric element to be used in combinatory definition of volume
+		Definition for type num(type)
+	...
+*   SURF num(surf ) // Surface to be used to build volume
+		Definition for surface num(surf )
+	...
+	VOLU num(volu) // Problem volumes
+		Definition for volume num(volu)
+	ENDV
+	...
+	POSITION x y z // Returns volume which (x,y,z) belongs to
+	COLOR
+		Colormap
+	GRAPH // Graph on 2D cut. It is recommended to plot tally regions
+		x0 y0 z0
+		0 0 1 1 0 0
+		Lz Lx
+		4 // Show plot and save as .ps
+ENDGEOM
+
+// Assign area or volume values
+VOLSURF
+*   SURFACE nb(surfaces)
+		numvol 1 (1) numvol 2 (1) surface(1)
+		...
+		numvol 1 (n) numvol 2 (n) surface(n)
+*   VOLUME nb(volumes)
+		numvol(1) volume(1)
+		...
+		numvol(n) volume(n)
+END_VOLSURF
+
+// Boundary conditions. Default: leakage
+BOUNDARY_CONDITION nb(conditions)
+	num(vol1)   <TYPE_CONDITION>
+	num(face1)
+	...
+	num(voln)   <TYPE_CONDITION>
+	num(facen)
+END BOUNDARY_CONDITION
+
+// Compositions (materials) present in the problem
+COMPOSITION nb(compositions)
+*   FILE
+		<ELECTRONIC_PROPERTIES>
+		temperature name(compo)
+		filename
+*   POINT_WISE
+		<ELECTRONIC_PROPERTIES>
+		temperature name(compo)
+		Composition data
+		...
+*   DENSITY
+		<ELECTRONIC_PROPERTIES>
+		temperature name(compo)
+		Composition data
+		...
+*   MULTIGROUP_HOMOGENEOUS
+		temperature name(compo)
+		Composition data
+		...
+*   MULTIGROUP
+		temperature name(compo)
+		Composition data
+		...
+*   MULTIGROUP_DENSITY
+		temperature name(compo)
+		Composition data
+		...
+END_COMPOSITION
+
+// Assign compositions to volumes
+GEOMCOMP
+	name-compo(1) nb-volu(1)
+		volu(1). . . volu[nb-volu(1)]
+	...
+	name-compo(n) nb-volu(n)
+		volu(1). . . volu[nb-volu(n)]
+END_GEOMCOMP
+
+// Sources (puntual, factoriz o ext) in the problem
+SOURCES_LIST nb(sources)
+	NORM norm(list)
+	SOURCE
+		Description of first source
+	...
+	SOURCE // External source
+		INTENSITY 1
+		ALL_PARTICLE
+		EXTERNAL source.so
+			PARAM 2
+				BATCH, SIZE
+	...
+	SOURCE
+		Description of last source
+	END_SOURCES
+END_SOURCES_LIST
+
+// Physical magnitudes to record
+RESPONSES nb(responses)
+	NAME <name1>
+		<type1> <particle1>
+		<additional data>
+	...
+	NAME <nameN>
+		<typeN> <particleN>
+		<additional data>
+END_RESPONSES
+
+// Energy, angle and time grids to record RESPONSES
+GRID_LIST nb(grids)
+	name(grid 1 )
+		nb(bounds)
+		bound(1). . . bound(n)
+	...
+	name(grid n )
+		nb(bounds)
+		bound(1). . . bound(n)
+END_GRID_LIST
+
+// Definition of regions and grids to record RESPONSES 
+SCORE nb(scores)
+	...
+	// Example score
+	NAME score_name
+		response_name
+		TRACK
+		GRID energy_grid_name
+		EXTENDED_MESH
+			WINDOW
+				x0 y0 z0
+				x1 y1 z1
+				Nx Ny Nz
+			FRAME CARTESIAN
+				0 0 0
+				1 0 0
+				0 1 0
+				0 0 1
+	...
+END_SCORE
+
+// Record particle lists
+STORAGE nb(storage)
+	...
+	storage_name
+		LIMIT_SIZE 1024
+		NEUTRON
+		Emax Emin
+		FRONTIER LIST nb(frontier)
+			vol11 vol12
+			vol21 vol22
+			...
+	...
+END_STORAGE
+
+// Simulation parameters
+SIMULATION
+	BATCH nb(batches)
+	SIZE nb(particles per batch)
+	
+	PARTICLE nb(types of particles) <TYPE_OF_PARTICLES>
+	
+#   SHIELDING
+#   CRITICALITY
+		DISCARD nb(batches to be eliminated)
+		KIJ_MATRIX
+#   FIXED_SOURCES_CRITICALITY
+#   MULTIPLE
+	
+	MONITORING 0 // Avoid initial monitoring batch
+	
+	// Optional parameters
+	...
+
+END_SIMULATION

@@ -1,0 +1,60 @@
+build
+install
+dependencies
+
+*.sublime-workspace
+.vscode
+
+# Python aux files
+**/.ipynb_checkpoints
+**/__pycache__
+*.pyc
+**/dist/
+python/*.egg-info
+python/build
+python/.tox
+python/python/*
+python/.coverage
+
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Emacs
+*~
+\#*\#
+.\#*
+.vscode/settings.json
+docs/examples/samples.ssv
+docs/examples/Verification.ipynb
+docs/examples/*.pdf
+docs/examples/*.mcpl.gz
+docs/examples/*.xml
+docs/examples/*_bws
+docs/html
+CMakeLists_for_wsl2.txt

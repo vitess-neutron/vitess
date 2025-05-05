@@ -427,7 +427,8 @@ typedef enum
   VT_MCPL_FMT   = 3,
   VT_MCNPX_FMT  = 4,
   VT_MCNP6_FMT  = 5,
-  VT_SSW_FMT = 6
+  VT_SSW_FMT = 6,
+  VT_KDS_FMT = 7,
 }
 VtPrgFormat;
 

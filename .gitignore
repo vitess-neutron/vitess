@@ -6,7 +6,6 @@ SRC/*
 *.a
 *.dylib
 *.so
-*.dll
 *.pyc
 __pycache__/
 MODULES/*_Darwin_x86_64
