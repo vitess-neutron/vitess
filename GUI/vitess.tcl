@@ -32,13 +32,17 @@
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
 
-set darkMode [exec osascript -e {tell application "System Events" to get dark mode of appearance preferences}]
-if {$darkMode eq "true"} {
-    set fgColor black
-    set bgColor #f2f2fb
+if {$tcl_platform(os) == "Darwin"} {
+  set darkMode [exec osascript -e {tell application "System Events" to get dark mode of appearance preferences}]
 } else {
-    set fgColor black
-    set bgColor #f2f2fb
+  set darkMode false
+}
+if {$darkMode eq "true"} {
+  set fgColor black
+  set bgColor #f2f2fb
+} else {
+  set fgColor black
+  set bgColor #f2f2fb
 }
 
 set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active)$}
