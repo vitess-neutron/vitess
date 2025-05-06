@@ -4,20 +4,20 @@
 
 ## Virtual Instrumentation Tool for Neutron Scattering at Pulsed and Continuous Sources
 
-![Version](https://img.shields.io/badge/Current_Version-3.6-green.svg)  ![License: GNU](https://img.shields.io/badge/License-GNU-blue.svg)
+![Version](https://img.shields.io/badge/Current_Version-3.7-green.svg)  ![License: GNU](https://img.shields.io/badge/License-GNU-blue.svg)
 
 Welcome to the GitLab repository of **VITESS** (Virtual Instrumentation Tool for the European Spallation Source).
 
 
 **VITESS** is a tool for the simulation of neutron scattering instruments and experiments at pulsed and continuous sources. Using **VITESS**, you can simulate a large variety of instruments at any of the major current and future neutron sources, including the European Spallation Source, which is currently being designed. **VITESS** is supported by a graphical user interface (GUI), making it simple for you to compose your instrument and run simulations. You can use **VITESS** on a **Windows**, **Linux** or **Macintosh** computer. Simply choose the appropriate [download file](https://iffgit.fz-juelich.de/vitess/vitess/-/releases) and install **VITESS** on your computer. The **VITESS** installation includes some example instruments to demonstrate the main features of the program. You can also use the [examples](./FILES/EXAMPLES/) as an initial aid for your own instruments. For any questions and feedback of all kind you may contact the **VITESS** developers team, vitess@fz-juelich.de, and we will help you as quickly as possible.
 
-### Latest versions
+### Download VITESS
 
-The current **VITESS** version is 3.6. It can be downloaded [here](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
+Download the current stable version: [VITESS 3.7](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
 
-As new features, it allows reading and writing neutron data in MCPL and MCNPX format and contains the description of the ESS Butterfly-1 moderator. We invite you to download and install the new release and give us feedback on your experiences. Please also take a look at the version history.
+Download a snapshot of the development version: [VITESS develop](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package).
 
-**VITESS** 4.0 is in active development. If you are interested in testing it, checkout the develop branch or download an up-to-date snapshot [here](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
+**VITESS** 4.0 is in active development. If you are interested in testing it, checkout the develop branch or download an [up-to-date snapshot](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
 
 
 ### Concept of VITESS

@@ -191,7 +191,7 @@ if [file exists $VisMerge] {
 }
 
 set MainBitmap [file join $SourceDirectory BITMAPS vitsav.gif]
-set versionNumber "3.6"
+set versionNumber "3.7"
 set defaultPlotApp ""
 ### execute all tcl source files
 set modl {tools check entries help ldstore menu windows
