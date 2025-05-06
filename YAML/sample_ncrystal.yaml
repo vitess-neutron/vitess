@@ -37,10 +37,9 @@ sample_ncrystal:
         type: "switch"
         descr: "Solid sample"
         tooltip: "If the sample is solid please insert the desired crystal axis directions. If no, please give default values."
-        default: "yes"
+        default: true
         column: 0
         prefix: "-s"
-        options: {"no": 0, "yes": 1}
 
     - Title_param:
         type: "title"
@@ -203,13 +202,14 @@ sample_ncrystal:
         default: "Sample shape"
 
     - cyl:
-        type: "switch"
+        type: "combo"
         descr: "sample geometry"
         tooltip: "geometry of the sample: cylinder, hollow cylinder, sphere, or cuboid"
-        default: "cylinder"
+        enum: "VtSmplGeom"
+        default: "VT_CYL"
         column: 0
         prefix: "-G"
-        options: {"cylinder": 1, "hollow-cylinder": 2, "sphere": 3, "cuboid": 4}
+        options: ["VT_CYL", "VT_HOL_CYL", "VT_SPHERE", "VT_CUBE"]
 
     - Title_param:
         type: "title"
