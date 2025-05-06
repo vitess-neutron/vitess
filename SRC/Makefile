@@ -3,7 +3,7 @@
 SHELL = /bin/sh
 
 ifndef VITESS_VERSION
-VITESS_VERSION = 3.6
+VITESS_VERSION = 3.7
 endif
 MODULES_DIR = ../MODULES
 GSLPATH = ./rng

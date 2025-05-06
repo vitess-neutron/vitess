@@ -1,5 +1,5 @@
 variables:
-  VITESS_VERSION: "3.6"
+  VITESS_VERSION: "3.7"
 
 stages:
   - build
@@ -49,8 +49,7 @@ workflow:
     LIBTORCHPATH: "${CI_PROJECT_DIR}/vitess-data/libtorch"
 
 .linux_before_script: &linux_before_script
-  # FIXME: version from variable
-  - git clone -b vitess3.7 https://${LINUX_DATA_USER}:${LINUX_DATA_PASSWORD}@${LINUX_DATA_REPO} vitess-data
+  - git clone -b vitess${VITESS_VERSION} https://${LINUX_DATA_USER}:${LINUX_DATA_PASSWORD}@${LINUX_DATA_REPO} vitess-data
   - cd vitess-data
   - unzip "${LIBTORCHFILE}"
   - cd ..
@@ -93,10 +92,10 @@ compile-centos7:
     - sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS*.repo
     - sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS*.repo
     - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip libxml2-devel
-    - curl -LOs https://github.com/Kitware/CMake/releases/download/v3.28.5/cmake-3.28.5-linux-x86_64.sh
-    - chmod +x cmake-3.28.5-linux-x86_64.sh
-    - ./cmake-3.28.5-linux-x86_64.sh --skip-license --prefix=/usr/local
     - *linux_before_script
+    - cd vitess-data
+    - ./cmake-3.28.5-linux-x86_64.sh --skip-license --prefix=/usr/local
+    - cd ..
 
 compile-ubuntu:
   extends: .compile-linux
@@ -134,8 +133,7 @@ compile-darwin:
     DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
     NOGD: 0
   before_script:
-    # - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
-    - git clone -b vitess3.7 https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
+    - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
     - cd vitess-data
     - sudo hdiutil attach XQuartz-2.8.2.dmg
     - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
@@ -222,7 +220,7 @@ test-darwin:
     DARWIN_DATA_USER: "gitlab+deploy-token-92"
     DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
   before_script:
-    - git clone -b vitess3.7 https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data # FIXME: version from variable
+    - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
     - cd vitess-data
     - sudo hdiutil attach XQuartz-2.8.2.dmg
     - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
