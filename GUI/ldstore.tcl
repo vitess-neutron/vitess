@@ -235,6 +235,10 @@ proc storeAll {extension {prosal ""} {as ""} {proto 1}} {
     }
   }
   close $f
+  # set executable flag on unix:
+  if {$extension == "sh" && [getSystem] == "unix"} {
+    exec chmod +x $fname
+  }
   if $proto {
     outProtocol "Stored in file: $fname"
     conditionalCloseProtfile
