@@ -78,7 +78,7 @@ source:
       type:    "title"
       default: "Source, moderator and beamline parameters"
   - eSrcType:                          # -S    VtSrcType SrcType_Txt2ID(const char* sText)      CWS SPSS LPSS
-      type:    combo
+      type:    "combo"
       hidden:  true
       descr:   "source type"
       enum:    "VtSrcType"
@@ -86,11 +86,11 @@ source:
       default:  "CWS"
       prefix:  "-S"
   - eSrcName :                          # -N    VtSrcName SrcName_Txt2ID(const char* sText)
-      type:    "combo"
+      type:    "string"
       descr:   "source name"
       tooltip: "name of the source"
-      enum:    "VtSrcName"
-      options: ["ANYSOURCE", "FRM2","ILL"]
+      # enum:    "VtSrcName"
+      # options: ["ANYSOURCE", "FRM2","ILL"]
       default:  "ANYSOURCE"
       column:   0
       prefix:  "-N"

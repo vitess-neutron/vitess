@@ -64,7 +64,7 @@ source:
       type:    "title"
       default: "Moderator parameters"
   - eSrcType:                          # -S    VtSrcType SrcType_Txt2ID(const char* sText)      CWS SPSS LPSS
-      type:    combo
+      type:    "combo"
       hidden:  true
       descr:   "source type"
       enum:    "VtSrcType"

@@ -79,16 +79,16 @@ source:
       type:    "title"
       default: "Source and moderator parameters"
   - eSrcName :                          # -N   VtSrcName SrcName_Txt2ID(const char* sText)
-      type:    "combo"
+      type:    "string"
       descr:   "source name"
       tooltip: "name of the source, (needed for analytical calculations of source characteristics)"
-      enum:    "VtSrcName"
-      options: ["ANYSOURCE", "HBS", "CSNS", "IPNS"]
+      # enum:    "VtSrcName"
+      # options: ["ANYSOURCE", "HBS", "CSNS", "IPNS"]
       default:  "ANYSOURCE"
       column:   0
       prefix:  "-N"
   - eSrcType:                          # -S    VtSrcType SrcType_Txt2ID(const char* sText)      CWS SPSS LPSS
-      type:    combo
+      type:    "combo"
       descr:   "source type"
       tooltip: "parameter describing the time dependence of the proton beam: continuous (CWS), short pulses (SPSS) or long pulses (LPSS)"
       enum:    "VtSrcType"
