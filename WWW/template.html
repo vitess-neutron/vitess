@@ -4,15 +4,191 @@
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
     <link rel="stylesheet" type="text/css" href="default.css">
     <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
-    <title>###</title>
+    <title>Template module</title>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
   </head>
 <body>
-<h1>###</h1>
-<pre>
+<h1>Developing your own Vitess module</h1>
+<p>
 
-</pre>
+  This tutorial will guide you to create a custom Vitess module.<br> There are four important steps to consider when developing a module:
+
+  <ul>
+    <li><a href="#write">Write the module</a> source code in C or C++ and include it in the SRC folder.</li>
+    <li>Include the module in the <a href="#makefile">Makefile</a> located in `SRC/Makefile` and compile the software to generate the binary.</li>
+    <li>Include the module to the <a href="#gui">Graphical User Interface</a> (GUI).</li>
+  </ul>
+
+  After following these steps, the new binary should be located in the MODULES folder and the module should appear in the GUI. So you should be able to start using your code. In what follows, we explain each one of these steps in detail with an example.
+<br>
+After adding your module, you may want to make use of all the functionalities offered by Vitess, such as the live mode and the visualization. Moreover, you may want to create some documentation of what the module does and how, for your future-self and for other users.
+Therefore, we encourage you to consider and go through a few more optional steps to complete your coding effort and make it more usable from other users:
+<ul>
+  <li>Add a <a href="#yaml">YAML</a> file describing your module.</li>
+  <li>Add the ability to <a href="#visualise">visualise</a> the module.</li>
+  <li>Add the <a href="#help">help file</a> relative to your new module.</li>
+</ul>
+
+</p>
+<p>
+  <h2 id="write"><font size="+1">1. Write your module</font></h2>
+
+  As example we provide <code>template.c</code> source file in the <code>SRC</code> directory.
+  <br>These templates serve as en example on how to create your own module. You can make a copy of this template and work on that.
+  <br>A first consideration, is that modules are defined by a module ID. These are listed in a <code>typdef enum</code> that is in <code>defines.h</code>.\
+  <br>We have created a general module ID called <code>MCN_USER</code>, but can directly add a new module ID to the list. If you do so, it is also necessary to modify the <code>CompID2Name</code> function in <code>convert.c</code> to copy the name of the module given the ID (create a new line and follow the logic in this function).<br>
+  Finally, you also need to modify the <code>Name2CompID</code> function in <code>convert.c</code> in the same way, so that it knows how to convert from name to module ID and viceversa.
+
+  <br>In the following part of the template the general initialization is performed by means of the <code>Init</code> function, and a <code>PrintModuleName</code> function.
+  <br>After this, you must write an <code>OwnInit</code> function (given in the template) that sets the input parameters of the module and their flags to be used in the command line interface.
+  <br>After treating all neutrons, <code>Cleanup</code> has to be called for writing into the log file and adding a line to <code>instrument.inf</code>, which stores the position of each component in a global co-ordinate system, and a function <code>SetGeometry</code> written for the instrument visualization.
+
+  <br>There are several functions that Vitess offers to interact with the software. Some important ones are:
+  <ul>
+    <li><code>ReadNeutrons</code>, which reads neutrons from the input stream and return the number of neutrons read,</li>
+    <li><code>WriteNeutron</code>, which writes neutron to the output buffer that will be sent to the next module.</li>
+  </ul>
+    You can find them mostly in <code>init.c</code>.<br>
+
+    There are also some <code>Neutron</code> structures like <code>InputNeutrons</code> (stores the input neutron Buffer) or <code>OutputNeutrons</code> (stores the output neutron Buffer) which are used to access the input and output neutron phase space variables.
+    <br>The <code>Neutron</code> structure type definition can be found in <code>defines.h</code>. It is strongly recommended to look at some other modules in the <code>SRC</code> folder to see how these functions work and are implemented.
+    <br>Some simple modules maybe <code>space.c</code> or <code>slit.c</code> to start with.
+    <br>Some function in <code>general.c</code> in <code>init.c</code> facilitate handling structures or files, e.g. <code>CopyVector</code>, <code>InitRotMatrix</code>, <code>LinesInFile</code>, <code>InitNeutron</code>.
+    <br>There are some auxiliary functions also to convert between physical properties, like for example <code>ENERGY_FROM_LAMBDA</code> or <code>LAMBDA_FROM_V</code>. These functions can be found in <code>general.c</code> and may be useful for you specific module.
+</p>
+<p>
+  <h2 id="makefile"><font size="+1">2. Include the module in the Makefile and compilation</font></h2>
+
+  To be able to compile the Vitess software with your newly generated module it is necessary to include it into the `Makefile` which is located in `SRC/Ḿakefile`:
+
+  `ALL = ascii2bin \ ... \ writeout \ template`.
+
+  If the generated component depends on code in other files, you have to declare it like this:
+
+  `template: template.c dependency.c`
+
+  Now, whenever running
+
+  <code>
+  $make all
+  </code>
+
+  the new module will be compiled together with the rest of the bundle and you will see the binary inside the folder. Afterwards, you can run
+
+  <code>
+  $make install
+  </code>
+
+  to move the binaries into the `MODULES` folder. You may also run
+
+  <code>
+  $make clean
+  </code>
+
+  to clean the current directory of the binaries created.
+
+  Now you have your module included in the vitess package and you can already add it to a command line pipeline to start using it!
+</p>
+<p>
+
+  <h2 id="gui"><font size="+1">3. Include the module to the Graphical User Interface (GUI)</font></h2>
+
+  First you need to modify <code>GUI/vitess.tcl</code>.
+  <br>This part is optional if you intend to use the module by means of the GUI (recommended).
+  <br>GUI files are inside the <code>GUI</code> folder. It is necessary to modify the <code>vitess.tcl</code> file to include a module by means of including the following lines (follow the other modules as an example).
+  <br>First, add the module to the list of available modules by modifying the <code>AvailableSET</code> function.
+  <br>In the example, we added the <code>template</code> inside the <code>external_command</code> menu:
+
+  <br>
+  <code>
+  {external_command {external_command template} {external_command template}}
+  </code>
+  <br>
+  <br>Then add (also inside <code>vitess.tcl</code>) the function that defines the module content in the GUI:
+  <br>
+  <code>
+  set templateESET { <br>
+    {"Template Module Title" header}<br>
+    {fname pareditablefile "input file example" {"Input file space label" "Give out some help comment." "" M} r "" 1}<br>
+    {}<br>
+    {Variable1 int "10000" {"Example input variable" "Another help comment." "" n}}<br>
+    }<br>
+  </code><br>
+
+  You may find these lines already in the <code>vitess.tcl</code> file and modify them accordingly to your module.
+
+  The <code>template</code> can be replaced with the name of your module.
+  <br>In this example, the GUI of the template would have an input file box with a button to search for (that is the pareditablefile definition), which would have a label "Input file space label" and if right clicked would give the help "Give out some help comment". Whatever is passed as an input would be stored in the flag `M`, and the default value would be 1. The second and empty container {} would generate a space, and the last container would set an input box for a variable called Variable1 of type integer with a default value of 10000. Following the first example, it would be stored in the flag `n`. Flag letters do not necessarily have any logic, but they must be the same flag as set in the <code>OwnInit</code> function since these will be used to generate the command line prompt.
+
+  <br>If you intend to add more parameters, just add more containers <code>{}</code> into the <code>set</code>.
+  <br>You can grab ideas on how to use these by looking at other modules.
+</p>
+<p>
+
+  <h2 id="yaml"><font size="+1">4. Add the YAML file (Optional)</font></h2>
+
+  This if for the module compatibility, because a YAML file will be required from version 4.0 onwards. This file should be located in the `YAML` folder of the VITESS directory. For general guidelines on how to create the YAML file, visit  <a href="https://iffgit.fz-juelich.de/vitess/vitess-python/-/wikis/Vitess%20YAML%20file%20format"> YAML files description. </a>
+
+  The YAML files are simple to read and you can get the basic ingredients by reading the YAML files of other modules.
+</p>
+
+<p>
+  <h2 id="visualise"><font size="+1">5. Add the ability to visualise the module.</font></h2>
+</p>
+<ul>
+  <li>The following code changes are necessary in <code>defines.h</code>:</li>
+  <ul>
+    <li>Add to <code>McCompID</code> a line such as <code>MCN_mymodule = mymoduleID</code>,</li>
+    <li>Add a <code>struct</code> with a unique name such as <code>VtMystruct</code>,</li>
+    <li>Add <code>VtMystruct</code> and an integer variable defining the module multiplicity such as <code>nstruct</code> to the structure <code>VtModGeom</code>,</li>
+  </ul>
+  <li>The following code changes are necessary in <code>init.h</code>:</li>
+  <ul>
+    <li>Add a void function that will print out the module parameters in the proper format.
+      <br>The name should be something like <code>DrawMystruct</code>.
+      <br>The void should at least have the following variables: <code>FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir</code>. You can add more variables depending on your requirements for visualisation.
+    </li>
+  </ul>
+  <li>The following code changes are necessary in <code>init.c</code>:</li>
+  <ul>
+    <li>Describe the void function <code>DrawMystruct</code> that you defined in the <code>init.h</code></li>
+    <li>Add a for cycle to the void function <code>WriteGeomData</code> as it is done for the other structures</li>
+  </ul>
+  <li>The following code changes are necessary in <code>sortiap.c</code>:</li>
+  <ul>
+    <li>Add the material type such as <code>MYSTRUCTMAT</code>.</li>
+    <li>Add the Gtype such as <code>GT_Mystruct</code>.</li>
+    <li>Edit <code>GTMAX</code> accordingly. If you add one more GType add one to the current value of <code>GTMAX</code>.</li>
+    <li>Add the relative case to <code>parseX3dOptionFile()</code>.</li>
+    <li>Update the function <code>defineMaterials ()</code> if necessary.</li>
+    <li>Update the function <code>shapeString</code>.</li>
+    <li>Change the value <code>MAXARGS</code> if necessary.</li>
+    <li>Add the relative case to <code>parseGeomItem</code>.</li>
+    <li>Taking into account that y and z directions are defined following a different convention in Vitess and x3d, check if a case needs to be added in the function <code>vitessToX3Dcoordinates</code>.</li>
+    <li>Add the relative case to the function <code>geom2X3D</code>.</li>
+  </ul>
+</ul>
+<p>
+  <h2 id="help"><font size="+1">6. Add the help file relative to your new module.</font></h2>
+  This is easily done by adding a new html file to the <code>WWW</code> directory.
+  <br>If you're developing a module, you know the importance of clear, comprehensive documentation. It's not just a nice-to-have; it's essential for the long-term success and maintainability of any project.
+  <br>Imagine the next person (or even future you) working with this well-written documentation can make their experience smoother, faster, and much more productive.
+
+  <br>Adding this new file to our existing documentation will help:
+
+  <ul>
+    <li>Use our code: New users get up to speed faster, understand our code better, and contribute more efficiently.</li>
+    <li>Reduce tech debt: Clear documentation means fewer future questions or issues, helping the team stay focused on building rather than fixing.</li>
+    <li>Increase project longevity: Great documentation ensures that our work is understandable and maintainable for years to come.</li>
+    <li>Showcase best practices: Our code is already solid; now let's make sure our documentation reflects that same level of quality and care.</li>
+  </ul>
+  So, let's take this small step today to future-proof our work and set up everyone for success. A few minutes now could save countless hours down the road!
+</p>
 <hr>
-<a href="vitess.html">Back to start page</a><br>
+<div class="back-to-top"><a href="#top">Back to Top</a></div><br>
+<a href="vitess.html">Back to VITESS overview</a><br>
 <a href="mailto:vitess@fz-juelich.de">Email vitess@fz-juelich.de</a>
   </body>
 </html>
