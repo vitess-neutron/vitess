@@ -9,7 +9,7 @@
 #                                                                                #
 ##################################################################################
 
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.10...3.27)
 
 project(KDSource VERSION 0.1.0)
 configure_file(KDSourceConfig.h.in KDSourceConfig.h)

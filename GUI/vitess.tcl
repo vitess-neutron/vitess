@@ -815,7 +815,7 @@ set template_moduleESET {
 ### Read_In
 ###
 set read_inESET {
-  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
+  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW KDSource} {1 2 3 5 6 7}}
   {inform radio float {"storage format" "format of float values in writeout file" "" F} {exp float binary} {0 1 2}}
   {}
   {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st Input file containing trajectories." "" A} r "" 1}

@@ -21,6 +21,8 @@
 /* 1.6a Aug  2022  P. Zakalek      removed automatic rotation of MCPL file format            */
 /* 1.6b Aug  2022  P. Zakalek      added option to limit number of read neutrons             */
 /* 1.6c Feb  2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
+/* 3.5  Jul  2024  J. Robledo      random sampling feature                                   */
+/* 3.7  Apr  2025  N. Schmidt      KDsource functionality                                    */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -78,7 +80,7 @@ short        iDetectColor=-1;            // -C        Only for VITESS format: Re
 int          nRep=1;                     // -R        Number of times the input is read
 double       maxEv=-1;                   // -M        maximal numver of events read
 int          sample=0;                   // -J        random sample or not
-int          use_kde=0;                  // -K        Where to use KDE or just read the particles from the MCPL file refered in the xml file.
+int          use_kde=1;                  // -K        Where to use KDE or just read the particles from the MCPL file refered in the xml file.
 
 extern char* sInstrInfIn;                // --I       instrument file that is read (default 'instrument.inf')
 extern char* _sTraceFileName;            // -T        name of the file containing the trajectories to be traced or started
