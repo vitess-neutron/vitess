@@ -8,7 +8,7 @@
 # column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
 # prefix: prefix for parameter in pipe
 
-source_vae:
+source_ai:
   - category: "source"
   - Title_Shape:
       type: "title"

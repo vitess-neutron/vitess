@@ -1,8 +1,8 @@
-#ifndef SOURCEVAE_H
-#define SOURCEVAE_H
+#ifndef SOURCEAI_H
+#define SOURCEAI_H
 
 /********************************************************************************************/
-/*  VITESS module 'source_vae.h'                                                            */
+/*  VITESS module 'source_ai.h'                                                            */
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
