@@ -37,7 +37,7 @@ ifeq ($(SYS),Darwin)
 NOGD ?= 1
 ifeq ($(ARCH),arm64)
 DARWIN_UNIVERSAL = YES
-ARCHFLAGS = -arch x86_64 -arch arm64
+ARCHFLAGS =  -arch x86_64 -arch arm64
 CMAKEFLAGS += "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
 endif
 else
@@ -162,7 +162,7 @@ window \
 writeout
 
 ifdef LIBTORCHPATH
-ALL += source_vae
+ALL += source_ai
 endif
 ifndef NOG2
 ALL += visual
@@ -301,10 +301,10 @@ spacewindow_multiple: spacewindow_multiple.c bender_inter_data.c
 
 ifdef LIBTORCHPATH
 # -D_GLIBCXX_USE_CXX11_ABI=0 might be necessary depending binaries
-source_vae: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/include -I$(LIBTORCHPATH)/include/torch/csrc/api/include
-source_vae: LDFLAGS += -L$(LIBTORCHPATH)/lib 
-source_vae: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/lib
-source_vae: source_vae.cpp
+source_ai: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/include -I$(LIBTORCHPATH)/include/torch/csrc/api/include
+source_ai: LDFLAGS += -L$(LIBTORCHPATH)/lib 
+source_ai: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/lib
+source_ai: source_ai.cpp
 endif
 
 # keep old module names for compatibility

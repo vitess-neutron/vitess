@@ -193,7 +193,7 @@ proc makeModuleSets {} {
     {sm_ensemble {} sm_ensemble}
     {source {source_const_wave source_ILL source_FRM2 source_HMI
       source_short_pulsed source_SNS source_JPARC source_ISIS source_IPNS source_CSNS
-      source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS source_vae} source}
+      source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS source_ai} source}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
@@ -888,7 +888,7 @@ set writeoutESET {
 
 ### Read_In
 ###
-set source_vaeESET {
+set source_aiESET {
   {"Variational Autoencoder Source - Experimental" header}
   {fname pareditablefile "vae_hbs.model" {"Model file" "Specifies the model to be used (ending .model in FILES/moderators)." "" M} r "" 1}
   {nNeut int "10000" {"Number of neutrons" "Number of trajectories that are to be generated." "" n}}

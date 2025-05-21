@@ -1,8 +1,8 @@
-#ifndef SOURCEVAE_CPP 
-#define SOURCEVAE_CPP
+#ifndef SOURCEAI_CPP 
+#define SOURCEAI_CPP
 
 /********************************************************************************************/
-/*  VITESS module 'source_vae.cpp'                                                          */
+/*  VITESS module 'source_ai.cpp'                                                          */
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
@@ -12,7 +12,7 @@
 /**************************************************/
 /** Definitions, Global Variables and Prototypes **/
 /**************************************************/
-#include "source_vae.h"
+#include "source_ai.h"
 #include <cmath>
 #include <torch/script.h>
 
@@ -22,7 +22,7 @@
 int main(int argc, char *argv[]){
 
   Neutron InNeutron;
-  _eModule=MCN_SOURCE_VAE;
+  _eModule=MCN_SOURCE_AI;
 
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.0");
