@@ -17,6 +17,8 @@ Download the current stable version: [VITESS 3.7](https://iffgit.fz-juelich.de/v
 
 Download a snapshot of the development version: [VITESS develop](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package).
 
+Version 3.7 contains two new source modules for better integration with neutronic simulation software: KDSource, which increases the number of neutron trajectories using the kernel density estimator method, and AISource; which creates a function to define the moderator characteristic using AI. It also offers a new module to simulate prisms and one to use the NCrystal library. The monochromator module allows simulating monochromator rotations and oscillations. The modules treating inelastic scattering can now handle spin dependent scattering. NeXus output is included to enable processing simulated data just as real data.
+
 **VITESS** 4.0 is in active development. If you are interested in testing it, checkout the develop branch or download an [up-to-date snapshot](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
 
 
