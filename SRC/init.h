@@ -73,7 +73,9 @@ void WriteNeutron     (Neutron* OutNeutron);
 void WriteEOB         ();
 void ChangeNeutronID  (Neutron* n);
 
-short PropagateX      (Neutron* pNeutron, double DistX);                                                // Propagates the neutron to a plane in a certain distance along the x-axis
+short PropagatePath   (Neutron* pNeutron, double* pToF, const double PathLen);                          // Propagates the neutron a certain distance  along its flight direction
+short PropagateX      (Neutron* pNeutron, double* pToF, const double DistX);                            // Propagates the neutron to a plane in a certain distance along the x-axis
+void  PropagateToF    (Neutron* pNeutron, const double ToF);                                            // Propagates the neutron for a given ToF along its flight direction
 void  WriteDIAP       (Neutron* pNeutron, VtReason eReason, double DistX);                              // Propagates the neutron by DelX before writing interaction ppoint for visualization
 void  WriteScatIAP    (Neutron* pNeutrSF, VtReason eReason, double RotMatrixSF[3][3], VectorType PosS); // Transfers neutron from 'sample frame' (SF) back to 'incoming frame' (IF) before writing intersection point
 void  WriteIAP        (Neutron* pNeutron, VtReason eReason);                                            // Writes interaction point if 'trajectory visualization' is chosen

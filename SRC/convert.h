@@ -95,7 +95,6 @@ VtDataFormat DataFormat_Txt2ID(const char* sText);
 void        Separator_ID2Txt(char* sText, const VtSeparator eID);
 VtSeparator Separator_Txt2ID(const char* sText);
 
-VtSampling Sampling_Txt2ID(const char* sText);
 
 // Frame
 // -----

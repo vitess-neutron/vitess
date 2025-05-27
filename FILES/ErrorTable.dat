@@ -12,7 +12,8 @@
 311 W %ld trajector%s passed within the area without selector blades
 402 E %ld trajector%s found with a wavelength outside the range in the attenuation file '%s' for the window frame
 403 E %ld trajector%s found with a wavelength outside the range in the attenuation file '%s' for the window pane
-410 W %ld trajector%s found in holes not matching their color (= previous hole), i.e. cross-talk between holes
+410 W %ld trajector%s found in holes different from their previous hole, i.e. cross-talk between holes
+420 W %ld trajector%s passed outside the disk
 500 W %ld trajector%s could not be handled because of zero bin size
 800 W for %ld trajector%s the calculated Q-value is higher (or smaller) than all values in the file %s 
 801 E %ld trajector%s initially already inside (or behind) the sample

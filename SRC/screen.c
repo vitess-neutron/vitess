@@ -2,12 +2,13 @@
 /*  VITESS module 'screen'                                                                   */
 /*                                                                                           */
 /* This module simulates propagation to a rectangular or cylindrical area (about z-axis)     */
-/*         and saved binned PSD data                                                       */
+/*         and saved binned PSD data                                                         */
 /*                                                                                           */
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/* 1.0  Oct 2023  K. Lieutenant   initial version                                            */
+/* 1.0  Oct 2023  K. Lieutenant  initial version                                             */
+/* 1.0a Jan 2025  K. Lieutenant  no suppression of backscattering + better criterion for wall*/
 /*********************************************************************************************/
 
 #include "init.h"
@@ -72,7 +73,7 @@ int main(int argc, char *argv[])
   _eModule = MCN_SCREEN;
 
 	Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.0");
+  PrintModuleName(_eModule, "1.0a");
 	OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -101,7 +102,6 @@ int main(int argc, char *argv[])
       else
       { 
 			  // 	Check parameters of the trajectory 
-			  if (InputNeutrons[i].Vector[0] <= 0.0) continue;
 			  if (InputNeutrons[i].Wavelength == 0.0) continue;
 			  Velocity = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
 			  if (Velocity <= 0.0) continue;
@@ -150,8 +150,8 @@ int main(int argc, char *argv[])
           TimeOF = DistVector(Pos2, InputNeutrons[i].Position)/Velocity;
           Angle  = Degrees(atan2(Pos2[1], Pos2[0]));
 
-			    // Set as new data set, if area is hit
-          if (fabs(Pos2[2]) < 0.5*Height && Angle > AngleMin && Angle < AngleMax)
+			    // Set as new data set, if cylinder wall is hit
+          if (fabs(Pos2[2]) < 0.49999*Height && Angle > AngleMin && Angle < AngleMax)
           { 
             CopyVector(Pos2, InputNeutrons[i].Position);
 
@@ -394,9 +394,14 @@ void UpdateMon(long iBnch)
     } 
 
     // writes header and data
-    WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,   
-                   nBinsY, "pos_y [cm]", WidthMin,  WidthMax,    
-                   nBinsZ, "pos_z [cm]", HeightMin, HeightMax);
+    if (eGeom==VT_DET_CYL)
+      WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,   
+                     nBinsY, "scat_angle [deg]", AngleMin,  AngleMax,    
+                     nBinsZ, "pos_z [cm]", HeightMin, HeightMax);
+    else
+      WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,   
+                     nBinsY, "pos_y [cm]", WidthMin,  WidthMax,    
+                     nBinsZ, "pos_z [cm]", HeightMin, HeightMax);
 
     WriteOutput2DB(fMonitor, eFormat, bProbactiv,  
                    nBinsY, BinPosY,   nBinsZ, BinPosZ,  f_norm,

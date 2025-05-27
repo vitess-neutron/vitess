@@ -19,8 +19,8 @@
 /*			                    	    DistanceDev, ShiftHorDev, ShiftVerDev, Pos and Size  hole   */
 /* 1.2   Aug 2019  K. Lieutenant  tidy up and visualization                                   */
 /* 1.2a  Sep 2022  K. Lieutenant  visualization corrected and minor improvements              */
+/* 1.3   Dec 2024  K. Lieutenant  color setting corrected and log file output improved        */
 /**********************************************************************************************/
-
 #include "init.h"
 #include "softabort.h"
 #include "intersection.h"
@@ -68,14 +68,16 @@ double  WaveMonoch  = 0.0;      // -n  [Ang] standard wavelength for monochromat
         
                                   
 // Variables determined from input parameters, files or trajectory data
+long    NumberOfHoles=0;                  // number of holes in the grid element 
 double  WAVS[MAX_MU],                     // lambda and µ-values and thickness of the grid material 
         MUS [MAX_MU];
 long    nValF=0;                          // number of attenuation values in file (describing absorption in grid material)
-
 double  winsize   [1001],                 // arrays of hole positions and sizes
         ywincenter[1001], 
         zwincenter[1001]; 
 double  OuterRadius=0.0;                  // outer radius for spherical holes
+Plane	  Endpoint,                         // Planes through beginning and end of the grid element
+        EndpointCol;                      // Endpoint.D: distance from origin to grid along x-axis        [cm]
 
 
 
@@ -88,14 +90,11 @@ int main(int argc, char *argv[])
           j=0,               // index of holes
           k=0;               // counter of cross-talk events
   long    key_abs=1;         // key absorb: 1 - absorption,  0 - transmission   
-  short	  current_color=0,   // color of the current trajecotry (= number of the previous hole that the neutron passed)
+  short	  current_color=0,   // color of the current trajectory (= number of the previous hole that the neutron passed)
           current_hole=0;    // number of the hole, where the neutron passed
   double  dist_squared=0.0;  // distance from the point of impact to the center of the grid  
   double  TimeOF=0.0;        // TOF of neutron from origin to grid element
-  long    NumberOfHoles=0;     // number of holes in each grid element 
 	
-  Plane	  Endpoint,          // Planes through beginning and end of the grid element
-          EndpointCol;       // Endpoint.D: distance from origin to grid along x-axis        [cm]
 
   double  NewPositionY=0.0,  // neutron position in co-ordinate system  rotated by 'rotang'
           NewPositionZ=0.0; 
@@ -110,37 +109,20 @@ int main(int argc, char *argv[])
   /******************************************/
   /** Initialisation and parameter input   **/
   /******************************************/  
+  InitNeutron(&Output);
+
   _eModule=MCN_GRID;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.2a");
+  PrintModuleName(_eModule, "1.3");
   OwnInit(argc, argv);
   MsgInit();
-  EvalInput();
   NumberOfHoles=ReadGridFile();
+  EvalInput();
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp = TRUE;
-
-  memset(&Output, '\0', sizeof(Neutron));
-     
-  Endpoint.A = 1.0;
-  Endpoint.B = 0.0;
-  Endpoint.C = 0.0;
-  Endpoint.D = -1.0*Distance;
-  fprintf(LogFilePtr,"Distance between plane x=0 and grid plane  %f cm  \n", fabs(Endpoint.D));
- 	
-  EndpointCol.A = 1.0;
-  EndpointCol.B = 0.0;
-  EndpointCol.C = 0.0;
-  EndpointCol.D = -1.0*(Distance+Thickness);
-  fprintf(LogFilePtr,"Distance + Thickness of the grid plate %f cm  \n", fabs(EndpointCol.D));
-	  
-  if(keygrav == 1)
-    fprintf(LogFilePtr,"Grid module: Gravity is enabled \n");
-  else
-    fprintf(LogFilePtr,"Grid module: Gravity is disabled \n");
 
   DECLARE_ABORT
 
@@ -167,21 +149,24 @@ int main(int argc, char *argv[])
       			
         // Move neutron to beginning of grid element with gravity effect and calculate Time of Flight
         // ------------------------------------------------------------------------------------------
+        CopyNeutron(&InputNeutrons[i], &Output);
+
         if (keygrav == 1)
         {
-          TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+          TimeOF = NeutronPlaneIntersectionGrav(&Output, Endpoint);
         }
         else
         {
-          TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+          TimeOF = NeutronPlaneIntersection1(&Output, Endpoint);
         }
-        InputNeutrons[i].Time += (double)TimeOF;
+        Output.Time += (double)TimeOF;
 
         /* windows test */
-        NewPositionY = InputNeutrons[i].Position[1] - ShiftHor;
-        NewPositionZ = InputNeutrons[i].Position[2] - ShiftVer;
+        NewPositionY = Output.Position[1] - ShiftHor;
+        NewPositionZ = Output.Position[2] - ShiftVer;
 
         key_abs = 0;		  // not absorbed
+        current_hole = 0; // default: outside window
 
         // shape of grid elements: 0 - square form
         if (eKeyShape==VT_SQUARE) 
@@ -222,14 +207,16 @@ int main(int argc, char *argv[])
             }
           }
         }
-	      if (key_abs==TRUE)
-          WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+
+        if (current_hole==0)
+          WriteIAP(&Output, VT_OUTSIDE);
+	      else if (key_abs==TRUE)
+          WriteIAP(&Output, VT_OUT_OF_WND);
         else
-          WriteIAP(&InputNeutrons[i], VT_PASSED);
+          WriteIAP(&Output, VT_PASSED);
 				
         // Move neutron to end of grid element with gravity effect and calculate Time of Flight
         // ------------------------------------------------------------------------------------
-        Output = InputNeutrons[i];
         if (keygrav == 1)
         {
           TimeOF = NeutronPlaneIntersectionGrav(&Output, EndpointCol);
@@ -260,16 +247,24 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        if (eKeyColorTrack == 1)
+        // neutron trajectories outside disk
+        if (current_hole == 0)
         {
-          if ((current_hole != current_color)&&(current_color != 0.0))
-          { 
-            CountMessageID(WND_CROSS_TALK, Output.ID);
-            k++;
-            if (k < 20)
-              fprintf(LogFilePtr,"WARNING: CROSSTALK OF TRAJECTORIES IS FOUND!  DistanceAbs:   %f    current_hole:   %d   current_color:   %d    I \n", DistanceAbs, current_hole, current_color);
+          CountMessageID(WND_PASSED_OUTSIDE, Output.ID);
+        }
+        else
+        { // crosstalk check
+          if (eKeyColorTrack == TRUE)
+          {
+            if (current_hole != current_color && current_color != 0)
+            { 
+              CountMessageID(WND_CROSS_TALK, Output.ID);
+              k++;
+              if (k < 6)
+                fprintf(LogFilePtr,"Warning: Crosstalk of trajectories found:  grid position: %8.3f  current hole: %2d   previous hole: %2d\n", DistanceAbs, current_hole, current_color);
+            }
           }
-        }    
+        }
 	
         Output.Color = current_hole;
         WriteIAP(&Output, VT_PASSED);
@@ -284,10 +279,10 @@ int main(int argc, char *argv[])
 /* Finish: print parameters, write geometry and instrument file, free memory  */
 /******************************************************************************/
 my_exit:
-
-  fprintf(LogFilePtr," \n");
   PrintMessage(WNDO_L_RANGE_TOO_SMALL, sTransFileName, ON);
-  PrintMessage(WND_CROSS_TALK, "", ON);
+  PrintMessage(WND_PASSED_OUTSIDE, "", ON);
+  PrintMessage(WND_CROSS_TALK,     "", ON);
+  fprintf(LogFilePtr, "\n");
 
   SetGeometry("grey", NumberOfHoles);
   Cleanup((Thickness+Distance), 0.0, 0.0, 0.0, 0.0);
@@ -400,9 +395,10 @@ void   OwnInit   (int argc, char *argv[])
 /********************************************************/
 void  EvalInput()
 {
-  char    sLine[CHAR_BUF_SMALL]="", sShape[11]="";
+  char    sLine[CHAR_BUF_SMALL]="", 
+          sShape[14]="";
   FILE   *trans_file=NULL;   // file describing the transmission of the grid material 
-	long    i;              // index of arrays for wavelength and attenuation 
+	long    i=0;               // index of arrays for wavelength and attenuation 
   double  TimeOF=0.0;        // TOF of neutron from origin to window
   Plane   Pcalc;             // Pcalc.D: distance to window along x-axis        [cm]
   Neutron Ncalc;             // Neutron trajctory
@@ -411,7 +407,7 @@ void  EvalInput()
   // ------
   if ((2.0*TotalLength) <= DistanceAbs)
   {
-    fprintf(LogFilePtr,"EXIT: Incorrect absolute distance and Total length of grid system \n");
+    fprintf(LogFilePtr,"EXIT: Incorrect absolute distance and total length of the grid system \n");
     exit(-1);
   }
 	
@@ -479,47 +475,52 @@ void  EvalInput()
 
   // Settings and printing of parameters
   // -----------------------------------
+  Shape_ID2Txt(sShape, eKeyShape);
+  fprintf(LogFilePtr, "Form of the disk and holes      : %s\n", sShape); 
+  fprintf(LogFilePtr, "Number of holes                 : %4ld \n", NumberOfHoles);
+
+  InitPlane  (&Endpoint);    Endpoint.D    = -1.0*Distance;
+  InitPlane  (&EndpointCol); EndpointCol.D = -1.0*(Distance+Thickness);
+  fprintf(LogFilePtr, "Distance + thickness of the disk: %8.3f cm  \n", -EndpointCol.D);
+	  
+  if(keygrav == 1)
+    fprintf(LogFilePtr,"Gravity is enabled \n");
+  else
+    fprintf(LogFilePtr,"Gravity is disabled \n");
+
   if (eKeyColorTrack == 1)
   {
-    fprintf(LogFilePtr, "=====TRACKING OF CROSSTALK OF TRAJECTORIES IS ACTIVATED.=====  \n");
-    fprintf(LogFilePtr, "PLEASE SET INITIAL COLOR OF ALL NEUTRONS IN SOURCE ON ZERO     \n");
-    fprintf(LogFilePtr, "IDEAL ABSORPTION IS ACTIVATED. \n");
+    fprintf(LogFilePtr, "Tracking of crosstalk is activated => Ideal absorption assumed  \n");
+    // Warning("This feature only works correctly, if the neutron trajectories have color 0 at the first grid");
     eMaterialO = VT_WABS_IDEAL ;
   }    
-    
-  Shape_ID2Txt(sShape, eKeyShape);
-  fprintf(LogFilePtr, "Form of the grid elements: %s\n", sShape); 
 
   if (eKeyShape == VT_CIRCLE)
     OuterRadius = OuterA;
 
-  fprintf(LogFilePtr,"Window frame material: ");
-
   switch (eMaterialO)
   { case VT_WABS_FILE :  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileName); break;
-    case VT_WABS_GD   :  fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WAVS, MUS, &nValF); break;
-    case VT_WABS_CD   :  fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WAVS, MUS, &nValF); break;
-    case VT_WABS_B10  :  fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WAVS, MUS, &nValF); break;
-    case VT_WABS_EU   :  fprintf(LogFilePtr, "Eu         \n"); Eu        (WAVS, MUS, &nValF); break;
-    case VT_WABS_SI   :  fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WAVS, MUS, &nValF); break;
-    case VT_WABS_IDEAL:  fprintf(LogFilePtr, "Ideal absorber \n");                            break;
+    case VT_WABS_GD   :  fprintf(LogFilePtr, "Window frame material: Gadolinium \n"); Gadolinium(WAVS, MUS, &nValF); break;
+    case VT_WABS_CD   :  fprintf(LogFilePtr, "Window frame material: Cadmium    \n"); Cadmium   (WAVS, MUS, &nValF); break;
+    case VT_WABS_B10  :  fprintf(LogFilePtr, "Window frame material: Bor10      \n"); Bor10     (WAVS, MUS, &nValF); break;
+    case VT_WABS_EU   :  fprintf(LogFilePtr, "Window frame material: Eu         \n"); Eu        (WAVS, MUS, &nValF); break;
+    case VT_WABS_SI   :  fprintf(LogFilePtr, "Window frame material: Silicon    \n"); Silicon   (WAVS, MUS, &nValF); break;
+    case VT_WABS_IDEAL:  break;
     default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
   }
 
 
   if (DistanceAbs > 0.0)
   {
-    fprintf(LogFilePtr,"----------FOR GRIDSET simulations ONLY=========\n");
-    fprintf(LogFilePtr, "I  Total length of instrument =  %f  cm  \n", TotalLength);
-    fprintf(LogFilePtr, "I  Absolute distance from first grid = %f  cm  \n", DistanceAbs);
+    // fprintf(LogFilePtr,"----------FOR GRIDSET simulations ONLY=========\n");
+    fprintf(LogFilePtr, "Length from first grid to focal point: %8.2f cm\n", 2.0*TotalLength);
+    fprintf(LogFilePtr, "Absolute distance from first grid    : %8.2f cm\n", DistanceAbs);
 
     if (WaveMonoch > 0.0)
     {
-      fprintf(LogFilePtr,"WARNING: Gravity monochromatisation is activated for  %f  Ang \n", WaveMonoch);
-      fprintf(LogFilePtr,"WARNING: All grids in system will be shifted in vertical direction, down!!!! \n");
+      fprintf(LogFilePtr, "Gravity monochromatisation is activated for %5.2f Ang, the grids are shifted down\n", WaveMonoch);
 	   
       /* Calculate vertical shifting */
-			
       Ncalc.Position[0] = 0.0 ;
       Ncalc.Position[1] = 0.0 ;
       Ncalc.Position[2] = 0.0 ;
@@ -537,9 +538,9 @@ void  EvalInput()
 			
       ShiftVer = Ncalc.Position[2] ;
 	
-      fprintf(LogFilePtr,"WARNING: OVERIDDING! New value for the down shifting  %f  cm \n", ShiftVer);
+      // fprintf(LogFilePtr,"WARNING: Overriding! New value for the down shifting  %f  cm \n", ShiftVer);
     }	
-    fprintf(LogFilePtr,"---------------------------------==========================\n");
+    // fprintf(LogFilePtr,"---------------------------------==========================\n");
   }
 
   if (DistanceDev > 0.0)
@@ -644,9 +645,6 @@ short ReadGridFile()
         }	
       }
       nHoles = i;
-
-      /*	fprintf(LogFilePtr,"Number of in %d \n", (counter-1)); */
-      fprintf(LogFilePtr,"\n Number of holes: %ld \n", nHoles);
 
       fclose(coll_file);
     }
