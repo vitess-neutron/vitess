@@ -112,18 +112,18 @@ void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
   ReadMessageText(eErrID, sText, &cMessType);
   switch (cMessType)  
   {
-    case 'E': sprintf(sMsgText, "\nError: %s.\n", sText);   break;
-    case 'W': sprintf(sMsgText, "\nWarning: %s.\n", sText); break;
-    case 'N': sprintf(sMsgText, "\nNote: %s.\n", sText);    break;
-    case '-': sprintf(sMsgText, "\nError %d occurred in %ld trajectories.\n",
+    case 'E': snprintf(sMsgText, MSG_LEN, "\nError: %s.\n", sText);   break;
+    case 'W': snprintf(sMsgText, MSG_LEN, "\nWarning: %s.\n", sText); break;
+    case 'N': snprintf(sMsgText, MSG_LEN, "\nNote: %s.\n", sText);    break;
+    case '-': snprintf(sMsgText, MSG_LEN, "\nError %d occurred in %ld trajectories.\n",
                       eErrID, stMessage[n].nNumber);        break;
-    default : sprintf(sMsgText, "\n%s.\n", sText);
+    default : snprintf(sMsgText, MSG_LEN, "\n%s.\n", sText);
   }
 
   nTr = stMessage[n].nNumber;
   fprintf(LogFilePtr, sMsgText, nTr, nTr > 1 ? "ies" : "y", pText);
   if (bID==ON && stMessage[n].TrajID.IDNo > 0)
-    fprintf(LogFilePtr, nTr > 1 ? "First trajectory has ID %c%c%09d.\n" : "Trajectory has ID %c%c%09d.\n",
+    fprintf(LogFilePtr, nTr > 1 ? "First trajectory has ID %c%c%09lu.\n" : "Trajectory has ID %c%c%09lu.\n",
             stMessage[n].TrajID.IDGrp[0], stMessage[n].TrajID.IDGrp[1], stMessage[n].TrajID.IDNo);
 }
 

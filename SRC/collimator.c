@@ -11,6 +11,7 @@
 /* 1.0   May 2008  K. Lieutenant  initial version (dedicated code)                          */
 /* 1.1   Aug 2019  K. Lieutenant  visualization included                                    */
 /* 1.2   Mar 2023  K. Lieutenant  visualisation corrected and completed                     */
+/* 1.2a  Dec 2024  K. Lieutenant  correction: check for exit width                          */
 /********************************************************************************************/
 
 #include "general.h"
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_COLLIMATOR;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.2");
+  PrintModuleName(_eModule, "1.2a");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -136,7 +137,8 @@ int main(int argc, char *argv[])
           // ------------------------------------------------------------------------------
           if (iChanIn==iChanOut)
           {
-            if (fabs(OutNeutron.Position[2]) <= CollExitHeight/2.0)
+            if (fabs(OutNeutron.Position[1]) <= CollExitWidth/2.0 &&
+                fabs(OutNeutron.Position[2]) <= CollExitHeight/2.0)
             {
               WriteIAP(&OutNeutron, VT_PASSED);
 

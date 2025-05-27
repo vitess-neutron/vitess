@@ -17,7 +17,7 @@
 /******************************/
 #define PrintFloat(a)  {double v = a; if (v==0) fputs("0 ",fMonitor); else printFloatItem(v,fMonitor); }
 #define PrintItem(f,a) {double v = a; if (v==0) fputs("0 ",fMonitor); else fprintf(fMonitor,f,v); }
-#define PrintInt(f,a)  {int    v = a; if (v==0) fputs("0 ",fMonitor); else fprintf(fMonitor,f,v); }
+#define PrintInt(f,a)  {long   v = a; if (v==0) fputs("0 ",fMonitor); else fprintf(fMonitor,f,v); }
 #define Newline fputc('\n',fMonitor)
 
 
@@ -44,7 +44,7 @@ void WriteHeader1D(FILE* fMonitor, const char *sFctType, short bWeight,
  #ifdef G2_LIB
    fprintf(fMonitor,"# Monitor 1D %s %s:  %d bins: %s/%s\n", sFctType,
            bWeight==FALSE ? "(events)" : "(weight)",
-           nBinsX, sPar, sUnit);
+           nBinsX, sPar, sUnitX);
    fputs("# Data x        F(x)      DeltaF(x)  events\n", fMonitor);  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
  #else
    fprintf(fMonitor,"# title : 1D Monitor  %s:\n", bWeight==FALSE ? "(events)" : "(weight)");
@@ -78,9 +78,9 @@ void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCo
     strcpy(sUnitZ, "n/(cm^2 s Ang sr)");
 
  #ifdef G2_LIB
-   fprintf(fMonitor, "# 1D %s %s\n# x-axis:%3d bins: %s [%s]\n", sOutType, sFctType, nBinsX, sPar, sUnit);
+   fprintf(fMonitor, "# 1D %s %s\n# x-axis:%3d bins: %s [%s]\n", sOutType, sFctType, nBinsX, sPar, sUnitX);
  #else
-   fprintf(fMonitor, "# title : 1D %s:\n",         sOutType);
+   fprintf(fMonitor, "# title : 1D %s:\n",           sOutType);
    fprintf(fMonitor, "# x_label : %s [%s]\n",        sPar,     sUnitX);
    fprintf(fMonitor, "# y_label : %s [%s]\n",        sFctType, sUnitZ);
    fprintf(fMonitor, "# x_range : %10.3f, %10.3f\n", Xmin,     Xmax);
@@ -127,11 +127,11 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, sho
        break;
    }
  #else
-   fprintf(fMonitor,"# title : 2D Monitor %s  %s:\n",  sFctType, bWeight==FALSE ? "(events)" : "(weight)");
-   fprintf(fMonitor,"# x_label : %s\n",                  sAxisTitleX);
-   fprintf(fMonitor,"# y_label : %s\n",                  sAxisTitleY);
-   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",      Xmin, Xmax);
-   fprintf(fMonitor,"# y_range :      %10.3e, %10.3e\n", Ymin, Ymax);
+   fprintf(fMonitor,"# title : 2D Monitor %s  %s:\n",   sFctType, bWeight==FALSE ? "(events)" : "(weight)");
+   fprintf(fMonitor,"# x_label : %s\n",                 sAxisTitleX);
+   fprintf(fMonitor,"# y_label : %s\n",                 sAxisTitleY);
+   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",     Xmin, Xmax);
+   fprintf(fMonitor,"# y_range :     %10.3e, %10.3e\n", Ymin, Ymax);
  #endif
   
   return;
@@ -165,11 +165,11 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
  #ifdef G2_LIB
    fprintf(fMonitor, "# 2D %s %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sOutType, sFctType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
  #else
-   fprintf(fMonitor,"# title : 2D %s  %s  %s:\n", sOutType, sFctType, sUnitZ);
-   fprintf(fMonitor,"# x_label : %s\n",             sAxisTitleX);
-   fprintf(fMonitor,"# y_label : %s\n",             sAxisTitleY);
-   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n", Xmin,     Xmax);
-   fprintf(fMonitor,"# y_range :      %10.3e, %10.3e\n", Ymin, Ymax);
+   fprintf(fMonitor,"# title : 2D %s  %s  %s:\n",       sOutType, sFctType, sUnitZ);
+   fprintf(fMonitor,"# x_label : %s\n",                 sAxisTitleX);
+   fprintf(fMonitor,"# y_label : %s\n",                 sAxisTitleY);
+   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",     Xmin, Xmax);
+   fprintf(fMonitor,"# y_range :     %10.3e, %10.3e\n", Ymin, Ymax);
  #endif
 
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
@@ -320,7 +320,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
             error = binc <= 0 ? 0 : binc * sqrt(1./c);
             PrintItem(" %5.3E ", binc);
             PrintItem("%5.3E ", error);
-            fprintf(fMonitor, "%ld\n", c);
+            fprintf(fMonitor, "%d\n", c);
           }
         }
         Newline;

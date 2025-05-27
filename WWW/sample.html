@@ -19,7 +19,8 @@
     <a href="#sample_sans"><b>sample_sans</b></a> is meant for samples in SANS measurements, but also allows isotropic scattering. <br />
     <a href="#sample_s_q"><b>sample_s_q</b></a> assuming any function S(Q) is more general. <br />
     <a href="#sample_reflectom"><b>sample_reflectom</b></a> is used for reflectometer samples. <br />
-    <a href="#sample_powder"><b>sample_powder</b></a> or <a href="#sample_nxs"><b>sample_nxs</b></a> can be used for powder samples. <br />
+    <a href="#sample_powder"><b>sample_powder</b></a> or 
+    <a href="#sample_nxs"><b>sample_nxs</b></a> can be used for powder samples. <br />
     <a href="#sample_singcryst"><b>sample_singcryst</b></a> simulates scattering of a single crystal. <br />
     <a href="#sample_inelast"><b>sample_inelast</b></a> is used for inelastic virtual experiments. <br />
     <a href="#sample_ncrystal"><b>sample_ncrystal</b></a> is used for virtual experiments leveraging the Ncrystal sample database. <br />
@@ -38,6 +39,8 @@
   <p>
     While neutron transport is treated classically in VITESS, the scattering process is treated using quantum mechanics.
   </p>
+
+
 
 
   <br /><br />
@@ -229,6 +232,9 @@
   </p>
 
   <div class="back-to-top"><a href="#top">Back to Top</a></div>
+
+
+
 
   <br /><br />
   <h2 id="sample_sans"><font size="+1"> VITESS Module 'sample_sans' for SANS measurement </font></h2>
@@ -606,6 +612,10 @@
   </table>
 
   <div class="back-to-top"><a href="#top">Back to Top</a></div>
+
+
+
+
   <br /><br />
   <h2 id="sample_s_q"><font size="+1"> VITESS Module 'sample_s_q' for Samples of S(Q) Dependent Scattering</font></h2>
   <p>
@@ -927,53 +937,65 @@
   </table>
 
   <div class="back-to-top"><a href="#top">Back to Top</a></div>
+
+
+
+
   <br /><br />
   <h2 id="sample_reflectom"><font size="+1"> VITESS Module 'sample_reflectom' for virtual experiments on reflectomters </font></h2>
   <p>
     This module simulates a sample of a reflectometer. <br />
-    The reflectivity data of a sample are taken from a file that contains
-    the reflectivity R as a function of momentum transfer Q. To be able to get
-    a simulated function R(Q), it is possible to simulate a reference measurement.
+    The reflectivity data of a sample with <b>specular scattering</b> are taken from a file that contains the reflectivity R as a function of momentum transfer Q.
+    To be able to get a simulated function R(Q), it is possible to simulate a reference measurement.
     The reference sample has a reflectivity of 1 for all Q-values. <br>
-    If offspecular scattering
-    mode is desired, the reflectivity file should contain a look-up table in the form: q_i, q_f,j, R(q_i, q_f,j).
-    Here, q_i is the incoming neutron "scattering" vector: q_i = 2*pi/lambda * sin(theta), where theta is the angle between
-    the sample and the beam axis. q_f,j is an array of possible outgoing scattered vector components :
-    q_f,j = 2*pi/lambda * sin(theta_j), where theta_j=theta is the specular case and theta_j=-theta stands for the direct beam.
-    The reflectivity table thus looks like this:
+    If <b>offspecular scattering</b> mode is desired, the reflectivity file should contain a look-up table in the form: q<sub>i</sub>, q<sub>f,j</sub>.
+    R(q<sub>i</sub>, q<sub>f,j</sub>).
+    Here, q<sub>i</sub> is the incoming neutron scattering vector: q<sub>i</sub> = 2*&pi;/&lambda; * sin(&theta;), where &theta; is the angle between the sample and the beam axis.
+    q<sub>f,j</sub> is an array of possible outgoing scattered vector components: q<sub>f,j</sub> = 2&pi;/&lambda; sin(&theta;<sub>j</sub>),
+    where &theta;<sub>i</sub>=&theta; is the specular case and &theta;<sub>i</sub>=-&theta; stands for the direct beam.  <br />
+    Both, the values for q<sub>i</sub> and for q<sub>f,j</sub>, have to be in ascending order.
+    A reflectivity table thus looks like this:
   </p>
   <p>
-    q_i.................q_f,j.......R(q_i, q_f,j) <br>
-    0.00255028      -0.0800882      0.001 <br>
-    0.00255028      -0.0797596      0.0005 <br>
-    0.00255028      -0.079431       0.0005 <br>
-    0.00255028      -0.0791025      0.0015 <br>
-    ... <br>
-    0.00255028      0.0876443       0.0005 <br>
-    0.00255028      0.0879728       0.0005 <br>
-    <br>
-    0.00280531      -0.0798336      0.0005 <br>
-    0.00280531      -0.079505       0.0005 <br>
-    0.00280531      -0.0791764      0.0005 <br>
-    0.00280531      -0.0788478      0.0005 <br>
-    0.00280531      -0.0785192      0.001 <br>
-    ... <br>
-    <br>
-    An empty line between two subsequent q_i values is recommended to match the plotting format of gnuplot. An example file with a
+    <pre>
+       q<sub>i</sub>    q<sub>f,j</sub>   R(q<sub>i</sub>, q<sub>f,j</sub>) <br>
+    0.0120  0.0030   0.00639
+    0.0120  0.0060   0.01234
+    0.0120  0.0090   0.04171
+    0.0120  0.0120   0.02425
+    0.0120  0.0150   0.01111
+    0.0120  0.0180   0.00600
+    0.0120  0.0220   0.00200
+
+    0.0150  0.0060   0.00032
+    0.0150  0.0090   0.00077
+    0.0150  0.0120   0.00299
+    0.0150  0.0150   0.00674
+    0.0150  0.0180   0.00399
+    0.0150  0.0220   0.00307
+    0.0150  0.0280   0.00150
+
+    ....
+
+    0.0480  0.0280   5.012E-6
+    0.0480  0.0420   7.067E-5
+    0.0480  0.0480   9.446E-5
+    0.0480  0.0540   3.005E-5
+
+    ....
+    </pre>
+    Note that the reflectivity is calculated by interpolation both between the neighboring q<sub>i</sub> and the q<sub>f,j</sub> values in the same row.
+    As a consequence, two lines are needed for both parameters
+     a high number of q<sub>i</sub> and of q<sub>f,j</sub> values, both covering (for a given q<sub>i</sub>) a large q range are useful,
+     
+    An empty line between two subsequent q<sub>i</sub>values is recommended to match the plotting format of gnuplot. An example file with a
     generic offspecular look-up table is provided in the FILES folder.
   </p>
   <p>
-    The reflectometry sample can now handle incoherent isotropic scattering.
-    It requires information on the scattering path length mu, with P=&mu;*x being the scattering probability (0.00288 1/cm for D<sub>2</sub>O), and on some detector parameters.
+    The reflectometry sample can also handle <b>incoherent isotropic scattering</b>.
+    It requires information on the scattering path length &mu;, with P = &mu;x being the scattering probability (0.00288 1/cm for D<sub>2</sub>O), and on some detector parameters.
     Besides, if the ratio between the area containing the specular signal and the total detector area is known,
     this is used to scale the incoherent trajectories such that eval_elast can provide the correct backgroun level without additional data treatment inside and outside the specular signal area.
-  </p>
-  <p>
-    The reflection of neutrons at several angles can be done in one simulation.
-    In this case, a minimal value, a maximal value, and a step size for the
-    reflection angle must be given (see chapter C). If only one angle shall be
-    considered, the step size must be set to zero or minimal and maximal value
-    must be identical.
   </p>
 
   <br />
@@ -1207,6 +1229,10 @@
   </p>
 
   <div class="back-to-top"><a href="#top">Back to Top</a></div>
+
+
+
+
   <br /><br />
   <h2 id="sample_powder"><font size="+1"> VITESS Module 'sample_powder' for polycrystalline samples </font></h2>
   <p>
@@ -1523,6 +1549,10 @@
   </table>
 
   <div class="back-to-top"><a href="#top">Back to Top</a></div>
+
+
+
+
   <br /><br />
   <h2 id="sample_nxs"><font size="+1"> VITESS Module 'sample_nxs' for polycrystalline samples </font></h2>
   <p>
@@ -1691,7 +1721,6 @@
 
 
   <h4><a name="section3"> 3. Input files</a></h4>
-
   <h5><a name="section3.1"> 3.1 Sample geometry file</a></h5>
   The sample geometry, placement within the instrument and orientation are summarised by an input file. An example:<BR><BR>
   <table border="1">
@@ -1786,7 +1815,11 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
   </UL>
 
   <div class="back-to-top"><a href="#top">Back to Top</a></div>
-  <br><br><br>
+
+
+
+
+  <br><br>
   <h2 id="sample_singcryst"><font size="+1"> VITESS Module 'sample_singcryst' for single crystal samples </font></h2>
   <p>
     The integrated intensity I of a particular reflection measured in a TOF
@@ -2001,6 +2034,10 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
   </pre>
 
   <div class="back-to-top"><a href="#top">Back to Top</a></div>
+
+
+
+
   <br><br>
   <h2 id="sample_inelast"><font size="+1"> VITESS Module 'sample_inelast' for inelastic scattering samples </font></h2>
     This module simulates a cylindrical, spherical or cuboid sample that scatters conforming to the given input parameters.
@@ -2110,7 +2147,6 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         </td>
         <td> -a -b -c -d </td>
       </tr>
-
       <tr>
         <td>D1, D2, D3<br>[&Aring;]</td>
         <td>
@@ -2121,7 +2157,6 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         </td>
         <td> -x -y -z </td>
       </tr>
-
       <tr>
         <td> Bose Factor?</td>
         <td>
@@ -2140,7 +2175,6 @@ add_atom = Al 3.449 0.008 0.23 26.98 0.0 0.0 0.0
         <td>e.g. 0.0 1000 K</td>
         <td> -T </td>
       </tr>
-
       <tr>
         <td> repetition <br> [-] </td>
         <td> If this integer &gt; 1, the neutron is used multiple times to obtain better statistics. </td>

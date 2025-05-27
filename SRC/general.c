@@ -314,7 +314,7 @@ double ReflTypical(const double Q, const double m)
   else
     mReal = m;            // for Ni, Ni58 etc, the nominal value should be used
 
-  R = ReflMirrT(sText, Q, mReal, R0, Rcut, W, QC_NI, FALSE);
+  R = ReflMirrT(sText, Q, mReal, R0, Rcut, W, QC_NI, bPrint);
 
   return R;
 }
@@ -517,7 +517,7 @@ double LengthVector(const VectorType Vec)
 
 
 /* 'NormVector' and 'NormVectorX' change the vector length to 1,
-/* the former by changing the length of all components by the same fraction, the latter by adapting the x component   */
+ * the former by changing the length of all components by the same fraction, the latter by adapting the x component   */
 short NormVector(VectorType Vector)
 {
   int    i=0;

@@ -177,8 +177,13 @@ proc show2Dfile {fname} {
   if [regexp {^# 2D} $ins] {gets $f ins}
   if [regexp {^#Monitor} $ins] {gets $f ins}
   if [regexp {^# Monitor} $ins] {gets $f ins}
+  if [regexp {^# title}  $ins] {gets $f ins}
   if [regexp {^# x-axis} $ins] {gets $f ins}
   if [regexp {^# y-axis} $ins] {gets $f ins}
+  if [regexp {^# x_label} $ins] {gets $f ins}
+  if [regexp {^# y_label} $ins] {gets $f ins}
+  if [regexp {^# x_range} $ins] {gets $f ins}
+  if [regexp {^# y_range} $ins] {gets $f ins}
   if [regexp {^# Date} $ins] {gets $f ins}
   if [regexp {^# Total} $ins] {gets $f ins}
   if [regexp {^# Within} $ins] {gets $f ins}
@@ -807,7 +812,7 @@ proc showPlotFile {name {topt 0}} {
       } elseif {"" != [set gcmd [getGnuPlotApp]]} {
         gnuPlotCmd $gcmd $name $ftype
       } else {
-        showXYfile $name
+        if {$ftype == "matrix"} {show2Dfile $name} else {showXYfile $name}
       }
     }
     default {

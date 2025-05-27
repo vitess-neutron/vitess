@@ -1701,10 +1701,17 @@ int mcpl_can_merge(const char * file1, const char* file2)
 
 int mcpl_file_certainly_exists(const char * filename)
 {
-#if defined MCPL_THIS_IS_UNIX || defined MCPL_THIS_IS_MS
-  if( access( filename, F_OK ) != -1 )
+#if (defined MCPL_THIS_IS_UNIX || defined MCPL_THIS_IS_MS)
+ #ifdef MCPL_THIS_IS_UNIX
+  if(access( filename, F_OK ) != -1 )
     return 1;
   return 0;
+ #endif
+ #ifdef MCPL_THIS_IS_MS
+  if(_access( filename, F_OK ) != -1 )
+    return 1;
+  return 0;
+ #endif
 #else
   //esoteric platform without access(..). Try opening for reads:
   FILE *fd;
@@ -2297,7 +2304,7 @@ int mcpl_tool(int argc,char** argv)
     int32_t pdgcode_select = 0;
     if (pdgcode_str) {
       int64_t pdgcode64;
-      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || pdgcode64<-2147483648 || pdgcode64>2147483647 || !pdgcode64)
+      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || pdgcode64 < -2147483647 || pdgcode64 > 2147483647 || !pdgcode64)
         return free(filenames),mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
       pdgcode_select = (int32_t)pdgcode64;
     }
@@ -2386,7 +2393,7 @@ int mcpl_tool(int argc,char** argv)
     if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data))
       return 1;
 #ifdef MCPL_THIS_IS_MS
-    setmode(STDOUT_FILENO, O_BINARY);
+    _setmode(STDOUT_FILENO, O_BINARY);
 #endif
     uint32_t nb = write(STDOUT_FILENO,data,ldata);
     if (nb!=ldata)

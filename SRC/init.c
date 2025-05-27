@@ -147,7 +147,7 @@ unsigned long int VRandomSeed=0;           // random seed, default 0, set by --Z
 /**************************************************************/
 static void  setInstallDirectory(char *arg);
 static char* setDir (char *arg);
-static char* conCat (const char *sFile, const char* sSubDir, int sel);
+static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel);
 static void  TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
 static McCompID GetModId(char* sBuffer);                            // returns ID of the module from a line in 'instrument.inf'
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
@@ -197,48 +197,61 @@ char* FullOutName(const char* fileName)
    and exits with error message if bErrMsg=TRUE     */
 FILE* OpenInputFile(const char *sFilename, short bErrMsg, const char* sMode)
 {
-  FILE* pFile=NULL; 
+  FILE* pFile=NULL;
+  char* sFullName;
 
-  if (sFilename!=NULL)
-  { 
-    if (bErrMsg==TRUE)
-      pFile = fileOpen(FullInName(sFilename), sMode);
-    else
-      pFile = fopen(FullInName(sFilename), sMode);
+  if (sFilename!=NULL) {
+    sFullName = FullInName(sFilename);
+    if (sFullName) {
+      if (bErrMsg==TRUE)
+        pFile = fileOpen(sFullName, sMode);
+      else
+        pFile = fopen(sFullName, sMode);
+      free(sFullName);
+    }
   }
   return (pFile);
 }
 
 FILE* OpenInputFile2(const char *sFilename, const char* sContent, const char* sMode)
 {
-  FILE* pFile=NULL; 
+  FILE* pFile=NULL;
+  char* sFullName;
 
-  if (sFilename!=NULL)
-    pFile = fileOpen2(FullInName(sFilename), sMode, sContent);
-  
+  if (sFilename!=NULL) {
+    sFullName = FullInName(sFilename);
+    if (sFullName) {
+      pFile = fileOpen2(sFullName, sMode, sContent);
+      free(sFullName);
+    }
+  }
+
   return (pFile);
 }
 
 FILE* OpenOutputFile(const char *sFilename, short bErrMsg, const char* sMode)
 {
-  FILE* pFile=NULL; 
+  FILE* pFile=NULL;
+  char* sFullName;
 
-  if (sFilename!=NULL)
-  { 
-    if (bErrMsg==TRUE)
-      pFile = fileOpen(FullOutName(sFilename), sMode);
-    else
-      pFile = fopen(FullOutName(sFilename), sMode);
+  if (sFilename!=NULL) {
+    sFullName = FullOutName(sFilename);
+    if (sFullName) {
+      if (bErrMsg==TRUE)
+        pFile = fileOpen(sFullName, sMode);
+      else
+        pFile = fopen(sFullName, sMode);
+      free(sFullName);
+    }
   }
   return (pFile);
 }
 
 FILE* OpenPackInpFile(const char *sFilename, const char* sPath, short bErrMsg)
 {
-  FILE* pFile=NULL; 
+  FILE* pFile=NULL;
 
-  if (sFilename!=NULL)
-  { 
+  if (sFilename!=NULL) {
     if (bErrMsg==TRUE)
       pFile = fileOpen(FullInstallName(sFilename, sPath), "r");
     else
@@ -1062,6 +1075,8 @@ void WriteEOB()
 
 /**********************************************************************************/
 /*  PropagateX()     Propagates neutron to a plane in a distance along the x-axis */
+/*  PropagateToF()   Propagates neutron for a given ToF along its flight direction*/
+/*                                                                                */
 /*  WriteDIAP()      writes interaction point to the traj. file after propagation */
 /*  WriteScatIAP()   transfers neutron from 'sample frame' (SF)                   */
 /*                    to 'incoming frame' (IF) before writing intersection point  */
@@ -1069,30 +1084,69 @@ void WriteEOB()
 /*  WriteWWP()       writes an interaction point to the trajectory file           */
 /**********************************************************************************/
 
-short PropagateX(Neutron* pNeutron, double DistX)
+short PropagatePath(Neutron* pNeutron, double* pToF, const double PathLen)
 { 
-    VectorType vPath;
-    double     PathLen=0.0;
-    short      rc=FALSE;
+  VectorType vPath;
+  short      rc=FALSE;
 
-    if (pNeutron->Vector[0] > 0.0)
-    { PathLen = DistX / pNeutron->Vector[0];
-      CopyVector(pNeutron->Vector, vPath) ;
-      MultiplyByScalar(vPath, PathLen);
-      AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
-      rc=TRUE;
-    }
-    return rc;
+  if (pNeutron->Wavelength > 0.0)
+  { 
+    *pToF = PathLen / V_FROM_LAMBDA(pNeutron->Wavelength);
+    pNeutron->Time += *pToF;
+
+    CopyVector(pNeutron->Vector, vPath) ;
+    MultiplyByScalar(vPath, PathLen);
+    AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
+    rc = TRUE;
+  }
+  return rc;
 }
+
+short PropagateX(Neutron* pNeutron, double* pToF, const double DistX)
+{ 
+  VectorType vPath;
+  double     PathLen=0.0;
+  short      rc=FALSE;
+
+  if (pNeutron->Vector[0] != 0.0 && pNeutron->Wavelength > 0.0)
+  { 
+    PathLen = DistX / pNeutron->Vector[0];
+
+    *pToF = PathLen / V_FROM_LAMBDA(pNeutron->Wavelength);
+    pNeutron->Time += *pToF;
+   
+    CopyVector(pNeutron->Vector, vPath) ;
+    MultiplyByScalar(vPath, PathLen);
+    AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
+    rc = TRUE;
+  }
+  return rc;
+}
+
+void PropagateToF(Neutron* pNeutron, const double ToF)
+{ 
+  VectorType vPath;
+  double     PathLen=0.0;
+
+  pNeutron->Time += ToF;
+  PathLen = ToF * V_FROM_LAMBDA(pNeutron->Wavelength);
+
+  CopyVector(pNeutron->Vector, vPath) ;
+  MultiplyByScalar(vPath, PathLen);
+  AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
+}
+
 
 void WriteDIAP(Neutron* pNeutron, VtReason eReason, double DistX)
 { 
+  double ToF=0.0;
+
   if (bVisTraj==TRUE)
   {
     Neutron ScatNeutr;
 
     CopyNeutron(pNeutron, &ScatNeutr);
-    PropagateX(&ScatNeutr, DistX);
+    PropagateX(&ScatNeutr, &ToF, DistX);
 
     WriteWWP(&ScatNeutr, eReason);
   }
@@ -1453,6 +1507,13 @@ void WriteInstrData(VectorType Pos)
       if  (eFirstMod==MCN_READ_IN) mFst=1;
       for (m=mFst; m<nModuleNo; m++) 
       {
+        /* Workaround until actual fix */
+        /* read_in does not properly clear the instrument file */
+        /* reading too many EOP leads to an overflow */
+        if (inp > pBuffer + CHAR_BUF_XS*(nModuleNo+3+NUM_EOP-1)) {
+          Warning("Overflow while reading instrument file");
+          break;
+        }
         if (fgets (inp, CHAR_BUF_XS-1, pFile)) 
         {
           if (memcmp(inp, "EOP", 3)==0 || memcmp(inp, "#", 1)==0)
@@ -1942,7 +2003,7 @@ static char* setDir (char *arg)
 /****************************************************************/
 static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel) 
 {
-  static char *pResult=NULL; 
+  char *pResult=NULL;
   char *pDir=NULL;
   int  LenD=0, LenF=0, LenS=0;
 
@@ -1950,8 +2011,6 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
   if (sFile == NULL)
     return NULL;
 
-  ChangeSlash(sSubDir);
-  ChangeSlash(sFile);
 
   /* Do not change an absolute path. */
 #ifdef _MSC_VER
@@ -1987,6 +2046,7 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
     else
     {  strcpy(pResult, sSubDir);
     }
+    ChangeSlash(pResult);
 
     // add missing slash and file name
     if (LenS > 0 && sSubDir[LenS-1]!=cSlash)
@@ -2008,11 +2068,10 @@ static void TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDir
     case IN_DIR   : if (InputDir  !=NULL) strcpy(pPath, InputDir);   break;
     case OUT_DIR  : if (OutputDir !=NULL) strcpy(pPath, OutputDir);  break;
   }
-  
-  AddSlash(pPath); 
-  AddSlash(sSubDir);
-  
+
+  AddSlash(pPath);
   strcat(pPath, sSubDir);
+  AddSlash(pPath);
   strcat(pPath, sFile);
 
   ChangeSlash(pPath);

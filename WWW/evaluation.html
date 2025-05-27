@@ -136,8 +136,8 @@
       <tr>
         <td valign="top">time of flight</td>
         <td valign="top">
-          yes: only those neutrons which have been monitored successfully (i.e. all properties are within the given ranges) are transferred to the subsequent module<br />
-          no : (default) all trajectories are transferred to the subsequent module
+          yes: the wavelength is determined from the given flight path and the time-of-flight calculated for the trajectory (for TOF instruments) <br />
+          no : the wavelength of all trajectories is supposed to be identical with the reference wavelength  (for instruments on continuos sources)
         </td>
         <td valign="top">'yes', 'no'</td>
         <td valign="top">-w         </td>
@@ -154,7 +154,7 @@
 
       <tr>
         <td valign="top">flight path<br />[cm]</td>
-        <td valign="top">(for option TOF): Length of the neutron flight path from point of t=0 setting (source or pulse shaping chopper) to detector</td>
+        <td valign="top">(for option TOF): Length of the total neutron flight path from point of t=0 setting (source or pulse shaping chopper) to detector</td>
         <td valign="top">&gt; 0  </td>
         <td valign="top">-l      </td>
       </tr>
@@ -635,8 +635,8 @@
       <tr>
         <td valign="top">time of flight</td>
         <td valign="top">
-          yes: the wavelength is determined from the given flight path and the time-of-flight calculated for the trajectory<br />
-          no : the wavelength of all trajectories is supposed to be identical with the reference wavelength
+          yes: the wavelength is determined from the given flight path and the time-of-flight calculated for the trajectory (for TOF instruments) <br />
+          no : the wavelength of all trajectories is supposed to be identical with the reference wavelength  (for instruments on continuos sources)
         </td>
         <td valign="top">'yes', 'no'</td>
         <td valign="top">-w         </td>
@@ -653,7 +653,7 @@
 
       <tr>
         <td valign="top">flight path<br />[cm]</td>
-        <td valign="top">(for option TOF): Length of the neutron flight path from point of t=0 setting (source or pulse shaping chopper)</td>
+        <td valign="top">(for option TOF): Length of the total neutron flight path from point of t=0 setting (source or pulse shaping chopper) to the detector </td>
         <td valign="top">&gt; 0  </td>
         <td valign="top">-l      </td>
       </tr>
@@ -786,15 +786,18 @@
       </tr>
       <tr>
         <td valign="top">Scatt. angle selection</td>
-        <td valign="top">Selects the way how the scattering angle is determined </td>
+        <td valign="top">Selects the way how the scattering angle is determined, either from the flight direction or the position on the detector <br />
+                         Note that in reality, the scattering angle can only be determined from the detector position. 
+                         Choosing 'direction'' should only be a first approach before adding the detector(s) </td>
         <td valign="top">'direction', 'position'</td>
         <td valign="top"> -D         </td>
       </tr>
       <tr>
         <td valign="top">time of flight</td>
         <td valign="top">
-          If the wavelength of the neutrons shall be determined by time of flight analysis (i.e. each wavelength is calculated from the flight path and the flight time),
-          this option must be activated when using scattering angle vs. wavelength.
+          'yes': if the wavelength of the neutrons shall be determined by time of flight analysis (i.e. each wavelength is calculated from the flight path and the flight time),
+          this option must be activated when using scattering angle vs. wavelength. <br />
+          'no': Otherwise the wavelength of the simulated neutron used, which cannot be determined experimentally. So this is not a realistic simulation.
         </td>
         <td valign="top">'yes', 'no'</td>
         <td valign="top"> -w        </td>
@@ -808,7 +811,7 @@
 
       <tr>
         <td valign="top">flight path<br />[cm]</td>
-        <td valign="top">length of total neutron flight path, needed only for time of flight analysis.<br><br>: global shift of the neutron time t</td>
+        <td valign="top">length of total neutron flight path from source to detector (needed only for time of flight analysis).<br><br>: global shift of the neutron time t</td>
         <td valign="top">   </td>
         <td valign="top">-l </td>
       </tr>

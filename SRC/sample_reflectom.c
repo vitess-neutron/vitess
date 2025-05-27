@@ -20,6 +20,7 @@
 /* 3.2  Nov  2019  K. Lieutenant  tidy up, global variable, visualization , length <-> width */
 /* 3.3  May  2022  K. Lieutenant  substrate, neutrons passing by, attenuation                */
 /* 3.4  Sep  2023  K. Lieutenant  substrate visualization                                    */
+/* 3.5  Mar  2025  K. Lieutenant  some corrections                                           */
 /*********************************************************************************************/
 
 #include <string.h>
@@ -39,61 +40,61 @@
 /**************************************************/
 /* global variables and constants                 */
 /**************************************************/
-char  *pSmplFileName=NULL;         // -P               name of the sample parameter file  
-char  *sReflFileName=NULL;         // -I               name of the file containing the theoretical spectrum  
-VtMeasMode eOption =VT_SAMPLE;     // -O               option:  1: reflection of sample       2: reflection of reference  
-VtRotAxis  eSmplAxis=NO_ROT_AX;    // -R               rotation axis of sample "Y" or"Z"            
-VtMirrMat  eSubMat=VT_NO_MIRR_MAT; // -M               material of the substrate  
-short  bIncoh   =FALSE,            // -B               flag: whether to use incoherent  scattering: 0 for "not use", 1 "for use" 
-       bOffSpec =FALSE,            // -o               flag: whether to use offspecular scattering: 0 for "not use", 1 "for use"
-       bTreatAll=FALSE;            // -A               flag: treat neutrons that are not reflected on the sample surface 
-double SmplAngle=0.0,              // -a        [deg]  angle of reflection 
-       SubThick =0.0,              // -h        [cm]   thickness of the substrate
-       SubMuScaT=0.0,              // -s       [1/cm]  Macroscopic total scattering cross section of the substrate 
-       SubMuAbs =0.0,              // -m       [1/cm]  Macroscopic absorption cross section of the substrate for 1.798 Ang 
-       MuInc =0.0,                 // -X       [1/cm]  Macroscopic incoherent cross section 
-       DetDist  =0.0,              // -d        [cm]   Distance to the detector for solid angle calculation 
-       DetWidth =0.0,              // -p        [cm]   Width of the detector for solid angle calculation 
-       DetHeight=0.0,              // -t        [cm]   Height of the detector for solid angle calculation 
-       SignToBkgAreaFact=0.0;      // -S               Relates the area on the detector with signal counts to total detector area. 
+char  *pSmplFileName=NULL;          // -P              name of the sample parameter file  
+char  *sReflFileName=NULL;          // -I              name of the file containing the theoretical spectrum  
+VtMeasMode eOption =VT_SAMPLE;      // -O              option:  1: reflection of sample       2: reflection of reference  
+VtRotAxis eSmplAxis=NO_ROT_AX;      // -R              rotation axis of sample "Y" or"Z"            
+VtMirrMat eSubstrMat=VT_NO_MIRR_MAT;// -M              material of the substrate  
+short  bIncoh   =FALSE,             // -B              flag: whether to use incoherent  scattering: 0 for "not use", 1 "for use" 
+       bOffSpec =FALSE,             // -o              flag: whether to use offspecular scattering: 0 for "not use", 1 "for use"
+       bTreatAll=FALSE;             // -A              flag: treat neutrons that are not reflected on the sample surface 
+double SmplAngle=0.0,               // -a       [deg]  angle of reflection 
+       SubstrThick =0.0,            // -h       [cm]   thickness of the substrate
+       SubstrMuScaT=0.0,            // -s      [1/cm]  Macroscopic total scattering cross section of the substrate 
+       SubstrMuAbs =0.0,            // -m      [1/cm]  Macroscopic absorption cross section of the substrate for 1.798 Ang 
+       SmplMuInc   =0.0,            // -X      [1/cm]  Macroscopic incoherent cross section 
+       DetDist  =0.0,               // -d       [cm]   Distance to the detector for solid angle calculation 
+       DetWidth =0.0,               // -p       [cm]   Width of the detector for solid angle calculation 
+       DetHeight=0.0,               // -t       [cm]   Height of the detector for solid angle calculation 
+       SignToBkgAreaFact=0.0;       // -S              Relates the area on the detector with signal counts to total detector area. 
                                                        
-VtFrameGen eFrame=VT_NO_FRAME;// file -g               flag: user defined output frame
-double PosSmpl[3]={0.0,0.0,0.0},// file -x -y -z  [cm]   center position X of the sample
-       SmplThick =0.0,        // file -T        [cm]   thickness of (the reflecting area) of the sample 
-       SmplWidth =0.0,        // file -W        [cm]   width of the sample
-       SmplLength=0.0,        // file -L        [cm]   length of the sample
-       AnglOutHor =0.0,       // file -k        [deg]  horizontal angle of the output frame, relative to input orientation
-       AnglOutVert=0.0,       // file -K        [deg]  vertical angle of the output frame, relative to input orientation
-       TranslOut[3]           // file -u -v -w  [cm]   center position of the output frame
-          ={0.0,0.0,0.0};      
+VtFrameGen eFrame=VT_NO_FRAME;  // file -g             flag: user defined output frame
+double PosSmpl[3]={0.0,0.0,0.0},// file -x -y -z [cm]  center position X of the sample
+       SmplThick  =0.0,         // file -T       [cm]  thickness of (the reflecting area) of the sample 
+       SmplWidth  =0.0,         // file -W       [cm]  width of the sample
+       SmplLength =0.0,         // file -L       [cm]  length of the sample
+       AnglOutHor =0.0,         // file -k       [deg] horizontal angle of the output frame, relative to input orientation
+       AnglOutVert=0.0,         // file -K       [deg] vertical angle of the output frame, relative to input orientation
+       TranslOut[3]             // file -u -v -w [cm]  center position of the output frame
+                ={0.0,0.0,0.0};
 
 // Variables determined from input parameters or trajectory data
-FILE	*pReflFile=NULL;        //       pointer on file for theoretical spectrum 
-SampleType stSample,          //       sample geometry
-           stSubstr;          //       substrate geometry
-long   nLinesRefl=0,          //       number of lines in reflectivity file  
-       nQinPoints=0;          //       number of lines in a specular reflectivity file or number of Qin points in a offspecular reflectivity file.  
-double *pTabQ,                //       pointer on table of Q-values                   
-       *pTabR,                //       pointer on table of the respective R-values   
-      **pTab_Qin_Qout,        //       pointer on table of Qin and Qout values for offspecular scattering 
-      **pTab_RoffSpec,        //       pointer on table of the respective offspecular Q-values  
-       DimSmpl[3]={0.0,0.0,0.0},//     size (thickness, width, length) of the sample
-       DimSub [3]={0.0,0.0,0.0},//     size (thickness, width, length) of sample+substrate
-       PosSub [3]={0.0,0.0,0.0},//     position of the center of sample+substrate
-       TotThick=0.0,          //       thickness of sample + substrate 
-       ProbIn =0.0,           //       input probabilities for one angle   
-       ProbOut=0.0,           //       output probabilities for one angle   
-       SmplHor=0.0,           //       horizontal angle of reflection 
-       SmplVert=0.0,          //       vertical angle of reflection   
-       MinTheta=0.0,          //       Minimum and maximum theta angles for the incoherent scattering 
+FILE	*pReflFile=NULL;            //   pointer on file for theoretical spectrum 
+SampleType stSample,              //   sample geometry
+           stSubstr;              //   substrate geometry
+long   nLinesRefl=0,              //   number of lines in reflectivity file  
+       nQinPoints=0;              //   number of lines in a specular reflectivity file or number of Qin points in a offspecular reflectivity file.  
+double *pTabQ,                    //   pointer on table of Q-values                   
+       *pTabR,                    //   pointer on table of the respective R-values   
+      **pTab_Qin_Qout,            //   pointer on table of Qin and Qout values for offspecular scattering 
+      **pTab_RoffSpec,            //   pointer on table of the respective offspecular Q-values  
+       DimSmpl  [3]={0.0,0.0,0.0},//   size (thickness, width, length) of the sample
+       DimSubstr[3]={0.0,0.0,0.0},//   size (thickness, width, length) of sample+substrate
+       PosSubstr[3]={0.0,0.0,0.0},//   position of the center of sample+substrate
+       TotThick=0.0,              //   thickness of sample + substrate 
+       ProbIn =0.0,               //   input probabilities for one angle   
+       ProbOut=0.0,               //   output probabilities for one angle   
+       SmplHor=0.0,               //   horizontal angle of reflection 
+       SmplVert=0.0,              //   vertical angle of reflection   
+       MinTheta=0.0,              //   Minimum and maximum theta angles for the incoherent scattering 
        MaxTheta=0.0,
-       Qmin    =1.0e99,       //       Minimum and maximum theta Q-values in the table
+       Qmin    =1.0e99,           //   Minimum and maximum theta Q-values in the table
        Qmax   =-1.0e99,
-       Depth[3]={0.0,0.0,0.0};//       Depth of reflection point inside the reflecting sample
-double RotMatrixSmpl[3][3],   //       rotation matrix for sample orientation
-       RotMatrixOut [3][3];   //       rotation matrix for output frame
-double RotMatOffSpec[3][3];   //       rotation matrix for offspeclar scattering
-char   sAxis[2]="";           //       text describing sample axis
+       Depth[3]={0.0,0.0,0.0};    //   Depth of reflection point inside the reflecting sample
+double RotMatrixSmpl[3][3],       //   rotation matrix for sample orientation
+       RotMatrixOut [3][3];       //   rotation matrix for output frame
+double RotMatOffSpec[3][3];       //   rotation matrix for offspeclar scattering
+char   sAxis[2]="";               //   text describing sample axis
  
 
 /******************************/
@@ -104,29 +105,30 @@ int main(int argc, char **argv)
   double     arg=0.0, ReflAnglHor=0.0, ReflAnglVert=0.0,
              RotMatrixRefl[3][3],
              pathlen=0.0,          // length of the path inside the sample
-             tof  =0.0, dist =0.0, // TOF and distance to point of reflection (for visualization)
-             dist1=0.0, dist2=0.0; // distances to intersections points with the substrate
+             TofRefl=0.0,          // ToF from entry to reflection point
+             dist1=0.0, dist2=0.0, // distances to intersections points with the substrate
+             DistX=0.0;            // distance along x-axis from entry to reflection point  
   long       i=0;                  // index of trajectories
   short      bHitSmpl=FALSE,       // flag: sample is hit
-             bHitSub =FALSE;       // flag: substrate is hit
+             bHitSubstr =FALSE;       // flag: substrate is hit
   VectorType vPath={0.0,0.0,0.0}, vDirIn={1.0, 0.0, 0.0}, vDirOut={0.0,0.0,0.0},
              ISP1 ={0.0,0.0,0.0}, ISP2  ={0.0,0.0,0.0}; 
-  Neutron    ReflNeutron, TrnsNeutron, InNeutron;
-  Neutron    parentNeutron;     // Neutron needed to store the location of the intersection 
-                                // point for offspecular/incoherent scattering
-  short bScat=0;
-  short doCoherent=0, doOffspecular=0, doIncoherent=0;
+  Neutron    InNeutron,            // Incoming neutron
+             TrnsNeutron,          // transmitted neutron
+             ReflNeutron;          // neutron propagated to the point of reflection in the sample frame 
+  short      bScat=0;
+  short      doCoherent=0, doOffspecular=0, doIncoherent=0;
 
   // initialisation
   // --------------
-  InitNeutron(&ReflNeutron);  InitNeutron(&parentNeutron);
+  InitNeutron(&ReflNeutron);  
   InitNeutron(&TrnsNeutron);  InitNeutron(&InNeutron);
   InitRotMatrix(RotMatrixRefl);
 
   _eModule = MCN_SMPL_REFL;
 
   Init   (argc, argv, _eModule);
-  PrintModuleName(_eModule, "3.3a");
+  PrintModuleName(_eModule, "3.5a");
   OwnInit(argc, argv);
   MsgInit();
 
@@ -188,61 +190,43 @@ int main(int argc, char **argv)
         ProbIn  = InputNeutrons[i].Probability ;
         ProbOut = 0.0;	      
 	      
-        /* checks if neutron hits the surface of the sample */
-        bHitSmpl = FindISPs(ISP1, ISP2, &ReflNeutron, FALSE);
+        /* checks if neutron hits the sample or and transfers it to the frame of the reflection point */
+        bHitSmpl = FindSmplISPs(ISP1, ISP2, &ReflNeutron);
 	  
         if (bHitSmpl == TRUE) /* neutron hits the sample surface */
         {
-          /* moment of arriving at the sample plane (x=0.0), new position */
-          dist = (0.0 - ReflNeutron.Position[0]) / ReflNeutron.Vector[0];
-          tof  = dist / V_FROM_LAMBDA(ReflNeutron.Wavelength);
-          ReflNeutron.Time +=  tof;
-          CopyVector(ReflNeutron.Vector, vPath) ;
-          MultiplyByScalar(vPath, dist);
-          AddVector  (ReflNeutron.Position, vPath) ; /* vPath = displacement vector */
-	  
-          // Save the neutron with primary direction and weight for offspecular scattering
-          CopyNeutron(&ReflNeutron, &parentNeutron);	  	  
+          // Propagates the neutron to the reflection plane 
+          DistX = 0.0 - ReflNeutron.Position[0];
+          PropagateX(&ReflNeutron, &TofRefl, DistX);
 	    
           // Here, the specular reflection case is treated
           if (doCoherent) 
           {
-            bScat = ScatterSpecular(arg, &InNeutron, &ReflNeutron);
+            bScat = ScatterSpecular(&InNeutron, &ReflNeutron, arg);
             if (bScat != 0)
             {	    
               // Here, the incoherent scattering is treated
               if (doIncoherent) 
               {
-                ReflNeutron = InNeutron;
-                /* checks if neutron hits the surface of the sample and gives global variables in	the frame of sample */
-                CheckRefl(&ReflNeutron, 1) ;
-
-                /* moment of arriving at the sample plane (x=0.0), new position */
-                ReflNeutron.Time += (0.0 - ReflNeutron.Position[0]) / ReflNeutron.Vector[0] / V_FROM_LAMBDA(ReflNeutron.Wavelength)/**/ ;
-                CopyVector(ReflNeutron.Vector, vPath) ;  /* vPath = displacement vector */
-	  
-                MultiplyByScalar(vPath, - ReflNeutron.Position[0] / ReflNeutron.Vector[0] ) ;
-                AddVector  (ReflNeutron.Position, vPath) ;
-
                 pathlen = DistVector(ISP1, ISP2);
-                ScatterIncoherent(&ReflNeutron, pathlen);
+                ScatterIncoherent(&InNeutron, TofRefl, pathlen);
               }
             }
           }
           // Here, the offspecular scattering is treated
           else if (doOffspecular) 
           {
-            ScatterOffspecular(arg, &InNeutron, &parentNeutron, &ReflNeutron);
+            ScatterOffspecular(&InNeutron, &ReflNeutron, arg);
           }
         }
         
         // transmitted neutron
         if (bTreatAll == TRUE )
         { 
-          bHitSub = FindSubISPs(&dist1, &dist2, &TrnsNeutron);
-          if (bHitSub==TRUE)
+          bHitSubstr = FindSubstrISPs(&dist1, &dist2, &TrnsNeutron);
+          if (bHitSubstr==TRUE)
           { PassThrough(&TrnsNeutron, dist1, VT_MIRR_VACUUM, FALSE);
-            PassThrough(&TrnsNeutron, dist2-dist1,  eSubMat, TRUE);
+            PassThrough(&TrnsNeutron, dist2-dist1,  eSubstrMat, TRUE);
           }
           else
           { PassThrough(&TrnsNeutron, LengthVector(PosSmpl), VT_MIRR_VACUUM, TRUE);
@@ -309,7 +293,7 @@ void OwnInit(int argc, char *argv[])
         eOption = (VtMeasMode) atoi(arg) ;
         break;
       case 'M':
-        eSubMat = (VtMirrMat) atoi(arg) ;
+        eSubstrMat = (VtMirrMat) atoi(arg) ;
         break;
       case 'R':
         eSmplAxis = RotAxis_Txt2ID(arg) ;
@@ -329,17 +313,17 @@ void OwnInit(int argc, char *argv[])
         SmplAngle = atof(arg);
         break;
       case 'h':
-        SubThick = atof(arg);
+        SubstrThick = atof(arg);
         break;
 
       case 'X':
-        MuInc  = atof(arg);
+        SmplMuInc  = atof(arg);
         break;
       case 'm':
-        SubMuAbs  = atof(arg);
+        SubstrMuAbs  = atof(arg);
         break;
       case 's':
-        SubMuScaT = atof(arg);
+        SubstrMuScaT = atof(arg);
         break;
 
       case 'x':
@@ -402,7 +386,7 @@ void OwnInit(int argc, char *argv[])
     argv++;
   }
 
-  TotThick = SmplThick + SubThick;
+  TotThick = SmplThick + SubstrThick;
 }
 
 
@@ -416,19 +400,19 @@ void  CalcAndWritePar()
   /* prints to log file */
   RotAxis_ID2Txt (sAxis, eSmplAxis);
   MeasMode_ID2Txt(sMode, eOption);
-  MirrMat_ID2Txt (sMat,  eSubMat);
+  MirrMat_ID2Txt (sMat,  eSubstrMat);
 
   fprintf  (LogFilePtr, "initialised option: '%s'\n", sMode) ;
-  fprintf  (LogFilePtr, "sample rotated by : %10.5f° about %s-axis\n", SmplAngle, sAxis) ;
+  fprintf  (LogFilePtr, "sample rotated by : %8.3f° about %s-axis\n", SmplAngle, sAxis) ;
   if (pSmplFileName!=NULL)
     fprintf(LogFilePtr, "parameter file    : '%s'\n", pSmplFileName) ;
   if (bIncoh)
   { fprintf(LogFilePtr, "incoherent scattering added\n");
-    fprintf(LogFilePtr, "mu_inc            : %10.5f  1/cm \n", MuInc);
+    fprintf(LogFilePtr, "mu_inc            : %10.5f  1/cm \n", SmplMuInc);
   }
   if (bTreatAll)
-  { fprintf(LogFilePtr, "substrate         : %10s  %10.5f  cm thick\n", sMat, SubThick);
-    fprintf(LogFilePtr, "  mu_scat, mu_abs : %10.5f  %10.5f  1/cm\n", SubMuScaT, SubMuAbs);
+  { fprintf(LogFilePtr, "substrate         : %10s  %10.5f  cm thick\n", sMat, SubstrThick);
+    fprintf(LogFilePtr, "  mu_scat, mu_abs : %10.5f  %10.5f  1/cm\n", SubstrMuScaT, SubstrMuAbs);
   }
 
   /* converts degs in radian etc. */
@@ -488,13 +472,13 @@ void  CalcAndWritePar()
 
   // fills the structure to visualize the substrate
   memcpy(&stSubstr, &stSample, sizeof(SampleType));
-  stSample.Position[0] = PosSub[0];
-  stSample.Position[1] = PosSub[1];
-  stSample.Position[2] = PosSub[2];
+  stSample.Position[0] = PosSubstr[0];
+  stSample.Position[1] = PosSubstr[1];
+  stSample.Position[2] = PosSubstr[2];
   if (eSmplAxis==VT_ROT_Y)
-    stSample.SG.Cube.height = DimSub[0];
+    stSample.SG.Cube.height = DimSubstr[0];
   else if (eSmplAxis==VT_ROT_Z)
-    stSample.SG.Cube.width  = DimSub[0];
+    stSample.SG.Cube.width  = DimSubstr[0];
 
   return;
 }/* End OwnInit */
@@ -547,8 +531,8 @@ void ReadReflectivityFile()
         double* refl_array = calloc(nLinesRefl, sizeof(double));
         int i;
 
-        pTab_Qin_Qout = calloc(nLinesRefl, sizeof(double*));
-        pTab_RoffSpec = calloc(nLinesRefl, sizeof(double*));
+        pTab_Qin_Qout = calloc(nLinesRefl+2, sizeof(double*));
+        pTab_RoffSpec = calloc(nLinesRefl  , sizeof(double*));
 
         while (!feof(pReflFile)) 
         {
@@ -560,49 +544,52 @@ void ReadReflectivityFile()
             continue;
           }
 	      
-          if (innerCounter == 0 && outerCounter == 0) q_i_prev = q_i;
+          if (innerCounter == 0 && outerCounter == 0)
+            q_i_prev = q_i;
 		
-          q_f_array[innerCounter] = q_f;
-          refl_array[innerCounter] = refl;
-
-          if (q_i_prev != q_i) 
+          if (q_i == q_i_prev) 
           {
-            pTab_Qin_Qout[outerCounter] = calloc(innerCounter+2, sizeof(double));
-            pTab_RoffSpec[outerCounter] = calloc(innerCounter, sizeof(double));
+            q_f_array [innerCounter] = q_f;
+            refl_array[innerCounter] = refl;
+            innerCounter++;
+          }
+          else 
+          {
+            pTab_Qin_Qout[outerCounter]    = calloc(innerCounter+2, sizeof(double));
+            pTab_RoffSpec[outerCounter]    = calloc(innerCounter, sizeof(double));
             pTab_Qin_Qout[outerCounter][0] = (double) innerCounter;
             pTab_Qin_Qout[outerCounter][1] = (double) q_i_prev;
-
+            
             for (i = 0; i < innerCounter; i++) 
             {
-              pTab_Qin_Qout[outerCounter][i+2] = q_f_array[i];
-              pTab_RoffSpec[outerCounter][i] = refl_array[i];
+              pTab_Qin_Qout[outerCounter][i+2] = q_f_array [i];
+              pTab_RoffSpec[outerCounter][i]   = refl_array[i];
             }
 		
             innerCounter=0;
             outerCounter++;
-            q_i_prev = q_i;
-		
-          }
-          else 
-          {
-            q_i_prev = q_i;
+            q_i_prev                 = q_i;
+            q_f_array [innerCounter] = q_f;
+            refl_array[innerCounter] = refl;
             innerCounter++;
           }
 
         }
 
-        if (innerCounter > 0) {
-        pTab_Qin_Qout[outerCounter] = calloc(innerCounter+2, sizeof(double));
-        pTab_RoffSpec[outerCounter] = calloc(innerCounter, sizeof(double));
-        pTab_Qin_Qout[outerCounter][0] = (double) innerCounter;
-        pTab_Qin_Qout[outerCounter][1] =  q_i_prev;
+        if (innerCounter > 0) 
+        {
+          pTab_Qin_Qout[outerCounter]    = calloc(innerCounter+2, sizeof(double));
+          pTab_RoffSpec[outerCounter]    = calloc(innerCounter, sizeof(double));
+          pTab_Qin_Qout[outerCounter][0] = (double) innerCounter;
+          pTab_Qin_Qout[outerCounter][1] =  q_i_prev;
 	      
-        for (i = 0; i < innerCounter; i++) {
-        pTab_Qin_Qout[outerCounter][i+2] = q_f_array[i];
-        pTab_RoffSpec[outerCounter][i] = refl_array[i];
-        }
+          for (i = 0; i < innerCounter; i++) 
+          {
+            pTab_Qin_Qout[outerCounter][i+2] = q_f_array [i];
+            pTab_RoffSpec[outerCounter][i]   = refl_array[i];
+          }
 	      
-        outerCounter++;
+          outerCounter++;
 	      
         }
         nQinPoints = outerCounter;
@@ -680,21 +667,21 @@ void SetSamplePar()
   }
 
   // fills the data structures giving position and size of both the sample and the substrate in original frame, with the sample normal pointing in x-direction
-  CopyVector(PosSmpl, PosSub);
-  DimSmpl[0] = SmplThick;  DimSub[0] = SubThick;  
+  CopyVector(PosSmpl, PosSubstr);
+  DimSmpl[0] = SmplThick;  DimSubstr[0] = SubstrThick;  
 
-  CopyVector(PosSmpl, PosSub);
+  CopyVector(PosSmpl, PosSubstr);
   if (eSmplAxis==VT_ROT_Y)
-  { PosSub [0] = PosSmpl[0] + 0.5*(SmplThick+SubThick)*sin(Radians(SmplAngle));
-    PosSub [2] = PosSmpl[2] - 0.5*(SmplThick+SubThick)*cos(Radians(SmplAngle));
-    DimSmpl[1] = SmplWidth;  DimSub[1] = SmplWidth; 
-    DimSmpl[2] = SmplLength; DimSub[2] = SmplLength;
+  { PosSubstr [0] = PosSmpl[0] + 0.5*(SmplThick+SubstrThick)*sin(Radians(SmplAngle));
+    PosSubstr [2] = PosSmpl[2] - 0.5*(SmplThick+SubstrThick)*cos(Radians(SmplAngle));
+    DimSmpl[1] = SmplWidth;  DimSubstr[1] = SmplWidth; 
+    DimSmpl[2] = SmplLength; DimSubstr[2] = SmplLength;
   }
   else if (eSmplAxis==VT_ROT_Z)
-  { PosSub [0] = PosSmpl[0] + 0.5*(SmplThick+SubThick)*sin(Radians(SmplAngle));
-    PosSub [1] = PosSmpl[1] - 0.5*(SmplThick+SubThick)*cos(Radians(SmplAngle));
-    DimSmpl[1] = SmplLength; DimSub[1] = SmplLength;
-    DimSmpl[2] = SmplWidth;  DimSub[2] = SmplWidth; 
+  { PosSubstr [0] = PosSmpl[0] + 0.5*(SmplThick+SubstrThick)*sin(Radians(SmplAngle));
+    PosSubstr [1] = PosSmpl[1] - 0.5*(SmplThick+SubstrThick)*cos(Radians(SmplAngle));
+    DimSmpl[1] = SmplLength; DimSubstr[1] = SmplLength;
+    DimSmpl[2] = SmplWidth;  DimSubstr[2] = SmplWidth; 
   }
 
   return;
@@ -823,107 +810,64 @@ void OwnCleanup()
 }/* End OwnCleanup */
 
 
-/********************************************************************************************************/
-/* controls, if neutron hits the sample (= reflecting layer) and tranfers into sample frame             */
-/********************************************************************************************************/
-short	CheckRefl(Neutron* pNeutron, short int treatingReflection)
+/**************************************************************************************************************/
+/* controls, if neutron hits sample, finds point of reflection and returns neutron parameters in that frame   */
+/**************************************************************************************************************/
+short	FindSmplISPs(VectorType ISP1, VectorType ISP2, Neutron* pNeutron)
 {
-  VectorType ISP1, ISP2,         /* Intersection points (entry and exit)  */
-    NeutPos, NeutDir;   /* Neutron position and flight direction */
+  short  k=0, rc=FALSE;
+  double t=0.0;
+  VectorType NeutPos, NeutDir;   /* Neutron position and flight direction */
 
-  /* intermediate variables */
+  // intermediate variables
   CopyVector(pNeutron->Position, NeutPos);
   CopyVector(pNeutron->Vector,   NeutDir);
 
-  /* computes neutron variables in the frame of the sample */
+
+  /* here computes where the neutron hits the reflecting plane 
+  if (bSubstrate==TRUE)
+  { 
+    // computes neutron variables in the frame of the substrate
+    SubVector(NeutPos, PosSubstr);
+    RotVector(RotMatrixSmpl, NeutPos);  // substrate assumed to be parallel to sample
+    RotVector(RotMatrixSmpl, NeutDir);
+
+    rc = IntersectionWithRectangular(DimSubstr, NeutPos, NeutDir, ISP1, ISP2);
+
+    Depth[0] = Depth[1] = Depth[2] = 0.0 ;
+  }
+  else
+  { */
+
+  // computes neutron variables in the frame of the sample
   SubVector(NeutPos, PosSmpl);
   RotVector(RotMatrixSmpl, NeutPos);
   RotVector(RotMatrixSmpl, NeutDir);
 
-  /* here computes the depth where the neutron meets the reflecting
-     plane, equivalent to a parallel shift of a t=0 sample in the frame of sample */
-  if(IntersectionWithRectangular(DimSmpl, NeutPos, NeutDir, ISP1, ISP2) == 0)
-    return(FALSE) ;
+  rc = IntersectionWithRectangular(DimSmpl, NeutPos, NeutDir, ISP1, ISP2);
 
-  Depth[0] = MonteCarlo(ISP1[0], ISP2[0]) ;
-  Depth[1] = Depth[2] = 0 ;
-
+  // reflection takes place in a certain depth on the way through the sample
+  t = MonteCarlo(0.0, 1.0);
+  for (k=0; k < 3; k++)
+    Depth[k] = ISP1[k] + t * (ISP2[k]-ISP1[k]) ;
   SubVector(NeutPos, Depth) ;
 
-  // Do the incoherent scattering here
-  if (!treatingReflection) {
-    double pathInSample, prob;
-    SubVector(ISP2, ISP1);
-    pathInSample = MonteCarlo(0, LengthVector(ISP2));
-    prob = 1. - exp(-MuInc*pathInSample);
-    pNeutron->Probability *= prob;
-    // if (prob > MaxProb) MaxProb = prob;
-    if (pNeutron->Probability <= wei_min) return (FALSE);
-  }
-
-  /* here we have the neutron in the frame of the sample*/
-  CopyVector(NeutPos, pNeutron->Position) ;
-  CopyVector(NeutDir, pNeutron->Vector) ;
-
-  return(TRUE) ;
-
-}/* End CheckRefl */
-
-/**************************************************************************************************************/
-/* controls, if neutron hits sample or substrate, tranfers into that frame and returns intersection points */
-/**************************************************************************************************************/
-short	FindISPs(VectorType ISP1, VectorType ISP2, Neutron* pNeutron, short bSubstrate)
-{
-  short rc=FALSE;
-  VectorType NeutPos, NeutDir;   /* Neutron position and flight direction */
-
-  /* intermediate variables */
-  CopyVector(pNeutron->Position, NeutPos);
-  CopyVector(pNeutron->Vector,   NeutDir);
-
-  RotVector(RotMatrixSmpl, NeutDir);
-
-  /* here computes where the neutron hits the reflecting plane */
-  if (bSubstrate==TRUE)
-  { 
-    /* computes neutron variables in the frame of the sample */
-    SubVector(NeutPos, PosSub);
-    RotVector(RotMatrixSmpl, NeutPos);
-
-    rc = IntersectionWithRectangular(DimSub, NeutPos, NeutDir, ISP1, ISP2);
-
-    Depth[0] = Depth[1] = Depth[2] = 0 ;
-  }
-  else
-  { 
-    /* computes neutron variables in the frame of the sample */
-    SubVector(NeutPos, PosSmpl);
-    RotVector(RotMatrixSmpl, NeutPos);
-
-    rc = IntersectionWithRectangular(DimSmpl, NeutPos, NeutDir, ISP1, ISP2);
-
-    /* reflection takes place in a certain depth, equivalent to a parallel shift of a t=0 sample in the frame of sample */
-    Depth[0] = MonteCarlo(ISP1[0], ISP2[0]) ;
-    Depth[1] = Depth[2] = 0 ;
-    SubVector(NeutPos, Depth) ;
-  }
-
-  if (rc==TRUE && bSubstrate==FALSE)
+  if (rc==TRUE /* && bSubstrate==FALSE*/)
   {
-    /* here we have the neutron in the frame of the sample*/
+    // here we return the neutron in the frame of the reflection point
     CopyVector(NeutPos, pNeutron->Position) ;
     CopyVector(NeutDir, pNeutron->Vector) ;
   }
 
   return(rc) ;
 
-}/* End FindISPs */
+}
 
 
 /********************************************************************************************************/
-/* controls, if neutron is reflected, tranfers into sample frame (and returns intersection points)      */
+/* controls if neutron hits substrate and returns distances to entry and exit point                     */
 /********************************************************************************************************/
-short	FindSubISPs(double* Dist1, double* Dist2, Neutron* pNeutron)
+short	FindSubstrISPs(double* Dist1, double* Dist2, const Neutron* pNeutron)
 {
   short rc=FALSE;
   VectorType ISP1, ISP2;
@@ -933,13 +877,13 @@ short	FindSubISPs(double* Dist1, double* Dist2, Neutron* pNeutron)
   CopyVector(pNeutron->Position, NeutPos);
   CopyVector(pNeutron->Vector,   NeutDir);
 
-  /* computes neutron variables in the frame of the sample */
-  SubVector(NeutPos, PosSub);
+  /* computes neutron variables in the frame of the substrate */
+  SubVector(NeutPos, PosSubstr);
   RotVector(RotMatrixSmpl, NeutPos);
   RotVector(RotMatrixSmpl, NeutDir);
 
   /* here computes where the neutron hits the reflecting plane */
-  rc = IntersectionWithRectangular(DimSub, NeutPos, NeutDir, ISP1, ISP2);
+  rc = IntersectionWithRectangular(DimSubstr, NeutPos, NeutDir, ISP1, ISP2);
 
   if (rc==TRUE)
   { *Dist1 = DistVector(ISP1, NeutPos);
@@ -956,67 +900,41 @@ short	FindSubISPs(double* Dist1, double* Dist2, Neutron* pNeutron)
 
 
 /*********************************************************************/
-/* writes a trajectory passing through the substrate                */
-/*********************************************************************/
-short PassThruAll(Neutron* outNeutron, VectorType P1, VectorType P2)
-{
-  double     tot_len=0.0,   // distance from current position to end of sample
-             pathlen=0.0,   // pathlength in th 
-             mu_tot=0.0;
-  VectorType vPath={0.0,0.0,0.0};
-
-  /* propagation till the end of the sample */
-  tot_len = (P2[0] - outNeutron->Position[0]) / outNeutron->Vector[0];
-  outNeutron->Time += (tot_len / V_FROM_LAMBDA(outNeutron->Wavelength));
-  CopyVector(outNeutron->Vector, vPath) ;
-  MultiplyByScalar(vPath, tot_len);
-  AddVector  (outNeutron->Position, vPath) ; /* vPath = displacement vector */
-
-  /* path length through substrate determines attenuation */
-  SubVector(P2, P1);
-  pathlen = LengthVector(P2);
-
-  if (eSubMat==VT_MIRR_OTHER)
-    mu_tot = SubMuScaT + SubMuAbs*outNeutron->Wavelength/1.798;
-  else
-    mu_tot = AttenuationMirr(outNeutron->Wavelength, eSubMat);
-
-  ProbOut = ProbIn * exp(-pathlen * mu_tot);
-
-  // Convert back to global coordinate system and write neutron to the output stream
-  TransformBackToGlobalSystemAndWriteNeutron(outNeutron, FALSE, FALSE);
-
-  return TRUE;
-}
-
-
-/*********************************************************************/
 /* writes a trajectory propagating without attenuation               */
 /*********************************************************************/
-short PassThrough(Neutron* outNeutron, double PathLen, VtMirrMat eMat, short bWrite)
+short PassThrough(Neutron* OutNeutron, double PathLen, VtMirrMat eMat, short bWrite)
 {
-  double     mu_tot=0.0;
+  double     mu_tot=0.0,
+             tof   =0.0;    // ToF for the given path length
   VectorType vPath={0.0,0.0,0.0};
 
-  // propagate neutron
-  outNeutron->Time += (PathLen / V_FROM_LAMBDA(outNeutron->Wavelength));
-  CopyVector(outNeutron->Vector, vPath);
+  // propagates neutron
+  PropagatePath(OutNeutron, &tof, PathLen);
+  /*
+  OutNeutron->Time += (PathLen / V_FROM_LAMBDA(OutNeutron->Wavelength));
+  CopyVector(OutNeutron->Vector, vPath);
   MultiplyByScalar(vPath, PathLen);
-  AddVector  (outNeutron->Position, vPath) ; /* vPath = displacement vector */
+  AddVector  (OutNeutron->Position, vPath) ; // vPath = displacement vector */
 
-  // consider attenuation
+  // considers attenuation
   if (eMat==VT_MIRR_VACUUM)
     mu_tot = 0.0;
   else if (eMat==VT_MIRR_OTHER)
-    mu_tot = SubMuScaT + SubMuAbs*outNeutron->Wavelength/1.798;
+    mu_tot = SubstrMuScaT + SubstrMuAbs*OutNeutron->Wavelength/1.798;
   else
-    mu_tot = AttenuationMirr(outNeutron->Wavelength, eMat);
+    mu_tot = AttenuationMirr(OutNeutron->Wavelength, eMat);
 
   ProbOut = ProbIn * exp(-PathLen * mu_tot);
+  OutNeutron->Probability = ProbOut;
 
-  // Convert back to global coordinate system and write neutron to the output stream
+  // writes point for visualization, transfers from input to output frame and write neutron to the output stream
   if (bWrite==TRUE && ProbOut > wei_min)
-    Transf2OutputAndWriteNeutron(outNeutron);
+  { 
+    WriteIAP(OutNeutron, VT_SCATTERED);
+
+    Transf2Output(OutNeutron);
+    WriteNeutron (OutNeutron);
+  }
 
   return TRUE;
 }
@@ -1087,13 +1005,12 @@ void AnglesOutputFrame(double RotH, double RotV, double *OutH, double *OutV)
 void CalculateThetaRange()
 {
   // Calculate the theta range covered by the detector
-  double theta;
+  double alpha;
 
-  theta = atan(sqrt(sq(DetWidth/2.) + sq(DetHeight/2.))/DetDist);
+  alpha = atan(sqrt(sq(DetWidth/2.) + sq(DetHeight/2.))/DetDist);
 
-  MinTheta = 2.*SmplAngle - theta;
-  MaxTheta = 2.*SmplAngle + theta;
-  
+  MinTheta = 2.0*SmplAngle - alpha;
+  MaxTheta = 2.0*SmplAngle + alpha;
 }
 
 
@@ -1101,7 +1018,7 @@ void CalculateThetaRange()
 /* For detectors close to the direct beam, deltaPhi is a function of theta */
 /* Calculate corresponding deltaPhi for each trajectory individually.      */
 /****************************************************************************/
-void CalculatePhiRange(double theta, double* phiMin, double* phiMax, int* switchSign)
+void CalculatePhiRange(double theta, double* phiMin, double* phiMax)
 {
   double h0, h, h0Dist, hDist, largestDist1, largestDist2, det_X, det_Y;
 
@@ -1152,7 +1069,7 @@ void CalculatePhiRange(double theta, double* phiMin, double* phiMax, int* switch
     }
     else if (hDist > h0Dist && hDist < largestDist1) {
 
-      //      *phiMin = (-1.)*(M_PI/2. + asin(h0Dist/hDist));
+      // *phiMin = (-1.)*(M_PI/2. + asin(h0Dist/hDist));
       // *phiMax = -*phiMin;
       *phiMin = acos(h0Dist/hDist);
       *phiMax = M_PI*2 - *phiMin;
@@ -1195,24 +1112,26 @@ void CalculatePhiRange(double theta, double* phiMin, double* phiMax, int* switch
 /********************************************************************/
 /* Calculate trajectory parameters after specular scattering        */
 /********************************************************************/
-int ScatterSpecular(double scatteringAngle, Neutron* inputNeutron, Neutron* outputNeutron)
+int ScatterSpecular(const Neutron* InNeutron, const Neutron* ScatNeutron, const double ScatAngle)
 {
-  double divy=0.0, divz=0.0, theta=0.0, 
-         Q=0.0, R=0.0;
-
-  divy = (double) asin(inputNeutron->Vector[1] / sqrt(inputNeutron->Vector[0]*inputNeutron->Vector[0] + 
-                                                      inputNeutron->Vector[2]*inputNeutron->Vector[2]));
-  
-  divz = (double) asin(inputNeutron->Vector[2] / sqrt(inputNeutron->Vector[0]*inputNeutron->Vector[0] + 
-                                                      inputNeutron->Vector[1]*inputNeutron->Vector[1]));
+  int     rc=FALSE;
+  double  divy=0.0, divz=0.0, theta=0.0, 
+          Q=0.0, R=0.0;
+  Neutron OutNeutron;  
   
   if (eSmplAxis==VT_ROT_Z) 
-    theta = (double) asin(scatteringAngle) - divy;
+  { divy = (double) asin(InNeutron->Vector[1] / sqrt(InNeutron->Vector[0]*InNeutron->Vector[0] + 
+                                                     InNeutron->Vector[2]*InNeutron->Vector[2]));
+    theta = (double) asin(ScatAngle) - divy;
+  }
   else 
-    theta = (double) asin(scatteringAngle) - divz;
+  { divz = (double) asin(InNeutron->Vector[2] / sqrt(InNeutron->Vector[0]*InNeutron->Vector[0] + 
+                                                     InNeutron->Vector[1]*InNeutron->Vector[1]));
+    theta = (double) asin(ScatAngle) - divz;
+  }
   
   /* computes momentum transfer */
-  Q = 4.0*M_PI*sin(theta)/outputNeutron->Wavelength;
+  Q = 4.0*M_PI*sin(theta) / InNeutron->Wavelength;
   
   /* probability of reflection */
   if (eOption==VT_REFERENCE)
@@ -1225,68 +1144,101 @@ int ScatterSpecular(double scatteringAngle, Neutron* inputNeutron, Neutron* outp
     }
     else
     {	/* read error: momentum transfer lower or higher than all values in the reflectivity file */
-      CountMessageID(SMPL_Q_RANGE_TOO_SMALL, outputNeutron->ID);     
+      CountMessageID(SMPL_Q_RANGE_TOO_SMALL, InNeutron->ID);     
       R = 0.0;
     }
   }
-  
-  ProbOut = ProbIn * R ;
-  ProbIn -= ProbOut;
-  if(ProbOut <= wei_min)
-    return 0;
-  
-  //Convert back to global coordinate system and write neutron to the output stream
-  TransformBackToGlobalSystemAndWriteNeutron(outputNeutron, TRUE, TRUE);
 
-  return 1;
+  // creates output neutron 
+  if (R > 0.0)
+  {
+    CopyNeutron(ScatNeutron, &OutNeutron);	  	  
+
+    ProbOut = ProbIn * R;
+    if (ProbOut >= wei_min)
+    { 
+      ProbIn -= ProbOut;
+      ProbIn  = Max(ProbIn, 0.0);
+      OutNeutron.Probability = ProbOut;
+
+      // computes reflected direction in the frame of sample
+      OutNeutron.Vector[0] = -OutNeutron.Vector[0];
+
+      // transfers back to module frame and writes point for visualization
+      TransfBack2Input(&OutNeutron, TRUE);
+      WriteIAP(&OutNeutron, VT_SCATTERED);
+
+      // transfers from input to to output frame and writes neutron to the output stream
+      Transf2Output(&OutNeutron);
+      WriteNeutron(&OutNeutron);
+
+      rc=TRUE;
+    }
+  }
+
+  return rc;
 }
 
 
 /**************************************************************************************/
 /* Create new trajectories and calculate their parameters for offspecular scattering  */
 /**************************************************************************************/
-void ScatterOffspecular(double scatteringAngle, Neutron* inputNeutron, Neutron* parentNeutron, Neutron* outputNeutron)
+void ScatterOffspecular(const Neutron* InNeutron, const Neutron* ScatNeutron, const double ScatAngle)
 {
-  double divy, divz, theta, Q, R;
+  double divy, divz, theta, Qin, R;
   double currentQf = 0;
   short int offspecularRunning = 1;
   long int currentQfBin = 0;
+  Neutron OutNeutron;  
 
-  divy = (double) asin(inputNeutron->Vector[1] / sqrt(inputNeutron->Vector[0]*inputNeutron->Vector[0] + 
-                                                      inputNeutron->Vector[2]*inputNeutron->Vector[2]));
-  
-  divz = (double) asin(inputNeutron->Vector[2] / sqrt(inputNeutron->Vector[0]*inputNeutron->Vector[0] + 
-                                                      inputNeutron->Vector[1]*inputNeutron->Vector[1]));
-  
   if (eSmplAxis==VT_ROT_Z) 
-    theta = (double) asin(scatteringAngle) - divy;
+  { divy = (double) asin(InNeutron->Vector[1] / sqrt(InNeutron->Vector[0]*InNeutron->Vector[0] + 
+                                                   InNeutron->Vector[2]*InNeutron->Vector[2]));
+    theta = (double) asin(ScatAngle) - divy;
+  }
   else 
-    theta = (double) asin(scatteringAngle) - divz;
+  { divz = (double) asin(InNeutron->Vector[2] / sqrt(InNeutron->Vector[0]*InNeutron->Vector[0] + 
+                                                     InNeutron->Vector[1]*InNeutron->Vector[1]));
+    theta = (double) asin(ScatAngle) - divz;
+  }
   
   /* computes momentum transfer */
-  Q = 2.*M_PI*sin(theta)/outputNeutron->Wavelength;
+  Qin = 2.0*M_PI*sin(theta) / InNeutron->Wavelength;
  
-  //Loop through all q_f entries of the corresponding q_i value, 
-  //create one neutron per entry
+  // Loop through all q_f entries of the corresponding q_i value, 
   while (offspecularRunning) 
   {
-    currentQfBin = FindQf(Q, currentQfBin, &currentQf, &R);
-    
-    if (currentQfBin < 0) 
-    {
-      offspecularRunning = 0;
-      break;
-    }
-    
-    ScatterByQf(parentNeutron, outputNeutron, Q, currentQf);
-    
-    ProbOut = ProbIn * R ;
-    ProbIn -= ProbOut;
-    if(ProbOut <= wei_min)
-      continue;
+    currentQfBin = FindQf(Qin, currentQfBin, &currentQf, &R);
 
-    //Convert back to global coordinate system and write neutron to the output stream
-    TransformBackToGlobalSystemAndWriteNeutron(outputNeutron, TRUE, TRUE);
+    // create one neutron per entry with reflectivity > 0.0
+    if (R > 0.0)
+    {
+      CopyNeutron(ScatNeutron, &OutNeutron);	  	  
+      ScatterByQf(&OutNeutron, Qin, currentQf);
+    
+      ProbOut = ProbIn * R ;
+      if (ProbOut >= wei_min)
+      { 
+        ProbIn -= ProbOut;
+        ProbIn  = Max(ProbIn, 0.0);
+        OutNeutron.Probability = ProbOut;
+
+        // computes reflected direction in the frame of sample
+        OutNeutron.Vector[0] = -OutNeutron.Vector[0];
+    
+        // transfers back to module frame and writes point for visualization
+        TransfBack2Input(&OutNeutron, TRUE);
+        WriteIAP(&OutNeutron, VT_SCATTERED);
+
+        // transfers from input to output frame and writes neutron to the output stream
+        Transf2Output(&OutNeutron);
+        WriteNeutron(&OutNeutron);
+      }
+    }
+
+    // end loop if there is no further entry or the weight of neutron trajectory is reduced to zero 
+    if (currentQfBin < 0  || ProbIn <= 0.0) 
+      offspecularRunning = 0;
   }
   
   return;
@@ -1296,17 +1248,18 @@ void ScatterOffspecular(double scatteringAngle, Neutron* inputNeutron, Neutron* 
 /********************************************************************/
 /* Scatters the neutron isotropically into a given detector         */
 /********************************************************************/
-void ScatterIncoherent(Neutron* outputNeutron, double PathInSmpl)
+void ScatterIncoherent(const Neutron* InNeutron, const double TofToRefl, const double PathInSmpl)
 {
-  int    switchSign=0;
-  double prob_geom=1.0, prob_scat=1.0;
+  double prob_geom=1.0, prob_scat=1.0, R=0.0;
   double theta=0.0, phi=0.0;
-  double phiMin=0.0, phiMax=0.0, deltaPhi=0.0;
-  double deltaTheta = MaxTheta - MinTheta;
+  double phiMin=0.0, phiMax=0.0, 
+         DeltaPhi=0.0, DeltaTheta = 0.0;
+  Neutron OutNeutron;  
     
+  DeltaTheta = MaxTheta - MinTheta;
   if (MaxTheta > 0 && MinTheta < 0) 
   {
-    deltaTheta = Max(MaxTheta, fabs(MinTheta));
+    DeltaTheta = Max(MaxTheta, fabs(MinTheta));
     if (fabs(MinTheta) > MaxTheta)
       theta = MonteCarlo(MinTheta, 0);
     else
@@ -1317,51 +1270,58 @@ void ScatterIncoherent(Neutron* outputNeutron, double PathInSmpl)
     theta = MonteCarlo(MinTheta, MaxTheta);
   }
     
-  switchSign = 0;
+  CalculatePhiRange(theta, &phiMin, &phiMax);
+  DeltaPhi = phiMax - phiMin;
+  phi      = MonteCarlo(phiMin, phiMax);
     
-  CalculatePhiRange(theta, &phiMin, &phiMax, &switchSign);
-    
-  deltaPhi = (phiMax - phiMin) * (switchSign + 1.0);
-  phi = MonteCarlo(phiMin, phiMax);
-    
-  if (switchSign) 
+  /* if (switchSign) 
   {
     double random = MonteCarlo(-1, 1);
-    phi *= fabs(random)/random;
-  }
+    phi *= random/fabs(random);
+  }*/
   
-  prob_geom = fabs(sin(theta))*deltaTheta*deltaPhi/M_PI*SignToBkgAreaFact;
-  prob_scat = 1. - exp(-MuInc * PathInSmpl);
-  outputNeutron->Probability *= (prob_geom * prob_scat);
-  ProbIn -= outputNeutron->Probability;
+  prob_geom = fabs(sin(theta)) * DeltaTheta*DeltaPhi/M_PI * SignToBkgAreaFact;
+  prob_scat = 1.0 - exp(-SmplMuInc * PathInSmpl);
+  R = prob_geom * prob_scat;
 
-  outputNeutron->Vector[0] = cos(theta);
-  if (eSmplAxis==VT_ROT_Y) 
-  { 
-    outputNeutron->Vector[1] = sin(theta)*sin(phi);
-    outputNeutron->Vector[2] = sin(theta)*cos(phi);
-  }
-  else 
+  // create output neutron 
+  if (R > 0.0)
   {
-    outputNeutron->Vector[1] = sin(theta)*cos(phi);
-    outputNeutron->Vector[2] = sin(theta)*sin(phi);
-  }
-  outputNeutron->Color = 100;
-    
-  /* makes depth correction to get back to the old frame for Depth != 0 */
-  RotBackVector(RotMatrixSmpl, Depth) ;
-  AddVector(outputNeutron->Position, Depth) ;
+    // calculates point of reflection in the module frame
+    CopyNeutron (InNeutron, &OutNeutron);
+    PropagateToF(&OutNeutron, TofToRefl);
 
-  /* writes point of scattering for trajectory visualization */
-  WriteIAP(outputNeutron, VT_SCATTERED);
+    // calculates weight and flight direction of the incoherently scattered trajectory
+    ProbOut = ProbIn * R;
+    if (ProbOut >= wei_min)
+    { 
+      ProbIn -= ProbOut;
+      ProbIn  = Max(ProbIn, 0.0);
+      OutNeutron.Probability = ProbOut;
+
+      OutNeutron.Vector[0] = cos(theta);
+      if (eSmplAxis==VT_ROT_Y) 
+      { 
+        OutNeutron.Vector[1] = sin(theta)*sin(phi);
+        OutNeutron.Vector[2] = sin(theta)*cos(phi);
+      }
+      else 
+      {
+        OutNeutron.Vector[1] = sin(theta)*cos(phi);
+        OutNeutron.Vector[2] = sin(theta)*sin(phi);
+      }
+      OutNeutron.Color = 100;
+
+      // writes point of scattering for trajectory visualization
+      WriteIAP(&OutNeutron, VT_SCATTERED);
     
-  /* computes neutron variables in the output frame */
-  SubVector(outputNeutron->Position, TranslOut) ;
-  RotVector(RotMatrixOut, outputNeutron->Position) ;  /* necessary only for user */
-  RotVector(RotMatrixOut, outputNeutron->Vector) ;    /* defined output frame    */
-    
-  /*	writes output binary file */
-  WriteNeutron(outputNeutron) ;
+      // computes neutron variables in the output frame 
+      Transf2Output(&OutNeutron);
+   
+      //	writes output binary file
+      WriteNeutron(&OutNeutron);
+    }
+  }
 
   return;    
 }
@@ -1370,25 +1330,30 @@ void ScatterIncoherent(Neutron* outputNeutron, double PathInSmpl)
 /*************************************************************************************/
 /* Finds the current Q_f value for the mQf-the range of offspecular scattering       */
 /*************************************************************************************/
-int FindQf(double Qin, int mQf, double* Qf, double* refl)
+int FindQf(double Qin, int mQf, double* Qf, double* Refl)
 {
-  double TQin1=0.0, TQin2, TQf1, TQf2, TQfd;
-  double LTRd, LTRa, LTRn;
+  double TQin1=0.0, TQin2=0.0, 
+         TQf1=0.0,  TQf2=0.0,  TQfd=0.0;
+  double LTRd=0.0,  LTRa=0.0,  LTRn=0.0;
   short  nQi=0;
-  
+
+  // initialization of output values
+  *Refl = 0.0;
+  *Qf   = 0.0;
+
   // Find the lines nQi and nQi+1 where k_in is in between
   while (nQi+1 < nQinPoints  &&  pTab_Qin_Qout[nQi+1][1] < Qin)
   {	nQi++;
   }
 
+  // case 1: value of Q_in lower than the lowest value in the table
   if (nQi == 0) 
   {
-    *refl=1;
-    *Qf = 0;
-    return -1;
-  }
-
-  if (nQi+1 < nQinPoints)
+    *Refl = 0.0;    // assume reflectivity 0.0
+    return -1;      // stop searching for further reflections
+  } 
+  // case 2: value of Q_in between lowest and highest value in the table
+  else if (nQi+1 < nQinPoints)
   {	
     // interpolate if the k_in values differ 
     if (pTab_Qin_Qout[nQi+1][1] != pTab_Qin_Qout[nQi][1])
@@ -1409,28 +1374,33 @@ int FindQf(double Qin, int mQf, double* Qf, double* refl)
       *Qf = TQfd;
       if (pTab_RoffSpec[nQi][mQf] == 0 || pTab_RoffSpec[nQi+1][mQf] == 0) 
       {
-        *refl = 0;
+        *Refl = 0;
         return -1;
       }
-      // linear extrapolation between neighbouring Qin and Qf bins in logarithmic scale
+      // reflectivity calculated by linear extrapolation between neighbouring Qin and Qf bins in logarithmic scale
       LTRa    = log(pTab_RoffSpec[nQi][mQf]);
       LTRn    = log(pTab_RoffSpec[nQi+1][mQf]);
       LTRd    = LTRa  +  (LTRn - LTRa) / (TQin2 -TQin1) * (Qin - TQin1);
-      *refl = exp(LTRd);
+      *Refl = exp(LTRd);
     }
     else
     {	
-      *refl = pTab_RoffSpec[nQi+1][mQf];
+      *Refl = pTab_RoffSpec[nQi+1][mQf];
     }
   }
+  // case 3: value of Q_in higher than the highest value in the table
   else
-  { return -1;
+  { 
+    *Refl = 0.0;    // assume reflectivity 0.0
+    return -1;      // stop searching for further reflections
   }
 
+  // check if there is another Q_f value for this Q_in in the table that can be used for a reflection 
+  // if yes: increase mQf for the next call of this function 
   if ((mQf+1) < pTab_Qin_Qout[nQi][0] && (mQf+1) < pTab_Qin_Qout[nQi+1][0]) 
-    return (mQf+1);
+    return (mQf+1);  
   else 
-    return -1;
+    return -1;      // stop searching for further reflections
 }
 
 
@@ -1438,25 +1408,22 @@ int FindQf(double Qin, int mQf, double* Qf, double* refl)
 /* Determines the direction of the neutron at the scattering location */
 /* such that the direction vector matches the requires Q_f            */
 /**********************************************************************/
-void ScatterByQf(Neutron* ParentNeutron, Neutron* Neutron, double dQin, double dQf)
+void ScatterByQf(Neutron* ScatNeutron, const double Qin, const double Qf)
 {
   VectorType nDir;  
   long double vDiff0;
   long double vDiff1;
-  int i;
   short switchSign = 0;
   double Q_SC = 0;
 
-  //  fprintf(LogFilePtr,"Direction in sample frame: %f %f %f\n", ParentNeutron->Vector[0], ParentNeutron->Vector[1], ParentNeutron->Vector[2]);
+  CopyVector(ScatNeutron->Vector, nDir);
 
-  for (i=0; i < 3; i++) nDir[i] = ParentNeutron->Vector[i];
-
-  // Change final neutron vector dQf to scattering vector Q_SC
-  Q_SC = dQf + dQin;
+  // Change final neutron vector Qf to scattering vector Q_SC
+  Q_SC = Qf + Qin;
 
   vDiff0 = nDir[0];
   //  nDir[0] *= dQf/dQin;
-  nDir[0] *= Q_SC/dQin;
+  nDir[0] *= Q_SC/Qin;
   if (fabs(nDir[0]) > fabs(vDiff0)) switchSign = 1;
   vDiff0 = vDiff0 - nDir[0];
   
@@ -1483,50 +1450,31 @@ void ScatterByQf(Neutron* ParentNeutron, Neutron* Neutron, double dQin, double d
     nDir[2] += vDiff1;
 
     RotBackVector(RotMatOffSpec, nDir);
-
   }
 
-  for (i=0; i < 3; i++) Neutron->Vector[i] = nDir[i];
+  NormVector(nDir);
+  CopyVector(nDir, ScatNeutron->Vector);
 
   //  fprintf(LogFilePtr,"Direction in sample frame after re-orientation: %f %f %f %f %f\n", Neutron->Vector[0], Neutron->Vector[1], Neutron->Vector[2], dQin, dQf);
 
   return;
-}
+ }
 
 
 /********************************************************************************/
 /* Neutron parameters are transferred back to the original coordinate system,   */
 /*   then to the  output frame, and written to the stream.                      */
 /********************************************************************************/
-void TransformBackToGlobalSystemAndWriteNeutron(Neutron* outputNeutron, short bRefl, short bDepth)
+void TransfBack2Input(Neutron* OutNeutron, short bDepth)
 {
-  outputNeutron->Probability = ProbOut;
-
-  /* computes reflected direction in the frame of sample */
-  if (bRefl)
-    outputNeutron->Vector[0] = -outputNeutron->Vector[0];
-    
-  /* computes neutron variables in the initial frame */
-  RotBackVector(RotMatrixSmpl, outputNeutron->Position) ;
-  RotBackVector(RotMatrixSmpl, outputNeutron->Vector) ;
-  AddVector(outputNeutron->Position, PosSmpl) ;
-    
-  /* makes depth correction to get back to the old frame for Depth != 0 */
+  // gets back from the reflection to the sample frame
   if (bDepth)
-  { RotBackVector(RotMatrixSmpl, Depth) ;
-    AddVector(outputNeutron->Position, Depth) ;
-  }
+    AddVector(OutNeutron->Position, Depth) ;
 
-  /* writes point of scattering for trajectory visualization */
-  WriteIAP(outputNeutron, VT_SCATTERED);
-    
-  /* computes neutron variables in the output frame */
-  SubVector(outputNeutron->Position, TranslOut) ;
-  RotVector(RotMatrixOut, outputNeutron->Position) ;  /* necessary only for user */
-  RotVector(RotMatrixOut, outputNeutron->Vector) ;    /* defined output frame    */
-    
-  /*	writes output binary file */
-  WriteNeutron(outputNeutron) ;
+  // computes the neutron variables in the initial frame
+  RotBackVector(RotMatrixSmpl, OutNeutron->Position);
+  RotBackVector(RotMatrixSmpl, OutNeutron->Vector);
+  AddVector(OutNeutron->Position, PosSmpl);
     
   return;   
 }
@@ -1535,20 +1483,12 @@ void TransformBackToGlobalSystemAndWriteNeutron(Neutron* outputNeutron, short bR
 /*************************************************************************************/
 /* Neutron parameters are transferred to the output frame and written to the stream  */
 /*************************************************************************************/
-void  Transf2OutputAndWriteNeutron(Neutron* outNeutron)
+void  Transf2Output(Neutron* OutNeutron)
 {
-  outNeutron->Probability = ProbOut;
-
-  /* writes point of scattering for trajectory visualization */
-  WriteIAP(outNeutron, VT_SCATTERED);
-
-  /* computes neutron variables in the output frame */
-  SubVector(outNeutron->Position, TranslOut) ;
-  RotVector(RotMatrixOut, outNeutron->Position) ;  /* necessary only for user */
-  RotVector(RotMatrixOut, outNeutron->Vector) ;    /* defined output frame    */
-    
-  /*	writes output binary file */
-  WriteNeutron(outNeutron) ;
+  // transfers neutron variables to the output frame
+  SubVector(OutNeutron->Position, TranslOut);
+  RotVector(RotMatrixOut, OutNeutron->Position);
+  RotVector(RotMatrixOut, OutNeutron->Vector);  
     
   return;   
 }

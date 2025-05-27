@@ -1034,7 +1034,7 @@ set slitESET {
 set beamstopESET {
   {dist_stop float "" {"distance\nfrom sample [cm]" "distance between sample and beamstop" "" d} ge0}
   {shape_stop radio rectangular {"beamstop\nshape" "shape of the beamstop" "" R} {rectangular circular} {0 1}}
-  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop if they hit it" "" p} {no yes} {0 1}}
+  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop in the visualization if they hit it" "" p} {no yes} {0 1}}
   {"coordinates of a circular beamstop" header}
   {dist_rad float "" {"radius [cm]" "radius of a circular beamstop [cm]" "" r} ge0}
   {"coordinates of a rectangular beamstop" header}
@@ -3497,7 +3497,7 @@ set sample_ncrystalESET {
 
 set sample_reflectomESET {
   {parfile pareditablefile "" {"parameter\nfile" "File that contains various sample data" "" P} w ref}
-  {refile parbrowsefile "" {"reflectivity\nfile" "File that contains the reflectivity of the sample as a function of momentum transfer. First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
+  {refile pareditablefile "" {"reflectivity\nfile" "File that contains the reflectivity of the sample as a function of momentum transfer. First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {}
   {samref radio sample {mode "Select between sample (reflectivity data from the 'reflectivity file') and reference (reflectivity R=1 for all angles)" "" O} {sample reference} {1 2}}
   {axis radio Y {"axis of\nrotation" "Axis around which the sample is rotated." "" R} {Y Z}}
@@ -3647,12 +3647,12 @@ set eval_elastESET {
   {}
   {"TOF option" header}
   {tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+    "time of\nflight" "yes: wavelength from TOF and flight path \nno : reference wavelength used" "" w}  {yes no} {1 0}}
   {tofcor radio yes {
     "correct tof\nto distance" "correct TOF for real flight path from sample to detector" "" t}  {no yes} {0 1}}
   {}
   {fpath float "" {
-    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+    "flight\npath [cm]" "length of total neutron flight path from origin (=source or pulse chopper) to detector, needed only for time of flight analysis" "" l} gt0}
   {ddist float "" {
     "sample-detector\ndistance [cm]" "nominal distance from sample to detector" "" D} ge0}
   {toff float 0 {
@@ -3731,12 +3731,12 @@ set eval_elast2ESET {
     "Scatt. angle\nselection" "Select the way how the scattering angle is determined" "" D}  {direction position} {0 1}}
   {}
   {tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+    "time of\nflight" "yes: wavelength from TOF and flight path \nno : true wavelength of the neutron used (which cannot be determined)" "" w}  {yes no} {1 0}}
   {tofcorr radio yes {
     "correct tof\nto distance" "correct TOF to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {}
   {fpath float "" {
-    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+    "flight\npath [cm]" "length of total neutron flight path from origin (=source or pulse chopper) to detector, needed only for time of flight analysis" "" l} gt0}
   {sdpath float "" {
     "sample-detector\ndistance [cm]" "length of the shortest sample to detector distance" "" L} gt0}
   {toff float 0 {
@@ -3807,13 +3807,13 @@ set eval_sansESET {
     "normalisation\nfactor" "The ratio of intensity of the isotropic scatterer to the SANS sample in forward direction (Q=0)" "" p} gt0}
   {}
   {sn_tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+    "time of\nflight" "yes: wavelength from TOF and flight path \nno : reference wavelength used" "" w}  {yes no} {1 0}}
   {sn_tcor radio yes {
     "correct tof\nto distance" "correct TOF to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {}
   {"TOF option" header}
   {sn_fpath float "" {
-    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+    "flight\npath [cm]" "length of total neutron flight path from origin (=source or pulse chopper) to detector, needed only for time of flight analysis" "" l} gt0}
   {sdpath float "" {
     "sample-detector\ndistance [cm]" "length of the shortest sample to detector distance" "" L} gt0}
   {sn_toff float 0 {

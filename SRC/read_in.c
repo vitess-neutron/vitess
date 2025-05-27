@@ -120,7 +120,7 @@ int main(int argc, char **argv)
   _eModule=MCN_READ_IN;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.6c");
+  PrintModuleName(_eModule, "1.7");
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
@@ -351,7 +351,10 @@ void OwnInit(int argc, char *argv[])
   if (ePrgFormat== VT_MCPL_FMT)
   {
     if (sInputFileName[0] != NULL)
-    { hInFile = mcpl_open_file(FullParName(sInputFileName[0]));
+    {
+      char *sFullInputName = FullParName(sInputFileName[0]);
+      hInFile = mcpl_open_file(sFullInputName);
+      free(sFullInputName);
       fprintf(LogFilePtr, mcpl_hdr_srcname(hInFile));       // Name of the generating application
     }
     else

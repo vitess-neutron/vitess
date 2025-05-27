@@ -36,7 +36,7 @@ char  *pIntFileName  = NULL,   // -i   [-]   name of the file containing the int
       *pSofQFileName = NULL,   // -S   [-]   name of the file containing the S(Q) spectrum
       *pRefFileName  = NULL;   // -I   [-]   name of the file containing the reference (=isotropic scattering) spectrum
 
-short  bTOF       = FALSE,     // -w   [-]   TRUE : time of flight instrument 
+short  bTOF       = FALSE,     // -w   [-]   TRUE : wavelength is determined from time of flight (for TOF instruments)
 			 bPathCor   = FALSE;     // -t   [-]   TRUE : correct TOF for real flight path from sample to detector 
 
 long   nBins      = 0;         // -n   [-]   number of bins 
@@ -47,7 +47,7 @@ double Qmin       = 0.0,       // -m [1/Ang] lower bound of rhe evaluated q rang
        LmbdRef    = 0.0,       // -r  [Ang]  reference Wavelength for crystal monochromator (or mechanical velocity selector) instrument                                                 */
        ProbScat   = 0.0,       // -p   [-]   scattering probability of the isotropic scatterer
 
-       Flightpath0= 0.0,       // -l  [ms]   standard length of neutron flight path 
+       Flightpath0= 0.0,       // -l  [ms]   standard length of the total neutron flight path from sample to detector 
        DetDist    = 0.0,       // -L  [cm]   detector distance 
        TimeOffset = 0.0,       // -T  [ms]   global shift of the neutron time t= t-TimeOffset
        EvalTimeMin=-1.0e10,    // -e  [ms]   minimal and  
@@ -276,6 +276,7 @@ short ReadRefSpec(double* pRefBin, double* pRefVal)
       rc=TRUE;
 
     fclose(pRefFile);
+    pRefFile = NULL;
   }
   return rc;
 }
@@ -328,17 +329,17 @@ void OwnInit(int argc, char *argv[])
           break;
         case 'd':
           DeadSpot  = M_PI*atof(arg)/180.0; /* excludes all neutrons with a           */
-          bDeadSpot = TRUE;                /* scattering angle < DeadSpot [deg] */
+          bDeadSpot = TRUE;                 /* scattering angle < DeadSpot [deg] */
           break;
         case 'r':
-          LmbdRef   = atof(arg); /* reference Wavelength for crystal monochromator */
-          break;                           /* (or mechanical velocity selector) instrument   */
+          LmbdRef   = atof(arg);            /* reference Wavelength for crystal monochromator */
+          break;                            /* (or mechanical velocity selector) instrument   */
         case 'p':
-          ProbScat  = atof(arg);                 /* scattering probability of the isotropic scatterer */
+          ProbScat  = atof(arg);            /* scattering probability of the isotropic scatterer */
           break;
 
         case 'w':
-          bTOF     = (short) atoi(arg); ; /* time of flight instrument */
+          bTOF     = (short) atoi(arg); ;   /*  time of flight instrument -> wavelength from TOF */
           break;
         case 't':
           bPathCor = (short) atoi(arg);     /*  correct flight path length for location of detection */
@@ -485,7 +486,7 @@ void UpdateMon(long iBnch)
       else
         sigma = 0.0;
 
-      fprintf(pIntFile,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*IntBin[iBin], f_norm*sigma, nTrj[iBin]);
+      fprintf(pIntFile,"%10.6f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*IntBin[iBin], f_norm*sigma, nTrj[iBin]);
     }
     fclose(pIntFile);
   }

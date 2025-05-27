@@ -538,14 +538,27 @@ void Mon2D::ParId2Text(char* sParName, const VtMonPar ePar)
 void Mon2D::FreeMemory()
 {
   // Give back the memory space
+  for (int i=0; i < nBinsX; i++) {
+    free(dataArray[i]);
+    free(dataArrayError[i]);
+    free(dataArrayCounts[i]);
+  }
   free(dataArray);
   free(dataArrayError);
   free(dataArrayCounts);
+  free(BinPosX);
+  free(BinPosY);
 
   if (analysePol) 
   {
-     free (dataArrayPolWeights);
+    for (int i=0; i < nBinsX; i++) {
+      free(dataArrayPolWeights[i]);
+      free(dataArrayPol[i]);
+    }
+    free(dataArrayPolWeights);
+    free(dataArrayPol);
   }
+  if (polAnalysisVector) delete polAnalysisVector;
 
   return; 
 }
