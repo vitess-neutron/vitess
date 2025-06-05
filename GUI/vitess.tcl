@@ -5700,92 +5700,106 @@ proc addModMenu {w i} {
 ### moduleMenus
 ###
 proc moduleMenus {{n 1}} {
-  global AvailableSET maxModule DummyEntry Mlf bgColor fgColor labColor radioColor menuColor menuButtonColor tcl_platform
-  set fn [headerFont]
-  set lfn [labelFont]
-  set tfn [textFont]
-  set maxi $maxModule
-  if {$maxi > $n} {set maxi $n}
+    global AvailableSET maxModule DummyEntry Mlf bgColor fgColor labColor radioColor menuColor menuButtonColor tcl_platform
+    set fn [headerFont]
+    set lfn [labelFont]
+    set tfn [textFont]
+    set maxi $maxModule
+    if {$maxi > $n} {set maxi $n}
 
-  if {![regexp fright [image names]]} {
-    # create these images once from bitmap files
-    set fpath [file join [globVal SourceDirectory] BITMAPS]
-    image create bitmap fright -file [file join $fpath rightarr.xbm]
-    image create bitmap fcross -file [file join $fpath cross.xbm]
-  }
-
-  # prepend button to digest view if a digest has been defined
-  set w $Mlf.dig.f
-  if {"" == [globVal digestSource]} {
-    catch {destroy $w}
-  } elseif {! [winfo exists $w]} {
-    Frame $w
-    button $w.cross -image fcross -command removeDigest
-    button $w.right -image fright -command digestView -bg $bgColor -fg $fgColor
-    label $w.l -text "Instrument Digest"\
-	-font $lfn -bg $bgColor -fg $fgColor
-    pack $w.cross -side left  -anchor w
-    pack $w.right -side right -padx 1 -anchor w
-    pack $w.l -side top -fill x -anchor w
-  }
-
-  for {set i 1} {$i <= $maxi} {incr i} {
-    set w $Mlf.g$i
-    set cm "checkModVar $i"
-    if [winfo exists $w.label] continue
-    addModMenu $w.label $i
-
-    set varName mod$i
-    upvar #0 $varName var
-    set var $DummyEntry
-    upvar #0 visM$i visible
-    set visible $var
-
-    upvar #0 separateW$i sepw
-    set sepw ""
-    upvar #0 separate$i sepvar
-    set sepvar here
-
-    if {$tcl_platform(os) == "Darwin"} {
-      # add a label we will adopt for disabled modules
-      label $w.right -text $i -font $tfn -bg $bgColor -fg $fgColor
-      bind $w.right <ButtonPress> "checkModVar $i here"
-    } else {
-      button $w.right -image fright -command "checkModVar $i here" \
-      -bg $bgColor -fg $fgColor
+    if {![regexp fright [image names]]} {
+        # create these images once from bitmap files
+        set fpath [file join [globVal SourceDirectory] BITMAPS]
+        image create bitmap fright -file [file join $fpath rightarr.xbm]
+        image create bitmap fcross -file [file join $fpath cross.xbm]
     }
 
-    label $w.nlabel -font $tfn -bg $bgColor -fg $fgColor
-
-    set wm $w.opt.menu
-    menubutton $w.opt -textvariable $varName -indicatoron 1 \
-	-menu $wm -font $lfn -bg $bgColor -fg $fgColor -relief raised -bd 2 -width 18 \
-	-highlightthickness 2 -anchor c
-    menu $wm -tearoff 0 -bg $bgColor -fg $fgColor
-    $wm add radiobutton -label $DummyEntry -variable $varName \
-	-command $cm -font $lfn
-    foreach label $AvailableSET {
-      set j [lindex $label 0]
-      if {[set subl [lindex $label 1]] == ""} {
-	$wm add radiobutton -label $j -variable $varName \
-	    -command $cm -font $lfn
-      } else {
-	set subm $wm.$j
-	$wm add cascade -label $j -menu $subm -font $lfn
-	menu $subm -tearoff 0 -bg $bgColor -fg $fgColor
-	foreach jj $subl {
-	  $subm add radiobutton -label $jj -variable $varName \
-	      -command $cm -font $lfn
-	}
-      }
+    # prepend button to digest view if a digest has been defined
+    set w $Mlf.dig.f
+    if {"" == [globVal digestSource]} {
+        catch {destroy $w}
+    } elseif {! [winfo exists $w]} {
+        Frame $w
+        button $w.cross -image fcross -command removeDigest
+        button $w.right -image fright -command digestView -bg $bgColor -fg $fgColor
+        label $w.l -text "Instrument Digest"\
+            -font $lfn -bg $bgColor -fg $fgColor
+        pack $w.cross -side left  -anchor w
+        pack $w.right -side right -padx 1 -anchor w
+        pack $w.l -side top -fill x -anchor w
     }
-    pack $w.label $w.opt $w.right $w.nlabel -side left -padx 1 -anchor w
-  }
-  if {$n != "" && $n > 1} {
-    adjustScrollRegion $Mlf
-  }
 
-  disableModule ;  # set all modules enabled
+    for {set i 1} {$i <= $maxi} {incr i} {
+        set w $Mlf.g$i
+        set cm "checkModVar $i"
+        if [winfo exists $w.label] {
+            destroy $w.label
+        }
+        addModMenu $w.label $i
+
+        set varName mod$i
+        upvar #0 $varName var
+        set var $DummyEntry
+        upvar #0 visM$i visible
+        set visible $var
+
+        upvar #0 separateW$i sepw
+        set sepw ""
+        upvar #0 separate$i sepvar
+        set sepvar here
+
+        if {$tcl_platform(os) == "Darwin"} {
+            # Check if the widget already exists and destroy it
+            if {[winfo exists $w.right]} {
+                destroy $w.right
+            }
+            label $w.right -text $i -font $tfn -bg $bgColor -fg $fgColor
+            bind $w.right <ButtonPress> "checkModVar $i here"
+        } else {
+            if {[winfo exists $w.right]} {
+                destroy $w.right
+            }
+            button $w.right -image fright -command "checkModVar $i here" \
+                -bg $bgColor -fg $fgColor
+        }
+
+        if {[winfo exists $w.nlabel]} {
+          destroy $w.nlabel
+        }
+        label $w.nlabel -font $tfn -bg $bgColor -fg $fgColor
+
+        if {[winfo exists $w.opt]} {
+         destroy $w.opt
+        }
+        set wm $w.opt.menu
+        menubutton $w.opt -textvariable $varName -indicatoron 1 \
+            -menu $wm -font $lfn -bg $bgColor -fg $fgColor -relief raised -bd 2 -width 18 \
+            -highlightthickness 2 -anchor c
+        menu $wm -tearoff 0 -bg $bgColor -fg $fgColor
+        $wm add radiobutton -label $DummyEntry -variable $varName \
+            -command $cm -font $lfn
+        foreach label $AvailableSET {
+            set j [lindex $label 0]
+            if {[set subl [lindex $label 1]] == ""} {
+                $wm add radiobutton -label $j -variable $varName \
+                    -command $cm -font $lfn
+            } else {
+                set subm $wm.$j
+                $wm add cascade -label $j -menu $subm -font $lfn
+                menu $subm -tearoff 0 -bg $bgColor -fg $fgColor
+                foreach jj $subl {
+                    $subm add radiobutton -label $jj -variable $varName \
+                        -command $cm -font $lfn
+                }
+            }
+        }
+        pack $w.label $w.opt $w.right $w.nlabel -side left -padx 1 -anchor w
+    }
+    if {$n != "" && $n > 1} {
+        adjustScrollRegion $Mlf
+    }
+
+    disableModule ;  # set all modules enabled
 }
 
 # Unset temporary help variables used here, variables matching single characters,
