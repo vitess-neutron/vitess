@@ -302,7 +302,7 @@ set inputESET {
   {defdirectory browsedir "" {"parameter\ndirectory" "This is the one and only directory for parameter files. All these files should reside in one directory, to make the reproduction of a simulation on other systems feasable."} w "" 1 d}
 
   {random_seed float 1 {"random\nseed" "random number generator initialization" "" -Z}}
-  {random_gen radio ran3 {"random\nnumber" "Select a random number generator from the set of taus gfsr4 mt19937 ranlux ran3 (Default ran3)"} {ran3 taus gfsr4 mt19937 ranlux} {0 1 2 3 4}}
+  {random_gen radio mt19937 {"random\nnumber" "Select a random number generator from the set of taus gfsr4 mt19937 ranlux ran3 (Default mt19937)"} {mt19937 ran3 taus gfsr4 ranlux} {0 1 2 3 4}}
   {wei_min float 1.0e-25 {"minimal\nweight" "minimal weight for tracing neutrons" "" -U} ge0}
   {gravity radio on {gravity "simulation includes gravity influence on neutrons or not" "" -G} {on off} {1 0}}
   {helpthreads radio 0 {"helper\nthreads" "Select a number > 0 to enable thread parallel execution for thread aware modules" "" -T}  {0 1 2 3 4 5 6 7 8} {0 1 2 3 4 5 6 7 8}}
