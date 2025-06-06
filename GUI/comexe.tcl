@@ -163,7 +163,18 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
         append fc "set GSL_RNG_$vv=$t\n"
       }
     }
-    sh  {set fc "\#!/bin/sh\n\[ -z \"\$V\" \] && V=$ExeDirectory\n\[ -z \"\$P\" \] && P=$pdir\n\[ -z \"\$L\" \] && L=$logf\n\[ -z \"\${SUFFIX}\" \] && SUFFIX=\"_`uname -s`_`uname -m`\"\n\n"}
+    sh  {
+      set fc "\#!/bin/sh\n"
+      append fc "\[ -z \"\$V\" \] && V=$ExeDirectory\n"
+      append fc "\[ -z \"\$P\" \] && P=$pdir\n"
+      append fc "\[ -z \"\$L\" \] && L=$logf\n"
+      append fc "\[ -z \"\${SUFFIX}\" \] && SUFFIX=\"_`uname -s`_`uname -m`\"\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+        if {"" == [set t [entryVal random_$v]]} continue
+        append fc "GSL_RNG_$vv=$t\nexport GSL_RNG_$vv\n"
+      }
+      append fc "\n"
+    }
     grd {
       set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"
       if {"" != [set v [entryVal random_gen]]} {
