@@ -18,7 +18,7 @@ FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
 CC ?= cc
 ARCHFLAGS =
-CFLAGS = $(ARCHFLAGS) -O3 -pthread -Wall -Wno-cast-qual -Wno-incompatible-pointer-types -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
+CFLAGS = $(ARCHFLAGS) -pthread -Wall -Wno-cast-qual -Wno-incompatible-pointer-types -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
 CXX ?= c++
 CXXFLAGS = $(CFLAGS)
 CPPFLAGS =
@@ -60,10 +60,16 @@ LDFLAGS += -L/opt/X11/lib
 endif
 endif
 
-ifdef DEBUG
-CFLAGS := $(filter-out -O3,$(CFLAGS))
+DEBUG ?= 0
+ifeq ($(DEBUG), 0)
+CFLAGS += -O3 -DNDEBUG
+else
 CFLAGS += -g -O0 -DDEBUG=1
 CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Debug
+ifeq ($(DEBUG), 2)
+CFLAGS += -fsanitize=address
+LDFLAGS += -fsanitize=address
+endif
 endif
 
 
