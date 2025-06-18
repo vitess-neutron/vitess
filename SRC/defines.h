@@ -1,6 +1,8 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#include <stdint.h>
+
 /***********************/
 /** Definitions       **/
 /***********************/
@@ -16,9 +18,9 @@
 #define QC_NI       0.0217
 #define NEUTRON_ID  2112
 
-#define TRUE 		    1
-#define FALSE 		  0
-#define MISSING 	 -1
+#define TRUE        1
+#define FALSE       0
+#define MISSING    -1
 #define UNUSED     -1
 
 #define UP          1
@@ -83,11 +85,11 @@ typedef double DoublePair[2];
 // Random number generator
 typedef enum
 {
-  VT_RAN3    = 1, 
+  VT_RAN3    = 1,
   VT_TAUS    = 2,
   VT_GFSR4   = 3,
   VT_MT19937 = 4,
-  VT_RANLUX  = 5 
+  VT_RANLUX  = 5
 }
 VtRndGen;
 
@@ -95,98 +97,98 @@ VtRndGen;
 typedef enum
 {
   MCN_COMP_UNKNOWN =   0,
-	MCN_TEMPLATE     =  50,
-	MCN_SOURCE       = 100,
-	MCN_SRC_SMPL     = 110,
-	MCN_SRC_CWS      = 120,
-	MCN_SRC_TOF      = 130,
-	MCN_SRC_SP       = 140,
-	MCN_SRC_LP       = 150,
-	MCN_READ_IN      = 190,
-	MCN_SPACE        = 200,
-	MCN_SLIT         = 210,
-	MCN_WINDOW       = 220,
-	MCN_WND_MULT     = 222,
-	MCN_GRID         = 224,
-	MCN_LENSE        = 230,
+  MCN_TEMPLATE     =  50,
+  MCN_SOURCE       = 100,
+  MCN_SRC_SMPL     = 110,
+  MCN_SRC_CWS      = 120,
+  MCN_SRC_TOF      = 130,
+  MCN_SRC_SP       = 140,
+  MCN_SRC_LP       = 150,
+  MCN_READ_IN      = 190,
+  MCN_SPACE        = 200,
+  MCN_SLIT         = 210,
+  MCN_WINDOW       = 220,
+  MCN_WND_MULT     = 222,
+  MCN_GRID         = 224,
+  MCN_LENSE        = 230,
   MCN_PRISM        = 231,
-	MCN_MIRROR       = 240,
-	MCN_MIRROR_POL   = 242,
-	MCN_MIRROR_ELLI  = 244,
-	MCN_SM_ENSEMBLE  = 250,
-	MCN_COLLIMATOR   = 260,
-	MCN_COLL_SOLLER  = 262,
-	MCN_COLL_RADIAL  = 264,
-	MCN_COLL_VIRT    = 266,
-	MCN_GUIDE        = 270,
-	MCN_GUIDE_IDEAL  = 275,
-	MCN_BENDER       = 280,
-	MCN_CHOP_DISC    = 310,
-	MCN_CHOP_FERMI   = 320,
-	MCN_VEL_SELECT   = 330,
-	MCN_MONO_ANA     = 350,
-	MCN_MONOCHROM    = 352,
-	MCN_POL_HE3      = 410,
-	MCN_POL_SM       = 412,
-	MCN_FLIP_COIL    = 420,
-	MCN_FLIP_GRAD    = 422,
-	MCN_RES_DRABKIN  = 430,
-	MCN_FIELD_PREC   = 450,
-	MCN_FIELD_ROT    = 460,
-	MCN_FIELD_SESANS = 470,
-	MCN_CAPTURE      = 510,
-	MCN_BEAMSTOP     = 520,
-	MCN_SMPL_ENVIRO  = 530,
-	MCN_DETECTOR     = 540,
-	MCN_SCREEN       = 550,
-	MCN_WRITEOUT     = 590,
-	MCN_SMPL_EL_ISO  = 610,
-	MCN_SMPL_INELAST = 620,
-	MCN_SMPL_SNGL_X  = 630,
-	MCN_SMPL_POWDER  = 640,
-	MCN_SMPL_S_Q     = 650,
-	MCN_SMPL_NXS     = 660,
-	MCN_SMPL_SANS    = 670,
-	MCN_SMPL_REFL    = 680,
+  MCN_MIRROR       = 240,
+  MCN_MIRROR_POL   = 242,
+  MCN_MIRROR_ELLI  = 244,
+  MCN_SM_ENSEMBLE  = 250,
+  MCN_COLLIMATOR   = 260,
+  MCN_COLL_SOLLER  = 262,
+  MCN_COLL_RADIAL  = 264,
+  MCN_COLL_VIRT    = 266,
+  MCN_GUIDE        = 270,
+  MCN_GUIDE_IDEAL  = 275,
+  MCN_BENDER       = 280,
+  MCN_CHOP_DISC    = 310,
+  MCN_CHOP_FERMI   = 320,
+  MCN_VEL_SELECT   = 330,
+  MCN_MONO_ANA     = 350,
+  MCN_MONOCHROM    = 352,
+  MCN_POL_HE3      = 410,
+  MCN_POL_SM       = 412,
+  MCN_FLIP_COIL    = 420,
+  MCN_FLIP_GRAD    = 422,
+  MCN_RES_DRABKIN  = 430,
+  MCN_FIELD_PREC   = 450,
+  MCN_FIELD_ROT    = 460,
+  MCN_FIELD_SESANS = 470,
+  MCN_CAPTURE      = 510,
+  MCN_BEAMSTOP     = 520,
+  MCN_SMPL_ENVIRO  = 530,
+  MCN_DETECTOR     = 540,
+  MCN_SCREEN       = 550,
+  MCN_WRITEOUT     = 590,
+  MCN_SMPL_EL_ISO  = 610,
+  MCN_SMPL_INELAST = 620,
+  MCN_SMPL_SNGL_X  = 630,
+  MCN_SMPL_POWDER  = 640,
+  MCN_SMPL_S_Q     = 650,
+  MCN_SMPL_NXS     = 660,
+  MCN_SMPL_SANS    = 670,
+  MCN_SMPL_REFL    = 680,
   MCN_SMPL_NCRYSTAL= 690,
-	MCN_FRAME        = 710,
-	MCN_FILTER       = 720,
-	MCN_FILTER2D     = 722,
-	MCN_RESET        = 730,
-	MCN_VISUAL       = 740,
-	MCN_MONITOR1     = 800,
-	MCN_MON1         = 810,
-	MCN_MON1_BRL     = 820,
-	MCN_MON1_POL     = 840,
-	MCN_MONITOR2     = 850,
-	MCN_MON2_POS     = 860,
-	MCN_MON2_DIV     = 870,
-	MCN_MON2_KDIV    = 872,
-	MCN_MON2_RDIV    = 874,
-	MCN_MON2_POSDIV  = 876,
-	MCN_MON2_WLDIV   = 878,
-	MCN_MON2_TOFWL   = 880,
-	MCN_MON2_POL_POS = 890,
-	MCN_EVAL1_ELAST  = 900,
-	MCN_EVAL1_SANS   = 910,
-	MCN_EVAL1_INELAST= 920,
-	MCN_EVAL2_ELAST  = 950,
-	MCN_RUNTIME      = 980,
-	MCN_TOOL_A2B     = 1010,
-	MCN_TOOL_CAS     = 1020,
-	MCN_TOOL_CHOP    = 1030,
-	MCN_TOOL_DEF_DIR = 1040,
-	MCN_TOOL_DIR_VIEW= 1050,
-	MCN_TOOL_GEN_BAT = 1055,
-	MCN_TOOL_GEN_COAT= 1060,
-	MCN_TOOL_GEN_HKL = 1065,
-	MCN_TOOL_GEN_EXTR= 1070,
-	MCN_TOOL_GEN_SURF= 1080,
-	MCN_TOOL_STD_DEV = 1090,
-	MCN_TOOL_LAT_DST = 1100,
-	MCN_TOOL_GUIDE   = 1110,
-	MCN_TOOL_DST_TIME= 1120,
-	MCN_TOOL_ANLZ_2D = 1130,
+  MCN_FRAME        = 710,
+  MCN_FILTER       = 720,
+  MCN_FILTER2D     = 722,
+  MCN_RESET        = 730,
+  MCN_VISUAL       = 740,
+  MCN_MONITOR1     = 800,
+  MCN_MON1         = 810,
+  MCN_MON1_BRL     = 820,
+  MCN_MON1_POL     = 840,
+  MCN_MONITOR2     = 850,
+  MCN_MON2_POS     = 860,
+  MCN_MON2_DIV     = 870,
+  MCN_MON2_KDIV    = 872,
+  MCN_MON2_RDIV    = 874,
+  MCN_MON2_POSDIV  = 876,
+  MCN_MON2_WLDIV   = 878,
+  MCN_MON2_TOFWL   = 880,
+  MCN_MON2_POL_POS = 890,
+  MCN_EVAL1_ELAST  = 900,
+  MCN_EVAL1_SANS   = 910,
+  MCN_EVAL1_INELAST= 920,
+  MCN_EVAL2_ELAST  = 950,
+  MCN_RUNTIME      = 980,
+  MCN_TOOL_A2B     = 1010,
+  MCN_TOOL_CAS     = 1020,
+  MCN_TOOL_CHOP    = 1030,
+  MCN_TOOL_DEF_DIR = 1040,
+  MCN_TOOL_DIR_VIEW= 1050,
+  MCN_TOOL_GEN_BAT = 1055,
+  MCN_TOOL_GEN_COAT= 1060,
+  MCN_TOOL_GEN_HKL = 1065,
+  MCN_TOOL_GEN_EXTR= 1070,
+  MCN_TOOL_GEN_SURF= 1080,
+  MCN_TOOL_STD_DEV = 1090,
+  MCN_TOOL_LAT_DST = 1100,
+  MCN_TOOL_GUIDE   = 1110,
+  MCN_TOOL_DST_TIME= 1120,
+  MCN_TOOL_ANLZ_2D = 1130,
   MCN_OPT_MAIN     = 1200,
   MCN_OPT_FOM      = 1210,
   MCN_OPT_PIPE     = 1220,
@@ -196,7 +198,7 @@ McCompID;
 
 // reason for writing interaction point
 typedef enum
-{	
+{
   VT_NO_REASON  =-1,
   VT_CREATED    = 0,    // source
   VT_OUTSIDE    = 1,    // guide
@@ -217,7 +219,7 @@ VtReason;
 
 // directory type
 typedef enum
-{ 
+{
   NO_DIR    =-1,
   PAR_DIR   = 0,
   INSTL_DIR = 1,
@@ -233,7 +235,7 @@ typedef enum
   VT_ROT_X = 'X',
   VT_ROT_Y = 'Y',
   VT_ROT_Z = 'Z'
-} 
+}
 VtRotAxis;
 
 // Scattering axis
@@ -243,7 +245,7 @@ typedef enum
   X_AXIS = 0,
   Y_AXIS = 1,
   Z_AXIS = 2,
-} 
+}
 VtAxis;
 
 // Orientation
@@ -252,16 +254,16 @@ typedef enum
   NO_ORIENT  =-1,
   HORIZONTAL = 0,
   VERTICAL   = 1
-} 
+}
 VtOrient;
 
 typedef enum
-{	
+{
   VT_NO_DIR = 0,
-	VT_IN     = 1,
-	VT_OUT    = 2,
-	VT_INSIDE = 3,
-	VT_BEYOND = 4
+  VT_IN     = 1,
+  VT_OUT    = 2,
+  VT_INSIDE = 3,
+  VT_BEYOND = 4
 }
 VtDir;
 
@@ -271,15 +273,15 @@ typedef enum
   VT_NO_FRAME   =-1,
   VT_FRAME_STD  = 0,
   VT_FRAME_USER = 1
-} 
+}
 VtFrameGen;
 
 // Shape
 typedef enum
-{	
-	VT_NO_SHAPE =-1,
-	VT_SQUARE   = 0,
-	VT_CIRCLE   = 1
+{
+  VT_NO_SHAPE =-1,
+  VT_SQUARE   = 0,
+  VT_CIRCLE   = 1
 }
 VtShape;
 
@@ -298,7 +300,7 @@ VtCompAct;
 // Distribution function
 typedef enum
 {
-  LORENTZIAN = 1, 
+  LORENTZIAN = 1,
   GAUSSIAN   = 2
 }
 VtDistr;
@@ -374,17 +376,17 @@ VtModType;
 
 // window or moderator shape
 typedef enum
-{	
+{
   VT_MOD_SQUARE = 'R',
-	VT_MOD_CIRCLE = 'C'
+  VT_MOD_CIRCLE = 'C'
 }
 VtModShape;
 
-// definition of flight direction 
+// definition of flight direction
 typedef enum
-{	VT_DIVERGENCE = 0,
-	VT_REAL_WND   = 1,
-	VT_VIRT_WND   = 2,
+{  VT_DIVERGENCE = 0,
+  VT_REAL_WND   = 1,
+  VT_VIRT_WND   = 2,
 }
 VtDirect;
 
@@ -406,7 +408,7 @@ EssModVsn;
 // --------------------------------
 // tracing options
 typedef enum
-{	
+{
   NO_TRACING     = 0,
   WRITE_TRC_FILES= 1,
   ONLY_TRC_TRAJ  = 2
@@ -452,14 +454,14 @@ VtSeparator;
 // Frame
 // -----
 typedef enum
-{	
-	VT_NO_SEQ= 0,
-	VT_RTM   = 1,
-	VT_RMT   = 2,
-	VT_TRM   = 3,
-	VT_TMR   = 4,
-	VT_MTR   = 5,
-	VT_MRT   = 6
+{
+  VT_NO_SEQ= 0,
+  VT_RTM   = 1,
+  VT_RMT   = 2,
+  VT_TRM   = 3,
+  VT_TMR   = 4,
+  VT_MTR   = 5,
+  VT_MRT   = 6
 }
 VtTfmnSeq;
 
@@ -468,28 +470,28 @@ VtTfmnSeq;
 // ---------------------
 // window absorber material
 typedef enum
-{	
+{
   VT_NO_MAT    = -1,
   VT_ABS_IDEAL =  0,
-	VT_ABS_GD    =  1,
-	VT_ABS_B10   =  2,
-	VT_ABS_CD    =  3,
-	VT_ABS_EU    =  4,
+  VT_ABS_GD    =  1,
+  VT_ABS_B10   =  2,
+  VT_ABS_CD    =  3,
+  VT_ABS_EU    =  4,
   VT_ABS_FILE  = 10
 }
 VtAbsMat;
 
 // absorber material
 typedef enum
-{	
+{
   VT_NO_WABS    =-1,
   VT_WABS_FILE  = 0,
-	VT_WABS_GD    = 1,
+  VT_WABS_GD    = 1,
   VT_WABS_CD    = 2,
-	VT_WABS_B10   = 3,
+  VT_WABS_B10   = 3,
   VT_WABS_EU    = 4,
-	VT_WABS_SI    = 5,
-	VT_WABS_VAC   = 6,
+  VT_WABS_SI    = 5,
+  VT_WABS_VAC   = 6,
   VT_WABS_IDEAL = 99,
 }
 VtWndAbs;
@@ -497,25 +499,25 @@ VtWndAbs;
 
 // oscillation (of the radial collimator)
 typedef enum
-{	
+{
   VT_OSC_OFF   = 0,
-	VT_RND_PHASE = 1,
+  VT_RND_PHASE = 1,
 }
 VtOscill;
 
 // Shape of multiple windows
 typedef enum
-{	
-	VT_MWND_AUTO   = 0,
-	VT_MWND_CIRCLE = 1,
-	VT_MWND_SQUARE = 2
+{
+  VT_MWND_AUTO   = 0,
+  VT_MWND_CIRCLE = 1,
+  VT_MWND_SQUARE = 2
 }
 VtMultWndShape;
 
 
 // Guides
 // ------
-// guide walls : top, bottom ... 
+// guide walls : top, bottom ...
 typedef enum
 { GW_TOP      = 0,
   GW_BOTTOM   = 1,
@@ -528,7 +530,7 @@ VtGdeWall;
 
 // guide shape
 typedef enum
-{ 
+{
   VT_CONSTANT = 0,
   VT_LINEAR   = 1,
   VT_CURVED   = 2,
@@ -541,16 +543,16 @@ VtGdeShape;
 
 // waviness distribution
 typedef enum
-{	
-	VT_WAVI_RECT  = 1,
-	VT_WAVI_GAUSS = 2,
+{
+  VT_WAVI_RECT  = 1,
+  VT_WAVI_GAUSS = 2,
 }
 VtWaviDistr;
 
 // mirror material
 typedef enum
-{	
-	VT_NO_MIRR_MAT =-1,
+{
+  VT_NO_MIRR_MAT =-1,
   VT_MIRR_OTHER  = 0,
   VT_MIRR_SI     = 1,
   VT_MIRR_SAPPH  = 2,
@@ -562,30 +564,30 @@ VtMirrMat;
 
 // reflection list parameter
 typedef enum
-{	
-	VT_LIST_PASS    =  1,
-	VT_LIST_PASS_LF = -1,
-	VT_LIST_REFL    =  2,
-	VT_LIST_REFL_LF = -2,
-	VT_LIST_T1SR    =  3,
-	VT_LIST_T1SR_LF = -3,
-	VT_LIST_ALL     =  4,
-	VT_LIST_ALL_LF  = -4,
+{
+  VT_LIST_PASS    =  1,
+  VT_LIST_PASS_LF = -1,
+  VT_LIST_REFL    =  2,
+  VT_LIST_REFL_LF = -2,
+  VT_LIST_T1SR    =  3,
+  VT_LIST_T1SR_LF = -3,
+  VT_LIST_ALL     =  4,
+  VT_LIST_ALL_LF  = -4,
 }
 VtListPar;
 
 // additional output for reflection list
 typedef enum
-{	
-	VT_LSTM_NO   = 0,
-	VT_LSTM_YES  = 1,
-	VT_LSTM_EDGE = 2,
+{
+  VT_LSTM_NO   = 0,
+  VT_LSTM_YES  = 1,
+  VT_LSTM_EDGE = 2,
 }
 VtListVbs;
 
 // reflection plot parameter
 typedef enum
-{	
+{
   KeyNone          =  0,
   iKeyMode         =  1,
   iKeyMode0        =  2,
@@ -618,10 +620,10 @@ VtPlotPar;
 
 // reflection plot filter
 typedef enum
-{	
-	VT_PLOT_ALL  = 0,
-	VT_PLOT_SCAT = 1,
-	VT_PLOT_DIED = 2,
+{
+  VT_PLOT_ALL  = 0,
+  VT_PLOT_SCAT = 1,
+  VT_PLOT_DIED = 2,
 }
 VtPlotFilt;
 
@@ -650,7 +652,7 @@ typedef enum
 {
   VT_MONO_FIX = 0,    // no movement
   VT_MONO_ROT = 1,    // rotation about a vertical axis
-  VT_MONO_PST = 2,    // rotation about a horizontal axis    
+  VT_MONO_PST = 2,    // rotation about a horizontal axis
   VT_MONO_OSC = 3,    // horizontal oscillation (for Doppler shift)
 }
 VtMonoMove;
@@ -668,7 +670,7 @@ VtMonoFocus;
 
 // shape of Fermi chopper channels
 typedef enum
-{	
+{
   VT_NO_CHN_SHAPE=-1,
   VT_CHN_STR     = 0,
   VT_CHN_IDEAL   = 1,
@@ -678,16 +680,16 @@ VtChnlShape;
 
 // shape of Fermi chopper channels
 typedef enum
-{	
-	VT_NO_FERMI_TYPE=0,
-	VT_FERMI_STR    =1,
-	VT_FERMI_CURV   =2
+{
+  VT_NO_FERMI_TYPE=0,
+  VT_FERMI_STR    =1,
+  VT_FERMI_CURV   =2
 }
 VtFermiType;
 
 // Devices for polarisation
 // ------------------------
-/* source of polarization 
+/* source of polarization
 typedef enum
 {
   VT_NO_POL_SRC  =-1,
@@ -700,12 +702,12 @@ VtPolSrc;*/
 // -------
 // samnple geometry
 typedef enum
-{	
+{
   VT_NO_GEOM = 0,
   VT_CUBE    = 1,
-	VT_CYL     = 2,
-	VT_SPHERE  = 3,
-	VT_HOL_CYL = 4
+  VT_CYL     = 2,
+  VT_SPHERE  = 3,
+  VT_HOL_CYL = 4
 }
 VtSmplGeom;
 
@@ -743,9 +745,9 @@ VtDataSrc;
 
 // measuring mode (sample_reflectom)
 typedef enum
-{	
+{
   VT_SAMPLE    = 1,
-	VT_REFERENCE = 2,
+  VT_REFERENCE = 2,
 }
 VtMeasMode;
 
@@ -773,10 +775,10 @@ VtDetType;
 
 // tube shape
 typedef enum
-{	
+{
   VT_NO_TUBE_SHAPE=-1,
-	VT_TUBE_CIRCLE  = 0,
-	VT_TUBE_SQUARE  = 1
+  VT_TUBE_CIRCLE  = 0,
+  VT_TUBE_SQUARE  = 1
 }
 VtTubeShape;
 
@@ -808,7 +810,7 @@ VtDetAbs;
 // --------------------
 // mirror data format
 typedef enum
-{	
+{
   VT_MIRR_NO_FMT =-1,
   VT_MIRR_FMT_OLD= 0,
   VT_MIRR_FMT_NEW= 1,
@@ -847,7 +849,7 @@ VtMon2Par;
 typedef enum
 {
   NO_PAR   =  0,
-  POS_X    = 17,   
+  POS_X    = 17,
   POS_Y    =  1,
   POS_Z    =  2,
   DIV_Y    =  3,
@@ -872,7 +874,7 @@ VtMonPar;
 typedef enum
 {
   NO_NORM       = 0,   // no normalization
-  NORM_BIN_SIZE = 1,   // normalization by bin size 
+  NORM_BIN_SIZE = 1,   // normalization by bin size
   NORM_REF_FILE = 2    // relative to reference file
 }
 VtMonNorm;
@@ -914,7 +916,7 @@ VtFormat2D;
 // combination of filter parameters
 typedef enum
 {
-  NO_FCOMB   =-1,   
+  NO_FCOMB   =-1,
   OR_OR_OR   = 0,
   AND_AND_AND= 1,
   AND_OR_AND = 2,
@@ -935,7 +937,7 @@ VtEvalPar;
 // evaluation combination for eval_elast2
 typedef enum
 {
-  VT_NO_ECOMB = 0,   
+  VT_NO_ECOMB = 0,
   VT_SCA_LMBD = 1,   // scattering angle and wavelength
   VT_SCA_TOF  = 2,   // scattering angle and TOF
 }
@@ -969,12 +971,12 @@ VtAngleSel;
 // Tools
 // -----
 typedef enum
-{	
-	VT_REFL_STD = 1,
-	VT_M_R_COL  = 2,
-	VT_Q_R_COL  = 3,
-	VT_SN_QUD   = 4,
-	VT_PAR_IN   = 5,
+{
+  VT_REFL_STD = 1,
+  VT_M_R_COL  = 2,
+  VT_Q_R_COL  = 3,
+  VT_SN_QUD   = 4,
+  VT_PAR_IN   = 5,
 }
 VtInMod;
 
@@ -987,19 +989,19 @@ VtInMod;
 // -------
 typedef struct
 {
-	double X,Y,Z;
+  double X,Y,Z;
 }
 CartesianPoint;
 
 typedef struct
 {
-	double	A, B, C, D;
+  double  A, B, C, D;
 }
 Plane;
 
 typedef struct
 {
-	double  A, B, C, D, E, F, W, P, Q, R;
+  double  A, B, C, D, E, F, W, P, Q, R;
 }
 SurfaceSecond;
 
@@ -1050,38 +1052,44 @@ SampleType;
 // ------------
 typedef struct
 {
-	char           IDGrp[2];
-	unsigned long  IDNo;
+  char IDGrp[2];
+  char _pad[6];
+  uint64_t IDNo;
 }
 TotalID;
 
 typedef struct
 {
-	TotalID        ID;
-	char           Debug;
-	short          Color;
-	double         Time;
-	double         Wavelength;
-	double         Probability;
-	VectorType     Position;
-	VectorType     Vector;
-	VectorType     Spin;
+  TotalID ID;
+  char Debug;
+  char _pad1;
+  int16_t Color;
+  char _pad2[4];
+  double Time;
+  double Wavelength;
+  double Probability;
+  VectorType Position;
+  VectorType Vector;
+  VectorType Spin;
 }
 Neutron;
 
 typedef struct
 {
-	char           sParID[2];    // e.g. "-Z" for '--Z', "A " for '-A' 
-	unsigned long  iCompID;      // ID of the component/module
-	char           cChange;      // 'C' for parameter change, 'R' for 'reset'
-	short          iModuleNo;    // position in the row of modules in the pipe
-	double         Value;        // double parameter value
-	long           nValue;       // integer parameter value
-  long           bInteger;
-	double         Unused;
-	VectorType     vUnused1;
-	VectorType     vUnused2;
-	VectorType     vUnused3;
+  char sParID[2];
+  char _pad[6];
+  uint64_t iCompID;
+  char cChange;
+  char _pad1;
+  int16_t iModuleNo;
+  char _pad2[4];
+  double Value;
+  int32_t nValue;
+  int32_t bInteger;
+  double Unused;
+  VectorType vUnused1;
+  VectorType vUnused2;
+  VectorType vUnused3;
 }
 ParChange;
 
@@ -1094,21 +1102,21 @@ VtEvent;
 
 typedef struct
 {
-	double         Weight;
-	VectorType     Position;
-	VectorType     Speed;
-	double         Time;
-	VectorType     Spin;
+  double         Weight;
+  VectorType     Position;
+  VectorType     Speed;
+  double         Time;
+  VectorType     Spin;
 }
 McNeutron;
 
 typedef struct
 {
-	VectorType     Position;
-	VectorType     Vector;
+  VectorType     Position;
+  VectorType     Vector;
   double         Energy;
-	double         Counts;
-	double         Shakes;
+  double         Counts;
+  double         Shakes;
 }
 McnpxNeutron;
 
@@ -1149,21 +1157,21 @@ Mcnp6Header;
 // --------
 typedef struct
 {
-	double  Pos;
-	double  Left, Right;
-	double  Bottom;
-	double  Opening;
+  double  Pos;
+  double  Left, Right;
+  double  Bottom;
+  double  Opening;
 }
 ChopperWindow;
 
 typedef struct
 {
-	short          NumberOfWindows;
-	CartesianPoint Centre;          /* centre of the chopper in the coordinate system of the beamline [cm] */
-	double         Radius;          /* radius of the chopper  [cm] */
-	double         Frequency;       /* rot.freq 2*pi*60*rpm  */
-	double         Angle;           /* orientation of the center of beamline in the chopper system */
-	ChopperWindow  *Window;
+  short          NumberOfWindows;
+  CartesianPoint Centre;          /* centre of the chopper in the coordinate system of the beamline [cm] */
+  double         Radius;          /* radius of the chopper  [cm] */
+  double         Frequency;       /* rot.freq 2*pi*60*rpm  */
+  double         Angle;           /* orientation of the center of beamline in the chopper system */
+  ChopperWindow  *Window;
 }
 Chopper;
 
@@ -1182,10 +1190,10 @@ typedef struct
   float          pos[3];
   float          lambda;
   float          weight;
-	TotalID        id;
-	short          color;
+  TotalID        id;
+  short          color;
   VtReason       reason;
-	short          spin;
+  short          spin;
 }
 VtTrajPoint;
 
