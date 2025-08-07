@@ -5,6 +5,7 @@ stages:
   - build
   - test
   - package
+  - sync
 
 workflow:
   rules:
@@ -230,6 +231,18 @@ test-darwin:
     - cp -rf artifacts-Darwin-universal/MODULES .
     - tests/check_examples.sh
 
+test-largefiles:
+  stage: test
+  image: rockylinux:9
+  needs: []
+  script:
+    - LARGEFILES="$(find . -type f -size +100M -not -path './.git/*' -print)";
+      if [ -n "${LARGEFILES}" ]; then
+        echo "The following files exceed the github limit of 100MB:";
+        echo "${LARGEFILES}";
+        exit 1;
+      fi
+
 package:
   stage: package
   image: rockylinux:8
@@ -257,9 +270,28 @@ pages:
   only:
     - master
     - develop
+  dependencies: []
   script:
     - cp -r WWW public
     - echo '/vitess/ /vitess/vitess.html 301' > public/_redirects
   artifacts:
     paths:
     - public
+
+sync:
+  stage: sync
+  environment: sync
+  image: rockylinux:9
+  only:
+    - master@vitess/vitess
+    - develop@vitess/vitess
+    - tags@vitess/vitess
+  dependencies: []
+  before_script:
+    - dnf install -y git
+  script:
+    - mkdir --mode=700 ~/.ssh
+    - echo -e "-----BEGIN OPENSSH PRIVATE KEY-----\n${VITESS_GITHUB_KEY}\n-----END OPENSSH PRIVATE KEY-----" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+    - echo "${GITHUB_HOST_KEY}" >> ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
+    - git clone --mirror "$CI_REPOSITORY_URL" vitess_mirror
+    - cd vitess_mirror && git push -f --tags git@github.com:vitess-neutron/vitess.git refs/heads/master refs/heads/develop
