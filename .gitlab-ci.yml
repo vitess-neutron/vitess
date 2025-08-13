@@ -119,6 +119,17 @@ compile-fedora40:
     - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip cmake libxml2-devel
     - *linux_before_script
 
+compile-debian:
+  extends: .compile-linux
+  image: debian:bookworm
+  variables:
+    OS: Debian
+    ARCH: x86_64
+  before_script:
+    - apt-get update
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev
+    - *linux_before_script
+
 compile-darwin:
   extends: .compile-unix
   rules:
@@ -253,7 +264,7 @@ package:
       allow_failure: true
   script:
     - mkdir Downloads
-    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-universal Windows10-x86 Rocky9-x86_64 Fedora40-x86_64; do
+    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-universal Windows10-x86 Rocky9-x86_64 Fedora40-x86_64 Debian-x86_64; do
         mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
         cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
         cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;
