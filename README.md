@@ -1,6 +1,4 @@
-<p align="center">
-<img src="https://iffgit.fz-juelich.de/uploads/-/system/project/avatar/539/vitsav.gif" alt="logo" height="100"/>
-</p>
+![Logo](./BITMAPS/vitess_logo.png){height=100px}
 
 # Virtual Instrumentation Tool for Neutron Scattering at Pulsed and Continuous Sources
 
@@ -57,11 +55,16 @@ The simulation of a neutron instrument comprises several modules, which represen
 - The last module may be set up to write a file of neutron trajectories.  This makes sense if you wish to use these trajectories in further simulations  as input, e.g., for future studies of parameter distributions of these neutrons.
 
 
-## Examples and Tutorials
+## Documentation, Examples and Tutorials
 
-A directory containing a compendium of over 20 examples illustrating the utilization of `Vitess` for Monte Carlo simulations on diverse existing neutron instruments, as well as explications of the distinctive `Vitess` [MODULES](./MODULES/) can be found in [FILES/EXAMPLES](FILES/EXAMPLES/). It is recommended as a starting point for those new to the software.
+The HTML documentation of the Vitess Modules can be found at [vitess.iffgit.fz-juelich.de/vitess](https://vitess.iffgit.fz-juelich.de/vitess)
 
-A series of excercises (most with solutions) designed to enhance the utilization of the most common `Vitess` [MODULES](./MODULES/) can be found in the [FILES/TUTORIALS](./FILES/TUTORIALS/)  folder.
+A directory containing a compendium of over 20 examples illustrating the utilization of `Vitess` for Monte Carlo simulations on diverse existing neutron instruments,
+as well as explications of the distinctive `Vitess` Modules can be found in [FILES/EXAMPLES](FILES/EXAMPLES/).
+It is recommended as a starting point for those new to the software.
+
+A series of excercises (most with solutions) designed to enhance the utilization of the most common `Vitess` Modules
+can be found in the [FILES/TUTORIALS](./FILES/TUTORIALS/) folder.
 
 
 ## Python package
