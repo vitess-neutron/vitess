@@ -30,9 +30,8 @@ workflow:
   extends: .compile-base
   script:
     - cd SRC
-    - make
+    - make all LTO=1
     - make install
-    - make clean
     - cd ..
     - mkdir artifacts-${OS}-${ARCH}
     - cp -r MODULES artifacts-${OS}-${ARCH}
