@@ -5,7 +5,7 @@ stages:
   - build
   - test
   - package
-  - sync
+  - publish
 
 workflow:
   rules:
@@ -276,11 +276,14 @@ package:
       - Downloads/
 
 pages:
-  stage: build
-  image: rockylinux:8
-  only:
-    - master
-    - develop
+  stage: publish
+  image: rockylinux:9
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "develop"
+      when: manual
+    - when: never
   dependencies: []
   script:
     - cp -r WWW public
@@ -290,7 +293,7 @@ pages:
     - public
 
 sync:
-  stage: sync
+  stage: publish
   environment: sync
   image: rockylinux:9
   only:
