@@ -26,7 +26,7 @@ LDFLAGS = -L. -L"$(GSLPATH)"
 LDLIBS = -lvitess -lgslran -lm
 AR = ar
 ARFLAGS = rsv
-INSTALL = install
+INSTALL = install -s
 RM = rm -f
 RMDIR = rm -rf
 LN = ln -s
@@ -63,6 +63,10 @@ endif
 DEBUG ?= 0
 ifeq ($(DEBUG), 0)
 CFLAGS += -O3 -DNDEBUG
+ifdef LTO
+CFLAGS += -flto
+LDFLAGS += -O3 -flto
+endif
 else
 CFLAGS += -g -O0 -DDEBUG=1
 CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Debug
@@ -70,6 +74,10 @@ ifeq ($(DEBUG), 2)
 CFLAGS += -fsanitize=address
 LDFLAGS += -fsanitize=address
 endif
+endif
+
+ifdef AVX
+CFLAGS += -mavx
 endif
 
 
@@ -205,6 +213,9 @@ all: $(ALL)
 .PHONY: clean
 clean:
 	-$(RM) *.o *.a $(ALL)
+
+.PHONY: distclean
+distclean: clean
 	$(MAKE) -C "$(GSLPATH)" clean
 	-[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
 	-$(RMDIR) "$(KDSOURCEPATH)/build" "$(KDSOURCEPATH)/install"
