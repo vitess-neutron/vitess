@@ -1,0 +1,35 @@
+# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. 
+# ------------------------------------------------------------------------------------
+  0 100 Source               0.00000   0.00000   0.00000   0.00000     0.000    0.000  ILL_thml_2011.mod, (20x20 cm², spectrum: ILL_thml_2011.dat)
+  1 100 Source               2.51200   2.51200   0.00000   0.00000     0.000    0.000  wavelength around 2.4 Ang, dir by wnd. 15x15 cm² in 2.512 m distance
+  2 810 Mon1D_lambda         2.51200   2.51200   0.00000   0.00000     0.000    0.000  
+
+  3 710 Frame                2.51200   2.51200   0.00000   0.00000     0.000    0.000  
+  4 220 Window               2.51200   2.51200   0.00000   0.00000     0.000    0.000  17.5x17.5 cm², 45° rotated
+  5 710 Frame                2.51200   2.51200   0.00000   0.00000     0.000    0.000  
+  6 860 Mon2D_Pos            2.51200   2.51200   0.00000   0.00000     0.000    0.000  
+  7 220 Window               4.04200   4.04200   0.00000   0.00000     0.000    0.000  5.55 cm radius 
+  8 860 Mon2D_Pos            4.04200   4.04200   0.00000   0.00000     0.000    0.000  
+
+  9 220 Window              16.40000  16.40000   0.00000   0.00000     0.000    0.000  9.5x30 cm² WxH
+ 10 810 Mon1D_div_y         16.40000  16.40000   0.00000   0.00000     0.000    0.000  
+ 11 260 Collimator          16.65700  16.65700   0.00000   0.00000     0.000    0.000  9.5x30x25.7 cm² WxHxL, 1 channel 
+ 12 810 Mon1D_div_y         16.65700  16.65700   0.00000   0.00000     0.000    0.000  
+
+ 13 810 Mon1D_lambda        16.65700  16.65700   0.00000   0.00000     0.000    0.000  
+ 14 352 Monochromator       17.20000  17.20000   0.00000   0.00000   -42.000    0.000  graphite, lattice distance 6.71 Ang, (2 0 0) refl., 42° take-off angle, 
+                                                                                       13 elements of 9.5x2.0x0.2cm³ (WxHxT) on a vertical cylinder of 202 cm radius, no gap
+ 15 810 Mon1D_lambda        17.20000  17.20000   0.00000   0.00000   -42.000    0.000 
+ 
+ 16 200 Space               20.39000  19.57064  -2.13452   0.00000   -42.000    0.000  
+ 17 860 Mon2D_Pos           20.39000  19.57064  -2.13452   0.00000   -42.000    0.000  
+ 18 850 Monitor2D           20.39000  19.57064  -2.13452   0.00000   -42.000    0.000  I(lambda, pos_y)
+ 19 210 Slit                20.39000  19.57064  -2.13452   0.00000   -42.000    0.000  0.5x4.0 cm²
+ 20 810 Mon1D_lambda        20.39000  19.57064  -2.13452   0.00000   -42.000    0.000  
+ 21 810 Mon1D_div_y         20.39000  19.57064  -2.13452   0.00000   -42.000    0.000  
+ 22 640 SamplePowder        20.40000  19.57807  -2.14121   0.00000   -42.000    0.000  Alu or NAC; cylindrical: 0.5 cm diameter, 4 cm height; material properties in NAC.pow/Al.pow, reflection in NAC.str/Al.str 
+
+ 23 540 Detector            20.40000  19.57807  -2.14121   0.00000   -42.000    0.000  cylindrical, 15 cm height, 1.471 m radius, 153.6° width, center: 80°m. Cells 1 cm height, 0.1° width
+
+ 24 900 Eval1D_Elastic      20.40000  19.57807  -2.14121   0.00000   -42.000    0.000  option: scattering angle; lambda_ref=2.405 Ang
+ 25 900 Eval1D_Elastic      20.40000  19.57807  -2.14121   0.00000   -42.000    0.000  option: d_spacing;        lambda_ref=2.405 Ang
