@@ -1,9 +1,15 @@
 # Vitess tutorials
 
-contains exercises that illustrate the usage and special features of different VITESS modules. Some exercises are taken from the joint Vitess/McStas workshop that took place in Berlin 18.-20.09.2013; the respective McStas examples can be found at http://2013.essworkshop.org/. These exercises are based on VITESS 3.1. Input files are given in the subdirectories, as well as .pdf files containing detailed description of the exercises as well as (some) solutions.
+This directory contains exercises that illustrate the usage and special features of different VITESS modules.
+Some exercises are taken from the joint Vitess/McStas workshop that took place in Berlin 18.-20.09.2013;
+the respective McStas examples can be found at [http://2013.essworkshop.org/](http://2013.essworkshop.org/).
+These exercises are based on VITESS 3.1.
+Input files are given in the subdirectories, as well as .pdf files containing detailed description of the exercises as well as (some) solutions.
+
+The [D20](./D20) Example was presented at the JCNS Laboratory Course in Neutron Scattering 2025, using Vitess 3.7.
 
 ## BeginnerExample
-  The [BeginnerExample](./BeginnerExample) folder contains an introduction to VITESS simulations and basic usage of the most common modules. It is divided in two parts: 
+The [BeginnerExample](./BeginnerExample) folder contains an introduction to VITESS simulations and basic usage of the most common modules. It is divided in two parts: 
   - [Ex1](./BeginnerExample/Talk_Ex1_VitessComponents.pdf): `source`, `sample` and `detector` modules.
   - [Ex2](./BeginnerExample/Talk_Ex1_VitessComponents.pdf): `guide` and `chopper` modules. 
 
@@ -40,6 +46,10 @@ In this [excercise folder](./Samples/) we study in more detail the `sample` modu
 - [Ex6](./Samples/Sample-exercise.pdf): reconstruct powder samples, get the background from sample environment, create a sample for reflectometry and study the differences between  considering or not the incoherent scattering.
 
 ## SupermirrorSystems
-Finally, the [SupermirrorSystems folder](./SupermirrorSystems/) contains an excercise to model complex systems of supermirrors using the `sm_ensemble` module. In this module, any user-defined coordinates and orientation of supermirror plates can be given. You will build a bi-spectral beam extraction system consisting of several, differently inclined mirrors surrounded by guide walls.
+The [SupermirrorSystems folder](./SupermirrorSystems/) contains an excercise to model complex systems of supermirrors using the `sm_ensemble` module. In this module, any user-defined coordinates and orientation of supermirror plates can be given. You will build a bi-spectral beam extraction system consisting of several, differently inclined mirrors surrounded by guide walls.
 
 - [Ex7](./SupermirrorSystems/SupermissorSystems.pdf): Build a bi-spectral beam extraction system consisting of several mirrors inserted partly into a guide.
+
+## D20
+The [D20 tutorial](./D20) demonstrates how to build the D20 diffractometer at ILL from scratch.
+It contains the [instructions](./D20/README.md), the necessary input files and an example solution to every step.
