@@ -282,6 +282,7 @@ pages:
       when: on_success
     - if: $CI_COMMIT_BRANCH == "develop"
       when: manual
+      allow_failure: true
     - when: never
   dependencies: []
   script:
