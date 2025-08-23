@@ -9,15 +9,19 @@
 # prefix: prefix for parameter in pipe
 
 monochromator:
+  - category: "monochr_analyser"
+
   - sParFile :
       type:    "file"
       descr:   "parameter file"
       plottable: false
+      editable: false
       tooltip: "Input file containing parameters of the monochromators\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-P"
   - sGeomFile:
       type:    "file"
       plottable: false
+      editable: false
       descr:   "geometry file"
       tooltip: "File containing positions and orientations of the crystal elements relative to the central element (for details see Help|monochromator)\nIt is an output file if one of the implemented geometries is chosen; otherwise it is used as input defining the arrangement of the crystal elements."
       prefix:  "-G"
@@ -46,7 +50,7 @@ monochromator:
   - bTransm:
       type:    "switch"
       descr:   "transmission"
-      tooltip: "no: neutrons that are not reflected by the crystal lattice are removed\nyes: neutrons that are not reflected will be transmitted and treated in the next module.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged."
+      tooltip: "no: neutrons that are not reflected by the crystals are removed\nyes: neutrons that are not reflected are transmitted and can be treated in the following modules.\nNote that in both cases the 'standard frame generation' rotates the co-ordinate to the reflected beam."
       default:  no
       column:   1
       prefix:  "-B"
@@ -186,8 +190,8 @@ monochromator:
       descr:   "focusing option"
       tooltip: "Focusing option for generated monochromator geometries\nFor details see Help|monochromator.\nResult will be written to focus file."
       enum:    "VtMonoFocus"
-      options: ["VERT_CYL", "DBL_FOC", "SPHERICAL", "CONST_LMBD"]
-      default: "DBL_FOC"
+      options: ["NO_FOCUSING", "VERT_CYL", "DBL_FOC", "SPHERICAL", "CONST_LMBD"]
+      default: "NO_FOCUSING"
       column:  0
       prefix:  "-g"
   - nColumns:
@@ -206,6 +210,14 @@ monochromator:
       min:     1
       column:  1
       prefix:  "-V"
+  - nLayers:
+      type:    "int"
+      descr:   "number of layers"
+      tooltip: "The number of crystal layers in a stack (along the incoming beam)."
+      default: 10
+      min:     1
+      column:  1
+      prefix:  "-I"
 
   - RadiusFocHor:
       type:    "float"
@@ -229,10 +241,26 @@ monochromator:
       column:  2
       prefix:  "-a"
 
+  - SpcLayers:
+      type:    "float"
+      descr:   "spacing of layers [cm]"
+      tooltip: "For number of layers > 1 only: distance between two sequential crystal layers along the stacking direction (measured from center to center)"
+      default: 0.0
+      min:     0.0
+      column:  0
+      prefix:  "-o"
+  - DeclLayer:
+      type:    "float"
+      descr:   "max. layer declination [deg]"
+      tooltip: "For number of layers > 1 only: max. hor. deviation DelZeta of the CE from the mean orientation Zeta. Values for the layers are set in [Zeta-DelZeta, Zeta+DelZeta]"
+      default: 0.0
+      column:  1
+      prefix:  "-J"
+
   - GapHor:
       type:    "float"
       descr:   "gap between columns [cm]"
-      tooltip: "Horizontal distance between columns of the crystal elements"
+      tooltip: "Horizontal distance between columns of the crystal elements, zero if they hit each other"
       default: 0.0
       min:     0.0
       column:  0
@@ -240,7 +268,7 @@ monochromator:
   - GapVert:
       type:    "float"
       descr:   "gap between rows [cm]"
-      tooltip: "Vertical distance between rows of crystal elements"
+      tooltip: "Vertical distance between rows of crystal elements, zero if they hit each other"
       default: 0.0
       min:     0.0
       column:  1

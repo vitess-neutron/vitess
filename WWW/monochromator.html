@@ -1,4 +1,4 @@
-<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<!DOCTYPE HTML PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
 
@@ -73,13 +73,11 @@
     and a rotation about the vertical axis.
   </p>
 
-
-
-  <p><font size="-1">Fig. <i>CE</i></font> </p>
-
   <p>
     <img src="Image26.gif" height="477" width="745">
   </p>
+  <p>Fig. <i>CE</i> </p>
+
 
   <!-- ------------------ -->
   <!-- SECTION A: Options -->
@@ -243,8 +241,9 @@
         <tr>
           <td valign="top" width="18%">transmission treated <br>[-]</td>
           <td valign="top" width="54%">
-            If chosen, a tranmitted beam is generated in addition to the reflected beam.<br />
-            Note that 'transmission treated' means that 'standard frame generation' does not change the co-ordinate system.
+            If chosen, a tranmitted beam is generated in addition to the reflected beam(s).<br />
+            Please note that in both cases the 'standard frame generation' rotates the co-ordinate to the reflected beam.
+            If you don't want that, choose the 'user defined frame' and set horizontal and vertical angle to zero to get the output frame aligned to the transmitted beam.
           </td>
           <td valign="top" width="28%">0 or 1</td>
           <td>-o</td>
@@ -505,6 +504,7 @@
           <td> focusing option: </td>
           <td>
             This parameter defines the focusing geometry. <br>
+            'no focusing' is chosen if the surface normals of all elements point into the same direction or that there is only 1 crystal element
             '&lambda;-focusing' builds a shape close to that of a sphere, but identical wavelengths will be focused to a point close to backscattering <br />
             'Spherical' puts the crystal elements on the surface of a sphere with radius 'radius vert.'  <br>
             The 'vert. cylinder' option forms a vertical cylinder <br>
@@ -515,13 +515,14 @@
         </tr>
 
         <tr>
-          <td valign="top" width="18%">number of CE<br>horizontal, vertical <br>[-] </td>
+          <td valign="top" width="18%">number of CE<br>horizontal, vertical, layers <br>[-] </td>
           <td valign="top" width="54%">
             The number of columns and rows (n<sub>H</sub>, n<sub>V</sub>) of the created CE-matrix. <br>
+            Number of layers > 1 means that crystals (or matrices of crystal elements) are put behind each other so that the transmitted beam is reflected again <br />  
             n<sub>H</sub> is not used for the option 'vert. cylinder', where only 1 element per row is assumed
           </td>
-          <td valign="top" width="28%">2 50</td>
-          <td>-H,-V</td>
+          <td valign="top" width="28%">1 50 1   for vert. foc. cylinder </td>
+          <td>-H,-V,-I</td>
         </tr>
 
         <tr>
@@ -554,6 +555,26 @@
           </td>
           <td valign="top" width="28%"><font face="Symbol">-</font>3 deg</td>
           <td>-a</td>
+        </tr>
+
+        <tr>
+          <td valign="top" width="18%">distance of layers<br>[cm]</td>
+          <td valign="top" width="54%">
+            For number of layers > 1 only:  <br>
+            Distance between two consecutive monochromator layers (measured from center to center along the normal of the crytals surface)
+          </td>
+          <td valign="top" width="28%">0.05</td>
+          <td>-o</td>
+        </tr>
+        <tr>
+          <td valign="top" width="18%">max. layer\ndeclination<br>[deg]</td>
+          <td valign="top" width="54%">
+            For number of layers > 1 only:  <br>
+            max. hor. deviation &Delta;&zeta; of the CE from the mean orientation &zeta;. 
+            Values are set in equidistant steps from &zeta;-&Delta;&zeta; to &zeta;+&Delta;&zeta;.
+          </td>
+          <td valign="top" width="28%">default 0, range [-90°,90°]</td>
+          <td>-J</td>
         </tr>
 
         <tr>
@@ -634,22 +655,23 @@
     the probability that the monochromating crystal can reflect this neutron according to the Bragg condition.
   </p>
 
-  In general, the Bragg condition is not fulfilled by the orientation of the CE, see Fig. Cone. The angle &phi;<sub>CE</sub>  between the incoming neutron
-  <b>k<sub>i</sub></b> and the CE normal <b>n<sub>CE</sub></b> is usually not equal to
-  &phi;<sub>CE,Br</sub> = 90&deg; - &phi;<sub>Br</sub>, since the incoming beam can be divergent and the
-  spectrum usually consists of a finite waveband. To assign a proper weight to the outgoing neutron
-  the probability of finding a mosaic piece that fulfills the Bragg condition needs to be
-  calculated. All possible normal orientarions of such mosaic elements describe a Bragg cone around <b>k<sub>i</sub></b>
-  with the radius r<sub>c</sub> = |<b>k<sub>i</sub></b>|tan(&phi;<sub>CE,Br</sub>). Since all monochromators
-  have a finite horizontal and vertical mosaicity, the Bragg cone can be reached starting from <b>n<sub>CE</sub></b>
-  by two rotations around the y and z axes. To be in accordance with the given mosaic distributions and to
-  obtain the correct probability, the rotation procedure is done as following: The first (e.g. vertical) rotation (&Delta;&phi;<sub>z</sub>) is
-  randomised using a Gaussian with the given mosaic spread (FWHM of the corresponding distribution). Obviously, this first rotation fixes
-  &Delta;&phi;<sub>y</sub>, the angle of the second (e.g. horizontal) rotation, since <b>n<sub>M</sub></b> must lie on the Bragg cone. The absolute
-  probability for the reflection of this neutron is then determined by looking up the value of the Gaussian function
-  of the latter (horizontal) mosaicity corresponding to &Delta;&phi;<sub>y</sub>. The norm
-  of the Gaussian function is such that it is in accordance with the peak reflectivity of the monochromator element. This norm
-  is determined in each simulation during the initialisation of the module and is based on the given Bragg angles, d-spread and mosaicity.
+  <p>
+    In general, the Bragg condition is not fulfilled by the orientation of the CE, see Fig. Cone. The angle &phi;<sub>CE</sub>  between the incoming neutron
+    <b>k<sub>i</sub></b> and the CE normal <b>n<sub>CE</sub></b> is usually not equal to
+    &phi;<sub>CE,Br</sub> = 90&deg; - &phi;<sub>Br</sub>, since the incoming beam can be divergent and the
+    spectrum usually consists of a finite waveband. To assign a proper weight to the outgoing neutron
+    the probability of finding a mosaic piece that fulfills the Bragg condition needs to be
+    calculated. All possible normal orientarions of such mosaic elements describe a Bragg cone around <b>k<sub>i</sub></b>
+    with the radius r<sub>c</sub> = |<b>k<sub>i</sub></b>|tan(&phi;<sub>CE,Br</sub>). Since all monochromators
+    have a finite horizontal and vertical mosaicity, the Bragg cone can be reached starting from <b>n<sub>CE</sub></b>
+    by two rotations around the y and z axes. To be in accordance with the given mosaic distributions and to
+    obtain the correct probability, the rotation procedure is done as following: The first (e.g. vertical) rotation (&Delta;&phi;<sub>z</sub>) is
+    randomised using a Gaussian with the given mosaic spread (FWHM of the corresponding distribution). Obviously, this first rotation fixes
+    &Delta;&phi;<sub>y</sub>, the angle of the second (e.g. horizontal) rotation, since <b>n<sub>M</sub></b> must lie on the Bragg cone. The absolute
+    probability for the reflection of this neutron is then determined by looking up the value of the Gaussian function
+    of the latter (horizontal) mosaicity corresponding to &Delta;&phi;<sub>y</sub>. The norm
+    of the Gaussian function is such that it is in accordance with the peak reflectivity of the monochromator element. This norm
+    is determined in each simulation during the initialisation of the module and is based on the given Bragg angles, d-spread and mosaicity.
   </p>
 
   <p>

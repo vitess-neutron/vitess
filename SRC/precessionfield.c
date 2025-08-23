@@ -256,6 +256,12 @@ int main(int argc, char **argv)
 
         CopyVector(Pos, OutNeutron.Position) ;
         CopyVector(Dir, OutNeutron.Vector) ;
+
+        // checks that values of spin=0 return to 0 after two transformations in double precision
+        if (fabs(SpinVector[0]) < 1e-6) SpinVector[0] = 0.0;
+        if (fabs(SpinVector[1]) < 1e-6) SpinVector[1] = 0.0;
+        if (fabs(SpinVector[2]) < 1e-6) SpinVector[2] = 0.0;
+
         CopyVector(SpinVector, OutNeutron.Spin) ;
 
         /* writes output binary file */

@@ -1,6 +1,10 @@
 #ifndef SOFTABORT_H
 #define SOFTABORT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef SOFTABORTMAIN
 int finishSoftabort = 0;
 #else
@@ -27,7 +31,7 @@ extern int finishSoftabort;
   static int HandlerEnabled;
   void enableHandler() {
     if (HandlerEnabled) return;
-    hS = CreateEvent( NULL, TRUE, FALSE, hName);
+    hS = CreateEvent( NULL, TRUE, FALSE, (LPCWSTR)hName);
     /*
     if (hS == NULL) {
       fprintf(LogFilePtr, "CreateEvent failed [%x]\n", GetLastError());
@@ -68,6 +72,10 @@ extern int finishSoftabort;
 #   define CHECK if (finishSoftabort) {goto my_exit;}
 # endif
 # define DECLARE_ABORT signal(SIGTERM, my_handler);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif

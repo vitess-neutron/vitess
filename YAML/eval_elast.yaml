@@ -25,6 +25,7 @@ eval_elast:            # source module that will be executed
   - sEvalFile:
       type:    "file"
       plottable: true
+      editable: false
       descr:   "evaluation file"
       tooltip: "Output file of the evaluation containing the intensity as a function of the chosen parameter"
       default: "evaluation.dat"
@@ -107,7 +108,7 @@ eval_elast:            # source module that will be executed
   - bTof :
       type:    "switch"
       descr:   "time of flight"
-      tooltip: "yes: time of flight instrument \nno : instrument for continuous measurement"
+      tooltip: "yes: wavelength from TOF and flight path \nno : reference wavelength used"
       default:  no
       column:   0
       prefix:  "-w"
@@ -122,7 +123,7 @@ eval_elast:            # source module that will be executed
   - FlightPath:
       type:    "float"
       descr:   "flight path [cm]"
-      tooltip: "Nominal length of the neutron flight path from origin to detector (for TOF option)"
+      tooltip: "Nominal length of the neutron flight path from origin (source or pulse chopper) to detector (for TOF option)"
       min:     0.0
       column:  0
       prefix:  "-l"
@@ -146,6 +147,7 @@ eval_elast:            # source module that will be executed
   - sIntFile:
       type:    "file"
       plottable: false
+      editable: false
       descr:   "integration file"
       tooltip: "Optional: output file containing integrated intensities (see Help|evaluation) "
       default: ""
@@ -153,6 +155,7 @@ eval_elast:            # source module that will be executed
   - sCtrlFile:
       type:    "file"
       plottable: false
+      editable: false
       descr:   "control file"
       tooltip: "Optional: file controlling the output of integrated intensities (only needed for that)"
       default: ""

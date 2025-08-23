@@ -8,10 +8,17 @@ AUXI.c = $(AUXI.o:.o=.c)
 RNG_O.c = $(RNG_O.o:.o=.c)
 INCL = -I.
 
-COPTFLAGS = $(INCL) -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
-CDEBFLAGS = $(INCL) -Wall
+COPTFLAGS = $(CFLAGS) $(INCL) -O3 -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CDEBFLAGS = $(CFLAGS) $(INCL) -Wall
 
 SYS = $(shell uname)
+
+ifndef PREFIX
+    PREFIX = /usr/local
+endif
+INCLUDEDIR = $(PREFIX)/include/gsl
+LIBDIR = $(PREFIX)/lib
+BINDIR = $(PREFIX)/bin
 
 ifeq ($(SYS),Linux)
  UVERS=1
@@ -68,3 +75,8 @@ all: gsltestlib gsltest
 clean :
 	-rm *.o
 	-rm *.a
+
+install: libgslran.a
+	install -d $(LIBDIR) $(INCLUDEDIR)
+	install libgslran.a $(LIBDIR)
+	install gsl/gsl_errno.h  gsl/gsl_math.h  gsl/gsl_message.h  gsl/gsl_randist.h  gsl/gsl_rng.h  gsl/gsl_types.h $(INCLUDEDIR)

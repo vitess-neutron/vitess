@@ -16,6 +16,8 @@
 /* 2.3  Apr 2020  K. Lieutenant   adaption to VITESS 4, e.g. file parameters to input param. */  
 /* 2.4  Feb 2024  K. Lieutenant   PST option added                                           */  
 /* 2.5  Feb 2024  K. Lieutenant   Doppler drive and random TOF options added, windows for PST*/
+/* 3.0  Jul 2024  K. Lieutenant   largely rewritten to enable a stack of crystal arrays      */
+/* 3.1  Aug 2024  K. Lieutenant   correction rotating monochr.: reflection in moving system  */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -35,12 +37,13 @@ int main(int argc, char *argv[])
 
   // This is the class for a monochromator
   Monochromator monochrom;
+  char sText[20] = "    ";
 
   // initialisation
   // --------------
   _eModule=monochrom.eModule;
 	Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "2.5");
+  PrintModuleName(_eModule, "3.1");
 
   monochrom.OwnInit(argc, argv);
 
@@ -52,7 +55,7 @@ int main(int argc, char *argv[])
    monochrom.setMonochrPar();
 
   /* Determines the dependent parameters and writes out important parameters */
-   monochrom.calcAndWritePar();
+   monochrom.calcPar();
   
   DECLARE_ABORT;
 
@@ -75,9 +78,10 @@ int main(int argc, char *argv[])
       }
     }
   }
+
  my_exit:
-  
-  // Geometry and OwnCleanup, which includes the general Cleanup()
+  // Finish: write parameter, geometry and instrument file using OwnCleanup, which includes the general Cleanup()
+  monochrom.writePar();
   monochrom.setGeometry("yellow");
   monochrom.OwnCleanup();
   

@@ -38,32 +38,35 @@ Plane  Endpoint;                //      [cm]  Endpoint.D: distance to end of fre
 /******************************/
 int main(int argc, char *argv[])
 {
-	long   i=0;
-	double VelocityReal=0.0,          // velocity of the neutron    
+  long   i=0;
+  double VelocityReal=0.0,          // velocity of the neutron    
          TimeOF=0.0,                // time of flight of the neutron to the window 
-	       NewPosY=0.0, NewPosZ=0.0;  // hor. and vert. position of neutron at slit 
+         NewPosY=0.0, NewPosZ=0.0;  // hor. and vert. position of neutron at slit 
+  Neutron OutNeutron;
 
   // Initialisation
   // --------------
+  InitNeutron(&OutNeutron);
+
   _eModule = MCN_SLIT;
 
-	Init(argc,argv, _eModule);
+  Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.2");
-	OwnInit(argc, argv);
+  OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
   if (bVisInstr) 
     bBlowUp = TRUE;
 
-	DECLARE_ABORT
+  DECLARE_ABORT
 
   // Loop over all trajectories
   // --------------------------
-	while (ReadNeutrons()!= 0)
-	{
-		for (i=0; i<NumNeutGot; i++)
-		{
-			CHECK
+  while (ReadNeutrons()!= 0)
+  {
+    for (i=0; i<NumNeutGot; i++)
+    {
+      CHECK
 
       // Only write out event if EOB line is found, otherwise process trajectory
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
@@ -72,41 +75,43 @@ int main(int argc, char *argv[])
       }
       else
       { 
-			  // 	Move neutron to end of space and calculate Time of Flight (ms)
-			  if (InputNeutrons[i].Vector[0] <= 0.0) continue;
-			  if (InputNeutrons[i].Wavelength == 0.0) continue;
-			  VelocityReal = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
-			  if (VelocityReal <= 0.0) continue;
-			
-			  if (keygrav == 1)
-				  TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-			  else
-				  TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+        //   Move neutron to end of space and calculate Time of Flight (ms)
+        if (InputNeutrons[i].Vector[0] <= 0.0) continue;
+        if (InputNeutrons[i].Wavelength == 0.0) continue;
+        VelocityReal = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
+        if (VelocityReal <= 0.0) continue;
 
-			  // Calculate  and  writeout new data set, if slit is hit
-			  NewPosY = InputNeutrons[i].Position[1];
-			  NewPosZ = InputNeutrons[i].Position[2];
-			
-			  if (fabs(NewPosY) < 0.5*Width  &&  fabs(NewPosZ) < 0.5*Height)
-			  {	
-          WriteIAP(&InputNeutrons[i], VT_PASSED);
-
-				  InputNeutrons[i].Time += TimeOF;
-				  InputNeutrons[i].Position[0]=0.0;
-
-				  WriteNeutron(&InputNeutrons[i]);
-			  }
+        CopyNeutron(&InputNeutrons[i], &OutNeutron);
+      
+        if (keygrav == 1)
+          TimeOF = NeutronPlaneIntersectionGrav(&OutNeutron, Endpoint);
         else
-        { WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
+          TimeOF = NeutronPlaneIntersection1(&OutNeutron, Endpoint);
+
+        // Calculate  and  writeout new data set, if slit is hit
+        NewPosY = OutNeutron.Position[1];
+        NewPosZ = OutNeutron.Position[2];
+      
+        if (fabs(NewPosY) < 0.5*Width  &&  fabs(NewPosZ) < 0.5*Height)
+        {  
+          WriteIAP(&OutNeutron, VT_PASSED);
+
+          OutNeutron.Time += TimeOF;
+          OutNeutron.Position[0]=0.0;
+
+          WriteNeutron(&OutNeutron);
+        }
+        else
+        { WriteIAP(&OutNeutron, VT_OUT_OF_WND);
         }
       }
-		}
-	}	
+    }
+  }  
 
 // Finish: print parameters, write geometry and instrument file, free memory
 // -----------------------------------------------------
 my_exit:
-	fprintf(LogFilePtr, "Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", Width, Height, DistMove);
+  fprintf(LogFilePtr, "Window of size %6.2f x %6.2f cm (W x H) in a distance of %7.2f cm \n", Width, Height, DistMove);
 
   SetGeometry("grey");                       // write geometry data for visualization
   Cleanup(DistMove, 0.0, 0.0, 0.0, 0.0);     // print intensity, write instrument.inf, free memory
@@ -120,37 +125,37 @@ my_exit:
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-	int i=0;
+  int i=0;
 
   InitPlane(&Endpoint);
 
-	for (i=1; i<argc; i++)
-	{
-		if (argv[i][0]!='+') 
-		{
-			switch(argv[i][1])
+  for (i=1; i<argc; i++)
+  {
+    if (argv[i][0]!='+') 
+    {
+      switch(argv[i][1])
       {
-				case 'd':
-					DistMove = atof(&argv[i][2]);
-					break;
+        case 'd':
+          DistMove = atof(&argv[i][2]);
+          break;
 
-				case 'W':
-					Width  = atof(&argv[i][2]);
-					break;
-				case 'H':
-					Height = atof(&argv[i][2]);
-					break;
+        case 'W':
+          Width  = atof(&argv[i][2]);
+          break;
+        case 'H':
+          Height = atof(&argv[i][2]);
+          break;
       
-				default:
-					fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
-					exit(-1);
-					break;
-			}
-		}
-	}
+        default:
+          fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
+          exit(-1);
+          break;
+      }
+    }
+  }
 
-	Endpoint.A =  1.0;
-	Endpoint.D = -1.0*DistMove;
+  Endpoint.A =  1.0;
+  Endpoint.D = -1.0*DistMove;
 }
 
 
@@ -187,7 +192,7 @@ void SetGeometry(char* sColor)
 }
 
 
-	    
+      
 
       
  

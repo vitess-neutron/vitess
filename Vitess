@@ -20,7 +20,7 @@ proc VScroll {w {u 5}} {
 }
 
 proc wheelEvent { x y delta } {
-  
+
   # Find out what's the widget we're on
   set w [winfo containing $x $y]
   if {$w == ""} return
@@ -39,8 +39,8 @@ proc wheelEvent { x y delta } {
 
   # Make sure we've got a vertical scrollbar for this widget
   if [catch "$w cget -yscrollcommand" cmd] return
-  if {$cmd == ""} return 
-  
+  if {$cmd == ""} return
+
   # Find out the scrollbar widget we're using
   set scroller [lindex $cmd 0]
 
@@ -48,7 +48,7 @@ proc wheelEvent { x y delta } {
   set xy [$w yview]
   set factor [expr [lindex $xy 1]-[lindex $xy 0]]
   set u [expr int(-$delta/(120*$factor))]
-  
+
   # Make sure we activate the scrollbar's command
   set cmd "[$scroller cget -command] scroll $u units"
   eval $cmd
@@ -64,7 +64,7 @@ switch $tcl_platform(platform) {
         # mozilla -remote openURL(file:vitess.html)
         # otherwise change help.tcl accordingly
         set Browser ""
-        foreach b {firefox mozilla netscape communicator konqueror} {
+        foreach b {firefox mozilla chrome netscape communicator konqueror xdg-open} {
           catch {
             catch {exec sh -c "which $b"} bb
             if {$bb != "" && [file exists $bb]} {
@@ -73,7 +73,7 @@ switch $tcl_platform(platform) {
           }
           if {$Browser != ""} break
         }
-        catch {unset b bb} 
+        catch {unset b bb}
       }
       Darwin {
         set Browser open
@@ -86,9 +86,9 @@ switch $tcl_platform(platform) {
     if {$Browser == ""} {
       puts "no browser found!"
     }
-    set serif Courier
-    set sserif Helvetica
-    
+    set serif Arial
+    set sserif Arial
+
     regsub ^./ [glob [info script]] "" s
     set i [string last / $s]
     incr i -1
@@ -126,7 +126,7 @@ switch $tcl_platform(platform) {
     set TextPos +620+0
     set MaxOutstringLength 80
     set Browser [file join $ExeDirectory shelexec.exe]
-    set s "Lucida Console"
+    set s "Arial"
     if {[lsearch [font families] $s] >= 0} {
       set serif $s
     } else {
@@ -145,21 +145,29 @@ set monospaced $serif
 set GUIDir [file join $SourceDirectory GUI]
 set auto_path [linsert $auto_path 0 $GUIDir]
 ###    use tk_chooseColor to find better colors
-set c #dce2ff
+set c #f2f2fb
 set bgColor $c
 set labColor $c
-set entryColor #aedace
-set radioColor $c
-set buttonColor #98b4a0
+set entryColor white
+set radioColor   #abb3be
+set buttonColor  #0b4e66
+set buttonColorFont white
 set menuButtonColor $c
 set canvasColor $c
-if {$tcl_platform(os) == "Darwin"} {set menuColor black} else {set menuColor $c}
+set headerColor  $buttonColor
+set menuColor $c
+# MacOS uses system buttons with default background
+if {$tcl_platform(os) == "Darwin"} {
+  set buttonColor #abb3be
+  set buttonColorFont black
+  set menuColor black
+}
 
 set itemlabwidth 16
 set fileentrywidth 48
 set VisState 0
 # VisGather is either
-# - an external program path 
+# - an external program path
 # - or just-concatenate
 # to gather 1. step visualisation results
 #set VisGather [file join $ExeDirectory sortiap$ExeSuffix]
@@ -182,10 +190,11 @@ if [file exists $VisMerge] {
   set VisMerge ""
 }
 
-set MainBitmap [file join $SourceDirectory BITMAPS vit.gif]
-
+set MainBitmap [file join $SourceDirectory BITMAPS vitsav.gif]
+set versionNumber "3.7"
+set defaultPlotApp ""
 ### execute all tcl source files
-set modl {tools check entries help ldstore menu windows 
+set modl {tools check entries help ldstore menu windows
   show vitess comexe digest control}
 if $NoBLT {
   lappend modl show_plain
@@ -220,3 +229,8 @@ switch $tcl_platform(platform) {
 }
 ### VITESS parameter directory entry must have a reasonable value
 forceParamDir
+
+if {$argc > 0} {
+  loadAll gui $argv
+  set defdirectory_ [pwd]
+}

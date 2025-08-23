@@ -1,0 +1,33 @@
+VITESS 3.7  Release Note
+------------------------
+Current simulation activities required to include new modules and features into VITESS 3 so that, in contrast to earlier announcements, a version 3.7 of the VITESS software package was necessary.
+Future versions - VITESS 4.x - will have Qt as the GUI, use YAML files to define the module parameters and store the instrument; these files are human readable and thus enable editing the instrument.
+
+VITESS 3.7 contains four new modules, among them two new source modules to improve the use of neutrons from target-moderator simulations by external programs (like MCNP) for instrument simulations:
+- 'read_in' can use 'KDSource', which increases the number of neutron trajectories - simulated by the external software - by creating new ones using the kernel density estimation method.
+- 'source_AI' uses AI to create a function defining the flux as a function of time, wavelength and other parameters deduced from the output of the moderator simulation.
+- 'prism' simulates an array of triangular prisms, which can be used to deflect the neutron beam.
+- 'sample_ncrystal' enables using the well-known NCrystal library.
+- 'template' provides a minimal module which can be used as starting point for new modules.
+
+Three modules got major upgrades or new features:
+- The module 'sample_inelast' and 'eval_inelast' can now handle spin dependent scattering.
+- The 'monochromator' module allows simulating all kinds of monochromator motions: rotation about an axis perpendicular to the beamline or parallel to it (for phase space transformer) as well as oscillations along the beamline (Doppler drive).
+- The 'polariser_sm' refactors the function that reads polarisation data from input file,
+
+Some bugs were fixed
+- polariser_he3: spin now follows Larmor precession
+- polariser_sm: manipulation of the spin at the reflection point
+- sample_reflectom: off-specular reflection and incoherent scattering can be used now
+- several memory issues (memory leaks, double frees) in some modules
+
+VITESS 3.7 contains several new features:
+- Adding, moving and copying components on the GUI is facilitated.
+- Visualization of the monitor output is more flexible. Depending on the platform, different graphics tool can be made the default software (as an alternative to the existing Gnuplot and G2): GR from Forschungszentrum Jülich, the python tool ..... .
+- The exercises from the 2025 JCNS Labcourse have been added to FILES/TUTORIALS/D20
+
+Code development:
+- Version control of the code, compilation of new versions and distribution of new releases is integrated in a GIT system (https://iffgit.fz-juelich.de/vitess/vitess).
+- Testing of the program is now more systematic: all the instruments testing from FILES/EXAMPLES are executed automatically after each push of the source code. It is meant to keep the program error-free and allow more frequent and user requested releases.
+- The HTML documentation is now available online at https://vitess.iffgit.fz-juelich.de/vitess/
+

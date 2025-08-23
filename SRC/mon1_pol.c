@@ -318,7 +318,8 @@ void UpdateMon(long iBnch)
 
   if (pFile != NULL)     
   { 
-    WriteHeader1DB(pFile, FALSE, "polarization", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, sParN[ePar], sUnit[ePar]);
+    WriteHeader1DB(pFile, FALSE, "polarization", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, 
+                          sParN[ePar], sUnit[ePar], xMin, xMax);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;

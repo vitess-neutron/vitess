@@ -59,7 +59,7 @@ double MinX       = 0.0,         // -m [var] upper bound of d-spacing, q, theta 
 
 short  bProbactiv = TRUE,        // -p  [-]  flag: TRUE: Probability weight   FALSE: number of trajectories neutron weight is set to 1.0 
        bExclCount = FALSE,       // -c  [-]  flag: TRUE: only neutrons complying with the evaluate requirements are written to the output 
-       bTOF       = FALSE,       // -w  [-]  flag: TRUE: time of flight instrument 
+       bTOF       = FALSE,       // -w  [-]  flag: TRUE: wavelength is determined from time of flight (for TOF instruments) 
        bPathCor   = FALSE;       // -t  [-]  flag: TRUE: correct TOF for real flight path from sample to detector 
 
 VtAxis eScatAxis  = NO_AXIS;     // -A  [-]  direction of scattering for correct calculation of the scattering parameters 
@@ -392,7 +392,7 @@ void OwnInit(int argc, char *argv[])
           bExclCount = (short) atoi(arg);    /* if activated, only neutrons complying with the evaluate requirements are considered further on */
           break;
         case 'w':
-          bTOF       = (short) atoi(arg);    /* time of flight instrument */
+          bTOF       = (short) atoi(arg);    /* time of flight instrument -> wavelength from TOF */
           break;
         case 't':
           bPathCor   = (short) atoi(arg);    /*  correct flight path length for location of detection */
@@ -498,7 +498,8 @@ void UpdateMon(long iBnch)
   /* Spectrum */
   if (pFile != NULL)
   {
-    WriteHeader1DB(pFile, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, sOption, sUnit[eKind]);
+    WriteHeader1DB(pFile, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, IntTot, nTrjTot, 
+                          sOption, sUnit[eKind], MinX, MaxX);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;
@@ -516,7 +517,7 @@ void UpdateMon(long iBnch)
       else
         sigma = 0.0;
 
-      fprintf(pFile,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*IntBin[iBin], f_norm*sigma, nTrj[iBin]);
+      fprintf(pFile,"%10.6f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*IntBin[iBin], f_norm*sigma, nTrj[iBin]);
     }
     fclose(pFile);
   }

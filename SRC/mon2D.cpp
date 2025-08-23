@@ -198,7 +198,7 @@ void Mon2D::OwnInit(int argc, char* argv[])
   {
     dataArray[i]       = (double*) malloc(nBinsY * sizeof(double));
     dataArrayError[i]  = (double*) malloc(nBinsY * sizeof(double));
-    dataArrayCounts[i] = (long*)   malloc(nBinsY * sizeof(int));
+    dataArrayCounts[i] = (long*)   malloc(nBinsY * sizeof(long));
   }
 
   for (int i=0; i <= nBinsX; i++)  BinPosX[i] = xMin + (xMax - xMin) * i / (double)nBinsX;
@@ -376,13 +376,11 @@ double Mon2D::DetermineParameter(VtMonPar id, Neutron* pNeutr)
       break;
     
     case K_Y:
-      divy = neutronVector.Phi();
-      paramValue = divy * 2. * M_PI / pNeutr->Wavelength; // ky: y component of the wave vector 
+      divy = neutronVector.DivY();
+      paramValue = divy * 2. * M_PI / pNeutr->Wavelength;  // ky: y component of the wave vector 
       break;
     case K_Z:
-      neutronVector.x[1] = 0;
-      if (neutronVector.x[2] > 0) divz = M_PI/2. - neutronVector.Theta(); 
-      else divz = M_PI/2. - (neutronVector.Theta() + M_PI);
+      divz = neutronVector.DivZ();
       paramValue = divz * 2. * M_PI / pNeutr->Wavelength;  // kz: z component of the wave vector
       break;
     
@@ -469,12 +467,16 @@ void Mon2D::WriteOut(long iBnch)
       fNorm = (double) nBunches / (double) iBnch;
 
     if (analysePol) 
-    { WriteHeader2DB(fMonitor, FALSE, format, "polarisation", bWeight, iBnch, nBunches, IntTot, nTrajTot,  nBinsX, sParX,  nBinsY, sParY);
+    { WriteHeader2DB(fMonitor, FALSE, format, "polarisation", bWeight, iBnch, nBunches, IntTot, nTrajTot,  
+                     nBinsX, sParX, xMin, xMax,  
+                     nBinsY, sParY, yMin, yMax);
       WriteOutput2DB(fMonitor,        format,                 bWeight,  nBinsX, BinPosX,  nBinsY, BinPosY,  fNorm,  
                      dataArrayPol, dataArrayError, dataArrayCounts);
     }
     else
-    { WriteHeader2DB(fMonitor, FALSE, format, "Intensity",    bWeight, iBnch, nBunches, IntTot, nTrajTot,  nBinsX, sParX,  nBinsY, sParY);
+    { WriteHeader2DB(fMonitor, FALSE, format, "Intensity",    bWeight, iBnch, nBunches, IntTot, nTrajTot,  
+                     nBinsX, sParX, xMin, xMax,  
+                     nBinsY, sParY, yMin, yMax);
       WriteOutput2DB(fMonitor,        format,                 bWeight,  nBinsX, BinPosX,  nBinsY, BinPosY,  fNorm,  
                      dataArray, dataArrayError, dataArrayCounts);
     }
@@ -536,14 +538,27 @@ void Mon2D::ParId2Text(char* sParName, const VtMonPar ePar)
 void Mon2D::FreeMemory()
 {
   // Give back the memory space
+  for (int i=0; i < nBinsX; i++) {
+    free(dataArray[i]);
+    free(dataArrayError[i]);
+    free(dataArrayCounts[i]);
+  }
   free(dataArray);
   free(dataArrayError);
   free(dataArrayCounts);
+  free(BinPosX);
+  free(BinPosY);
 
   if (analysePol) 
   {
-     free (dataArrayPolWeights);
+    for (int i=0; i < nBinsX; i++) {
+      free(dataArrayPolWeights[i]);
+      free(dataArrayPol[i]);
+    }
+    free(dataArrayPolWeights);
+    free(dataArrayPol);
   }
+  if (polAnalysisVector) delete polAnalysisVector;
 
   return; 
 }

@@ -14,6 +14,7 @@ monitor1D:                    # source module that will be executed
   - sMonFile :                # -O  1D output file name
       type:    "file"
       plottable: true
+      editable: false
       descr:   "monitor file"
       tooltip: "name of the 1D monitor output file"
       default: "monitor1D.dat"

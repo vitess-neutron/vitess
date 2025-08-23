@@ -14,12 +14,14 @@ sample_powder:
   - sParFile :                  # -S         [-]    parameter file name
       type:    "file"
       plottable: false
+      editable: false
       descr:   "parameter file"
       tooltip: "File containing parameters of the powder sample\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-S"
   - sStructFile :                 # file       [-]    structure factor file name (of the sample material)
       type:    "file"
       plottable: false
+      editable: false
       descr:   "structure factor file"
       tooltip: "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program."
       prefix:  "-s"

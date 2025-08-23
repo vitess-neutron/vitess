@@ -331,9 +331,9 @@ double LoadIsisDistrib(FILE* TFile, double Einit, double Eend)
   rewind(TFile);
 
   TS.Flux=matrix(TS.nEnergy,TS.nTime);      
-  TS.EInt=(double*) malloc(TS.nEnergy*sizeof(double));
-  TS.TimeBin=(double*) malloc(TS.nTime*sizeof(double));
-  TS.EnergyBin=(double*) malloc(TS.nEnergy*sizeof(double));
+  TS.EInt=(double*) malloc((TS.nEnergy+1)*sizeof(double));
+  TS.TimeBin=(double*) malloc((TS.nTime+1)*sizeof(double));
+  TS.EnergyBin=(double*) malloc((TS.nEnergy+1)*sizeof(double));
 
   Tsum=0.0;
   Ea=0.0;

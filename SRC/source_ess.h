@@ -1,6 +1,8 @@
 #ifndef SOURCE_ESS_H
 #define SOURCE_ESS_H
 
+#include "defines.h"
+
 /***********************************************/
 /* Prototypes                                  */
 /***********************************************/

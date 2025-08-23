@@ -11,6 +11,8 @@
 
 #define	PAR_GEOM	10
 #define M_CUT     1.0e-3
+#define NUM_LAYERS 5
+#define UNDEFINED -9999.99
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,17 +62,19 @@ class Monochromator{
              mu_abs,                   // -C      [1/cm]  Macrosc. absorption cross-section in the crystal for 1.798 Ang  .
              mu_scat,                  // -c      [1/cm]  Macrosc. total scattering cross-section in the crystal          .
              Reflectivity;             // -R        [-]   Peak Reflectivity 
-  VtMonoFocus eFocGeom;                // -g        [-]   Focusing geometry:     1: constant lambda  2: spherical            3: vert. cylinder     4: double focussing
-  int        NumberCE[2];              // -H -V     [-]   Number of horizontal and vertical CE segments
-  double     DevH, DevV;               // -t -T    [deg]  Horizontal and vertical deviation from correct crystal orientation
+  VtMonoFocus eFocGeom;                // -g        [-]   Focusing geometry:     1: constant lambda    2: spherical    3: vert. cylinder    4: double focussing
+  int        NumberCE[3];              // -I -H -V  [-]   Number of successive, horizontal and vertical CE segments
+  double     SpcLayer,                 // -o       [cm]   Spacing between two sequential layers of the ensemble of crystal elements in the monochromator                 
+             DeclLayer,                // -J       [deg]  max. hor. deviation DelZeta of the CE from the mean orientation Zeta. Values are set in [Zeta-DelZeat, Zeta+DelZeta]                 
+             DevH, DevV;               // -t -T    [deg]  Horizontal and vertical deviation from correct crystal orientation
   double     GapH, GapV;               // -h -v    [cm]   Horizontal and vertical distance between crystal elements
   double     RadH, RadV,               // -s -r    [cm]   Horizontal and vertical radius
              Psi0;                     // -a       [deg]  Angular offset of the bottom row of the crystal elements   
                                        
   // Monochromator variables from main  window or parameter file
-  double	   BraggHor,  BraggVert,     // -l -L    [deg]  Horizontal and vertical crystal plane orientation (relative backscattering direction)
+  double     BraggHor,  BraggVert,     // -l -L    [deg]  Horizontal and vertical crystal plane orientation (relative backscattering direction)
              SrfcHor,   SrfcVert,      // -e -E    [deg]  Horizontal and vertical surface orientation (relative backscattering direction)
-             OutHor,    OutVert;       // -u -U    [deg]  Horizontal and vertical orientation of the output co-ordinate system
+             OutHorU,   OutVertU;      // -u -U    [deg]  User defined horizontal and vertical orientation of the output co-ordinate system
   VectorType Transl,                   // -W -Y -Z [cm]   Position [x,y,z] of the output co-ordinate system 
              PosCE0,                   // -x -y -z [cm]   Position [x,y,z] of the center of the monochromator
              DimCE0;                   // -i -j -k [cm]   thickness, width and height of a monochromator crystal element
@@ -78,34 +82,42 @@ class Monochromator{
   double     d_spacing;                // -S       [cm]   Distance of the (h,k,l) crystal planes
   int        nOrderRefl;               // -N       [-]    Order of Bragg reflection (usually 1), -1 means all
 
-  // used: a b c d e f g h i j k l m n   p q r s t u v w x y z
-  //       A B C D E F G H     K L M N O P Q R S T U V W X Y Z
-  // free:                             o
-  //                       I J
+  // used: a b c d e f g h i j k l m n o p q r s t u v w x y z
+  //       A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+  // free:                              
+  //                         
                                               
   // Monochromator variables from the  geometry file or from calculation
-  std::vector < std::vector<double> >         
-             RotCEhor_F,               //          [rad]  vector containing the horizontal orientations of all monochromator elements           
-             RotCEvert_F,              //          [rad]  vector containing the vertical orientations of all monochromator elements             
-             PosCE_F[3],               //          [cm]   3 vectors containing the x-pos., y-pos. and z-pos. of all monochromator elements      
-             DimCE_F[3],               //          [cm]   3 vectors containing the thicknesses, widths and heights of all monochromator elements
-             RotMatrixCE_F[3][3];
+  std::vector < std::vector<double> >  
+             RotCEh_F[NUM_LAYERS],     //          [rad]  vectors containing the horizontal orientations of all monochromator elements in the (up to NUM_LAYERS) layers           
+             RotCEv_F[NUM_LAYERS],     //          [rad]  vectors containing the vertical orientations of all monochromator elements in the layers             
+             PosCEx_F[NUM_LAYERS],     //          [cm]   vectors containing the x-position of all monochromator elements in the layers      
+             PosCEy_F[NUM_LAYERS],     //          [cm]   vectors containing the y-position of all monochromator elements in the layers      
+             PosCEz_F[NUM_LAYERS],     //          [cm]   vectors containing the z-position of all monochromator elements in the layers      
+             DimCEx_F[NUM_LAYERS],     //          [cm]   vectors containing the thicknesses of all monochromator elements in the layers
+             DimCEy_F[NUM_LAYERS],     //          [cm]   vectors containing the widths of all monochromator elements in the layers
+             DimCEz_F[NUM_LAYERS],     //          [cm]   vectors containing the heights of all monochromator elements in the layers
+             RotMatrixCE_F[3][3][NUM_LAYERS];
 
 // Variables determined from input parameters or trajectory data
   FILE*      pGeomFile;                //           [-]   Pointer to geometry file
-  double     d_sigma;                  //           [cm]  absolute d-spread del_d   (sigma)
+  double     d_sigma,                  //           [cm]  absolute d-spread del_d   (sigma)
+             sigma1, sigma2;           //          [rad]  d-spacing and mosaic spread       
   VectorType Depth,                    //                 Vector from CE surface to the reflecting plane 
              PosCE,                    //                 Position [x,y,z] of the center of the current crystal element (CE)
              DimCE;                    //                 thickness, width and height of the current CE
   double     dSpacingSpreadParams  [3],//                 data to treat d-spacing spread
              horMosaicSpreadParams [3],//                 data to treat hor. mosaicity
-             vertMosaicSpreadParams[3];//                 data to treat hor. mosaicity
+             vertMosaicSpreadParams[3],//                 data to treat hor. mosaicity
+             OutHorR, OutVertR,        //          [deg]  Horizontal and vertical orientation of the output co-ordinate system for reflected neutrons
+             OutHorT, OutVertT;        //          [deg]  Horizontal and vertical orientation of the output co-ordinate system for transmitted neutrons
   double     RotMatrixCE   [3][3],     //                 Matrix to rotate the trajectory into the system of the current crystal element
              RotMatrixCE0  [3][3],     //                 Matrix to rotate the trajectory into the system of the central crystal element
              RotMatrixBragg[3][3],     //                 Matrix to rotate the trajectory into the system of the reflecting planes
              RotMatrixOut  [3][3];     //                 Matrix to rotate the trajectory into output frame
-  double     PathLenTrans,             //                 Length of the trajectory through the crystal for the transmitted
-             PathLenRefl,              //                   and the reflected beam
+  double     PathLenRefl,              //                 Length of the trajectory through the crystal for the reflected beam,
+             PathLenTrans,             //                   the transmitted beam
+             PathLenTransSum,          //                   and the sum of all transmissions of the beam
              maxDeviation;             //                 max. angle deviation considered for the reflectivity normalization
   double     peakWL,                   //                 Peak wavelength
              braggAngleTot,            //                 total bragg angle (in case braggHor > 0 and braggVer > 0), 
@@ -113,6 +125,7 @@ class Monochromator{
   int        mosRndmDir;               //                 defines direction for normal and random mosaicity: 1: vert. norm, hor. rnd  2: vice versa
   double     fNorm[3], fRndm[3],       //                 contains parameters for Gaussian distribution of mosaicity
              Period,                   //           [ms]  period of the monochromator movement
+             omega,                    //        [rad/ms] angular frequency of the moving monochromator
              TrndMin, TrndMax;         //                 minimum and maximum value of the randomized arrival time
                                                           
   // Variables of the trajectories                        
@@ -137,9 +150,10 @@ class Monochromator{
 
   void        OwnInit(int argc, char *argv[]);
   void        setMonochrPar();                  // reads monochromator parameters and combines them with input parameters
-  void        calcAndWritePar();                // determines the dependent parameters and write out important parameters 
+  void        calcPar();                        // determines the dependent parameters 
+  void        writePar();                       // writes important parameters to log file 
   void        readFocFile();                    // reads deviations in position, dimensions and orientation of all crystal elements
-  void        setGeometry(char* sColor);        // fills the structure stGeometry for visualization
+  void        setGeometry(const char* sColor);  // fills the structure stGeometry for visualization
   void        OwnCleanup();
 
   void        fillRotMatrices(double MonoHor);
@@ -148,32 +162,48 @@ class Monochromator{
   void        NormFunction();
   void        DetermineMosaicAngle(double angleDiff, double mosaicAngle1, double &mosaicAngle2);
 
-  void        processNeutron(Neutron* neutron);  
+  void        processNeutron (Neutron* neutron);  
+  void        propNeutron2CE (Neutron* pNeutOut, const Neutron* pNeutIn, const double Tof);
+  bool        checkPstPos    (const Neutron* pNeutIn);
+  double      reflectNeutron (Neutron* pNeutOut, const Neutron* pNeutIn);   // reflects neutron and writes its data to output stream and trajectory file
+  void        transmitNeutron(Neutron* pNeutOut, const Neutron* pNeutIn);
 
-  bool        rotateMonochr     (int& kLast, int& lLast, const Neutron* pNeutIn);
-  bool        translateMonoX    (int& kLast, int& lLast, Neutron* pNeutInM, const Neutron* pNeutIn);
-  void        TranslBackMonoX   (Neutron* pNeutIn, Neutron* pNeutOut);
-  void        rotateMonoYZ      (Neutron* pNeutIn, Neutron* pNeutRot, double Freq);
-  bool        checkCE           (double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut);
-  bool        isNeutInCE        (MathVector vPosN, const VectorType SizeCE);
-  bool        selectCE          (const Neutron* pNeutIn, Neutron* pNeutInCE, int kStart=0, int lStart=0);
+  bool        selectCE          (int& iHit, int& jHit, const Neutron* pNeutIn, const int hIn);
+  bool        rotMonoAndSelectCE(int& iHit, int& jHit, double& TofCE, const Neutron* pNeutIn, const int hIn);
+  bool        oscMonoAndSelectCE(int& iHit, int& jHit, double& TofCE, const Neutron* pNeutIn, const int hIn);
+
+  void        transf2RotZ  (Neutron* pNeutOut, const Neutron* pNeutIn, const bool bFwd);
+  void        transf2PST   (Neutron* TotReflProb, const Neutron* pNeutIn, const bool bFwd);
+  void        transf2DopplX(Neutron* pNeutOut, const Neutron* pNeutIn, const bool bFwd);
+  bool        checkCE      (double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut);
+  bool        isNeutInCE   (MathVector vPosN, const VectorType SizeCE);
+
   double      calcReflProbAndDir(VectorType DirOut, const VectorType DirIn, const double pi2_braggAngle);
-  void        propNeutron2CE    (const Neutron* pNeutIn, Neutron* pNeutOut);
-  void        transmitNeutron   (const Neutron* pNeutIn, Neutron* pNeutOut);
   
+  void        crys_geomNoFocus();
   void        crys_geomLambda();
   void        crys_geomSphere();
   void        crys_geomVertCyl();
   void        crys_geomDoubleCyl();
   void        rotateCEs();
-  void        addDev2Std();          // adds deviations in position, dimensions and orientation to standard values for all crystal elements
+  void        addDev2Std();             // adds deviations in position, dimensions and orientation to standard values for all crystal elements
+  double      addLayerDecl(int hLayer); // adds declination of the layer
   void        writeFocData();
 
-  static void	CopyMatricesToMatrix(int i, int j, std::vector < std::vector<double> >  Matrix[3][3], double Result[3][3]) ;
-  static void	CopyMatrixToMatrices(int i, int j, double Result[3][3], std::vector < std::vector<double> > Matrix[3][3]) ;
-  static void	CopyVectorsToVector (int i, int j, std::vector < std::vector<double> >  Vector[3], double Result[3]) ;
-  static void	CopyVectorToVectors (int i, int j, double Vector[3], std::vector < std::vector<double> >  Result[3]) ;
-  void        declareVectors();
+  void        transfCE2In (Neutron* pNeutOut, const Neutron* pNeutIn);
+  void        transfIn2CE (Neutron* pNeutOut, const Neutron* pNeutIn);
+  void        transfIn2Out(Neutron* pNeutOut, const Neutron* pNeutIn);
+  void        transfCE2In (VectorType PosIn,  VectorType DirIn,  const VectorType PosCE, const VectorType DirCE);
+  void        transfIn2CE (VectorType PosCE,  VectorType DirCE,  const VectorType PosIn, const VectorType DirIn);
+  void        transfIn2Out(VectorType PosOut, VectorType DirOut, const VectorType PosIn, const VectorType DirIn);
+
+  void        CopyMatricesToMatrix(int h, int i, int j, std::vector < std::vector<double> > Matrix[3][3][NUM_LAYERS], double Result[3][3]);
+  void        CopyMatrixToMatrices(int h, int i, int j, double Result[3][3], std::vector < std::vector<double> > Matrix[3][3][NUM_LAYERS]);
+  void        CopyVectorsToPos    (int h, int i, int j, double Pos[3]);
+  void        CopyVectorsToDim    (int h, int i, int j, double Dim[3]);
+  void        CopyPosToVectors    (int h, int i, int j, double Pos[3]);
+  void        CopyDimToVectors    (int h, int i, int j, double Dim[3]);
+  void        declareVectors      (int h);
 
   bool        checkPlaneIntersect (const MathVector vLineOffset,  const MathVector vLineDir,
                                    const MathVector vPlaneNormal, const double PlaneDistance, double& t);

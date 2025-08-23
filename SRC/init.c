@@ -31,6 +31,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef WIN32
+#include <time.h>
+#include <sys/resource.h>
+#endif
 
 #include "convert.h"
 #include "init.h"
@@ -50,12 +54,12 @@
 extern FILE*    LogFilePtr;  /* pointer to the log file stream  */
 
 
-const 
+const
 char *sInstrInfOut = "instrument.inf"; /* instrument file that is written ('instrument.inf')      */
 char *sInstrInfIn  = "instrument.inf"; /* instrument file that is read (default 'instrument.inf') */
 
 McCompID _eModule=MCN_COMP_UNKNOWN;    /* ID of the module                */
-double   BlowUp;             /* Factor, by which width and height are extended for visualization */  
+double   BlowUp;             /* Factor, by which width and height are extended for visualization */
 long     BufferSize;         /* size of the neutron input and output buffer */
 long     CompressedSize;     /* if > 0, set for 2. module to indicate size of file gzipped by 1. module */
 int      CompressionMode;    /* if > 0, data compression mode 1 (nodebug) 2(float) */
@@ -91,7 +95,8 @@ long     SourceSize;         /* input file size */
 
 double   wei_min=0.0;        /* Minimal weight for tracing neutron */
 long     keygrav=1;
-short    bTrace=TRUE,        /* criterion: write trace files             */
+short    bInit =FALSE,       /* criterion: function Init() has been carried out already  */
+         bTrace=TRUE,        /* criterion: write trace files             */
          bOldFrame=FALSE,    /* criterion: co-ordinate system of prev. module used for current module */
          bSepRate =TRUE,     /* criterion: write separate count rates    */
          bTest    =FALSE,    /* criterion: test run (without trajectories)   */
@@ -116,6 +121,15 @@ VectorType vNull={0.0,0.0,0.0},
 TotalID  tempID;
 McCompID eFirstMod=MCN_COMP_UNKNOWN;
 
+#ifndef WIN32
+struct timespec tStart;
+#ifdef CLOCK_MONOTONIC
+#define VT_CLOCK CLOCK_MONOTONIC
+#else
+#define VT_CLOCK CLOCK_REALTIME
+#endif
+#endif
+
 
 /**************************************************************/
 /* STATIC VARIABLES                                           */
@@ -129,7 +143,7 @@ static long       TracePoints=FALSE;     /* creates dot for every written output
 static double     dProbTotal[MAX_COL+2], /* sum of the count rates of all trajectories [n/s]    */
                   dProbQuad;             /* sum of the squares of the count rates of all traj.  */
 
-static int        ParDirLength, 
+static int        ParDirLength,
                   InstallDirLength;
 
 static int        compressModeR, compressModeW, compressBufLen, compressedRestlen, spinVector;
@@ -139,6 +153,7 @@ static char      *compressBuf, *zcat_p;
 
 int               NThreads=0;              // number of helper threads for execution, set by --T
 unsigned long int VRandomSeed=0;           // random seed, default 0, set by --Z
+int               bLogTimes=0;             // print out computation times to the log (UNIX only), set by --l
 
 
 /**************************************************************/
@@ -146,7 +161,7 @@ unsigned long int VRandomSeed=0;           // random seed, default 0, set by --Z
 /**************************************************************/
 static void  setInstallDirectory(char *arg);
 static char* setDir (char *arg);
-static char* conCat (const char *sFile, const char* sSubDir, int sel);
+static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel);
 static void  TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
 static McCompID GetModId(char* sBuffer);                            // returns ID of the module from a line in 'instrument.inf'
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
@@ -156,10 +171,10 @@ static void  WriteTraceLine(Neutron* Neut);
 static short GetColMax();                                           // Returns maximum color with intensity > 0
 
 // these function should only be used exceptionally outside init.c
-char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name 
-char* FullParName     (const char* filename);                       // adds parameter directory to file name 
-char* FullInName      (const char* filename);                       // adds input dir to file name 
-char* FullOutName     (const char* filename);                       // adds output dir to file name 
+char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name
+char* FullParName     (const char* filename);                       // adds parameter directory to file name
+char* FullInName      (const char* filename);                       // adds input dir to file name
+char* FullOutName     (const char* filename);                       // adds output dir to file name
 
 
 /**************************************************************/
@@ -191,53 +206,66 @@ char* FullOutName(const char* fileName)
 }
 
 
-/* Adds the path of a directory - input, output or install_dir/sPath - to a file name 
-   opens the file using parameters 'sMode' 
+/* Adds the path of a directory - input, output or install_dir/sPath - to a file name
+   opens the file using parameters 'sMode'
    and exits with error message if bErrMsg=TRUE     */
 FILE* OpenInputFile(const char *sFilename, short bErrMsg, const char* sMode)
 {
-  FILE* pFile=NULL; 
+  FILE* pFile=NULL;
+  char* sFullName;
 
-  if (sFilename!=NULL)
-  { 
-    if (bErrMsg==TRUE)
-      pFile = fileOpen(FullInName(sFilename), sMode);
-    else
-      pFile = fopen(FullInName(sFilename), sMode);
+  if (sFilename!=NULL) {
+    sFullName = FullInName(sFilename);
+    if (sFullName) {
+      if (bErrMsg==TRUE)
+        pFile = fileOpen(sFullName, sMode);
+      else
+        pFile = fopen(sFullName, sMode);
+      free(sFullName);
+    }
   }
   return (pFile);
 }
 
 FILE* OpenInputFile2(const char *sFilename, const char* sContent, const char* sMode)
 {
-  FILE* pFile=NULL; 
+  FILE* pFile=NULL;
+  char* sFullName;
 
-  if (sFilename!=NULL)
-    pFile = fileOpen2(FullInName(sFilename), sMode, sContent);
-  
+  if (sFilename!=NULL) {
+    sFullName = FullInName(sFilename);
+    if (sFullName) {
+      pFile = fileOpen2(sFullName, sMode, sContent);
+      free(sFullName);
+    }
+  }
+
   return (pFile);
 }
 
 FILE* OpenOutputFile(const char *sFilename, short bErrMsg, const char* sMode)
 {
-  FILE* pFile=NULL; 
+  FILE* pFile=NULL;
+  char* sFullName;
 
-  if (sFilename!=NULL)
-  { 
-    if (bErrMsg==TRUE)
-      pFile = fileOpen(FullOutName(sFilename), sMode);
-    else
-      pFile = fopen(FullOutName(sFilename), sMode);
+  if (sFilename!=NULL) {
+    sFullName = FullOutName(sFilename);
+    if (sFullName) {
+      if (bErrMsg==TRUE)
+        pFile = fileOpen(sFullName, sMode);
+      else
+        pFile = fopen(sFullName, sMode);
+      free(sFullName);
+    }
   }
   return (pFile);
 }
 
 FILE* OpenPackInpFile(const char *sFilename, const char* sPath, short bErrMsg)
 {
-  FILE* pFile=NULL; 
+  FILE* pFile=NULL;
 
-  if (sFilename!=NULL)
-  { 
+  if (sFilename!=NULL) {
     if (bErrMsg==TRUE)
       pFile = fileOpen(FullInstallName(sFilename, sPath), "r");
     else
@@ -290,7 +318,7 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
   uintptr_t trc;
   int nwr, rc;
 
-  if (!TWdata) 
+  if (!TWdata)
   {
     nwr = fwrite(d, s, n, f);
     return n == nwr;
@@ -302,7 +330,7 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
 
   if (rc)
     fprintf(LogFilePtr,"WaitForSingleObject problem, rc %d\n", rc);
-  if (final) 
+  if (final)
   {
     nwr = fwrite(d, s, n, f);
     return n == nwr;
@@ -370,7 +398,7 @@ static int fwritePar(void *d, size_t s, int n, FILE *f, int final) {
 #endif
 
 
-static void setCompressBufLen() 
+static void setCompressBufLen()
 {
   int full_len = sizeof(Neutron) * BufferSize;
   compressBufLen = COMPRESSBUFLEN > full_len ? full_len : COMPRESSBUFLEN;
@@ -383,6 +411,7 @@ static void setCompressBufLen()
  A processed option is marked by setting the leading - to +
  Option processed here:
   --B  number of buffer entries
+  --b  blow up
   --c  size        (if the first module is zcat, the second
                     gets the compressed file's size here)
   --C  mode        data compression mode 1 (nodebug) or float (2)
@@ -392,9 +421,10 @@ static void setCompressBufLen()
   --i  input directory
   --I  instrument file of previous part of the simulation
   --J  active trace points
+  --l  log computation times
   --L  logfile
   --N  module number 1,2,...
-  --oO  output directory
+  --o  output directory
   --p  progress file
   --P  parameter directory
   --t  test mode
@@ -402,6 +432,7 @@ static void setCompressBufLen()
   --U  minimal neutron weight
   --v  visualization output: geometry file
   --V  visualization output: trajectory file
+  --z  reserved for future random initialization
   --Z  random number generator initialization
 *************************************************************/
 void Init(int argc, char **argv, const McCompID eModule)
@@ -422,6 +453,9 @@ void Init(int argc, char **argv, const McCompID eModule)
   BufferSize     = BUFFER_SIZE;
   OutNeutNum     = 0;
   TracePoints    = FALSE;
+  #ifndef WIN32
+  clock_gettime(VT_CLOCK, &tStart);
+  #endif
   for (l=0; l<=MAX_COL+1; l++)
     dProbTotal[l] = 0.0;
 
@@ -432,7 +466,7 @@ void Init(int argc, char **argv, const McCompID eModule)
   memset(&stGeometry, '\0', sizeof(VtModGeom));
   stGeometry.eModule= eModule;
 
-  setInstallDirectory(*argv++);	// extract installation path from program name
+  setInstallDirectory(*argv++);  // extract installation path from program name
 
   while ((a = *argv++)) {
     if ('-' != *a || '-' != a[1]) continue; // first two chars must be -
@@ -453,11 +487,14 @@ void Init(int argc, char **argv, const McCompID eModule)
       CompressionMode= atoi(arg);
       break;
 
-    case 'f' :	             		// input file if other than stdin
+    case 'f' :                   // input file if other than stdin
       InputFileName = arg;
       break;
     case 'F':                   // output file if other than stdout
       OutputFileName = arg;
+      break;
+    case 'l' :
+      bLogTimes = atoi(arg);    // print out computation times to the log (UNIX only)
       break;
     case 'L':                   // output file if other than stderr
       LogFileName = arg;
@@ -519,7 +556,7 @@ void Init(int argc, char **argv, const McCompID eModule)
     case 'Z':                   // init number for the random number generator
 #if defined(PENV) || defined(_MSC_VER)
       if (sscanf(arg, "%li", &VRandomSeed)) {
-        char buf[24];	
+        char buf[24];
         sprintf(buf, "GSL_RNG_SEED=%ld", VRandomSeed);
 #      ifdef _MSC_VER
         _putenv(buf);
@@ -544,11 +581,11 @@ void Init(int argc, char **argv, const McCompID eModule)
   if (OutputDir==NULL) OutputDir = ParDir;
 
   // First of all try to open the log file, if it has been requested.
-  if (LogFileName!=NULL) 
+  if (LogFileName!=NULL)
   {
     // Do not use 'fileOpen' to avoid recursion, but open directly using 'fopen', i.e. set bErrMsg to FALSE.
     LogFilePtr = OpenOutputFile(LogFileName, FALSE, "w");
-    if (LogFilePtr == NULL) 
+    if (LogFilePtr == NULL)
     {
       printf("ERROR: Can't open log file %s%c%s!\n", OutputDir, cSlash, LogFileName);
       exit (-1);
@@ -556,26 +593,26 @@ void Init(int argc, char **argv, const McCompID eModule)
   }
 
   // Then we care for input, decide if it is compressed.
-  if (InputFileName!=NULL) 
+  if (InputFileName!=NULL)
   {
     // we got some --f argument
     if (strcmp(InputFileName, "no_file") == 0)
       InputFilePtr = NULL;
     else
       InputFilePtr = OpenInputFile(InputFileName, TRUE, "rb");
-    
-    if (InputFilePtr!=NULL) 
+
+    if (InputFilePtr!=NULL)
     {
       char b[4];
       // Get the file size to enable a progress bar
-      if (0 == fseek(InputFilePtr, 0, SEEK_END)) 
+      if (0 == fseek(InputFilePtr, 0, SEEK_END))
       {
         SourceSize = ftell(InputFilePtr);
         rewind(InputFilePtr);
       }
       // Is it compressed ?
       compressModeR = 0;
-      if (4 == fread(b, 1, 4, InputFilePtr)) 
+      if (4 == fread(b, 1, 4, InputFilePtr))
       {
         if (memcmp(b, "cmp2", 4) == 0)
           compressModeR = 2;
@@ -587,11 +624,11 @@ void Init(int argc, char **argv, const McCompID eModule)
       else
         rewind(InputFilePtr);
     }
-  } 
-  else 
+  }
+  else
   {
     SET_BINARY_MODE(stdin);
-    if (CompressedSize) 
+    if (CompressedSize)
     {
       double factor;
       // we are second in the pipe, reading zcat output
@@ -608,7 +645,7 @@ void Init(int argc, char **argv, const McCompID eModule)
       else
         compressModeR = 0;
 
-      if (compressModeR) 
+      if (compressModeR)
       {
         zcat_p += 4;
         compressedRestlen -= 4;
@@ -620,33 +657,33 @@ void Init(int argc, char **argv, const McCompID eModule)
   }
 
   // Here we care for output, and if data compression is an option.
-  if (OutputFileName!=NULL) 
+  if (OutputFileName!=NULL)
   {
     if (strcmp(OutputFileName, "no_file") == 0)
     { OutputFilePtr = NULL;
     }
-    else 
+    else
     {
       OutputFilePtr = OpenOutputFile(OutputFileName, TRUE, "wb");
-      if (OutputFilePtr) 
+      if (OutputFilePtr)
       {
         if (CompressionMode)
-	        compressModeW = CompressionMode; // it has been stated explicitly
+          compressModeW = CompressionMode; // it has been stated explicitly
         else if (strstr(FullOutName(OutputFileName), ".float."))
-	        compressModeW = 2;               // by filename convention
+          compressModeW = 2;               // by filename convention
         else if (strstr(FullOutName(OutputFileName), ".nodebug."))
-	        compressModeW = 1;               // by filename convention
+          compressModeW = 1;               // by filename convention
 
         if (compressModeW == 1)
-	        fwrite("cmp1", 1, 4, OutputFilePtr);
+          fwrite("cmp1", 1, 4, OutputFilePtr);
         else if (compressModeW == 2)
-	        fwrite("cmp2", 1, 4, OutputFilePtr);
+          fwrite("cmp2", 1, 4, OutputFilePtr);
         else
           compressModeW = 0;               // to catch an unknown CompressionMode
       }
     }
-  } 
-  else 
+  }
+  else
   {
     SET_BINARY_MODE(stdout);
   }
@@ -707,9 +744,9 @@ void Init(int argc, char **argv, const McCompID eModule)
 void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
              double dHorizAngle, double dVertAngle)
 {
-  double TimeMeas=0.0, LmbdWant=0.0, Freq=0.0, 
+  double TimeMeas=0.0, LmbdWant=0.0, Freq=0.0,
          nNumNeutr=0.0, nNumNeutrSrc=0.0,
-	       CntRateErr=0.0;
+         CntRateErr=0.0;
   long   nBnch=0;
   int    l=0;
   int    iCol=0, iColMin=1, iColMax=0;
@@ -723,7 +760,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
       BegPosM[0]= BegPosM[1] = BegPosM[2] = 0.0;
       BlnLen=0.0;
       RotY  = RotZ = 0.0;
-    } 
+    }
     else
     { if (bTest) Wait(0.75*iModuleId);
       nModuleNo = ReadInstrData(0, BegPosM, &BlnLen, &RotZ, &RotY, sInstrInfIn);
@@ -749,7 +786,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   }
 
   if (bVisInstr)
-  { 
+  {
     if (bVisTraj)           // in the other case, the parameters were determined already
     { Shift[0]= dShiftX;
       Shift[1]= dShiftY;
@@ -800,7 +837,7 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   fprintf(LogFilePtr, "%2ld number of trajectories written      : %11.0f\n", iModuleId, NumNeutWritten);
   fprintf(LogFilePtr, "(time averaged) neutron count rate     : %11.4e +/- %10.3e n/s \n", GetTotInt(ANY_COLOR), CntRateErr);
   iColMax= GetColMax();
-  if (iColMax > 0)     // only write "intensity of color 0" if there exists a color > 0 
+  if (iColMax > 0)     // only write "intensity of color 0" if there exists a color > 0
     iColMin=0;
   for (iCol=iColMin; iCol<=iColMax; iCol++)
   { if (GetTotInt(iCol) > 0)
@@ -812,6 +849,19 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
     nNumNeutr = floor(GetTotInt(ANY_COLOR)*TimeMeas + 0.5);
     fprintf(LogFilePtr, "number of neutrons in %8.0f seconds : %11.4e  \n", TimeMeas, nNumNeutr);
   }
+#ifndef WIN32
+  if (bLogTimes) {
+    struct timespec tEnd;
+    struct rusage ru;
+    if (clock_gettime(VT_CLOCK, &tEnd) == 0 && getrusage(RUSAGE_SELF, &ru) == 0) {
+      double wtime = (tEnd.tv_sec - tStart.tv_sec) + (tEnd.tv_nsec - tStart.tv_nsec) / 1e9;
+      double utime = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec / 1e6;
+      double nneut = NumNeutRead > 0.0 ? NumNeutRead : NumNeutWritten;
+      fprintf(LogFilePtr, "Module %ld, %s, wall time: %fs, cpu time: %fs, time per million neutrons: %fs\n",
+          iModuleId, sModuleName, wtime, utime, utime * 1e6 / nneut);
+    }
+  }
+#endif
 
   if (LogFileName) fclose(LogFilePtr);
   if (TrajFilePtr) fclose(TrajFilePtr);
@@ -916,20 +966,20 @@ static int readFromPipe() {
   while (clen < full_len) {
     if (clen + compressBufLen > full_len) {
       if ((rlen = fread(compressBuf, 1, compressBufLen, stdin)) <= 0)
-	break;
+        break;
       clen += rlen;
       if (clen > full_len) {
-	compressedRestlen = clen - full_len;
-	memcpy(p, compressBuf, rlen - compressedRestlen);
-	memmove(compressBuf, compressBuf + (rlen - compressedRestlen), compressedRestlen);
-	clen = full_len;
+        compressedRestlen = clen - full_len;
+        memcpy(p, compressBuf, rlen - compressedRestlen);
+        memmove(compressBuf, compressBuf + (rlen - compressedRestlen), compressedRestlen);
+        clen = full_len;
       } else {
-	memcpy(p, compressBuf, rlen);
-	p += rlen;
+        memcpy(p, compressBuf, rlen);
+        p += rlen;
       }
     } else {
       if ((rlen = fread(p, 1, compressBufLen, stdin)) <= 0)
-	break;
+        break;
       clen += rlen;
       p += rlen;
     }
@@ -970,7 +1020,7 @@ int ReadNeutrons()
   for(i=0; i<NumNeutGot; i++)
   {
     WriteTraceLine(&InputNeutrons[i]);
-    if (IsEOB(&InputNeutrons[i])) 
+    if (IsEOB(&InputNeutrons[i]))
     { NumEobRead++;
     }
     else
@@ -980,12 +1030,12 @@ int ReadNeutrons()
 
       // Check if a neutron with such an ID has been seen before
       // If neutrons with same IDs arriving, shift the ID!
-      if (tempID.IDNo != InputNeutrons[i].ID.IDNo || memcmp(tempID.IDGrp, InputNeutrons[i].ID.IDGrp, 2)!=0 ) 
+      if (tempID.IDNo != InputNeutrons[i].ID.IDNo || memcmp(tempID.IDGrp, InputNeutrons[i].ID.IDGrp, 2)!=0 )
       {
         WriteIAP(&InputNeutrons[i], VT_ENTERED);
         tempID = InputNeutrons[i].ID;
       }
-      else 
+      else
       {
         ChangeNeutronID(&InputNeutrons[i]);
         WriteIAP(&InputNeutrons[i], VT_ENTERED);
@@ -1020,11 +1070,11 @@ void WriteNeutron(Neutron *OutNeutron)
   int    col_write =0;
   double tx = OutNeutron->Probability;
   // some modules may produce unreasonable probabilities
-  if (ISNAN(tx) || tx < 0) 
+  if (ISNAN(tx) || tx < 0)
   {
     OutNeutron->Probability = 0.0;
-  } 
-  else 
+  }
+  else
   {
     dProbTotal[0] +=    tx;
     dProbQuad     += sq(tx);
@@ -1041,7 +1091,7 @@ void WriteNeutron(Neutron *OutNeutron)
     OutputBufferFlush(0);  // flush to stream, and give trace marks
 
   WriteTraceLine(OutNeutron);
-  if (IsEOB(OutNeutron)) 
+  if (IsEOB(OutNeutron))
     NumEobWritten++;
 }
 
@@ -1061,6 +1111,8 @@ void WriteEOB()
 
 /**********************************************************************************/
 /*  PropagateX()     Propagates neutron to a plane in a distance along the x-axis */
+/*  PropagateToF()   Propagates neutron for a given ToF along its flight direction*/
+/*                                                                                */
 /*  WriteDIAP()      writes interaction point to the traj. file after propagation */
 /*  WriteScatIAP()   transfers neutron from 'sample frame' (SF)                   */
 /*                    to 'incoming frame' (IF) before writing intersection point  */
@@ -1068,30 +1120,69 @@ void WriteEOB()
 /*  WriteWWP()       writes an interaction point to the trajectory file           */
 /**********************************************************************************/
 
-short PropagateX(Neutron* pNeutron, double DistX)
-{ 
-    VectorType vPath;
-    double     PathLen=0.0;
-    short      rc=FALSE;
+short PropagatePath(Neutron* pNeutron, double* pToF, const double PathLen)
+{
+  VectorType vPath;
+  short      rc=FALSE;
 
-    if (pNeutron->Vector[0] > 0.0)
-    { PathLen = DistX / pNeutron->Vector[0];
-      CopyVector(pNeutron->Vector, vPath) ;
-      MultiplyByScalar(vPath, PathLen);
-      AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
-      rc=TRUE;
-    }
-    return rc;
+  if (pNeutron->Wavelength > 0.0)
+  {
+    *pToF = PathLen / V_FROM_LAMBDA(pNeutron->Wavelength);
+    pNeutron->Time += *pToF;
+
+    CopyVector(pNeutron->Vector, vPath) ;
+    MultiplyByScalar(vPath, PathLen);
+    AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
+    rc = TRUE;
+  }
+  return rc;
 }
 
+short PropagateX(Neutron* pNeutron, double* pToF, const double DistX)
+{
+  VectorType vPath;
+  double     PathLen=0.0;
+  short      rc=FALSE;
+
+  if (pNeutron->Vector[0] != 0.0 && pNeutron->Wavelength > 0.0)
+  {
+    PathLen = DistX / pNeutron->Vector[0];
+
+    *pToF = PathLen / V_FROM_LAMBDA(pNeutron->Wavelength);
+    pNeutron->Time += *pToF;
+
+    CopyVector(pNeutron->Vector, vPath) ;
+    MultiplyByScalar(vPath, PathLen);
+    AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
+    rc = TRUE;
+  }
+  return rc;
+}
+
+void PropagateToF(Neutron* pNeutron, const double ToF)
+{
+  VectorType vPath;
+  double     PathLen=0.0;
+
+  pNeutron->Time += ToF;
+  PathLen = ToF * V_FROM_LAMBDA(pNeutron->Wavelength);
+
+  CopyVector(pNeutron->Vector, vPath) ;
+  MultiplyByScalar(vPath, PathLen);
+  AddVector (pNeutron->Position, vPath) ; /* vPath = displacement vector */
+}
+
+
 void WriteDIAP(Neutron* pNeutron, VtReason eReason, double DistX)
-{ 
+{
+  double ToF=0.0;
+
   if (bVisTraj==TRUE)
   {
     Neutron ScatNeutr;
 
     CopyNeutron(pNeutron, &ScatNeutr);
-    PropagateX(&ScatNeutr, DistX);
+    PropagateX(&ScatNeutr, &ToF, DistX);
 
     WriteWWP(&ScatNeutr, eReason);
   }
@@ -1143,7 +1234,7 @@ void WriteWWP(Neutron *pNeutron, VtReason eReason)
 
 
   // Calculate neutron position in the absolute co-ordinate system
-  RelPos[0] = pNeutron->Position[0]; 
+  RelPos[0] = pNeutron->Position[0];
   RelPos[1] = pNeutron->Position[1]*BlowUp;
   RelPos[2] = pNeutron->Position[2]*BlowUp;
   // if (bLengthCmpr) RelPos[0] /= CmprFact;
@@ -1210,7 +1301,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
   else if (stGeometry.eModule < MCN_MONITOR1)
   { pGeomFile = OpenOutputFile(pGeomFileName, TRUE, "a");
   }
-  else 
+  else
   {
     return;
   }
@@ -1222,11 +1313,11 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Circles */
       for (k=0; k < stGeometry.nCircles; k++)
       {
-	      const char* sDescr;
-	      sDescr = "";
-	      if (k == 0 || k == (stGeometry.nCircles-1) || stGeometry.eModule == MCN_SOURCE ) sDescr = stGeometry.pDescr;
-	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
-	
+        const char* sDescr;
+        sDescr = "";
+        if (k == 0 || k == (stGeometry.nCircles-1) || stGeometry.eModule == MCN_SOURCE ) sDescr = stGeometry.pDescr;
+        else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+
         Transform (vAbsCntr, stGeometry.pCircle[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pCircle[k].vNormal, vNull);
 
@@ -1237,10 +1328,10 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Lines */
       for (k=0; k < stGeometry.nLines; k++)
       {
-	      const char* sDescr;
-	      sDescr = "";
-	      if (k == 0 || k == (stGeometry.nLines-1)) sDescr = stGeometry.pDescr;
-	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+        const char* sDescr;
+        sDescr = "";
+        if (k == 0 || k == (stGeometry.nLines-1)) sDescr = stGeometry.pDescr;
+        else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 
         Transform (vAbsPos1, stGeometry.pLine[k].vPosBeg, vBegPos);
         Transform (vAbsPos2, stGeometry.pLine[k].vPosEnd, vBegPos);
@@ -1250,31 +1341,31 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Rectangles */
       for (k=0; k < stGeometry.nRectangles; k++)
       {
-	      const char* sDescr;
-	      sDescr = "";
-	      if (k == 0 || k == (stGeometry.nRectangles-1) || stGeometry.eModule == MCN_SOURCE ) sDescr = stGeometry.pDescr;
-	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+        const char* sDescr;
+        sDescr = "";
+        if (k == 0 || k == (stGeometry.nRectangles-1) || stGeometry.eModule == MCN_SOURCE ) sDescr = stGeometry.pDescr;
+        else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 
         Transform (vAbsCntr, stGeometry.pRectangle[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pRectangle[k].vNormal, vNull);
 
         DrawRectangle(pGeomFile, sDescr, vAbsCntr, vDir,
-                      stGeometry.pRectangle[k].Width, 
+                      stGeometry.pRectangle[k].Width,
                       stGeometry.pRectangle[k].Height,
-		                  stGeometry.pRectangle[k].rotAngle);
+                      stGeometry.pRectangle[k].rotAngle);
       }
 
       /* Triangles */
       for (k=0; k < stGeometry.nTriangles; k++)
       {
-	      const char* sDescr;
-	      sDescr = "";
-	      if (k == 0 || k == (stGeometry.nTriangles-1)) sDescr = stGeometry.pDescr;
-	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+        const char* sDescr;
+        sDescr = "";
+        if (k == 0 || k == (stGeometry.nTriangles-1)) sDescr = stGeometry.pDescr;
+        else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 
         Transform (vAbsPos1, stGeometry.pTriangle[k].vEdges[0], vBegPos);
         Transform (vAbsPos2, stGeometry.pTriangle[k].vEdges[1], vBegPos);
-	      Transform (vAbsPos3, stGeometry.pTriangle[k].vEdges[2], vBegPos);
+        Transform (vAbsPos3, stGeometry.pTriangle[k].vEdges[2], vBegPos);
 
         DrawTriangle(pGeomFile, sDescr, vAbsPos1, vAbsPos2, vAbsPos3);
       }
@@ -1294,32 +1385,50 @@ void WriteGeomData(VectorType vBegPos, double Length)
       /* Cuboids */
       for (k=0; k < stGeometry.nCuboids; k++)
       {
-	      const char* sDescr;
-	      sDescr = "";
-	      if (k == 0 || k == (stGeometry.nCuboids-1)) sDescr = stGeometry.pDescr;
-	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
-	
+        const char* sDescr;
+        sDescr = "";
+        if (k == 0 || k == (stGeometry.nCuboids-1)) sDescr = stGeometry.pDescr;
+        else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+
         Transform (vAbsCntr, stGeometry.pCuboid[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pCuboid[k].vNormal,  vNull);
 
         DrawCuboid(pGeomFile, sDescr, vAbsCntr, vDir,
                    stGeometry.pCuboid[k].Length, stGeometry.pCuboid[k].Width,
-             		   stGeometry.pCuboid[k].Height, stGeometry.pCuboid[k].rotAngle);
+                   stGeometry.pCuboid[k].Height, stGeometry.pCuboid[k].rotAngle);
+      }
+
+      /* Prisms */
+      for (k = 0; k < stGeometry.nPrisms; k++)
+      {
+          const char* sDescr;
+          sDescr = "";
+          if (k == 0 || k == (stGeometry.nPrisms - 1)) sDescr = stGeometry.pDescr;
+          else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+
+          // Transforming the center and orientation vectors
+          Transform(vAbsCntr, stGeometry.pPrism[k].vCntr, vBegPos);
+          Transform(vDir,     stGeometry.pPrism[k].vNormal, vNull);
+
+          // Drawing the prism with the base vertices and height
+          DrawPrism(pGeomFile, sDescr, vAbsCntr, vDir,
+                    stGeometry.pPrism[k].vVertices,    // Array of vertices for the triangular faces
+                    stGeometry.pPrism[k].PrismHeight);  // Height of the prism (distance between the triangular faces)
       }
 
       /* Hulls */
       for (k=0; k < stGeometry.nHulls; k++)
       {
 
-	      const char* sDescr;
-	      sDescr = (const char*) strchr(stGeometry.pDescr, ':');
-	      if (k == 0 || k == (stGeometry.nHulls-1)) sDescr = stGeometry.pDescr;
-	      else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
+        const char* sDescr;
+        sDescr = (const char*) strchr(stGeometry.pDescr, ':');
+        if (k == 0 || k == (stGeometry.nHulls-1)) sDescr = stGeometry.pDescr;
+        else if (strchr(stGeometry.pDescr, ':')) sDescr = strchr(stGeometry.pDescr, ':');
 
         Transform (vAbsCntr, stGeometry.pHull[k].vCntr, vBegPos);
         Transform (vDir,     stGeometry.pHull[k].vNormal,  vNull);
 
-        DrawHull(pGeomFile, sDescr, vAbsCntr, vDir, 
+        DrawHull(pGeomFile, sDescr, vAbsCntr, vDir,
                  stGeometry.pHull[k].Length,
                  stGeometry.pHull[k].WidthIn,  stGeometry.pHull[k].WidthOut,
                  stGeometry.pHull[k].HeightIn, stGeometry.pHull[k].HeightOut, stGeometry.pHull[k].rotAngle);
@@ -1353,7 +1462,7 @@ void WriteGeomData(VectorType vBegPos, double Length)
 
         DrawEllipsoid(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir,
                                  stGeometry.pEllipsoid[k].Length, stGeometry.pEllipsoid[k].Width,
-		                             stGeometry.pEllipsoid[k].Height, stGeometry.pEllipsoid[k].Xlow, stGeometry.pEllipsoid[k].Xhigh);
+                                 stGeometry.pEllipsoid[k].Height, stGeometry.pEllipsoid[k].Xlow, stGeometry.pEllipsoid[k].Xhigh);
       }
 
       /* Spheres */
@@ -1371,8 +1480,8 @@ void WriteGeomData(VectorType vBegPos, double Length)
         Transform (vDir,     stGeometry.pCylSlice[k].vSymAxis, vNull);
 
         DrawCylSlice(pGeomFile, stGeometry.pDescr, vAbsCntr, vDir,
-		                            stGeometry.pCylSlice[k].Radius, stGeometry.pCylSlice[k].Width,
-		                            stGeometry.pCylSlice[k].Height, stGeometry.pCylSlice[k].Phi+Degrees(RotZ), stGeometry.pCylSlice[k].OpenAngle);
+                                stGeometry.pCylSlice[k].Radius, stGeometry.pCylSlice[k].Width,
+                                stGeometry.pCylSlice[k].Height, stGeometry.pCylSlice[k].Phi+Degrees(RotZ), stGeometry.pCylSlice[k].OpenAngle);
       }
     }
     else if (bVisInstalled==MISSING)
@@ -1381,20 +1490,20 @@ void WriteGeomData(VectorType vBegPos, double Length)
       char description[40];
       Transform (vDir, vX, vNull);
 
-      if (Length > 0.0) 
+      if (Length > 0.0)
       {
         CopyVector      (vX, vRelPos);
         MultiplyByScalar(vRelPos, 0.5*Length);
         Transform (vAbsCntr, vRelPos, vBegPos);
-	      strcpy(description, sModuleName);
-	      strncat(description, ":white", 6);
-	      fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description);
+        strcpy(description, sModuleName);
+        strncat(description, ":white", 6);
+        fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description);
         DrawCylinder(pGeomFile, (const char*) description, vAbsCntr, vDir, Length, 5.0);
       } else {
-	      strcpy(description, sModuleName);
-	      strncat(description, ":grey", 5);
-	      fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description);
-	      DrawRectangle(pGeomFile, (const char*) description, vBegPos, vDir, 15.0, 15.0, 0.);
+        strcpy(description, sModuleName);
+        strncat(description, ":grey", 5);
+        fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description);
+        DrawRectangle(pGeomFile, (const char*) description, vBegPos, vDir, 15.0, 15.0, 0.);
       }
     }
 
@@ -1413,7 +1522,7 @@ void WriteInstrData(VectorType Pos)
 
   if (nModuleNo==0)  // if 'instrument.inf' does not exist
   {
-    // 'source' module writes header with line number '0', 'read_in' with 'iModuleId'=1 
+    // 'source' module writes header with line number '0', 'read_in' with 'iModuleId'=1
     if (_eModule==MCN_SOURCE)
       iModId=0;
     else
@@ -1422,19 +1531,26 @@ void WriteInstrData(VectorType Pos)
     fprintf(pFile,
             "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
             "# ------------------------------------------------------------------------------------\n");
-  } 
-  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN) 
+  }
+  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN)
   {
     // first module of 2nd, 3rd ... part copy content from old to new instrument.inf file
     char *inp;
     pBuffer = inp = (char*) malloc(CHAR_BUF_XS*(nModuleNo+3+NUM_EOP));
     pFile = OpenInputFile(sInstrInfIn, FALSE, "r");
-    if (pFile) 
+    if (pFile)
     {
       if  (eFirstMod==MCN_READ_IN) mFst=1;
-      for (m=mFst; m<nModuleNo; m++) 
+      for (m=mFst; m<nModuleNo; m++)
       {
-        if (fgets (inp, CHAR_BUF_XS-1, pFile)) 
+        /* Workaround until actual fix */
+        /* read_in does not properly clear the instrument file */
+        /* reading too many EOP leads to an overflow */
+        if (inp > pBuffer + CHAR_BUF_XS*(nModuleNo+3+NUM_EOP-1)) {
+          Warning("Overflow while reading instrument file");
+          break;
+        }
+        if (fgets (inp, CHAR_BUF_XS-1, pFile))
         {
           if (memcmp(inp, "EOP", 3)==0 || memcmp(inp, "#", 1)==0)
             m--;
@@ -1454,15 +1570,15 @@ void WriteInstrData(VectorType Pos)
     }
     free(pBuffer);
     pBuffer=0;
-  } 
-  else 
+  }
+  else
   {
     // for each other module: open file to append a line
     pFile = OpenOutputFile(sInstrInfOut, FALSE, "a");
   }
 
   // each module appends a line
-  if (pFile) 
+  if (pFile)
   {
     char cNF=' ';
     if (bOldFrame) cNF='F';
@@ -1518,7 +1634,7 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
       }
 
     }
-/*    else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN) 
+/*    else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN)
     // read until end of previous part, if input file or read_in is used
     {
       while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
@@ -1535,15 +1651,15 @@ long ReadInstrData(long iModId, VectorType Pos, double* pLength, double* pRotZ, 
           if (sBuffer[85]!='F' && sBuffer[86]!='F' && sBuffer[87]!='F') strcpy(sLineH, sBuffer);
         }
       }
-      if (strlen(sLine)==0) 
+      if (strlen(sLine)==0)
         strcpy(sLine, sLineH);
     } */
     else
-    // otherwise: read last line 
+    // otherwise: read last line
     {
       /* Read last line and copy content, except: lines containing F in 87. column, they have not a new frame) */
       while (ReadLine(pFile, sBuffer, sizeof(sBuffer)-1))
-      { 
+      {
         if (eFirstMod==MCN_COMP_UNKNOWN)
         { eFirstMod=GetModId(sBuffer);
           if (eFirstMod==MCN_READ_IN) nModNo=1;
@@ -1591,7 +1707,7 @@ short ReadSimData(double* pTimeMeas, double* pLmbdWant, double* pFreq, double* p
   FILE* pFile=NULL;
   char  sLine[CHAR_BUF_LENGTH];
 
-  *pFreq = 1.0; *pTimeMeas = 0.0; 
+  *pFreq = 1.0; *pTimeMeas = 0.0;
   *pTraj = 0.0; *pLmbdWant = 0.0; *pBunches = 1;
 
   pFile = OpenOutputFile("simulation.inf", FALSE, "r");
@@ -1616,7 +1732,7 @@ long ReadNumBnch(void)
          LmbdWant=0.0,       /* desired wavelength (from simulation.inf, not needed) */
          Freq    =0.0,       /* source frequency   (from simulation.inf)   */
          nTraj   =0.0;       /* number of trajectories started per bunch  */
-  long   nBnch  = 1;         // number of bunches started 
+  long   nBnch  = 1;         // number of bunches started
 
   if (ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBnch)==FALSE)
     nBnch  = 1;
@@ -1630,7 +1746,7 @@ double ReadMeasTime(void)
          LmbdWant= 0.0,       // desired wavelength   */
          Freq    = 0.0,       // source frequency     */
          nTraj   = 0.0;       /* number of trajectories started per bunch  */
-  long   nBnch  =  1;         // number of bunches started 
+  long   nBnch  =  1;         // number of bunches started
 
   if (ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBnch)==FALSE || TimeMeas==0.0)
     TimeMeas = 60.0;
@@ -1652,15 +1768,15 @@ void DrawRectangle(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vec
   fprintf(pGeomFile, "Rectangle      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,
                      vDir[0], vDir[1], vDir[2],
-	             Width/100.0, Height/100.0, rotAngle, pDescr);
+                     Width/100.0, Height/100.0, rotAngle, pDescr);
 }
 
 void DrawTriangle(FILE* pGeomFile, const char* pDescr, VectorType vEdge1, VectorType vEdge2, VectorType vEdge3)
 {
   fprintf(pGeomFile, "Triangle       %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
-	  vEdge1[0]/100.0, vEdge1[1]/100.0, vEdge1[2]/100.0,
-	  vEdge2[0]/100.0, vEdge2[1]/100.0, vEdge2[2]/100.0,
-	  vEdge3[0]/100.0, vEdge3[1]/100.0, vEdge3[2]/100.0, pDescr);
+    vEdge1[0]/100.0, vEdge1[1]/100.0, vEdge1[2]/100.0,
+    vEdge2[0]/100.0, vEdge2[1]/100.0, vEdge2[2]/100.0,
+    vEdge3[0]/100.0, vEdge3[1]/100.0, vEdge3[2]/100.0, pDescr);
 }
 
 void DrawOpenRect(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height,
@@ -1686,7 +1802,22 @@ void DrawCuboid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, Vector
 {
   fprintf(pGeomFile, "Cuboid         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
-	  Length/100.0, Width/100.0, Height/100.0, rotAngle, pDescr);
+                     Length/100.0, Width/100.0, Height/100.0, rotAngle, pDescr);
+}
+
+void DrawPrism(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
+               VectorType vVertices[6], double PrismHeight)
+{
+  fprintf(pGeomFile, "Prism         %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f   %s\n",
+                     vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,
+                     vDir[0], vDir[1], vDir[2],
+                     vVertices[0][0]/100.0, vVertices[0][1]/100.0, vVertices[0][2]/100.0,
+                     vVertices[1][0]/100.0, vVertices[1][1]/100.0, vVertices[1][2]/100.0,
+                     vVertices[2][0]/100.0, vVertices[2][1]/100.0, vVertices[2][2]/100.0,
+                     vVertices[3][0]/100.0, vVertices[3][1]/100.0, vVertices[3][2]/100.0,
+                     vVertices[4][0]/100.0, vVertices[4][1]/100.0, vVertices[4][2]/100.0,
+                     vVertices[5][0]/100.0, vVertices[5][1]/100.0, vVertices[5][2]/100.0,
+                     PrismHeight/100.0, pDescr);
 }
 
 void DrawHull(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
@@ -1694,7 +1825,7 @@ void DrawHull(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorTy
 {
   fprintf(pGeomFile, "Hull           %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %s\n",
                      vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
-	  Length/100.0, WidthIn/100.0, WidthOut/100.0,  HeightIn/100.0, HeightOut/100.0, rotAngle, pDescr);
+                     Length/100.0, WidthIn/100.0, WidthOut/100.0,  HeightIn/100.0, HeightOut/100.0, rotAngle, pDescr);
 }
 
 void DrawCylinder(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir,
@@ -1723,15 +1854,15 @@ void DrawSphere(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, double
 void DrawEllipsoid(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double xLow, double xHigh)
 {
   fprintf(pGeomFile, "Ellipsoid      %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f %10.5f   %s\n",
-	  vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
-	  Length/100.0, Width/100.0, Height/100.0, xLow*2./Length, xHigh*2./Length, pDescr);
+                     vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
+                     Length/100.0, Width/100.0, Height/100.0, xLow*2./Length, xHigh*2./Length, pDescr);
 }
 
 void DrawCylSlice(FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double Width, double Height, double Phi, double openAngle)
 {
   fprintf(pGeomFile, "CylSlice       %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f %10.5f   %s\n",
-	  vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
-	  Height/100.0,  Radius/100.0, Phi, openAngle, pDescr);
+                     vAbsCntr[0]/100.0, vAbsCntr[1]/100.0, vAbsCntr[2]/100.0,  vDir[0], vDir[1], vDir[2],
+                     Height/100.0,  Radius/100.0, Phi, openAngle, pDescr);
 }
 
 void DefineColors(FILE* pGeomFile)
@@ -1762,22 +1893,22 @@ void CopyNeutron(const Neutron *source, Neutron *dest)
 
 void InitNeutron(Neutron* pNeut)
 {
-	int k;
+  int k;
 
-	pNeut->ID.IDGrp[0]='A';
-	pNeut->ID.IDGrp[1]='A';
-	pNeut->ID.IDNo=0;
+  pNeut->ID.IDGrp[0]='A';
+  pNeut->ID.IDGrp[1]='A';
+  pNeut->ID.IDNo=0;
 
-	pNeut->Debug='N';
-	pNeut->Color= 0;
-	pNeut->Time       =0.0;
-	pNeut->Wavelength =0.0;
-	pNeut->Probability=0.0;
+  pNeut->Debug='N';
+  pNeut->Color= 0;
+  pNeut->Time       =0.0;
+  pNeut->Wavelength =0.0;
+  pNeut->Probability=0.0;
 
   for (k=0; k < 3; k++)
   { pNeut->Position[k]=0.0;
-	  pNeut->Vector[k]  =0.0;
-	  pNeut->Spin[k]    =0.0;
+    pNeut->Vector[k]  =0.0;
+    pNeut->Spin[k]    =0.0;
   }
 }
 
@@ -1811,6 +1942,20 @@ short CheckEOB(Neutron* pNeut)
 }
 
 
+void  SetReset(ParChange* pChange)
+{
+  pChange->cChange='R';
+}
+
+short IsReset(const ParChange* pChange)
+{
+  if (pChange->cChange=='R')
+    return TRUE;
+  else
+    return FALSE;
+}
+
+
 double GetTotInt(short iCol)
 {
   return dProbTotal[iCol+1];
@@ -1831,7 +1976,7 @@ void OutputBufferFlush(int final)
 }
 
 
-void setDetachedWrite() 
+void setDetachedWrite()
 {
   initParWrite(sizeof(Neutron), BufferSize);
 }
@@ -1843,7 +1988,7 @@ void setDetachedWrite()
 /******************************************************************************************************/
 /* Sets installation, parameter, input and output directory in correct form for the operating systme  */
 /******************************************************************************************************/
-static void setInstallDirectory (char *arg) 
+static void setInstallDirectory (char *arg)
 {
   // We need the InstallDir path for implicitly referenced data files.
   // For gridrun we take this from the VITESSROOT environment variable.
@@ -1861,9 +2006,9 @@ static void setInstallDirectory (char *arg)
 #endif
   mp = strstr(arg, "MODULES");
   if (! mp) mp = strstr(arg, "Debug");
-  // if (! mp && strncmp(arg, "V:\\", 3)==0) mp=arg+3;   // Path abbreviation in Windows 
+  // if (! mp && strncmp(arg, "V:\\", 3)==0) mp=arg+3;    // Path abbreviation in Windows
   // if (! mp && strncmp(arg, "$V/",  3)==0) mp=arg+3;    // Path abbreviation in Linux
-  if (! mp && arg[1]==':' && arg[2]=='\\') mp=arg+3;      // Path abbreviation in Windows 
+  if (! mp && arg[1]==':' && arg[2]=='\\') mp=arg+3;      // Path abbreviation in Windows
   if (! mp) return;
   InstallDirLength = (int)((long) mp - (long) arg);
   /* for pointers too big for long integers: */
@@ -1873,14 +2018,14 @@ static void setInstallDirectory (char *arg)
   InstallDir[InstallDirLength] = 0;
 }
 
-static char* setDir (char *arg) 
+static char* setDir (char *arg)
 {
-  char* pDir=NULL; 
+  char* pDir=NULL;
   int len= strlen(arg);
 
-  if (len > 0) 
+  if (len > 0)
   {
-    pDir = (char *) malloc(len+2); 
+    pDir = (char *) malloc(len+2);
     strcpy(pDir, arg);
     ChangeSlash(pDir);
     AddSlash(pDir);
@@ -1892,18 +2037,16 @@ static char* setDir (char *arg)
 /* combines path to the directory with sub-directory and file   */
 /*   (conCat shall be replaced by TotalPath in the future)      */
 /****************************************************************/
-static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel) 
+static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
 {
-  static char *pResult=NULL; 
+  char *pResult=NULL;
   char *pDir=NULL;
   int  LenD=0, LenF=0, LenS=0;
 
-  // no file, no full file name 
+  // no file, no full file name
   if (sFile == NULL)
     return NULL;
 
-  ChangeSlash(sSubDir);
-  ChangeSlash(sFile);
 
   /* Do not change an absolute path. */
 #ifdef _MSC_VER
@@ -1926,19 +2069,20 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
   LenS = strlen(sSubDir);
 
   // allocate memory and copy all parts to the string
-  if ((pResult = (char *) malloc(LenD+LenF+LenS+3))) 
+  if ((pResult = (char *) malloc(LenD+LenF+LenS+3)))
   {
     // set path
-    if (LenD > 0) 
+    if (LenD > 0)
     { memcpy(pResult, pDir, LenD);
       if (LenS > 0)
         strcpy(pResult+LenD, sSubDir);
       else
         pResult[LenD] = '\0';
-    } 
+    }
     else
     {  strcpy(pResult, sSubDir);
     }
+    ChangeSlash(pResult);
 
     // add missing slash and file name
     if (LenS > 0 && sSubDir[LenS-1]!=cSlash)
@@ -1960,11 +2104,10 @@ static void TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDir
     case IN_DIR   : if (InputDir  !=NULL) strcpy(pPath, InputDir);   break;
     case OUT_DIR  : if (OutputDir !=NULL) strcpy(pPath, OutputDir);  break;
   }
-  
-  AddSlash(pPath); 
-  AddSlash(sSubDir);
-  
+
+  AddSlash(pPath);
   strcat(pPath, sSubDir);
+  AddSlash(pPath);
   strcat(pPath, sFile);
 
   ChangeSlash(pPath);
@@ -1986,7 +2129,7 @@ static McCompID GetModId(char* sBuffer)
 
 
 /***********************************************************************************************/
-/* Transform Vector from local co-ordinate system of the module to absolute co-ordinate system */ 
+/* Transform Vector from local co-ordinate system of the module to absolute co-ordinate system */
 /***********************************************************************************************/
 static void Transform(VectorType vAbsVec, const VectorType vRelVec, const VectorType vBegVec)
 {
@@ -2030,11 +2173,11 @@ static void writeCompressed() {
       spincode = 2;
     else {
       if (spinVector++ % 2) {
-	spincode = 3;
-	newspin = (char*) spinUpOut;
+        spincode = 3;
+        newspin = (char*) spinUpOut;
       } else {
-	spincode = 4;
-	newspin = (char*) spinDownOut;
+        spincode = 4;
+        newspin = (char*) spinDownOut;
       }
       memcpy(newspin, (char*) &pn->Spin, sizeof(VectorType));
     }
@@ -2056,7 +2199,7 @@ static void writeCompressed() {
       float  *fp = (float*) op;
       double *dp = tarr;
       for (i=0; i<6; i++)
-	fp[i] = (float) (dp[i]);
+        fp[i] = (float) (dp[i]);
       op   += 6*sizeof(float);
       wlen += 6*sizeof(float);
       // output direction dx, dy
@@ -2100,10 +2243,10 @@ static int readCompressedNeutrons (void) {
     if (toread > 0) {
       newread = fread(readp, 1, toread, InputFilePtr);
       if (rlen <= 0 && newread <= 0)
-	return 0;
+        return 0;
       if (newread > 0) {
-	rlen += newread;
-	adjustFileProgress(newread);
+        rlen += newread;
+        adjustFileProgress(newread);
       }
     }
   }
@@ -2137,7 +2280,7 @@ static int readCompressedNeutrons (void) {
       memcpy((void*) &pn->Spin, (void*)spinDown, sizeof(VectorType));
       break;
     default:
-      return 0; 		/* bad data */
+      return 0;     /* bad data */
     }
 
     if (compressModeR == 1) {
@@ -2150,7 +2293,7 @@ static int readCompressedNeutrons (void) {
       float  *fp = (float*) p;
       double *dp = & pn->Time;
       for (i=0; i<6; i++)
-	dp[i] = fp[i];
+        dp[i] = fp[i];
       GULP(6*sizeof(float));
       // copy direction x,y as double
       tocopy = 2*sizeof(double);
@@ -2188,7 +2331,7 @@ static void   WriteTraceLine(Neutron* pNeutron)
     if (strcmp(sModuleName, "Source and Window")==0)
     { pFile = OpenOutputFile(sFileName, FALSE, "w");
       fprintf(pFile,"no     module           Trc color   TOF    lambda   count rate    "
-			           "pos_x    pos_y    pos_z     dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
+                    "pos_x    pos_y    pos_z     dir_x     dir_y     dir_z     sp_x sp_y sp_z\n");
     }
     else
     { pFile = OpenOutputFile(sFileName, FALSE, "r+");
@@ -2201,7 +2344,7 @@ static void   WriteTraceLine(Neutron* pNeutron)
       { pFile = OpenOutputFile(sFileName, FALSE, "a");
       }
     }
-    if (pFile != NULL) 
+    if (pFile != NULL)
     {
       fprintf(pFile, "%2d %-20.20s:",  nModNr, sModuleName);
       fprintf(pFile," %c %5d  %7.3f %8.5f %11.3e  %8.4f %8.4f %8.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n",
@@ -2222,7 +2365,7 @@ static short GetColMax()
   short iMax=0, iCol=0;
 
   for (iCol=1; iCol <= MAX_COL; iCol++)
-    if (GetTotInt(iCol) > 0.0) 
+    if (GetTotInt(iCol) > 0.0)
       iMax=iCol;
 
   return iMax;

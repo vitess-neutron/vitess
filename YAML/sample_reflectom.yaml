@@ -14,12 +14,14 @@ sample_reflectom:
   - sSampleFile:
       type:    "file"
       plottable: false
+      editable: true
       descr:   "parameter file"
       tooltip: "name of the file containing the sample parameters"
       prefix:  "-P"
   - sReflFile:
       type:    "file"
       plottable: true
+      editable: true
       descr:   "reflectivity file"
       tooltip: "name of the file containing the sample reflectometry"
       prefix:  "-I"

@@ -35,12 +35,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "general.h"
 #include "init.h"
 #include "softabort.h"
 #include "convert.h"
 #include "mcpl.h"
-#include "sswread.c"
+#include "sswread.h"
 
 
 /******************************/
@@ -516,8 +517,11 @@ void  OwnInit(int argc, char *argv[])
   if (sOutFileName != NULL)
   {
     if (bActive)
-    { if (ePrgFormat== VT_MCPL_FMT)
-      { hOutFile = mcpl_create_outfile(FullParName(sOutFileName));
+    {
+      char *sFullOutName = FullParName(sOutFileName); /* TODO should this be an output file? */
+      if (ePrgFormat== VT_MCPL_FMT)
+      {
+        hOutFile = mcpl_create_outfile(sFullOutName);
       }
       else if (ePrgFormat== VT_SSW_FMT)
       {
@@ -594,7 +598,8 @@ void  OwnInit(int argc, char *argv[])
       else
       { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wt");
       }
-      fprintf(LogFilePtr,"Trajectories written to output file %s\n", FullParName(sOutFileName));
+      fprintf(LogFilePtr,"Trajectories written to output file %s\n", sFullOutName);
+      free(sFullOutName);
     }
     else
     { Note("writeout inactive, no file written");
@@ -677,7 +682,7 @@ void HeaderAndParameters(void)
   if (pTitle!=NULL)
     StrgCopy(sTitle, pTitle, TITLE_LEN);
 
-  sprintf(sSrcName,   "VITESS 3.5  Trajectories module %s %s  %s-Format", sModuleName, sVsn, sFormat);
+  sprintf(sSrcName,   "VITESS 3.7  Trajectories module %s %s  %s-Format", sModuleName, sVsn, sFormat);
   sprintf(sHeadlines, "# %s\n# %s %s\n# %s\n", sSrcName, sDate, sTime, sTitle);
 
   // define format for variables in output file and print header
@@ -851,18 +856,15 @@ void VitessParameters()
         if (bF_cTOF)       { SP(form[cTOF],    "%9.5f");     FP("   TOF   ") }
         if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP(" lambda ") }
         if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP(" count_rate") }
-        if (bF_cPosition)  {
-          SP(form[cPosX],   "%8.4f");     FP("  pos_x ");
-          SP(form[cPosY],   "%8.4f");     FP("  pos_y ");
-          SP(form[cPosZ],   "%8.4f");     FP("  pos_z "); }
-        if (bF_cDirection) {
-          SP(form[cDirX],   "%9.6f");     FP("  dir_x  ");
-          SP(form[cDirY],   "%9.6f");     FP("  dir_y  ");
-          SP(form[cDirZ],   "%9.6f");     FP("  dir_z  "); }
-        if (bF_cSpin)      {
-          SP(form[cSpinX],  "%4.1f");     FP("sp_x");
-          SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-          SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+        if (bF_cPosition)  { SP(form[cPosX],   "%9.4f");     FP("  pos_x  ");
+                             SP(form[cPosY],   "%8.4f");     FP("  pos_y ");
+                             SP(form[cPosZ],   "%8.4f");     FP("  pos_z "); }
+        if (bF_cDirection) { SP(form[cDirX],   "%9.6f");     FP("  dir_x  ");
+                             SP(form[cDirY],   "%9.6f");     FP("  dir_y  ");
+                             SP(form[cDirZ],   "%9.6f");     FP("  dir_z  "); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "%4.1f");     FP("sp_x");
+                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
+                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
       }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
@@ -872,39 +874,36 @@ void VitessParameters()
         if (bF_cTOF)       { SP(form[cTOF],    "%.5e");      FP("    TOF   "); }
         if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("  lambda  "); }
         if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP("count_rate"); }
-        if (bF_cPosition)  {
-          SP(form[cPosX],   "% .5e");     FP("   pos_x   ");
-          SP(form[cPosY],   "% .5e");     FP("   pos_y   ");
-          SP(form[cPosZ],   "% .5e");     FP("   pos_z   "); }
-        if (bF_cDirection) {
-          SP(form[cDirX],   "% .5e");     FP(" direction_x");
-          SP(form[cDirY],   "% .5e");     FP(" direction_y");
-          SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
-        if (bF_cSpin)      {
-          SP(form[cSpinX],  "% .5e");     FP("   spin_x  ");
-          SP(form[cSpinY],  "% .5e");     FP("   spin_y  ");
-          SP(form[cSpinZ],  "% .5e");     FP("   spin_z  "); }
+        if (bF_cPosition)  { SP(form[cPosX],   "% .5e");     FP("   pos_x   ");
+                             SP(form[cPosY],   "% .5e");     FP("   pos_y   ");
+                             SP(form[cPosZ],   "% .5e");     FP("   pos_z   "); }
+        if (bF_cDirection) { SP(form[cDirX],   "% .5e");     FP(" direction_x");
+                             SP(form[cDirY],   "% .5e");     FP(" direction_y");
+                             SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "% .5e");     FP("   spin_x  ");
+                             SP(form[cSpinY],  "% .5e");     FP("   spin_y  ");
+                             SP(form[cSpinZ],  "% .5e");     FP("   spin_z  "); }
       }
     }
     else if (eSeparator==VT_BLANK)
     { // Space
       if (eDatFormat==VT_FLOAT)
       { // float
-        if (bF_cID)        { SP(form[cID],     "%c%c%010lu"); FP("___ID___ "); }
+        if (bF_cID)        { SP(form[cID],     "%c%c%010lu");FP("____ID____"); }
         if (bF_cTrc)       { SP(form[cTrc],    "%c");        FP("Trc"); }
         if (bF_cColor)     { SP(form[cColor],  "%5d");       FP("color"); }
-        if (bF_cTOF)       { SP(form[cTOF],    " %9.5f");    FP("     TOF "); }
-        if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP("  lambda "); }
+        if (bF_cTOF)       { SP(form[cTOF],    " %9.5f");    FP("    TOF  "); }
+        if (bF_cLambda)    { SP(form[cLambda], "%8.5f");     FP(" lambda "); }
         if (bF_cCounts)    { SP(form[cCounts], "%11.3e");    FP(" count_rate"); }
-        if (bF_cPosition)  { SP(form[cPosX],   " %8.4f");    FP("   pos_x");
-          SP(form[cPosY],   "%8.4f");     FP("   pos_y");
-          SP(form[cPosZ],   "%8.4f");     FP("   pos_z"); }
-        if (bF_cDirection) { SP(form[cDirX],   " %9.6f");    FP("     dir_x");
-          SP(form[cDirY],   "%9.6f");     FP("    dir_y");
-          SP(form[cDirZ],   "%9.6f");     FP("    dir_z"); }
-        if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("   sp_x");
-          SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-          SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+        if (bF_cPosition)  { SP(form[cPosX],   " %9.4f");    FP("   pos_x  ");
+                             SP(form[cPosY],   "%8.4f");     FP("  pos_y ");
+                             SP(form[cPosZ],   "%8.4f");     FP("  pos_z "); }
+        if (bF_cDirection) { SP(form[cDirX],   " %9.6f");    FP("   dir_x  ");
+                             SP(form[cDirY],   "%9.6f");     FP("  dir_y  ");
+                             SP(form[cDirZ],   "%9.6f");     FP("  dir_z  "); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("  sp_x");
+                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
+                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
       }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
@@ -915,14 +914,14 @@ void VitessParameters()
         if (bF_cLambda)    { SP(form[cLambda], "%.5e");      FP("       lambda"); }
         if (bF_cCounts)    { SP(form[cCounts], "%.5e");      FP(" count_rate"); }
         if (bF_cPosition)  { SP(form[cPosX],   " % .5e");    FP("       pos_x");
-          SP(form[cPosY],   "% .5e");     FP("       pos_y");
-          SP(form[cPosZ],   "% .5e");     FP("       pos_z"); }
+                             SP(form[cPosY],   "% .5e");     FP("       pos_y");
+                             SP(form[cPosZ],   "% .5e");     FP("       pos_z"); }
         if (bF_cDirection) { SP(form[cDirX],   " % .5e");    FP("     direction_x");
-          SP(form[cDirY],   "% .5e");     FP(" direction_y");
-          SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
+                             SP(form[cDirY],   "% .5e");     FP(" direction_y");
+                             SP(form[cDirZ],   "% .5e");     FP(" direction_z"); }
         if (bF_cSpin)      { SP(form[cSpinX],  " % .5e");    FP("    spin_x");
-          SP(form[cSpinY],  "% .5e");     FP("      spin_y");
-          SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
+                             SP(form[cSpinY],  "% .5e");     FP("      spin_y");
+                             SP(form[cSpinZ],  "% .5e");     FP("      spin_z"); }
       }
     }
     else

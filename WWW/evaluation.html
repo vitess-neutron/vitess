@@ -7,106 +7,24 @@
   <title>Module Evaluation</title>
 </head>
 <body>
-
+  <a id="top"></a>
   <h1> VITESS Evaluation Modules </h1>
+  
   <p>
-    There are VITESS modules for 5 different evaluation procedures: <b>Elastic 1D</b>, <b>Inelastic</b>, <b>SANS</b>, <b>Elastic 2</b> and <b>Elastic 2D</b>.
-    Elastic 2 allows displaying the intensity as a function of scattering angle (x axis) and wavelength or TOF (y axis).
-    Elastic 2D displays the data as a function of Q<sub>y</sub> and Q<sub>z</sub>.
-    Additionally, there is a module to analyze the <b>runtime</b> (of parts) of the simulation and one to determine the <b>capture flux</b>.
+    There are VITESS modules for 5 different evaluation procedures:<br />
+    <a href="#elastic_1D"><b>Elastic 1D</b></a> <br />
+    <a href="#Inelastic"><b>Inelastic</b></a> <br />
+    <a href="#SANS"><b>SANS</b></a>  <br />
+    <a href="#Elastic_2"><b>Elastic 2</b></a> that allows displaying the intensity as a function of scattering angle (x axis) and wavelength or TOF (y axis),<br />
+    <a href="#Elastic_2"><b>Elastic 2D</b></a> that displays the data as a function of Q<sub>y</sub> and Q<sub>z</sub>.<br />
+  </p>
+  <p>
+    Additionally, there is a module to analyze the <a href="#runtime"><b>runtime</b></a> (of parts) of the simulation and one to determine the <a href="#capture_flux"><b>capture flux</b></a>.
   </p>
 
-  <br>
-  <h2><font size="+1">VITESS Module Runtime</font></h2>
-  <p>
-    The module <b>runtime</b> counts the time it is running in its position in the pipe. It does not alter any neutron.
-    Once the pipe is finished, the runtime module will add the time needed up to this pipe position to the log output.
-  </p>
+  <br><br>
 
-  <h4>Parameters for module 'runtime'</h4>
-  <p>
-    None.
-  </p>
-
-  <br>
-  <h2><font size="+1"> VITESS Module Capture Flux</font></h2>
-  <p>
-    The module <b>capture_flux</b> (folder 'evaluate') calculates the capture flux (at any point of the instrument).
-    The capture flux method is used to determine absolute flux values in a beam line. A gold foil is introduced for some hours and the activation of the gold is measured.
-    As the absorption probability of neutrons rises linearly with wavelength, one does not get the real flux but the integral <br />
-    <br />
-    &emsp;&emsp;&emsp;	&Phi;<sub>capture</sub>&emsp;=&emsp;&int;&phi;(&lambda;)&ensp;&lambda;/&lambda;<sub>ref</sub>&ensp;d&lambda;<br />
-    <br />
-    (The reference wavelength is usually 1.798 &Aring;.) This integral is calculated in the module thus allowing a direct comparison with measurements.
-    Reference wavelength, shape and size of the foil need to be given. Additionally, the wavelength range contributing to the capture flux can be limited.
-  </p>
-
-
-  <br>
-  <h4> Parameters for module 'capture_flux' </h4>
-  <table cellpadding="2" cellspacing="2" border="1" width="100%">
-    <tbody>
-      <tr>
-        <td valign="top"><b>Parameter<br> Unit<br></b></td>
-        <td valign="top"><b>Description<br>      </b></td>
-        <td valign="top"><b>Range or Values<br>  </b></td>
-        <td valign="top"><b>Command Option<br>   </b></td>
-      </tr>
-      <tr>
-        <td valign="top">reference wavelength<br>[&Aring;] </td>
-        <td valign="top">
-          reference wavelength in the capture flux definition, usually 1.798 &Aring; (cf. text).<br>
-          If 0.0 is given, no reference wavelength is used
-        </td>
-        <td valign="top">&gt;=0</td>
-        <td valign="top">-R    </td>
-      </tr>
-      <tr>
-        <td valign="top">window type</td>
-        <td valign="top">shape of the gold foil</td>
-        <td valign="top">'circular' or 'rectangular'</td>
-        <td valign="top">-t</td>
-      </tr>
-      <tr>
-        <td valign="top">radius<br>[cm]</td>
-        <td valign="top">for circular foil: radius of the foil </td>
-        <td valign="top">&gt;0</td>
-        <td valign="top">-r   </td>
-      </tr>
-      <tr>
-        <td valign="top">center y<br>center z<br>[cm]</td>
-        <td valign="top">for circular foil: center y (horizontal) and z (vertical) of the foil</td>
-        <td valign="top">any</td>
-        <td valign="top">-y<br>-z</td>
-      </tr>
-      <tr>
-        <td valign="top">min. y<br>max. y<br>[cm]</td>
-        <td valign="top">for rectangular foil: minimal (right) and maximal (left) y value of the foil</td>
-        <td valign="top">any     </td>
-        <td valign="top">-w<br>-W</td>
-      </tr>
-      <tr>
-        <td valign="top">min. z<br>max. z<br>[cm]</td>
-        <td valign="top">for rectangular foil: minimal (bottom) and maximal (top) z value of the foil</td>
-        <td valign="top">any     </td>
-        <td valign="top">-h<br>-H</td>
-      </tr>
-      <tr>
-        <td valign="top">min. lambda<br>max. lambda[cm]</td>
-        <td valign="top">
-          minimal and maximal wavelength that is considered for the integration<br>
-          If minimal and maximal wavelength are zero this option is ignored
-        </td>
-        <td valign="top">&gt;0<br>	&lambda;<sub>min</sub>&lt;&lambda;<sub>max</sub></td>
-        <td valign="top">-l<br>-L</td>
-      </tr>
-
-    </tbody>
-  </table>
-
-
-  <br /><br />
-  <h2><font size="+1"> VITESS Module 'eval_elast' for 1D Evaluation of Elastic Scattering</font></h2>
+  <h2 id="elastic_1D"><font size="+1"> VITESS Module 'eval_elast' for 1D Evaluation of Elastic Scattering</font></h2>
   <p>
     The module <b>eval_elast</b> is supposed to be used for elastic scattering (e.g. powder diffraction, SANS).
     The spectrum file will contain the neutron intensities counted for each channel of the evaluation interval (with respect to the evaluation parameter of interest).
@@ -218,8 +136,8 @@
       <tr>
         <td valign="top">time of flight</td>
         <td valign="top">
-          yes: only those neutrons which have been monitored successfully (i.e. all properties are within the given ranges) are transferred to the subsequent module<br />
-          no : (default) all trajectories are transferred to the subsequent module
+          yes: the wavelength is determined from the given flight path and the time-of-flight calculated for the trajectory (for TOF instruments) <br />
+          no : the wavelength of all trajectories is supposed to be identical with the reference wavelength  (for instruments on continuos sources)
         </td>
         <td valign="top">'yes', 'no'</td>
         <td valign="top">-w         </td>
@@ -236,7 +154,7 @@
 
       <tr>
         <td valign="top">flight path<br />[cm]</td>
-        <td valign="top">(for option TOF): Length of the neutron flight path from point of t=0 setting (source or pulse shaping chopper) to detector</td>
+        <td valign="top">(for option TOF): Length of the total neutron flight path from point of t=0 setting (source or pulse shaping chopper) to detector</td>
         <td valign="top">&gt; 0  </td>
         <td valign="top">-l      </td>
       </tr>
@@ -282,10 +200,11 @@
       </tr>
     </tbody>
   </table>
+  <div class="back-to-top"><a href="#top">Back to Top</a></div>
   <br><br>
 
 
-  <h2><font size="+1"> VITESS Module 'eval_inelast' for Evaluation of Inelastic Scattering</font></h2>
+  <h2 id="Inelastic"><font size="+1"> VITESS Module 'eval_inelast' for Evaluation of Inelastic Scattering</font></h2>
   <p>
     This module supports the evaluation of the simulated inelastic scattering
     data for general prototypes of instruments:
@@ -348,8 +267,11 @@
     chopper or other selector system. This wavelength has to be given in the input
     as "reference wavelength".
   </p>
-  <br />
-
+  <br>
+  <p>
+    It generates 6 output files, one for each possible neutron spin state after scattering.
+  </p>
+  <br>
   <h4> Parameters for module 'eval_inelast' </h4>
   <table cellpadding="2" cellspacing="2" border="1" width="100%">
     <tbody>
@@ -361,14 +283,14 @@
       </tr>
 
       <tr>
-        <td valign="top">TOF spectrum file</td>
-        <td valign="top">Filename for the TOF spectrum datafile</td>
+        <td valign="top">TOF spectrum file spin up</td>
+        <td valign="top">Filename for the TOF spectrum datafile of neutrons with spin up.</td>
         <td valign="top">   </td>
         <td valign="top">-E </td>
       </tr>
       <tr>
-        <td valign="top">energy spectrum file</td>
-        <td valign="top">Filename for the energy spectrum datafile</td>
+        <td valign="top">energy spectrum file spin up</td>
+        <td valign="top">Filename for the energy spectrum datafile of neutrons with spin up.</td>
         <td valign="top">   </td>
         <td valign="top">-G </td>
       </tr>
@@ -451,6 +373,18 @@
         <td valign="top">color necessary for the trajectory to be evaluated <br />color -1 means: all trajectories are evaluated </td>
         <td valign="top">&gt;= -1</td>
         <td valign="top">-f </td>
+      </tr>
+      <tr>
+        <td valign="top">TOF spectrum file spin down</td>
+        <td valign="top">Filename for the TOF spectrum datafile of neutrons with spin down.</td>
+        <td valign="top">   </td>
+        <td valign="top">-H </td>
+      </tr>
+      <tr>
+        <td valign="top">energy spectrum file spin down</td>
+        <td valign="top">Filename for the energy spectrum datafile of neutrons with spin down.</td>
+        <td valign="top">   </td>
+        <td valign="top">-T </td>
       </tr>
     </tbody>
   </table>
@@ -576,10 +510,13 @@
   </dir>
   In this module, the universal constants before the bracket are not considered
   in the normalization.
+ <br><br>
+
+  <div class="back-to-top"><a href="#top">Back to Top</a></div>
   <br><br>
 
 
-  <h2><font size="+1"> VITESS Module 'eval_sans' for the Evaluation of SANS Spectra</font></h2>
+  <h2 id="SANS"><font size="+1"> VITESS Module 'eval_sans' for the Evaluation of SANS Spectra</font></h2>
   <p>
     The module <b>eval_sans</b> delivers the function S(Q) or F(Q) of a SANS simulation. This has to be done in two steps:
     In a first run, an isotropic scatterer is used; then the simulation with the sample is started.
@@ -698,8 +635,8 @@
       <tr>
         <td valign="top">time of flight</td>
         <td valign="top">
-          yes: the wavelength is determined from the given flight path and the time-of-flight calculated for the trajectory<br />
-          no : the wavelength of all trajectories is supposed to be identical with the reference wavelength
+          yes: the wavelength is determined from the given flight path and the time-of-flight calculated for the trajectory (for TOF instruments) <br />
+          no : the wavelength of all trajectories is supposed to be identical with the reference wavelength  (for instruments on continuos sources)
         </td>
         <td valign="top">'yes', 'no'</td>
         <td valign="top">-w         </td>
@@ -716,7 +653,7 @@
 
       <tr>
         <td valign="top">flight path<br />[cm]</td>
-        <td valign="top">(for option TOF): Length of the neutron flight path from point of t=0 setting (source or pulse shaping chopper)</td>
+        <td valign="top">(for option TOF): Length of the total neutron flight path from point of t=0 setting (source or pulse shaping chopper) to the detector </td>
         <td valign="top">&gt; 0  </td>
         <td valign="top">-l      </td>
       </tr>
@@ -750,10 +687,12 @@
       </tr>
     </tbody>
   </table>
+
+  <div class="back-to-top"><a href="#top">Back to Top</a></div>
   <br><br>
 
 
-  <h2><font size="+1"> VITESS Module 'eval_elast2' for 2D Evaluation of Elastic Scattering</font></h2>
+  <h2 id="Elastic_2"><font size="+1"> VITESS Module 'eval_elast2' for 2D Evaluation of Elastic Scattering</font></h2>
   <p>
     The module <b>eval_elast2</b> is supposed to be used for elastic scattering (e.g. powder diffraction, SANS).
     The diffractogram or spectra file will contain the neutron probabilities counted for each segment of the evaluation interval
@@ -847,15 +786,18 @@
       </tr>
       <tr>
         <td valign="top">Scatt. angle selection</td>
-        <td valign="top">Selects the way how the scattering angle is determined </td>
+        <td valign="top">Selects the way how the scattering angle is determined, either from the flight direction or the position on the detector <br />
+                         Note that in reality, the scattering angle can only be determined from the detector position. 
+                         Choosing 'direction'' should only be a first approach before adding the detector(s) </td>
         <td valign="top">'direction', 'position'</td>
         <td valign="top"> -D         </td>
       </tr>
       <tr>
         <td valign="top">time of flight</td>
         <td valign="top">
-          If the wavelength of the neutrons shall be determined by time of flight analysis (i.e. each wavelength is calculated from the flight path and the flight time),
-          this option must be activated when using scattering angle vs. wavelength.
+          'yes': if the wavelength of the neutrons shall be determined by time of flight analysis (i.e. each wavelength is calculated from the flight path and the flight time),
+          this option must be activated when using scattering angle vs. wavelength. <br />
+          'no': Otherwise the wavelength of the simulated neutron used, which cannot be determined experimentally. So this is not a realistic simulation.
         </td>
         <td valign="top">'yes', 'no'</td>
         <td valign="top"> -w        </td>
@@ -869,7 +811,7 @@
 
       <tr>
         <td valign="top">flight path<br />[cm]</td>
-        <td valign="top">length of total neutron flight path, needed only for time of flight analysis.<br><br>: global shift of the neutron time t</td>
+        <td valign="top">length of total neutron flight path from source to detector (needed only for time of flight analysis).<br><br>: global shift of the neutron time t</td>
         <td valign="top">   </td>
         <td valign="top">-l </td>
       </tr>
@@ -909,7 +851,97 @@
       </tr>
     </tbody>
   </table>
+  <div class="back-to-top"><a href="#top">Back to Top</a></div>
   <br><br>
+
+  <h2 id="runtime"><font size="+1">VITESS Module Runtime</font></h2>
+  <p>
+    The module <b>runtime</b> counts the time it is running in its position in the pipe. It does not alter any neutron.
+    Once the pipe is finished, the runtime module will add the time needed up to this pipe position to the log output.
+  </p>
+
+  <h4>Parameters for module 'runtime'</h4>
+  <p>
+    None.
+  </p>
+
+  <div class="back-to-top"><a href="#top">Back to Top</a></div>
+  <br><br>
+  <h2 id="capture_flux"><font size="+1"> VITESS Module Capture Flux</font></h2>
+  <p>
+    The module <b>capture_flux</b> (folder 'evaluate') calculates the capture flux (at any point of the instrument).
+    The capture flux method is used to determine absolute flux values in a beam line. A gold foil is introduced for some hours and the activation of the gold is measured.
+    As the absorption probability of neutrons rises linearly with wavelength, one does not get the real flux but the integral <br />
+    <br />
+    &emsp;&emsp;&emsp;	&Phi;<sub>capture</sub>&emsp;=&emsp;&int;&phi;(&lambda;)&ensp;&lambda;/&lambda;<sub>ref</sub>&ensp;d&lambda;<br />
+    <br />
+    (The reference wavelength is usually 1.798 &Aring;.) This integral is calculated in the module thus allowing a direct comparison with measurements.
+    Reference wavelength, shape and size of the foil need to be given. Additionally, the wavelength range contributing to the capture flux can be limited.
+  </p>
+
+
+  <br>
+  <h4> Parameters for module 'capture_flux' </h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+      <tr>
+        <td valign="top">reference wavelength<br>[&Aring;] </td>
+        <td valign="top">
+          reference wavelength in the capture flux definition, usually 1.798 &Aring; (cf. text).<br>
+          If 0.0 is given, no reference wavelength is used
+        </td>
+        <td valign="top">&gt;=0</td>
+        <td valign="top">-R    </td>
+      </tr>
+      <tr>
+        <td valign="top">window type</td>
+        <td valign="top">shape of the gold foil</td>
+        <td valign="top">'circular' or 'rectangular'</td>
+        <td valign="top">-t</td>
+      </tr>
+      <tr>
+        <td valign="top">radius<br>[cm]</td>
+        <td valign="top">for circular foil: radius of the foil </td>
+        <td valign="top">&gt;0</td>
+        <td valign="top">-r   </td>
+      </tr>
+      <tr>
+        <td valign="top">center y<br>center z<br>[cm]</td>
+        <td valign="top">for circular foil: center y (horizontal) and z (vertical) of the foil</td>
+        <td valign="top">any</td>
+        <td valign="top">-y<br>-z</td>
+      </tr>
+      <tr>
+        <td valign="top">min. y<br>max. y<br>[cm]</td>
+        <td valign="top">for rectangular foil: minimal (right) and maximal (left) y value of the foil</td>
+        <td valign="top">any     </td>
+        <td valign="top">-w<br>-W</td>
+      </tr>
+      <tr>
+        <td valign="top">min. z<br>max. z<br>[cm]</td>
+        <td valign="top">for rectangular foil: minimal (bottom) and maximal (top) z value of the foil</td>
+        <td valign="top">any     </td>
+        <td valign="top">-h<br>-H</td>
+      </tr>
+      <tr>
+        <td valign="top">min. lambda<br>max. lambda[cm]</td>
+        <td valign="top">
+          minimal and maximal wavelength that is considered for the integration<br>
+          If minimal and maximal wavelength are zero this option is ignored
+        </td>
+        <td valign="top">&gt;0<br>	&lambda;<sub>min</sub>&lt;&lambda;<sub>max</sub></td>
+        <td valign="top">-l<br>-L</td>
+      </tr>
+
+    </tbody>
+  </table>
+
 
   <hr>
   <p>

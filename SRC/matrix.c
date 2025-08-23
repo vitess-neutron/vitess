@@ -245,9 +245,12 @@ void RotMatrixToAnglesZY(double RotMatrix[3][3], double *roty, double *rotz)
 /*  Author: G. Zsigmond                                              */
 void CartesianToSpherical(VectorType Vector, double *Theta, double *Phi)
 {
-	*Theta	= (double) acos(Vector[0]) ;
+	if (Vector[0] < 0.999)
+	  *Theta = acos(Vector[0]) ;
+	else
+		*Theta = acos(sqrt(1.0 - sq(Vector[1])- sq(Vector[2])));  // this is more precise for small angles
 
-	*Phi	= (double) atan2(Vector[2], Vector[1]) ;
+	*Phi   = atan2(Vector[2], Vector[1]) ;
 }
 
 

@@ -45,7 +45,8 @@ extern char          sModuleName[MOD_NAME_LEN+1],  /* name of the module        
 extern double        wei_min;        /* Minimal weight for tracing neutron */
 extern long          keygrav;
 extern long          idum;           /* random number specific */
-extern short         bOldFrame,      /* criterion: new co-ordinate system set for current module */
+extern short         bInit,          /* criterion: function Init() has been carried out already  */
+                     bOldFrame,      /* criterion: new co-ordinate system set for current module */
                      bTest,          /* criterion: test run (without trajectories)   */
                      bVisInstalled,  /* criterion: visualization routines installed  */
                      bBlowUp,        /* criterion: width and height extended by factor 'BlowUp' in visualization  */
@@ -72,7 +73,9 @@ void WriteNeutron     (Neutron* OutNeutron);
 void WriteEOB         ();
 void ChangeNeutronID  (Neutron* n);
 
-short PropagateX      (Neutron* pNeutron, double DistX);                                                // Propagates the neutron to a plane in a certain distance along the x-axis
+short PropagatePath   (Neutron* pNeutron, double* pToF, const double PathLen);                          // Propagates the neutron a certain distance  along its flight direction
+short PropagateX      (Neutron* pNeutron, double* pToF, const double DistX);                            // Propagates the neutron to a plane in a certain distance along the x-axis
+void  PropagateToF    (Neutron* pNeutron, const double ToF);                                            // Propagates the neutron for a given ToF along its flight direction
 void  WriteDIAP       (Neutron* pNeutron, VtReason eReason, double DistX);                              // Propagates the neutron by DelX before writing interaction ppoint for visualization
 void  WriteScatIAP    (Neutron* pNeutrSF, VtReason eReason, double RotMatrixSF[3][3], VectorType PosS); // Transfers neutron from 'sample frame' (SF) back to 'incoming frame' (IF) before writing intersection point
 void  WriteIAP        (Neutron* pNeutron, VtReason eReason);                                            // Writes interaction point if 'trajectory visualization' is chosen
@@ -94,6 +97,7 @@ void DrawOpenRect     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr,
                        double InnerWidth, double InnerHeight);
 void DrawCircle       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double AngleBeg, double AngleEnd);
 void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double rotAngle); 
+void DrawPrism        (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, VectorType vVertices[6], double PrismHeight); 
 void DrawHull         (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, 
                        double WidthIn,  double WidthOut, double HeightIn, double HeightOut, double rotAngle); 
 void DrawCylinder     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius);
@@ -108,6 +112,8 @@ void  InitNeutron     (Neutron* pNeut);
 void  SetEOB          (Neutron* pNeut);
 short IsEOB           (Neutron* pNeut);
 short CheckEOB        (Neutron* pNeut);
+void  SetReset        (ParChange* pChange);
+short IsReset         (const ParChange* pChange);
 
 double GetTotInt       (short iMon);
 void  OutputBufferFlush(int final);

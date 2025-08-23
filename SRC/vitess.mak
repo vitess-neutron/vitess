@@ -6,18 +6,19 @@
 # from a Microsoft VS 2017 cmd.exe
 
 VERSION_MAJOR = 3
-VERSION_MINOR = 6
+VERSION_MINOR = 7
 GSLPATH = .\rng
 G2PATH = .\g2-0.72
+KDSOURCEPATH = .\kdsource\win32
 
 CC = cl.exe
-CFLAGS = /nologo /MT /W3 /Ox /Oy /GF /I "$(GSLPATH)" /FD /EHsc
+CFLAGS = /nologo /MT /W3 /Ox /Oy /GF /I "$(GSLPATH)" /I "$(KDSOURCEPATH)\include" /FD /EHsc
 CXX = cl.exe
 CXXFLAGS = $(CFLAGS)
 CPPFLAGS = /DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR)
 LD = link.exe
-LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /NODEFAULTLIB:libc.lib
-LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib vitess.lib libgsl.lib
+LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /libpath:"$(KDSOURCEPATH)\lib" /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmt.lib
+LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib msvcrt.lib vitess.lib libgsl.lib kdsource.lib mcpl.lib libxml2.lib
 
 !ifndef NOG2
 CFLAGS = $(CFLAGS) /DDO_PS /DVT_GRAPH /I "$(G2PATH)\src" /I "$(G2PATH)\src\Win32" /I "$(G2PATH)\src\PS"
@@ -149,8 +150,10 @@ all: vitess.lib $(ALL)
 clean:
 	-del *.lib *.obj $(ALL)
 
+# Note: DLLs are required because of MSVC limitations
 install: $(ALL)
 	copy /Y *.exe ..\MODULES\\
+	copy /Y $(KDSOURCEPATH)\lib\*.dll ..\MODULES\\
 
 vitess.lib: $(COMMON)
 	lib /OUT:vitess.lib $(COMMON)

@@ -1,6 +1,6 @@
 ### project VITESS
 ### HMI DN
-### M. Fromme fromme@helmholtz-berlin.de
+### M. Fromme  
 ###
 ### procedures for command execution
 
@@ -163,7 +163,18 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
         append fc "set GSL_RNG_$vv=$t\n"
       }
     }
-    sh  {set fc "\#!/bin/sh\nV=$ExeDirectory\nP=$pdir\nL=$logf\n"}
+    sh  {
+      set fc "\#!/bin/sh\n"
+      append fc "\[ -z \"\$V\" \] && V=$ExeDirectory\n"
+      append fc "\[ -z \"\$P\" \] && P=$pdir\n"
+      append fc "\[ -z \"\$L\" \] && L=$logf\n"
+      append fc "\[ -z \"\${SUFFIX}\" \] && SUFFIX=\"_`uname -s`_`uname -m`\"\n"
+      foreach v {seed gen} vv {SEED TYPE} {
+        if {"" == [set t [entryVal random_$v]]} continue
+        append fc "GSL_RNG_$vv=$t\nexport GSL_RNG_$vv\n"
+      }
+      append fc "\n"
+    }
     grd {
       set fc "\#!/bin/sh\n\#$ -S /bin/sh\n\#$ -cwd\n\#$ -l vf=1G\nV=$ExeDirectory\nP=$pdir\nL=gridlog\n"
       if {"" != [set v [entryVal random_gen]]} {
@@ -337,11 +348,18 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     }
     default {}
   }
+  # replace hard-coded ExeSuffix with _$SUFFIX
+  if {$mode == "sh"} {
+    regsub -all "$sys" $fc "\${SUFFIX}" fc
+  }
 
   # split module commands to allow  editing for modes tcl, pl, and py
   switch $mode {
     bat {append fc "\ntype P:\\$logtmp* > P:\\result.txt\ndel P:\\$logtmp*"}
-    sh  {append fc "\ncat $logf? > \$P/result.txt\ncat $logf?? >> \$P/result.txt\nrm $logf*"}
+    sh  {
+      append fc "\nrm -f \$P/result.txt\ncat \${L}?? >> \$P/result.txt\nrm \${L}*"
+      regsub -all " \\| " $fc " | \\\n" fc
+    }
     grd {
       set s ""
       foreach v $usedIdices {
@@ -422,7 +440,7 @@ proc checkAll {} {
           }
         }
       }
-      if {! [regexp {^(source_|read_in)} $var]} {
+      if {! [regexp {^(source_|read_in|ai_)} $var]} {
         set infname [entryVal infilename]
         if {"" == $infname} {
           showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"

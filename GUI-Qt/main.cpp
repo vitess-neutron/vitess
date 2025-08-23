@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
     //set style of application
-    w.centralWidget()->setStyleSheet("QWidget {background-color:lightcyan;}"
-                                    " QLineEdit {background-color:lightyellow;}"
+    w.centralWidget()->setStyleSheet("QWidget {background-color:#F5F5F5;}"
+                                    " QLineEdit {background-color:#FFFFFF;}"
                                     " QPushButton {background-color:lightgray;}");
 
     //call programm with instrumentfilename as argument

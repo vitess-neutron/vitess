@@ -14,6 +14,7 @@ sample_inelast:
   - sParFile :
       type:    "file"
       plottable: false
+      editable: true
       descr:   "parameter file"
       tooltip: "File containing parameters of the sample\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-P"
@@ -51,7 +52,6 @@ sample_inelast:
       default: 0.0
       column:  0
       prefix:  "-d"
-
   - D1      :                 # -x    0.0  [cm]   linear energy dispersion coefficient of momentum component x
       type:    "float"
       descr:   "D1 [ueV*Ang]"
@@ -73,7 +73,41 @@ sample_inelast:
       default: 0.0
       column:  2
       prefix:  "-z"
-
+  - scc      :                 # -s    7.7456 [barns]   Macroscopic coherent scattering cross section of the sample
+      type:    "float"
+      descr:   "coherent scattering cross section [barns]"
+      tooltip: "Macroscopic total scattering cross section of the sample"
+      default: 7.7456
+      column:  0
+      prefix:  "-s"
+  - sci      :                 # -Q    160.5200 [barns]   Macroscopic incoherent scattering cross section of the sample
+      type:    "float"
+      descr:   "incoherent scattering cross section [barns]"
+      tooltip: "Macroscopic incoherent scattering cross section of the sample"
+      default: 160.5200
+      column:  0
+      prefix:  "-Q"
+  - asc      :                 # -m    0.6652 [barns]   Macroscopic absorption cross section of the sample
+      type:    "float"
+      descr:   "absorption cross section [barns]"
+      tooltip: "Macroscopic absorption scattering cross section of the sample"
+      default: 0.6652
+      column:  0
+      prefix:  "-m"
+  - mas      :                 # -B    18.0000 [g/mol]   Molar mass of the compound
+      type:    "float"
+      descr:   "Molar mass of the compound"
+      tooltip: "Molar mass of the compound [g/mol]"
+      default: 18.0000
+      column:  0
+      prefix:  "-B"
+  - den      :                 # -C    1.0000 [g/cm^3]   Density of the compound
+      type:    "float"
+      descr:   "Density of the compound"
+      tooltip: "Density of the compound [g/mol]"
+      default: 1.0000
+      column:  0
+      prefix:  "-C"
   - bBoseFact:                 # -D    NO  flag: multiplication with the Bose factor
       type:    "switch"
       descr:   "Bose factor?"
@@ -81,11 +115,11 @@ sample_inelast:
       default: no
       column:  0
       prefix:  "-D"
-  - Temp    :                 # -T    0.0  [cm]   temperature of the sample
+  - Temp    :                 # -T    0.0  [K]   temperature of the sample
       type:    "float"
       descr:   "temperature [K]"
       tooltip: "temperature of the sample (only needed if use of the Bose factor is chosen)"
-      min:     0.0001
+      min:     0.0
       column:  1
       prefix:  "-T"
   - nRep:                 # -A    1    [-]    repetitions (number of trajectories generated per incoming trajectory)

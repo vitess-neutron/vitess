@@ -44,14 +44,14 @@ typedef struct
 // Input parameters
 VtEvalComb eComb    =VT_NO_ECOMB;// -k  [-]  1=scattering angle and wavelength; 2=scattering angle and TOF 
 VtEvalSort eSortMode=VT_NO_SORT; // -s  [-]  0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse 
-VtAngleSel eScatAng =VT_NO_SEL;  // -D  [-]  TRUE : position information is used (needs more information)  FALSE: direction cosine is used 
+VtAngleSel eScatAng =VT_NO_SEL;  // -D  [-]  VT_SEL_POS: position information is used (needs more information)  VT_SEL_DIR: direction cosine is used 
 	     
 char*  sEvalFileName=NULL;   // -o  [-]  evaluation file containing intensity as a function scattering angle and TOF or wavelength  
 short  bFmt2D     =FALSE,    // -F  [-]  TRUE : output file is a 2D matrix     FALSE: x y z format
        bFullMatrix=FALSE,    // -f  [-]  TRUE: Also lines with zero intensity/counts are written; needs more memory  FALSE: Default: only write non-zero lines 
        bProbActive=TRUE,     // -p  [-]  bProbActive=1 means probabilities activated, else neutron weight is set to 1.0 
        bExclCount =FALSE,    // -c  [-]  TRUE : only neutrons complying with the evaluate requirements are written to the output 
-       bTOF       =FALSE,    // -w  [-]  TRUE : time of flight instrument 
+       bTOF       =FALSE,    // -w  [-]  TRUE : wavelength is determined from time of flight (for TOF instruments)
        bTOFcorr   =FALSE;    // -t  [-]  TRUE : correct time to shortest detector distance
        
 long   nBinsX=0,             // -n  [-]  number of bins in X 
@@ -133,10 +133,10 @@ int main(int argc, char *argv[])
 
   nBunches = ReadNumBnch();
 
-	bpostX = malloc(sizeof(double)*nBinsX+1);
-	memset(bpostX, 0, sizeof(double)*nBinsX+1);
-	bpostY = malloc(sizeof(double)*nBinsY+1);
-	memset(bpostY, 0, sizeof(double)*nBinsY+1);
+	bpostX = malloc(sizeof(double)*(nBinsX+1));
+	memset(bpostX, 0, sizeof(double)*(nBinsX+1));
+	bpostY = malloc(sizeof(double)*(nBinsY+1));
+	memset(bpostY, 0, sizeof(double)*(nBinsY+1));
 	bin = malloc(sizeof(BINDATA*)*(INDEX(nBinsX, nBinsY)+1));
 	memset(bin, 0, sizeof(BINDATA*)*(INDEX(nBinsX, nBinsY)+1));
   if (eFormat==XYZ)
@@ -432,7 +432,7 @@ void OwnInit(int argc, char *argv[])
 					bExclCount  = (short) atoi(arg);  /* if activated, only neutrons complying with the evaluate requirements are considered further on */
 					break;
 				case 'w':
-					bTOF        = (short) atoi(arg);  /* time of flight instrument */
+					bTOF        = (short) atoi(arg);  /* time of flight instrument -> wavelength from TOF */
 					break;
         case 't':
 					bTOFcorr    = (short) atoi(arg);  /* correct tof to constant sample-detector distance of '-L' (true/false) */
@@ -554,8 +554,14 @@ void UpdateMon(long iBnch)
       f_norm = (double) nBunches / (double) iBnch;
 
     switch (eComb)
-    { case VT_SCA_LMBD: WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot,  nBinsX, "scat_ang [deg]", nBinsY, "wavelength [Ang]"); break;
-      case VT_SCA_TOF : WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot,  nBinsX, "scat_ang [deg]", nBinsY, "TOF [ms]");         break;
+    { case VT_SCA_LMBD: WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot, 
+			                                 nBinsX, "scat_ang [deg]"  , MinX, MaxX, 
+			                                 nBinsY, "wavelength [Ang]", MinY, MaxY); 
+		                    break;
+      case VT_SCA_TOF : WriteHeader2DB(fSpectr, TRUE, eFormat, "Intensity", bProbActive, nBunches, nBunches, TotInt, nTrajTot,  
+				                               nBinsX, "scat_ang [deg]", MinX, MaxX,  
+				                               nBinsY, "TOF [ms]"      , MinY, MaxY);        
+				                break;
       default         : Error("Evaluation parameter unknown");
     }
 

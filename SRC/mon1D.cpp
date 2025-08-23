@@ -68,7 +68,7 @@ Mon1D::Mon1D()
   sParName[DIV_Y    ] = "div_y";    sParUnit[DIV_Y    ] = "deg";
   sParName[DIV_Z    ] = "div_z";    sParUnit[DIV_Z    ] = "deg";
   sParName[LAMBDA   ] = "lambda";   sParUnit[LAMBDA   ] = "Ang";
-  sParName[ENERGY   ] = "energy";   sParUnit[ENERGY   ] = "µeV"; 
+  sParName[ENERGY   ] = "energy";   sParUnit[ENERGY   ] = "eV"; 
   sParName[TIME     ] = "time";     sParUnit[TIME     ] = "ms"; 
   sParName[K_Y      ] = "k_y";      sParUnit[K_Y      ] = "1/Ang";
   sParName[K_Z      ] = "k_z";      sParUnit[K_Z      ] = "1/Ang"; 
@@ -424,15 +424,11 @@ double Mon1D::DetermineParameter(VtMonPar id, Neutron* pNeutr)
       break; 
     
     case K_Y:
-      divy = neutronVector.Phi();
-      paramValue = divy * 2. * M_PI / pNeutr->Wavelength; // ky: y component of the wave vector 
+      divy = neutronVector.DivY();
+      paramValue = divy * 2. * M_PI / pNeutr->Wavelength;  // ky: y component of the wave vector 
       break;
     case K_Z:
-      neutronVector.x[1] = 0;
-      if (neutronVector.x[2] > 0) 
-        divz = M_PI/2. -  neutronVector.Theta(); 
-      else 
-        divz = M_PI/2. - (neutronVector.Theta() + M_PI);
+      divz = neutronVector.DivZ();
       paramValue = divz * 2. * M_PI / pNeutr->Wavelength;  // kz: z component of the wave vector
       break;
     
@@ -528,16 +524,19 @@ void Mon1D::WriteOut(long iBnch)
       // For polarisation analysis, divide the value in each bin by the sum of spin weights
       if (analysePol) 
       { 
-        WriteHeader1DB(fMonitor[ii], FALSE, "polarisation", ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
+        WriteHeader1DB(fMonitor[ii], FALSE, "polarisation", ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], 
+                                     sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str(), xMin[0], xMax[0]);
         for (iBin = 0; iBin < nBinsX[ii]; iBin++) 
-        { if (dataArrayCounts[ii][iBin] > 0 && dataArrayPolWeights[ii][iBin] > 0) 
-            fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
+        { 
+          //if (dataArrayCounts[ii][iBin] > 0 && dataArrayPolWeights[ii][iBin] > 0) 
+          fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
 	                                                                 dataArrayPol[ii][iBin], dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
         }
       }
       else
       { 
-        WriteHeader1DB(fMonitor[ii], FALSE, "intensity",    ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str());
+        WriteHeader1DB(fMonitor[ii], FALSE, "intensity",    ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], 
+                                     sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str(), xMin[0], xMax[0]);
         for (iBin = 0; iBin < nBinsX[ii]; iBin++) 
         { fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
 	                                                              fNorm * dataArray[ii][iBin], fNorm * dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
@@ -569,6 +568,7 @@ void Mon1D::FreeMemory()
       free (dataArrayPol[ii]);
       free (dataArrayPolWeights[ii]);
     }
+    if (polAnalysisVector) delete polAnalysisVector;
   }
   
   return;

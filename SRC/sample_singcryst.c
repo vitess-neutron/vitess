@@ -333,7 +333,7 @@ void OwnInit(int argc, char *argv[])
           sscanf(&argv[i][2], "%lf", &d_spr_rel); /* d-spacing spread, this gives the relative 'thickness' of the Ewald sphere */
           break;
         case 'o':
-          sscanf(&argv[i][2], "%ld", &d_spr_option);
+          sscanf(&argv[i][2], "%d", &d_spr_option);
           break;
 
           /* crystal parameters */

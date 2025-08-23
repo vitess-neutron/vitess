@@ -1,5 +1,5 @@
 helpItem {Plotting using Templates} {
-VITESS knows three ways to plot 1D (y values at given x positions) and 
+VITESS knows three ways to plot 1D (y values at given x positions) and
 2D (z values on a grid of x,y positions) ASCII text data files.
 
 A TclTK plot widgets
@@ -10,14 +10,14 @@ A is always present, and used bltwish capabilities when bltwish was used.
 B has better 1D displays, many users are accustomed to Gnuplot. You may zoom plots
   here, print plots, and use own options in a command window.
   VITESS looks for gnuplot.exe and uses it when present.
-C gives full access to external plot software. 
+C gives full access to external plot software.
 
 You may fill a template with commands.
 A template is a file in the FILES/Plot directory of the installation.
 If the first line of a template is a bang line starting with #! under Linux,
 this file will be exec'uted as shell script in the background, otherwise it should contain
 commands for the specified external plot software (Gnuplot).
-  
+
 Some variables like $PFILENAME are substituted before execution of a template.
 
 If you select a given template, you override the default plot.
@@ -43,13 +43,13 @@ or, if the gnuplot process may silently vanish after 10 minutes
 gnuplot -e "plot '$PFILENAME'; pause 600"
 
 If you have Python + Matplotlib installed, you may use the shell2D template provided.
-Python code to read monitor Matrix 2D files may be found in FILES/Scripts/rshow.py . 
+Python code to read monitor Matrix 2D files may be found in FILES/Scripts/rshow.py .
 
 Those variables are substituted before execution of a template:
 $PFILENAME  is the name of the file to be plotted
 $PPATH      is the parameter directory
 $PPWD       directory where Vitess is installed
-$PMODULE    name of the pipe module, for autoplots after pipe execution  
+$PMODULE    name of the pipe module, for autoplots after pipe execution
 $PSKIP      number of lines starting with \# in the beginning of the file
 $PROWS      number of rows with data in the file
 $PCOLS      number of colums in the file, may be comma separated or free formatted
@@ -111,12 +111,12 @@ proc readXYZFile {f_i rows_i cols_i xl_i yl_i a_i} {
 }
 
 proc checkPlotfile {fname} {
-  # return either matrix for 2D matrix files, 
+  # return either matrix for 2D matrix files,
   # xyz for 2D files with x y z values,
   # xz for files with at least 2 columns of numbers,
   # or "" for insufficient file names/files
 
-  if {[file size $fname] < 100} { return ""} 
+  if {[file size $fname] < 100} { return ""}
 
   if [catch {open $fname r} f] {
     return ""
@@ -177,14 +177,19 @@ proc show2Dfile {fname} {
   if [regexp {^# 2D} $ins] {gets $f ins}
   if [regexp {^#Monitor} $ins] {gets $f ins}
   if [regexp {^# Monitor} $ins] {gets $f ins}
+  if [regexp {^# title}  $ins] {gets $f ins}
   if [regexp {^# x-axis} $ins] {gets $f ins}
   if [regexp {^# y-axis} $ins] {gets $f ins}
+  if [regexp {^# x_label} $ins] {gets $f ins}
+  if [regexp {^# y_label} $ins] {gets $f ins}
+  if [regexp {^# x_range} $ins] {gets $f ins}
+  if [regexp {^# y_range} $ins] {gets $f ins}
   if [regexp {^# Date} $ins] {gets $f ins}
   if [regexp {^# Total} $ins] {gets $f ins}
   if [regexp {^# Within} $ins] {gets $f ins}
   if [regexp {^# Bunches} $ins] {gets $f ins}
   if [regexp {^# Data} $ins] {gets $f ins}
-  
+
   set ll [eval list $ins]
   if {!$is_xyz &&  [string compare "#x y z" "$ll"]} {
     set xl $ll;	# first line and first column are tic values
@@ -461,7 +466,7 @@ proc newTemplate {} {
   showTextEditWindow .tedit $fn "Template [file tail $fn]" 8
   if [catch {set lsi [glob -nocomplain -type f [file join $tdir *]]}] return
   global Helpitems
-  .tedit.v.text insert end $Helpitems(Plot template example) 
+  .tedit.v.text insert end $Helpitems(Plot template example)
 }
 
 proc getPlotTemplates {} {
@@ -510,6 +515,31 @@ proc getGnuPlotApp {} {
       return [set FoundGnuplotApp [findWindowsFile C:/ D:/ gnuplot.exe]]
     }
     default {return [set FoundGnuplotApp ""]}
+  }
+}
+
+proc getPython {} {
+  # locate the executable python with matplotlib program
+  global FoundPython
+  if [info exists FoundPython] {return $FoundPython}
+  switch [getSystem] {
+    unix {
+      if [catch {exec which python} res] {set res ""}
+      return [set FoundPython $res]
+    }
+    windows {
+      # first look at special places to prevent long startup times
+      set fn [file join C:/ "Program Files" python bin python.exe]
+      if [file exists $fn] {return [set FoundPython $fn]}
+      # has python been installed alongside?
+      set fn [file join [globVal SourceDirectory] python bin python.exe]
+      if [file exists $fn] {return [set FoundPython $fn]}
+      set fn [file join [globVal SourceDirectory] bin python.exe]
+      if [file exists $fn] {return [set FoundPython $fn]}
+      # at last resort do a search which might take long
+      return [set FoundPython [findWindowsFile C:/ D:/ python.exe]]
+    }
+    default {return [set FoundPython ""]}
   }
 }
 
@@ -592,7 +622,7 @@ proc editX3DOptions {} {
 #yhigh=100
 #zlow=-1
 #zhigh=100
-# material definitions like 
+# material definitions like
 #hullmat=<Material diffuseColor='.3 .3 1' emissiveColor='.1 .1 .33' transparency='.5'/>
 # for cubemat rectmat trianglemat cylmat spheremat ellipsmat ellips2mat labelmat
 # annotation labels
@@ -722,7 +752,7 @@ proc plotWithTemplate {fn topt} {
     catch {exec chmod +x $tfn}
     catch {exec $tfn &}
     if {[llength $items] > 0} {
-      # delete the temporary command file, but do not purge it immediately, 
+      # delete the temporary command file, but do not purge it immediately,
       # because then it may be gone before execution
       after 2000 file delete $tfn
     }
@@ -752,30 +782,41 @@ proc plotMonFile {v app} {
   showPlotFile $fn [entryVal ${v}_o $app]
 }
 
+proc setDefaultPlotApp {{app ""}} {
+  global defaultPlotApp
+  set defaultPlotApp $app
+  puts "New default plotter is: $defaultPlotApp"
+}
 ###
 ### plotFile
 proc showPlotFile {name {topt 0}} {
+  global defaultPlotApp
 
   set ftype [checkPlotfile $name]
 
   if {$ftype == ""} return
-  if {($ftype == "matrix" && $topt != "shell2D") || $topt == 2} {
-    # If requested, or if the file is a 2D monitor file in matrix format,
-    # and no shell2D template is present, gnuplot may not be used. 
-    # We use our own Tcl/Tk code here.
-    show2Dfile $name
-    return
-  }
 
   switch $topt {
     "" - "-" - 1 {
-      if {"" != [set gcmd [getGnuPlotApp]]} {
+      if {"" != $defaultPlotApp} {
+        switch $defaultPlotApp {
+          python {plotWithTemplate $name "python"}
+          gnuplot {if {$ftype == "matrix"} {show2Dfile $name} else {
+            set gcmd [getGnuPlotApp]
+            gnuPlotCmd $gcmd $name $ftype
+            }
+          }
+          grplot {if {$ftype == "matrix"} {plotWithTemplate $name "grplot2D"} else {plotWithTemplate $name "grplot1D"}}
+          tcl {if {$ftype == "matrix"} {show2Dfile $name} else {showXYfile $name}}
+        }
+      } elseif {"" != [set gcmd [getGnuPlotApp]]} {
         gnuPlotCmd $gcmd $name $ftype
       } else {
-        showXYfile $name
+        if {$ftype == "matrix"} {show2Dfile $name} else {showXYfile $name}
       }
     }
     default {
+      puts "$topt"
       plotWithTemplate $name $topt
     }
   }

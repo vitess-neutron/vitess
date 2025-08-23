@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@helmholtz-berlin.de
+### M. Fromme  
 ### June 1999
 
 ### control variables lists and procedures for
@@ -31,6 +31,19 @@
 # 2 The global variables DoNotSaveSetting and DoNotSave contain lists of variable names to exclude.
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
+
+if {$tcl_platform(os) == "Darwin"} {
+  set darkMode [exec osascript -e {tell application "System Events" to get dark mode of appearance preferences}]
+} else {
+  set darkMode false
+}
+if {$darkMode eq "true"} {
+  set fgColor black
+  set bgColor #f2f2fb
+} else {
+  set fgColor black
+  set bgColor #f2f2fb
+}
 
 set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
@@ -161,7 +174,6 @@ proc makeModuleSets {} {
     {collimator {collimator collimator_radial collimator_soller} collimator}
     {detector {detector screen} {detector screen}}
     {evaluation {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime} {capture_flux eval_elast eval_elast2 eval_sans eval_inelast runtime}}
-    {external_command}
     {filter {filter filter2D} {filter filter2D}}
     {flipper {flipper_coil flipper_gradient} {flipper_coil flipper_gradient}}
     {frame {} frame}
@@ -169,18 +181,19 @@ proc makeModuleSets {} {
     {magnetic_field {precessionfield rotating_field quadr_field} {precessionfield rotating_field quadr_field}}
     {mirror {pol_mirror mirror_elliptical sm_ensemble} {pol_mirror mirror_elliptical sm_ensemble}}
     {monochr_analyser {ma_flat_new ma_focus_new ma_focus_dat_new ma_flat ma_focus ma_focus_dat} monochromator monochromator monochromator monochr_analyser monochr_analyser monochr_analyser}
-    {optical_elements {lense} {lense}}
+    {new_module {external_command template_module} {external_command template}}
+    {optical_elements {lense prism} {lense prism} }
     {polariser {polariser_he3 polariser_sm pol_mirror} {polariser_he3 polariser_sm pol_mirror}}
     {resonator_drabkin {} resonator_drabkin}
-    {sample {sample_elasticisotr sample_inelast sample_nxs sample_powder
-      sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast
+    {sample {sample_elasticisotr sample_inelast sample_ncrystal sample_nxs sample_powder
+      sample_reflectom sample_sans sample_s_q sample_singcryst} {sample_elasticisotr sample_inelast sample_ncrystal
       sample_nxs sample_powder sample_reflectom sample_sans sample_s_q sample_singcryst}
     }
     {sample_environment {} sample_environment}
     {sm_ensemble {} sm_ensemble}
     {source {source_const_wave source_ILL source_FRM2 source_HMI
       source_short_pulsed source_SNS source_JPARC source_ISIS source_IPNS source_CSNS
-      source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS} source}
+      source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS source_ai} source}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
     {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
@@ -284,12 +297,12 @@ rename makeModuleSets {}
 ### Input parameters
 ###
 set inputESET {
-  {infilename browsefile "" {"input file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -f} r dat}
-  {outfilename parbrowsefile "no_file" {"output file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'input file'." "" -F}}
+  {infilename browsefile "" {"Input file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'Input file'." "" -f} r dat}
+  {outfilename parbrowsefile "no_file" {"output file" "The data of all trajectories will be written to the 'output file' at the end (of the first part) of the simulation. These data can be used to start a second part the simulation by giving the name of this file as 'Input file'." "" -F}}
   {defdirectory browsedir "" {"parameter\ndirectory" "This is the one and only directory for parameter files. All these files should reside in one directory, to make the reproduction of a simulation on other systems feasable."} w "" 1 d}
 
   {random_seed float 1 {"random\nseed" "random number generator initialization" "" -Z}}
-  {random_gen radio ran3 {"random\nnumber" "Select a random number generator from the set of taus gfsr4 mt19937 ranlux ran3 (Default ran3)"} {ran3 taus gfsr4 mt19937 ranlux} {0 1 2 3 4}}
+  {random_gen radio mt19937 {"random\nnumber" "Select a random number generator from the set of taus gfsr4 mt19937 ranlux ran3 (Default mt19937)"} {mt19937 ran3 taus gfsr4 ranlux} {0 1 2 3 4}}
   {wei_min float 1.0e-25 {"minimal\nweight" "minimal weight for tracing neutrons" "" -U} ge0}
   {gravity radio on {gravity "simulation includes gravity influence on neutrons or not" "" -G} {on off} {1 0}}
   {helpthreads radio 0 {"helper\nthreads" "Select a number > 0 to enable thread parallel execution for thread aware modules" "" -T}  {0 1 2 3 4 5 6 7 8} {0 1 2 3 4 5 6 7 8}}
@@ -514,7 +527,7 @@ set cwsASET {
     {"time of\nmeasurement [s]" "not necessary: the number of neutrons for the given time range is calculated in each module, if the time is not zero." "" A} ge0}
   {deswl float "" {"desired\nwavelength [A]" "not necessary: (average) wavelength (at the sample) to be used in the measurement - not necessary, only needed to write optimal chopper phases to 'instrument.inf'" "" W}}
   {}
-  {trace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n 
+  {trace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n
                    1) 'write trace files': For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.\n
                    2) 'only trace trajectories': Only those trajectories are started in the second run that are found in the 'raytracing file'.\n
                    (This yields identical results at (or after) the site where the trajectories of interest were determined, only if there are no MC choices in the devices between source and the site of interest, i.e. no sample, no monochromator/analyser, no sm_ensemble, no bender with transmission between channels." "" k} {no "write trace files" "only trace trajectories"} {0 1 2}}
@@ -783,30 +796,46 @@ set external_commandESET {
 }
 
 
+### Template Module
+set template_moduleESET {
+  {tmpt_fname pareditablefile "file.dat" {"file" "name of the .... file" "" F} r}
+  {tmpt_flag1 select no {"switch" "Flag 1: Description of switch 1" "" a} {{"flag 1" 0}}}
+  {tmpt_nitem int    1 {"number\nof items" "Description of the number of items" "" n} 1 100 1}
+  {tmpt_nvals int    1 {"number\nof values" "Description of the number of values" "" N} 1}
+  {}
+  {"Dimension" header}
+  {tmpt_par_a float "" {"par A [unit]" "Description of parameter A" "" A} ge0}
+  {tmpt_par_b float "" {"par B [unit]" "Description of parameter A" "" B} ge0}
+  {tmpt_dist float ""  {"distance\nto device [cm]" "Distance from the origin to the device (along the x-axis)" "" D} ge0}
+  {}
+  {tmpt_dir radio N    {"axis" "axis of .... direction (N: no direction)" "" Q} {X Y Z N} {0 1 2 -1}}
+}
+
+
 ### Read_In
 ###
 set read_inESET {
-  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
+  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW KDSource} {1 2 3 5 6 7}}
   {inform radio float {"storage format" "format of float values in writeout file" "" F} {exp float binary} {0 1 2}}
   {}
-  {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st input file containing trajectories." "" A} r "" 1}
-  {fname2 pareditablefile "" {"input\nfile 2" "Specifies the name of the ASCII 2nd input file containing trajectories.\n(Not for MCPL format)" "" B} r}
-  {fname3 pareditablefile "" {"input\nfile 3" "Specifies the name of the ASCII 3rd input file containing trajectories.\n(Not for MCPL format)" "" D} r}
+  {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st Input file containing trajectories." "" A} r "" 1}
+  {fname2 pareditablefile "" {"input\nfile 2" "Specifies the name of the ASCII 2nd Input file containing trajectories.\n(Not for MCPL format)" "" B} r}
+  {fname3 pareditablefile "" {"input\nfile 3" "Specifies the name of the ASCII 3rd Input file containing trajectories.\n(Not for MCPL format)" "" D} r}
   {}
   {ri_frc1 float "1.0" {"weight\nfor file 1" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" a}}
   {ri_frc2 float "0.0" {"weight\nfor file 2" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" b}}
   {ri_frc3 float "0.0" {"weight\nfor file 3" "assuming that all input files are written after a completed simulation, the sum of all weights must be 1 and each weight must be proportional to the number of trajectories started" "" d}}
   {}
   {inrep int 1  {"repetition" "Number of times that the trajectories are read." "" R} ge1}
-  {maxEv float "" {"max events" "Maximum number of trajectories that are read. If 'Random sample' is set to 'Yes', the events will be random sampled from the total input file. If 'No', then the first 'max events' neutron trajectories of the file will be read." "" M}}
-  {sampleF radio No {"Random sample" "Sub-samples a VITESS file by choosing 'max events' neutrons randomly from the input file. Modify the general random seed for different samples. This option requires 'max events' to be larger than 0." "" J} {No Yes} {0 1}}
+  {maxEv float "" {"max events" "Maximum number of trajectories that are read. If 'Random sample' is set to 'Yes', the events will be random sampled from the total Input file. If 'No', then the first 'max events' neutron trajectories of the file will be read." "" M}}
+  {sampleF radio No {"Random sample" "Sub-samples a VITESS file by choosing 'max events' neutrons randomly from the Input file. Modify the general random seed for different samples. This option requires 'max events' to be larger than 0." "" J} {No Yes} {0 1}}
   {ri_fact float "1.0" {"Intensity\nfactor" "The weight of each neutron trajectory from the MCNP simulation is multiplied by this factor to yield correct absolute source flux values: F = I_src/N_mcnpx-events" "" I}}
   {in_surf int ""  {"surface\nID" "Only for MCNP6: If a surface ID (greater -1) is given, only neutrons with this ID are read from file." "" s} ge-1}
   {incolor int -1  {"read in color" "Only for VITESS format: Read only events with a given color. A negative number means any color." "" C}}
   {}
   {ifname pareditablefile "" {"instrument\ninput file" "Specifies the instrument file of the previous part of the simulation." "" -I} r}
   {}
-  {intrace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n 
+  {intrace radio no {"kind of\nraytracing" "It is supposed that a first run has delivered the 'raytracing file' that contains all trajectories of interest. There are 2 options:\n
                      1) 'write trace files': For each trajectory found in the 'raytracing file' a data file is generated and each module writes information to this file. To do that the whole simulation is repeated.\n
                      2) 'only trace trajectories': Only those trajectories are started in the second run that are found in the 'raytracing file'.\n
                      (This yields identical results at (or after) the site where the trajectories of interest were determined, only if there are no MC choices in the devices between source and the site of interest, i.e. no sample, no monochromator/analyser, no sm_ensemble, no bender with transmission between channels." "" t} {no "write trace files" "only trace trajectories"} {0 1 2}}
@@ -856,6 +885,15 @@ set writeoutESET {
   {filtDivMin float "" {"filter div.\nmin [deg]" "min divergency, -1.0 means any" "" g}}
   {filtDivMax float "" {"filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
 }
+
+### Read_In
+###
+set source_aiESET {
+  {"Variational Autoencoder Source - Experimental" header}
+  {fname pareditablefile "vae_hbs.model" {"Model file" "Specifies the model to be used (ending .model in FILES/moderators)." "" M} r "" 1}
+  {nNeut int "10000" {"Number of neutrons" "Number of trajectories that are to be generated." "" n}}
+  {nBunches int "10" {"Bunches" "The total number of neutrons will be nNeut * nBunches." "" b}}
+  }
 
 ### spin_reset
 ###
@@ -996,7 +1034,7 @@ set slitESET {
 set beamstopESET {
   {dist_stop float "" {"distance\nfrom sample [cm]" "distance between sample and beamstop" "" d} ge0}
   {shape_stop radio rectangular {"beamstop\nshape" "shape of the beamstop" "" R} {rectangular circular} {0 1}}
-  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop if they hit it" "" p} {no yes} {0 1}}
+  {prop_stop radio no {"beam\npropagation" "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop in the visualization if they hit it" "" p} {no yes} {0 1}}
   {"coordinates of a circular beamstop" header}
   {dist_rad float "" {"radius [cm]" "radius of a circular beamstop [cm]" "" r} ge0}
   {"coordinates of a rectangular beamstop" header}
@@ -1709,7 +1747,7 @@ set ma_flat_newESET {
   {parfile pareditablefile crys.par {"parameter file" "This files contains parameters describing a crystal element (CE)" "" P} r crs_new 1}
   {}
   {mode radio Reflection {"Geometry" "Choose between 'reflection' and 'transmission' geometry of the monochromator." "" X} {Reflection Transmission} {1 2}}
-  {trns radio blocked {"transmission" "Select if the neutrons that are not reflected by the crystal lattice shall be treated.\nPlease note that in this case the 'standard frame generation' is to leave the co-ordinate system unchanged." "" B} {blocked treated} {0 1}}
+  {trns radio blocked {"transmission" "Select if the neutrons that are not reflected by the crystals shall be treated.\nNote that in both cases the 'standard frame generation' rotates the co-ordinate to the reflected beam." "" B} {blocked treated} {0 1}}
   {dist radio Lorentzian {d-distribution "defines the d-spacing distribution function" "" d} {Lorentzian Gaussian} {1 2}}
   {"Crystal parameters" header}
   {shoriz float 0.8 {"mosaic spread\nhoriz. [deg]" "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]" "" m} ge0 "" 1}
@@ -1718,7 +1756,7 @@ set ma_flat_newESET {
   {refl float 1 {"peak\nreflectivity" "(Experimentally determined) peak reflectivity of this monochromator." "" R} gt0 "" 1}
   {"Rotation and Oscillation" header}
   {mo_move radio "no movement" {"movement" "Type of movement of the monochromator crystal(s)" "" b} {"no movement" "rotation vert. axis" "rotation hor. axis (PST)" "oscillation (Doppler)"} {0 1 2 3}}
-  {mo_rndt radio yes {"randomize\nTOF" "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored.\nUseful for a PST on a continuous source" "" K} {yes no} {1 0}}
+  {mo_rndt radio no {"randomize\nTOF" "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored.\nUseful for a PST on a continuous source" "" K} {yes no} {1 0}}
   {}
   {mo_freq float 0 {"frequency\n[Hz]" "Frequency of the monochromator rotation/oscillation" "" f}}
   {mo_phas float 0 {"initial\nphase [deg]" "Phase of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection" "" p}}
@@ -1740,14 +1778,18 @@ set ma_flat_newESET {
 set ma_focus_newESET [concat [globVal ma_flat_newESET] {
   {"Focusing" header}
   {focus_file pareditablefile lamb_foc.dat {"focus file" "The focus file defines position and size deviation as well as orientation of each crystal element.\nFor details see Help|Modules M|ma_focus_new.\nIt is output in the option 'ma_focus' and input for ma_focus_dat" "" G} w "" 1}
-  {fopt radio "double focusing" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"constant lambda" spherical "vert. cylinder" "double focusing"} {1 2 3 4}}
+  {fopt radio     "no focusing" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"no focusing" "constant lambda" spherical "vert. cylinder" "double focussing"} {0 1 2 3 4}}
   {}
   {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the crystal element matrix.\n1 for 'vert. cylinder'" "" H} gt0 "" 1}
   {cevnum int 18 {"number of CE\nvertical" "The number of rows of the crystal element matrix." "" V} gt0 "" 1}
+  {celnum int  1 {"number of CE\nlayers" "The number of crystal layers in a stack (along the incoming beam)" "" I} gt0 "" 1}
   {}
-  {chradius float 200 {"radius\nhoriz. [cm]" "Radius of focusing in horizontal direction for a double focusing monochromator." "" s} ge0 "" 1}
+  {chradius float 200 {"radius\nhor. [cm]" "Radius of focusing in horizontal direction for a double focusing monochromator." "" s} ge0 "" 1}
   {cradius float 200 {"radius\nvert. [cm]" "lambda-focusing: distance from the sample center to the bottom row of the CE-matrix.\nspherical      : radius of the sphere\nvert. cylinder : radius of the vertical cylinder\ndouble focusing: Radius of focusing in vertical direction." "" r} ge0 "" 1}
   {cangle float 0 {"angle\nvert. [deg]" "Angular offset  of the bottom row of the CE-matrix  relative to the monochromator center.\nThis parameter is not used for 'double focusing', (where a vertically symmetric arrangement is assumed)." "" a} 1}
+  {}
+  {spclayer float 0.0 {"spacing of\nlayers [cm]" "Only if number of layers > 1: Distance between two sequential crystal layers along the stacking direction (measured from center to center)" "" o} ge0 "" 1}
+  {decllayer float 0.0 {"max. layer\ndeclination [deg]" "Only if number of layers > 1: Max. hor. deviation DelZeta of the CE from the mean orientation Zeta. Values for the layers are set in [Zeta-DelZeta, Zeta+DelZeta]" "" J} "" 1}
   {}
   {gaphor float 0.0 {"gap between\ncolumns  [cm]" "Horizontal distance between columns of crystal elements\n(in the equatorial plane)" "" h} ge0 "" 1}
   {gapvert float 0.0 {"gap between\nrows  [cm]"  "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
@@ -1829,28 +1871,20 @@ set ma_flatESET {
 ###   focus initialization
 set ma_focusESET [concat [globVal ma_flatESET] {
   {focus_file pareditablefile lamb_foc.dat {"focus file" "" "" G} w "" 1}
-  {fopt radio "constant lambda" {"focusing option" "choose the focusing geometry" "" g}
-    {"constant lambda" spherical "vert. cylinder" "double focussing"} {1 2 3 4}}
+  {fopt radio "double focusing" {"focusing option" "choose the focusing geometry.\nFor details see Help|monochromator" "" g} {"constant lambda" spherical "vert. cylinder" "double focusing"} {1 2 3 4}}
   {}
-  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element-matrix." "" H} gt0 "" 1}
-  {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element-matrix." "" V} gt0 "" 1}
+  {cehnum int 10 {"number of CE\nhorizontal" "The number of columns of the created crystal element matrix..\n1 for 'vert. cylinder'" "" H} gt0 "" 1}
+  {cevnum int 18 {"number of CE\nvertical" "The number of rows of the created crystal element matrix." "" V} gt0 "" 1}
   {}
-  {chradius float 200 {"radius\nhoriz. [cm]"
-    "Radius of focussing in horizontal direction for a double focussing cylindrical shape." "" s} ge0 "" 1}
-  {cradius float 200 {"radius\nvert. [cm]"
-    "Distance from the sample center to the bottom row of the crystal element-matrix." "" r} ge0 "" 1}
-  {cangle float 0 {"angle\nvert. [deg]"
-    "Angular offset of the bottom row of the crystal element-matrix relative to the horizontal plane containing the sample center." "" a} 1}
+  {chradius float 200 {"radius\nhor. [cm]" "Radius of focussing in horizontal direction for a double focusing monochromator." "" s} ge0 "" 1}
+  {cradius float 200 {"radius\nvert. [cm]" "lambda-focusing: distance from the sample center to the bottom row of the CE-matrix.\nspherical      : radius of the sphere\nvert. cylinder : radius of the vertical cylinder\ndouble focusing: Radius of focusing in vertical direction." "" r} ge0 "" 1}
+  {cangle float 0 {"angle\nvert. [deg]" "Angular offset  of the bottom row of the CE-matrix  relative to the monochromator center.\nThis parameter is not used for 'double focusing', (where a vertically symmetric arrangement is assumed)." "" a} 1}
   {}
-  {gaphor float 0.0 {"gap between\ncolumns  [cm]"
-    "Horizontal distance between columns of crystal elements\n(in the equatorial plane" "" h} ge0 "" 1}
-  {gapvert float 0.0 {"gap between\nrows  [cm]"
-    "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
+  {gaphor float 0.0 {"gap between\ncolumns  [cm]" "Horizontal distance between columns of crystal elements\n(in the equatorial plane" "" h} ge0 "" 1}
+  {gapvert float 0.0 {"gap between\nrows  [cm]" "Vertical distance between rows of crystal elements" "" v} ge0 "" 1}
   {}
-  {devhor float 0.0 {"orient. dev.\nhor. [deg]"
-    "Horizontal deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
-  {devvert float 0.0 {"orient. dev.\nvert. [deg]"
-    "Vertical deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
+  {devhor float 0.0 {"orient. dev.\nhor. [deg]" "Horizontal deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" t} ge0 "" 1}
+  {devvert float 0.0 {"orient. dev.\nvert. [deg]" "Vertical deviation from exact crystal orientation.\nValues in [-0.5*deviation,0.5*deviation]" "" T} "" 1}
 }]
 
 ### Monochromator analyser
@@ -2059,7 +2093,7 @@ set flipper_gradientESET {
   {ny int 2 {"in Y\ndirection" "Number of domains in the Y direction" "" D} gt0}
   {nz int 2 {"in Z\ndirection" "Number of domains in the Z direction" "" E} gt0}
 
-  {"Rotation of Precession Volume" header}  
+  {"Rotation of Precession Volume" header}
   {rotproc float 0 {"horizontal\noffset [deg]" "Horizontal (around axis OZ) angle of the field volume" "" i}}
 
   {"Output Frame" header}
@@ -2231,7 +2265,7 @@ set rotating_fieldESET {
 ###
 set quadr_fieldESET {
   {"Field range and strength" header}
-  {sf_bf pareditablefile field.dat {"field range file" "input file giving the range of the magnetic field" "" P}}
+  {sf_bf pareditablefile field.dat {"field range file" "Input file giving the range of the magnetic field" "" P}}
   {}
   {sf_mx float 0 {"magnetic\nfield X [Gs]" "x component of the magnetic field in Gauss" "" F}}
   {sf_my float 0 {"magnetic\nfield Y [Gs]" "y component of the magnetic field in Gauss" "" G}}
@@ -2844,7 +2878,7 @@ proc genFE {n} {
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the 1st parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  1     2     17    3     4      5     6      7   8   9   10     11       18       15      16          12    13    14}}
 }
 
@@ -2867,13 +2901,13 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
@@ -2930,14 +2964,14 @@ proc monitor1DCheckErr {{app _}} {
 set mA1 {
   {parameter1 radio pos_y {
     "parameter\non x-axis" "choose the parameter to be shown on the x-axis" "" X}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
 set mA2 {
   {parameter2 radio pos_z {
     "parameter\non y-axis" "choose the parameter to be shown on the y-axis" "" Y}
-    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set mAV {
@@ -2960,13 +2994,13 @@ set nA {
 set fA1 {
   {filter_param1 radio none {
     "filter\nparameter 1" "choose filter parameter 1 (optional)" "" I}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 set fA2 {
   {filter_param2 radio none {
     "filter\nparameter 2" "choose filter parameter 2 (optional)" "" J}
-    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color} 
+    {none pos_y pos_z pos_x div_y div_z lambda energy time k_y k_z pos_r pos_phi pos_theta dir_phi dir_theta col_vert col_hor color}
     {  0    1     2    17     3     4      5      6     7   8   9   10     11       18       15       16        12      13     14}}
 }
 
@@ -3360,6 +3394,11 @@ set sample_inelastESET {
   {}
   {temp float 1 {"temperature [K]" "temperature of the sample (only needed if use of the Bose factor is chosen)" "" T} gt0 "" 1}
   {reprate int 1 {repetition "number of trajectories generated per incoming trajectory" "" A} ge1 "" 1}
+  {"parameters to determine spin-flip due to incoherent scattering" header}
+  {msi float 0 {"Linear incoh-scattering\ncoeff.  [1/cm]" "Linear coefficient of incoherent scattering of the sample" "" Q} ge0 "" 1}
+  {mas float 1 {"Molecular\nmass [g/mol]" "Molecular mass of the sample" "" B} gt0 "" 1}
+  {den float 1 {"Density [g/cm^3]" "Macroscopic density of the sample" "" C} gt0 "" 1}
+
 }
 
 ### sample->ineleast
@@ -3404,12 +3443,61 @@ set ineESET {
 }
 
 
+### sample
+###   ncrystal
+
+set sample_ncrystalESET {
+  {"NCrystal Config string definition" header}
+  {refile parbrowsefile "scatter_default.ncmat" {"material\nfile" "File that contains the sample scattering information." "" f} r dat}
+  {temp float 1 {"Temperature [K]" "Temperature of the sample. Ignored when state of matter is gas or liquid." "" T}  gt0 "" 1}
+  {staofm radio yes {"Solid sample" "If the sample is solid please insert the desired crystal axis directions. If no, please give default values." "" s}  {no yes} {0 1}}
+  {"Crystal parameters" header}
+  {dcutoff float 0.5 {"d-cutoff [Ang]" "Minimum d-spacing (in Å) to consider in the simulation." "" d} gt0 "" 1}
+  {mos float 0 {"crystal mosaicity" "Crystal mosaicity to consider in the simulation." "" m} gt0 "" 1}
+    {dirtol float 0.0057 {"Axis 2 dir\ntolerance [deg]" "NCrystal specified tolerance on the crystal axis n. 2. Default is 1e-4 rad = 0.0057 deg." "" D} gt0 "" 1}
+  {"Crystal directions" header}
+  {inh float 0 {"Axis 1\nh" "This h-index specifies the crystallographic axis 'Axis 1'." "" h} ge0}
+  {ink float 0 {"Axis 1\nk" "This k-index specifies the crystallographic axis 'Axis 1'." "" k} ge0}
+  {inl float 0 {"Axis 1\nl" "This l-index specifies the crystallographic axis 'Axis 1'." "" l} ge0}
+  {inx float 0 {"Axis 1\ndir x" "Unit vector component x defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates." "" a} ge0}
+  {iny float 0 {"Axis 1\ndir y" "Unit vector component y defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates." "" b} ge0}
+  {inz float 0 {"Axis 1\ndir z" "Unit vector component z defining the orientation of the crystallographic axis 'Axis 1' in the NCrystal lab coordinates." "" c} ge0}
+  {ouh float 0 {"Axis 2\nh" "This h-index specifies the crystallographic axis 'Axis 2'." "" H} ge0}
+  {ouk float 0 {"Axis 2\nh" "This k-index specifies the crystallographic axis 'Axis 2'." "" K} ge0}
+  {oul float 0 {"Axis 2\nl" "This l-index specifies the crystallographic axis 'Axis 2'." "" L} ge0}
+  {oux float 0 {"Axis 2\ndir x" "Unit vector component x defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates." "" A} ge0}
+  {ouy float 0 {"Axis 2\ndir y" "Unit vector component y defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates." "" B} ge0}
+  {ouz float 0 {"Axis 2\ndir z" "Unit vector component z defining the orientation of the crystallographic axis 'Axis 2' in the NCrystal lab coordinates." "" C} ge0}
+  {"Repetitions of the same neutron event" header}
+  {reprate int 1 {repetition "number of trajectories generated per incoming trajectory" "" R} ge1 "" 1}
+  {"Sample shape" header}
+  {cyl radio "cylinder" {"sample\ngeometry" "geometry of the sample: cylinder, hollow cylinder sphere or cuboid" "" G} {cylinder hollow-cylinder sphere cuboid} {1 2 3 4}}
+  {"Sample position and size" header}
+  {x1 float 50 {"X [cm]" "position of the sample centre" "" X}}
+  {y1 float 0 {"Y [cm]" "position of the sample centre" "" Y}}
+  {z1 float 0 {"Z [cm]" "position of the sample centre" "" Z}}
+  {trad float 3 {"thickness or\ndiameter [cm]" "thickness of the sample in x direction or diameter in case of cylinder or sphere" "" t} gt0 "" 1}
+  {hei float 3 {"height [cm]" "heigtht of sample in z direction if cuboid or cylinder, no relevance if sphere" "" g} ge0 "" 1}
+  {wid float 3 {"inner diameter\nor width [cm]" "inner diameter of hollow cylinder or width of sample - inactiv for full cylinder option" "" w} ge0 "" 1}
+  {hoff float 0 {"offset angle\nhoriz. [deg]" "rotation angle of the sample about the z-axis in a horizontal plane (first rotation) to define its orientation" "" o}}
+  {voff float 0 {"offset angle\nvert. [deg]" "rotation angle of the sample about the (new) y-axis in a vertical direction (second rotation) to define its orientation" "" O}}
+  {"Incident neutron parameters" header}
+  {lam float 1 {"incident\nlambda" "incident neutron wavelength" "" M} ge0}
+  {"Output frame" header}
+  {x2 float 50 {"X' [cm]" "position of the output frame in the original frame along the beam axis" "" x} ge0}
+  {y2 float  0 {"Y' [cm]" "horizontal position of the output frame in the original frame (to the left)" "" y} ge0}
+  {z2 float  0 {"Z' [cm]" "vertical position of the output frame in the original frame" "" z} ge0}
+  {ha float 0 {"horiz. angle\n[deg]" "rotation angle of the output frame about the z-axis in horizontal (first rotation) plane\nrotation (0, 0) means along the original beam axix (x axis)" "" u}}
+  {va float 0 {"vert. angle\n[deg]" "rotation angle of the output frame about the (new) y-axis in a vertical direction (second rotation)\nrotation (0, 0) means along the original beam axix (x axis)" "" U}}
+  }
+
+
 ### sample_reflectom
 ###
 
 set sample_reflectomESET {
   {parfile pareditablefile "" {"parameter\nfile" "File that contains various sample data" "" P} w ref}
-  {refile parbrowsefile "" {"reflectivity\nfile" "File that contains the reflectivity of the sample as a function of momentum transfer. First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
+  {refile pareditablefile "" {"reflectivity\nfile" "File that contains the reflectivity of the sample as a function of momentum transfer. First column: momentum transfer [1/A]\nSecond column: reflectivity" "" I} r dat}
   {}
   {samref radio sample {mode "Select between sample (reflectivity data from the 'reflectivity file') and reference (reflectivity R=1 for all angles)" "" O} {sample reference} {1 2}}
   {axis radio Y {"axis of\nrotation" "Axis around which the sample is rotated." "" R} {Y Z}}
@@ -3559,12 +3647,12 @@ set eval_elastESET {
   {}
   {"TOF option" header}
   {tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+    "time of\nflight" "yes: wavelength from TOF and flight path \nno : reference wavelength used" "" w}  {yes no} {1 0}}
   {tofcor radio yes {
     "correct tof\nto distance" "correct TOF for real flight path from sample to detector" "" t}  {no yes} {0 1}}
   {}
   {fpath float "" {
-    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+    "flight\npath [cm]" "length of total neutron flight path from origin (=source or pulse chopper) to detector, needed only for time of flight analysis" "" l} gt0}
   {ddist float "" {
     "sample-detector\ndistance [cm]" "nominal distance from sample to detector" "" D} ge0}
   {toff float 0 {
@@ -3643,12 +3731,12 @@ set eval_elast2ESET {
     "Scatt. angle\nselection" "Select the way how the scattering angle is determined" "" D}  {direction position} {0 1}}
   {}
   {tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+    "time of\nflight" "yes: wavelength from TOF and flight path \nno : true wavelength of the neutron used (which cannot be determined)" "" w}  {yes no} {1 0}}
   {tofcorr radio yes {
     "correct tof\nto distance" "correct TOF to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {}
   {fpath float "" {
-    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+    "flight\npath [cm]" "length of total neutron flight path from origin (=source or pulse chopper) to detector, needed only for time of flight analysis" "" l} gt0}
   {sdpath float "" {
     "sample-detector\ndistance [cm]" "length of the shortest sample to detector distance" "" L} gt0}
   {toff float 0 {
@@ -3703,7 +3791,7 @@ proc eval_elast2CheckErr {{app _}} {
 set eval_sansESET {
   {sn_ifile moneditablefile sans.eva {"intensity\nfile" "The output file containing the intensity distribution I(Q) at the detector (of this simulation)" "" i}}
   {sn_sfile moneditablefile "" {"S(Q) file" "The output file containing the result S(Q) calculated from this intensity distribution and that of the reference file as S(Q) = F_norm * I_smpl(Q) / I_ref(Q)" "" S}}
-  {sn_rfile pareditablefile "" {"reference\nfile" "The input file containing the intensity distribution I(Q) at the detector for isotropic scattering\n only needed for S(Q)" "" I}}
+  {sn_rfile pareditablefile "" {"reference\nfile" "The Input file containing the intensity distribution I(Q) at the detector for isotropic scattering\n only needed for S(Q)" "" I}}
   {sn_nbins int 100 {"number\nof bins" "number of bins determines the segmentation of the Q interval and therewith the number of values written to the spectrum file" "" n} 1 10000}
   {sn_mina float 0.001 {"minimum\n[1/Ang]" "lower bound of the Q-value interval" "" m} ge0}
   {sn_maxa float 1 {    "maximum\n[1/Ang]" "upper bound of the Q-value interval" "" M} gt0}
@@ -3719,13 +3807,13 @@ set eval_sansESET {
     "normalisation\nfactor" "The ratio of intensity of the isotropic scatterer to the SANS sample in forward direction (Q=0)" "" p} gt0}
   {}
   {sn_tof radio no {
-    "time of\nflight" "(de-)activates time of flight analysis" "" w}  {yes no} {1 0}}
+    "time of\nflight" "yes: wavelength from TOF and flight path \nno : reference wavelength used" "" w}  {yes no} {1 0}}
   {sn_tcor radio yes {
     "correct tof\nto distance" "correct TOF to constant sample-detector distance" "" t}  {yes no} {1 0}}
   {}
   {"TOF option" header}
   {sn_fpath float "" {
-    "flight\npath [cm]" "length of total neutron flight path, needed only for time of flight analysis" "" l} gt0}
+    "flight\npath [cm]" "length of total neutron flight path from origin (=source or pulse chopper) to detector, needed only for time of flight analysis" "" l} gt0}
   {sdpath float "" {
     "sample-detector\ndistance [cm]" "length of the shortest sample to detector distance" "" L} gt0}
   {sn_toff float 0 {
@@ -3769,8 +3857,8 @@ proc eval_sansCheckErr {{app _}} {
 ###   inelast
 
 set eval_inelastESET {
-  {tofile moneditablefile tofsp.eva {"TOF\nspectrum file" "Filename for the TOF spectrum datafile." "" E}}
-  {efile moneditablefile energysp.eva {"energy\nspectrum file" "Filename for the energy spectrum datafile." "" G}}
+  {tofile moneditablefile tofsp_up.eva {"TOF spectrum file\nspin up" "Filename for the TOF spectrum datafile of neutrons with spin up." "" E}}
+  {efile moneditablefile energysp_up.eva {"energy spectrum file\nspin up" "Filename for the energy spectrum datafile of neutrons with spin up." "" G}}
   {diroinv radio "direct geometry" {geometry "Choose geometry type of TOF instrument." "" A} {"direct geometry" "inverted geometry"} {0 1}}
   {tof_cor radio yes {"correct tof\nto distance" "direct geometry only: correct TOF for real flight path length from sample to detector" "" t}  {no yes} {0 1}}
   {}
@@ -3791,6 +3879,9 @@ set eval_inelastESET {
   {}
   {angdeg float 0  {"angle [deg]" "The user can select those neutrons which cross a smaller area on the detector surface by giving the angular position ('angle' relative to the X-axis) and width ('angle range') of a window in horizontal direction. In vertical direction no restriction is possible." "" j}}
   {angran float 180 {"angle\nrange [deg]" "(see angle description)" "" k} gt0}
+  {}
+  {toff_flip moneditablefile tofsp_down.eva {"TOF spectrum file\nspin down" "Filename for the TOF spectrum datafile of neutron spin down." "" H}}
+  {eff_flip moneditablefile energysp_down.eva {"energy spectrum file\spin down" "Filename for the energy spectrum datafile of neutron spin down." "" T}}
 }
 
 proc eval_inelastCheckErr {{app _}} {
@@ -3991,6 +4082,30 @@ set mirror_ellipticalESET {
   {himidi float 55.0 {"Air Himidity [%]" "Choose himidity of air" "" r} gt0}
 }
 # end new manoshine
+
+### prism
+###
+set prismESET {
+  {"Geometry description of each prism in the matrix" header}
+  {prw float 0.035 {"Prism base\nwidth [cm]" "Dimension of each prism along the neutron beam direction x [cm]" "" b} gt0}
+  {prh float 0.025 {"Prism base\nheight [cm]" "Dimension of each prism along the vertical direction z [cm]" "" h} gt0}
+  {eaw float 3 {"Prism height [cm]" "Width of each prism along the horizontal direction y [cm]" "" z} gt0}
+
+  {"Description of the prisms matrix" header}  
+  {noc int 16 {"Number of columns" "Number of prisms columns along the neutron beam direction x [#]" "" P} gt0}
+  {nor int 40 {"Number of rows" "Number of vertical layers of prisms [#]" "" k} gt0}
+  
+  {"Special option" header}
+  {abs radio yes {"Layer can absorb"
+    "no: Layer absorption is neglected,\nyes: Non refracted neutrons pass to the next layer" "" y}
+    {yes no} {1 0}}
+
+  {"Material description" header}
+  {scden float 2 {"Scattering \nLength Density [10^-6 Å^-2]" "Scattering length density of the material. Typical values in the range 10^-6 Å^-2" "" N} gt0}
+  {sci float 10 {"Incoherent c.\nsection[barns]" "Incoherent cross section" "" S} ge0}
+  {sca float 10 {"Absorption c.\nsection[barns]" "Absorption cross section" "" s} ge0}
+  {den float 1 {"Density [g/cm^3]" "Material density in g/cm^3" "" D} gt0}
+}
 
 ### Tool
 ### Compute Chopper Phases
@@ -4307,7 +4422,7 @@ First Xcontrol was adopted to the NEAT neutron scattering experiment,
 developed at HMI department I/DN.
 
 
-Contact: fromme@helmholtz-berlin.de
+Contact:  
 }
 
 helpItem External-Commands {
@@ -4379,7 +4494,7 @@ proc cleanupModView {} {
 
 proc highlightSelectedModule {{i -1}} {
   # highlight selected module
-  global maxModule Mlf bgColor entryColor
+  global maxModule Mlf bgColor fgColor entryColor
   for {set ii 0} {$ii < $maxModule} {incr ii} {
     if [winfo exists $Mlf.g$ii.label] {
       if {$ii == $i} {
@@ -4395,7 +4510,7 @@ proc highlightSelectedModule {{i -1}} {
 ###
 proc checkModVar {i {wishedmode ""}} {
 
-  global DummyEntry Amf Mlf bgColor VisibleModule
+  global DummyEntry Amf Mlf bgColor fgColor VisibleModule
   set VisibleModule $i
   set w $Mlf.g$i
   set varName mod$i
@@ -4435,8 +4550,8 @@ proc checkModVar {i {wishedmode ""}} {
 	helpFrame $wm
       } else {
 	fGroup $wm.h $wm.$var
-	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor
-        entry $wm.h.mname -width 6 -bg $bgColor -textvariable mmm_$i
+	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor -fg $fgColor
+        entry $wm.h.mname -width 6 -bg $bgColor -fg $fgColor -textvariable mmm_$i
         bind  $wm.h.mname <KeyRelease> "showModName $i"
         bind  $wm.h.mname <Leave> "showModName $i"
         pack $wm.h.mname -side left
@@ -5134,10 +5249,10 @@ proc editFile {var param ext app} {
 
   fGroup $w.v $w.b
   if {[set serializeproc [getSerializeProc $ext]] == ""} {
-    global bgColor
+    global bgColor fgColor
     text $w.v.text -relief raised -bd 2 \
 	-height 32 -width 80\
-	-font [monoFont] -bg $bgColor\
+	-font [monoFont] -bg $bgColor -fg $fgColor\
 	-setgrid 1\
 	-yscrollcommand "$w.v.yscroll set"
     yscroll $w.v "$w.v.text yview"
@@ -5178,6 +5293,19 @@ proc trimModules {w i rmlist deflist} {
     global $l
     catch {unset $l}
   }
+  # redefine saved entry variables for shifted module
+  foreach item $deflist {
+    global [set gvar [lindex $item 0]]
+    set $gvar [lindex $item 1]
+  }
+  # reactivate saved modules for new indices
+  reShowModules $w
+
+  # show given names of modules
+  showModName
+}
+
+proc reorderModules {w deflist} {
   # redefine saved entry variables for shifted module
   foreach item $deflist {
     global [set gvar [lindex $item 0]]
@@ -5243,6 +5371,114 @@ proc moveDown {oldi} {
   trimModules $w $oldi $rmlist $deflist
 }
 
+proc moveUp {oldi} {
+  set movei [expr {$oldi+1}]
+  moveDown $movei
+}
+
+proc swapWithPrevious {oldi} {
+  global maxModule DummyEntry Mlf
+  # Check if oldi is within a valid range
+  if {$oldi <= 1} {
+    puts "Cannot swap the first module with a previous module."
+    return
+  }
+
+  set prevI [expr {$oldi - 1}]
+  set allglob [info globals]
+  set w $Mlf
+
+  upvar #0 visM$oldi visOld
+  upvar #0 visM$prevI visPrev
+  upvar #0 mod$oldi modOld
+  upvar #0 mod$prevI modPrev
+
+  # Save current module states
+  set visOldVal [globVal visM$oldi]
+  set visPrevVal [globVal visM$prevI]
+  set modOldVal [globVal mod$oldi]
+  set modPrevVal [globVal mod$prevI]
+
+  # Prepare lists for variables to remove and define
+  set rmlist {}
+  set deflist {}
+
+  # Remove and define vis and mod variables for swapping
+  lappend rmlist visM$oldi mod$oldi visM$prevI mod$prevI
+  lappend deflist [list visM$oldi $visPrevVal] [list mod$oldi $modPrevVal]
+  lappend deflist [list visM$prevI $visOldVal] [list mod$prevI $modOldVal]
+
+  # Loop through all globals to swap specific module-related variables
+  set rOld _$oldi\$
+  set rPrev _$prevI\$
+  foreach n $allglob {
+    if {[regexp $rOld $n] || [regexp $rPrev $n]} {
+      lappend rmlist $n
+      if {[regexp $rOld $n]} {
+        regsub $rOld $n _$prevI newr
+        lappend deflist [list $newr [globVal $n]]
+      } elseif {[regexp $rPrev $n]} {
+        regsub $rPrev $n _$oldi newr
+        lappend deflist [list $newr [globVal $n]]
+      }
+    }
+  }
+
+  # Apply changes
+  reorderModules $w $deflist
+}
+
+proc swapWithFollowing {oldi} {
+  global maxModule DummyEntry Mlf
+  # Check if oldi is within a valid range
+  if {$oldi >= $maxModule} {
+    puts "Cannot swap the last module with an inactive module."
+    return
+  }
+
+  set follI [expr {$oldi + 1}]
+  set allglob [info globals]
+  set w $Mlf
+
+  upvar #0 visM$oldi visOld
+  upvar #0 visM$follI visFoll
+  upvar #0 mod$oldi modOld
+  upvar #0 mod$follI modFoll
+
+  # Save current module states
+  set visOldVal [globVal visM$oldi]
+  set visFollVal [globVal visM$follI]
+  set modOldVal [globVal mod$oldi]
+  set modFollVal [globVal mod$follI]
+
+  # Prepare lists for variables to remove and define
+  set rmlist {}
+  set deflist {}
+
+  # Remove and define vis and mod variables for swapping
+  lappend rmlist visM$oldi mod$oldi visM$follI mod$follI
+  lappend deflist [list visM$oldi $visFollVal] [list mod$oldi $modFollVal]
+  lappend deflist [list visM$follI $visOldVal] [list mod$follI $modOldVal]
+
+  # Loop through all globals to swap specific module-related variables
+  set rOld _$oldi\$
+  set rFoll _$follI\$
+  foreach n $allglob {
+    if {[regexp $rOld $n] || [regexp $rFoll $n]} {
+      lappend rmlist $n
+      if {[regexp $rOld $n]} {
+        regsub $rOld $n _$follI newr
+        lappend deflist [list $newr [globVal $n]]
+      } elseif {[regexp $rFoll $n]} {
+        regsub $rFoll $n _$oldi newr
+        lappend deflist [list $newr [globVal $n]]
+      }
+    }
+  }
+
+  # Apply changes
+  reorderModules $w $deflist
+}
 
 proc removeMod {oldi} {
   global maxModule DummyEntry Mlf
@@ -5332,8 +5568,88 @@ proc disableModule {{i ""} {reenable 0}} {
   }
 }
 
+proc duplicateModule {oldi} {
+  global maxModule DummyEntry Mlf
+  # Check if oldi is within a valid range
+  if {$oldi < 1 || $oldi >= $maxModule} {
+      puts "Cannot duplicate module outside the valid range."
+      return
+  }
+
+  #generate an empty module above
+  moveDown $oldi
+
+  set prevI [expr {$oldi + 1}]
+  set allglob [info globals]
+  set w $Mlf
+
+  upvar #0 visM$oldi visOld
+  upvar #0 visM$prevI visPrev
+  upvar #0 mod$oldi modOld
+  upvar #0 mod$prevI modPrev
+
+  # Save current module states
+  set visOldVal [globVal visM$prevI]
+  set visPrevVal [globVal visM$prevI]
+  set modOldVal [globVal mod$prevI]
+  set modPrevVal [globVal mod$prevI]
+
+  # Prepare lists for variables to remove and define
+  set rmlist {}
+  set deflist {}
+
+  # Remove and define vis and mod variables for swapping
+  lappend rmlist visM$oldi mod$oldi visM$prevI mod$prevI
+  lappend deflist [list visM$oldi $visPrevVal] [list mod$oldi $modPrevVal]
+  lappend deflist [list visM$prevI $visOldVal] [list mod$prevI $modOldVal]
+
+  # Loop through all globals to swap specific module-related variables
+  set rOld _$oldi\$
+  set rPrev _$prevI\$
+  foreach n $allglob {
+    if {[regexp $rOld $n] || [regexp $rPrev $n]} {
+      lappend rmlist $n
+      if {[regexp $rOld $n]} {
+        regsub $rOld $n _$prevI newr
+        lappend deflist [list $newr [globVal $n]]
+      } elseif {[regexp $rPrev $n]} {
+        regsub $rPrev $n _$oldi newr
+        lappend deflist [list $newr [globVal $n]]
+      }
+    }
+  }
+
+  # Apply changes
+  reorderModules $w $deflist
+}
+
+proc copyModulePars {ci} {
+  upvar #0 visM$ci current
+  global DummyEntry CopiedPars CopiedValues
+  if {$ci == $DummyEntry} return
+  set cp {}; set cv {}
+  foreach n [info globals] {
+    if [regexp (.+)_$ci\$ $n a pa] {
+      lappend cp $pa
+      lappend cv [globVal $n]
+    }
+  }
+  set CopiedPars($current) $cp
+  set CopiedValues($current) $cv
+}
+
+proc pasteModulePars {ci} {
+  upvar #0 visM$ci current
+  global CopiedPars CopiedValues
+  if [catch {set cp $CopiedPars($current); set cv $CopiedValues($current)}] return
+
+  foreach p $cp cci $cv {
+    gSet ${p}_$ci $cci
+  }
+}
+
 proc addModMenu {w i} {
-  global DummyEntry menuColor labColor maxModule
+  global DummyEntry menuColor labColor bgColor fgColor maxModule
 
   # start popup menu with module number title
   set mlist [list [list S "Module $i"]]
@@ -5343,8 +5659,14 @@ proc addModMenu {w i} {
   for {set j $i} {$j <= $maxModule} {incr j} {
     set act [globVal mod$j]
     if {$act != "" && $act != $DummyEntry} {
-      lappend mlist s [list c "Move Down" [list moveDown $i]]\
-          [list c "Remove Module" [list removeMod $i]]
+      lappend mlist s [list c "Insert module above" [list moveDown $i]]\
+          [list c "Insert module below" [list moveUp $i]]\
+          [list c "Move Up" [list swapWithPrevious $i]]\
+          [list c "Move Down" [list swapWithFollowing $i]]\
+          [list c "Duplicate module" [list duplicateModule $i]]\
+          [list c "Copy module Pars" [list copyModulePars $i]]\
+          [list c "Paste module Pars" [list pasteModulePars $i]]\
+          [list c "Remove module" [list removeMod $i]]
       break
     }
   }
@@ -5369,7 +5691,7 @@ proc addModMenu {w i} {
       destroy $w.c
     }
   } else {
-    menubutton $w -text $ti -font [headerFont] -bg $labColor -relief raised -menu $w.c
+    menubutton $w -text $ti -font [headerFont] -bg $bgColor -fg $fgColor -relief raised -menu $w.c
   }
   menu $w.c -bg $menuColor -tearoff 0
   eval popMenu $w.c $mlist
@@ -5378,7 +5700,7 @@ proc addModMenu {w i} {
 ### moduleMenus
 ###
 proc moduleMenus {{n 1}} {
-  global AvailableSET maxModule DummyEntry Mlf bgColor labColor radioColor menuColor menuButtonColor tcl_platform
+  global AvailableSET maxModule DummyEntry Mlf bgColor fgColor labColor radioColor menuColor menuButtonColor tcl_platform
   set fn [headerFont]
   set lfn [labelFont]
   set tfn [textFont]
@@ -5399,9 +5721,9 @@ proc moduleMenus {{n 1}} {
   } elseif {! [winfo exists $w]} {
     Frame $w
     button $w.cross -image fcross -command removeDigest
-    button $w.right -image fright -command digestView
+    button $w.right -image fright -command digestView -bg $bgColor -fg $fgColor
     label $w.l -text "Instrument Digest"\
-	-font $lfn -bg $menuButtonColor
+	-font $lfn -bg $bgColor -fg $fgColor
     pack $w.cross -side left  -anchor w
     pack $w.right -side right -padx 1 -anchor w
     pack $w.l -side top -fill x -anchor w
@@ -5426,19 +5748,20 @@ proc moduleMenus {{n 1}} {
 
     if {$tcl_platform(os) == "Darwin"} {
       # add a label we will adopt for disabled modules
-      label $w.right -text $i -font $fn -bg $labColor
+      label $w.right -text $i -font $tfn -bg $bgColor -fg $fgColor
       bind $w.right <ButtonPress> "checkModVar $i here"
     } else {
-      button $w.right -image fright -command "checkModVar $i here"
+      button $w.right -image fright -command "checkModVar $i here" \
+      -bg $bgColor -fg $fgColor
     }
 
-    label $w.nlabel -font $tfn -bg $bgColor
+    label $w.nlabel -font $tfn -bg $bgColor -fg $fgColor
 
     set wm $w.opt.menu
     menubutton $w.opt -textvariable $varName -indicatoron 1 \
-	-menu $wm -font $lfn -relief raised -bd 2 -width 18 \
-	-highlightthickness 2 -anchor c -bg $menuButtonColor
-    menu $wm -tearoff 0 -bg $menuColor
+	-menu $wm -font $lfn -bg $bgColor -fg $fgColor -relief raised -bd 2 -width 18 \
+	-highlightthickness 2 -anchor c
+    menu $wm -tearoff 0 -bg $bgColor -fg $fgColor
     $wm add radiobutton -label $DummyEntry -variable $varName \
 	-command $cm -font $lfn
     foreach label $AvailableSET {
@@ -5449,7 +5772,7 @@ proc moduleMenus {{n 1}} {
       } else {
 	set subm $wm.$j
 	$wm add cascade -label $j -menu $subm -font $lfn
-	menu $subm -tearoff 0
+	menu $subm -tearoff 0 -bg $bgColor -fg $fgColor
 	foreach jj $subl {
 	  $subm add radiobutton -label $jj -variable $varName \
 	      -command $cm -font $lfn
@@ -5464,7 +5787,6 @@ proc moduleMenus {{n 1}} {
 
   disableModule ;  # set all modules enabled
 }
-
 
 # Unset temporary help variables used here, variables matching single characters,
 # or with Add in the end are deleted by setAll.

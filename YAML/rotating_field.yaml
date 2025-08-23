@@ -1,0 +1,317 @@
+rotating_field:
+  - category: "magnetic_field"
+
+  - Title_param:
+      type: "title"
+      default: "Geometry Description of the Precession Volume"
+
+  - fx:
+      type: "float"
+      descr: "dim. of common field X [cm]"
+      tooltip: "Length of the cuboidel magnetic fields"
+      default: 10
+      column: 0
+      prefix: "-X"
+      min: 1.0e-6
+
+  - fy:
+      type: "float"
+      descr: "dim. of common field Y [cm]"
+      tooltip: "Width of the cuboidel magnetic fields"
+      default: 10
+      column: 1
+      prefix: "-Y"
+      min: 1.0e-6
+
+  - fz:
+      type: "float"
+      descr: "dim. of common field Z [cm]"
+      tooltip: "Height of the cuboidel magnetic fields"
+      default: 10
+      column: 2
+      prefix: "-V"
+      min: 1.0e-6
+
+  - px:
+      type: "float"
+      descr: "position main X [cm]"
+      tooltip: "Center position of the field map"
+      default: 5
+      column: 0
+      prefix: "-k"
+
+  - py:
+      type: "float"
+      descr: "position main Y [cm]"
+      tooltip: "Center position of the field map"
+      default: 0
+      column: 1
+      prefix: "-l"
+
+  - pz:
+      type: "float"
+      descr: "position main Z [cm]"
+      tooltip: "Center position of the field map"
+      default: 0
+      column: 2
+      prefix: "-m"
+
+  - Title_param:
+      type: "title"
+      default: "Rotation of Precession Volume"
+
+  - rotproc:
+      type: "float"
+      descr: "horizontal offset [deg]"
+      tooltip: "Angle by which the magnetic field area is rotated about the Z axis"
+      default: 0
+      column: 0
+      prefix: "-i"
+
+  - Title_param:
+      type: "title"
+      default: "Output Plane"
+
+  - ox:
+      type: "float"
+      descr: "output X [cm]"
+      tooltip: "position of the output frame (in the input frame)"
+      default: 10
+      column: 0
+      prefix: "-p"
+
+  - oy:
+      type: "float"
+      descr: "output Y [cm]"
+      tooltip: "position of the output frame (in the input frame)"
+      default: 0
+      column: 1
+      prefix: "-r"
+
+  - oz:
+      type: "float"
+      descr: "output Z [cm]"
+      tooltip: "position of the output frame (in the input frame)"
+      default: 0
+      column: 2
+      prefix: "-s"
+
+  - Title_param:
+      type: "title"
+      default: "Number of Domains"
+
+  - nx:
+      type: "int"
+      descr: "domains in X direction"
+      tooltip: "Number of domains in X direction"
+      default: 40
+      column: 0
+      prefix: "-C"
+      min: 1
+
+  - ny:
+      type: "int"
+      descr: "domains in Y direction"
+      tooltip: "Number of domains in Y direction"
+      default: 20
+      column: 1
+      prefix: "-D"
+      min: 1
+
+  - nz:
+      type: "int"
+      descr: "domains in Z direction"
+      tooltip: "Number of domains in Z direction"
+      default: 20
+      column: 2
+      prefix: "-E"
+      min: 1
+
+  - Title_param:
+      type: "title"
+      default: "Rotating Magnetic Field"
+
+  - inampld:
+      type: "file"
+      plottable: false
+      editable: true
+      descr: "file amplitude distribution"
+      tooltip: "Name of the file for describing the amplitude distribution"
+      default: "ampld.dat"
+      column: 0
+      prefix: "-t"
+
+  - mf:
+      type: "float"
+      descr: "magnetic field amplitude [Gs]"
+      tooltip: "Strength or amplitude of the rotating magnetic field in Gauss"
+      default: 5000
+      column: 0
+      prefix: "-d"
+      min: 0
+
+  - rf:
+      type: "float"
+      descr: "rotation frequency [Hz]"
+      tooltip: "Rotation frequency of the magnetic field"
+      default: 300000
+      column: 1
+      prefix: "-w"
+
+  - bp:
+      type: "float"
+      descr: "begin phase [deg] "
+      tooltip: "Initial phase for the rotating magnetic field"
+      default: 0
+      column: 2
+      prefix: "-z"
+
+  - devamp:
+      type: "float"
+      descr: "deviation of amplitude [%]"
+      tooltip: "Fluctuation of the amplitude of the rotating magnetic field in percent"
+      default: 0
+      column: 0
+      prefix: "-a"
+      min: 0
+
+  - deffreq:
+      type: "float"
+      descr: "deviation of frequency [%]"
+      tooltip: "Fluctuation of the frequency of the magnetic field in percent"
+      default: 0
+      column: 1
+      prefix: "-b"
+      min: 0
+
+  - rax:
+      type: "int"
+      descr: "rotating  field axis"
+      tooltip: "direction about which the field rotates: 0: x-axis, 1: y-axis, 2: z-axis"
+      min: 0
+      max: 2
+      default: 0
+      column: 0
+      prefix: "-M"
+
+  - tofprec:
+      type: "switch"
+      descr: "TOF from prec. module"
+      tooltip: "Use of TOF for the rotating field phase 'yes': TOF from preceding modules 'no' TOF = 0.0"
+      default: true
+      column: 1
+      prefix: "-n"
+
+  - disamp:
+      type: "int"
+      descr: "amplitude distribution"
+      tooltip: "Distribution of the amplitudes of the rotating magnetic field along flight direction (see Help|MagneticField)"
+      min: 0
+      max: 4
+      default: 3
+      column: 2
+      prefix: "-e"
+
+  - disfreq:
+      type: "int"
+      descr: "frequency distribution"
+      tooltip: "Distribution of frequencies of the rotating  magnetic field (see Help|MagneticField)"
+      min: 0
+      max: 2
+      default: 2
+      column: 0
+      prefix: "-v"
+
+  - Title_param:
+      type: "title"
+      default: "Permanent Magnetic Fields"
+
+  - pmx:
+      type: "float"
+      descr: "component X [Gs]"
+      tooltip: "X component (projection in the axis) of the permanent magnetic field in Gauss"
+      default: 0
+      column: 0
+      prefix: "-I"
+
+  - pmy:
+      type: "float"
+      descr: "component Y [Gs]"
+      tooltip: "Y component (projection in the axis) of the permanent magnetic field in Gauss"
+      default: 0
+      column: 0
+      prefix: "-A"
+
+  - pmz:
+      type: "float"
+      descr: "component Z [Gs]"
+      tooltip: "Z component (projection in the axis) of the permanent magnetic field in Gauss"
+      default: 0
+      column: 1
+      prefix: "-K"
+
+  - addrand:
+      type: "float"
+      descr: "additional random magnetic field, [Gs]"
+      tooltip: "Amplitude of a additional random magnetic field"
+      default: 0
+      column: 2
+      prefix: "-q"
+      min: 0
+
+  - Title_param:
+      type: "title"
+      default: "Additional Options"
+
+  - opolout:
+      type: "file"
+      plottable: false
+      editable: false
+      descr: "output file polarisation"
+      tooltip: "Name of a file for output results:  polarisation"
+      default: "revp.dat"
+      column: 0
+      prefix: "-O"
+
+  - omag:
+      type: "file"
+      plottable: false
+      editable: false
+      descr: "output file magnetic field"
+      tooltip: "Name of a file for output results:  magnetic field"
+      default: "revm.dat"
+      column: 0
+      prefix: "-N"
+
+  - calcwav:
+      type: "float"
+      descr: "wavelength for calc. [A]"
+      tooltip: "Wavelength for the calculation of conditions for PI-flipping"
+      default: 20.0
+      column: 0
+      prefix: "-W"
+      min: 1.0e-6
+
+  - ores:
+      type: "switch"
+      descr: "output results"
+      tooltip: "Output of intermediate results of the simulation in a file"
+      default: false
+      column: 0
+      prefix: "-S"
+
+  - fieldcalc:
+      type: "switch"
+      descr: "rotating field calculation"
+      tooltip: "Calculation of the amplitude of the rotating field according to the given wavelength ('wavelength for calc.') and the length (X dir.) of the common field"
+      default: false
+      column: 1
+      prefix: "-x"
+
+  - btrap:
+      type: "switch"
+      descr: "bootstrap"
+      tooltip: "Use or do not use a bootstrap configuration"
+      default: false
+      column: 2
+      prefix: "-T"

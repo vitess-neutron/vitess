@@ -1,0 +1,9 @@
+#!/bin/sh
+[ -z "$V" ] && V=/tmp/vitess/MODULES
+[ -z "$P" ] && P=/tmp/vitess/FILES/EXAMPLES/SingleCrystalDiffr
+[ -z "$L" ] && L=/tmp/vitess66618996vpipelog
+SUFFIX="$(uname -s)_$(uname -m)"
+$V/source_${SUFFIX} -S2 --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N1 --L${L}01 -R50 -N- -L1 -a$P/IpnsThermPois.mod -n1000000 -l1 -m0.38 -t0.001 -M0.8 -T0.05 -d0 -b0.0 -c0.0 -y0.5 -z0.5 -D0 -w6 -h10 -i0 -s200 -X0 -Y0 -V-1 -P0 -A0 -k0 | $V/monitor1_${SUFFIX} -k2 --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N2 --L${L}02 -O$P/time_source.dat -n50 -C-1 -f0 -c0 -m0.001 -M0.05 -p1 -e0 -l-1.0 -L-1.0 | $V/sample_singcryst_${SUFFIX} --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N3 --L${L}03 -P$P/sample_singcryst.par -S$P/singcryst_structuref.dat -c0 -o1 -d0.0005 | $V/monitor1_${SUFFIX} -k3 --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N4 --L${L}04 -O$P/divy.dat -n299 -C-1 -f0 -c0 -m-25 -M25 -p1 -e0 -l-1.0 -L-1.0 | $V/monitor1_${SUFFIX} -k4 --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N5 --L${L}05 -O$P/divz.dat -n10 -C-1 -f0 -c0 -m-25 -M25 -p1 -e0 -l-1.0 -L-1.0 | $V/mon2_div_${SUFFIX} --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N6 --L${L}06 -O$P/div.dat -w-90 -h-90 -W90 -H90 -y100 -z100 -p1 -e0 -F0 -l-1.0 -L-1.0 | $V/spacewindow_${SUFFIX} --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N7 --L${L}07 -l32 -R0 -r10 -y0 -z0 -w-16 -W16 -h-16 -H16 -A0.0 -S0 -F0 -p-1 -P-1 -f-1 -d0 -c6 -t0.1 -T0 | $V/monitor1_${SUFFIX} -k2 --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N8 --L${L}08 -O$P/times.dat -n299 -C-1 -f1 -c0 -m1.55 -M1.555 -p1 -e1 -l-1.0 -L-1.0 | $V/mon2_pos_${SUFFIX} --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N9 --L${L}09 -O$P/pos.dat -w-16 -h-16 -W16 -H16 -y100 -z100 -p1 -e0 -F0 -l-1.0 -L-1.0 | $V/monitor1_${SUFFIX} -k1 --Z21 --U1.0e-26 --G0 --T0 --B10000 --P$P --N10 --L${L}10 -O$P/lambda_s.dat -n25 -C-1 -m0.38 -M0.8 -f0 -c0 -p1 -e0 -t-1.e10 -T1.e10 --Fno_file
+rm -f $P/result.txt
+cat ${L}?? >> $P/result.txt
+rm ${L}*

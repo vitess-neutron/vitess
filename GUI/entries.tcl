@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@helmholtz-berlin.de
+### M. Fromme  
 ### June 1999
 
 proc showRange {name e op} {
@@ -116,10 +116,10 @@ proc myEntry {w variable width {app ""} {line ""}} {
 }
 
 proc optEntry {w var items} {
-  global bgColor radioColor
+  global bgColor radioColor buttonColorFont
   menubutton $w -textvariable $var -indicatoron 1 -menu $w.menu \
 	    -relief raised -bd 2 -highlightthickness 2 -anchor c \
-	    -direction flush -bg $radioColor -font [textFont]
+	    -direction flush -bg $radioColor -fg $buttonColorFont -font [textFont]
   menu $w.menu -tearoff 0
   foreach i $items {
     $w.menu add radiobutton -label $i -variable $var
@@ -137,7 +137,7 @@ proc valEntryLabel {w variable label labelwidth width {app _}} {
 }
 
 proc fileEntry {w line labelwidth width {app _}} {
-  global bgColor radioColor FontSizeIndex tcl_platform
+  global bgColor radioColor buttonColorFont FontSizeIndex tcl_platform
   lFrame $w
   set variable [lindex $line 0]
   forceDef $variable$app [lindex $line 2]
@@ -165,13 +165,13 @@ proc fileEntry {w line labelwidth width {app _}} {
     set el [lindex [lindex $line 3] 2]
     if {$el == "n"} {set fel 0} else {set fel 1}
   }
- 
+
   # reduced width to save place, use text length - 2
   if {$FontSizeIndex >= 1 || $tcl_platform(os) == "Darwin"} {
     set ww1 7
     set ww2 4
   } else {
-    set ww1 4
+    set ww1 5
     set ww2 2
   }
   set fnt [ssbuttonFont]
@@ -206,7 +206,7 @@ proc fileEntry {w line labelwidth width {app _}} {
       # Autoplot selection
       # toggle has a special _r_app variable name
       forceDef [set var ${variable}_r$app] $mondefault
-      checkbutton $w.r -text AutoPlot -variable $var -bg $radioColor
+      checkbutton $w.r -text AutoPlot -variable $var -bg $bgColor
       # template radio selection
       set tlist [getPlotTemplates]
       if {[llength $tlist] > 0} {
@@ -303,7 +303,7 @@ proc logVal {v} {
 ### we separate items in two or more rows
 ###
 proc radioRowlpar {w line app {lwidth 12}} {
-  global bgColor radioColor
+  global bgColor radioColor buttonColorFont
   set font [textFont]
   forceDef [set var [lindex $line 0]$app] [lindex $line 2]
   boundLabel $w.l $line $lwidth
@@ -315,7 +315,7 @@ proc radioRowlpar {w line app {lwidth 12}} {
   pack $w.f$c -side top
   foreach f [lindex $line 4] {
     radiobutton $w.f$c.b$i -text $f -font $font \
-	-variable $var -value $f -bg $radioColor
+	-variable $var -value $f -bg $radioColor -fg $buttonColorFont
     pack $w.f$c.b$i -in $w.f$c -padx 0.5m -side left -anchor w
     incr i
     incr testlen [expr 4 + [string length $f]]
@@ -332,7 +332,7 @@ proc radioRowlpar {w line app {lwidth 12}} {
 ###  column of radiobuttons
 ###
 proc radioRowlpar_down {w line app {lwidth 12}} {
-  global radioColor
+  global radioColor buttonColorFont
   forceDef [set var [lindex $line 0]$app] [lindex $line 2]
   boundLabel $w.l $line $lwidth
   pack $w.l -side left -anchor nw
@@ -340,7 +340,7 @@ proc radioRowlpar_down {w line app {lwidth 12}} {
   set i 0
   foreach f [lindex $line 4] {
     radiobutton $w.b$i -font $font \
-	-text $f -variable $var -value $f -bg $radioColor
+	-text $f -variable $var -value $f -bg $radioColor -fg $buttonColorFont
     pack $w.b$i -in $w -padx 0.5m -side top -anchor w
     incr i
   }

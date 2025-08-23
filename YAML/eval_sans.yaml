@@ -17,6 +17,7 @@ eval_sans:                    # source module that will be executed
   - sIntensFile:
       type:    "file"
       plottable: true
+      editable: false
       descr:   "Intensity file"
       tooltip: "The output file containing the intensity distribution I(Q) at the detector (of this simulation)"
       default: "eval_sans.dat"
@@ -24,6 +25,7 @@ eval_sans:                    # source module that will be executed
   - sEvalFile:
       type:    "file"
       plottable: true
+      editable: false
       descr:   "S(Q) file"
       tooltip: "The output file containing the result S(Q) calculated from this intensity distribution and that of the reference file as S(Q) = F_norm * I_smpl(Q) / I_ref(Q)"
       default: "eval_sans.dat"
@@ -31,6 +33,7 @@ eval_sans:                    # source module that will be executed
   - sRefFile:
       type:    "file"
       plottable: false
+      editable: false
       descr:   "reference file"
       tooltip: "The input file containing the intensity distribution I(Q) at the detector for isotropic scattering\n only needed for S(Q)"
       prefix:  "-I"
@@ -98,7 +101,7 @@ eval_sans:                    # source module that will be executed
   - bTof:
       type:    "switch"
       descr:   "time of flight"
-      tooltip: "yes: time of flight instrument \nno : instrument for continuous measurement"
+      tooltip: "yes: wavelength from TOF and flight path \nno : reference wavelength used"
       column:   0
       default:  no
       prefix:  "-w"
@@ -110,10 +113,10 @@ eval_sans:                    # source module that will be executed
       default:  yes
       prefix:  "-t"
 
-  - FlyPath:
+  - FlightPath:
       type:    "float"
       descr:   "flight path [cm]"
-      tooltip: "Nominal length of the neutron flight path from origin to detector (for TOF option)"
+      tooltip: "Nominal length of the neutron flight path from origin (source or pulse chopper) to detector (for TOF option)"
       min:     0.0
       column:  0
       prefix:  "-l"

@@ -3,8 +3,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0            Géza Zsigmond                                                             */
-/* 1.1  JUL 2002  Géza Zsigmond  change                                                     */
+/* 1.0            Gï¿½za Zsigmond                                                             */
+/* 1.1  JUL 2002  Gï¿½za Zsigmond  change                                                     */
 /* 1.2  JAN 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Jul 2020  K. Lieutenant  tidy up, new central visualization parameters              */
 /* 1.4  Feb 2023  K. Lieutenant  correction length and diameter; improved log file output   */
@@ -36,7 +36,7 @@ void  OwnCleanup();                                 // Does module specific clea
 void  SetGeometry(char* sColor);                    // Fills the structure stGeometry for visualization 
 void  WritePolAndTrans();                           // Writes polarization and transmission data from file  
 void  ReadPolAndTrans();                            // Reads polarization and transmission data from file  
-
+double AbsorptionProbability(double wavelength, int spinState);   // calculates absorption (returns 0) or transmission (returns 1)
 
 /******************************/
 /** Global Variables         **/
@@ -73,6 +73,9 @@ double     RotMatrixMain[3][3],          //           [-]    rotation matrix to 
 double     aPolData  [FLD_SIZE], 
            aTransData[FLD_SIZE];
 
+// value of Polarisation at the neutron wavelentgth taken from datafile when option numerical is given
+double aPolData_wl;
+
 
 /******************************/
 /** Main Program             **/
@@ -81,12 +84,11 @@ int main(int argc, char **argv)
 {
   long   NumOut=0, i=0 , datanumber=0;
   double TOF=0.0, TOF1=0.0, TOF2=0.0, TOF3=0.0, 
-         WL=0.0, Prob=0.0, phi=0.0, the=0.0, PhaseShift=0.0, 
+         WL=0.0, Prob=0.0, PhaseShift=0.0, 
          nPrecessions1=0.0, nTraj1=0, nTotPrec1=0,  // number of precessions of a neutron, 
          nPrecessions2=0.0, nTraj2=0, nTotPrec2=0,  //   number of trajectories (=neutrons)
          nPrecessions3=0.0, nTraj3=0, nTotPrec3=0;  //   total number of precessions of the neutrons passing through field i (1,2,3) 
-  double pDown=0.0, 
-         TotIntensityIn =0.0, TotIntensityOut=0.0,  // incoming and outgoing beam intensity 
+  double TotIntensityIn =0.0, TotIntensityOut=0.0,  // incoming and outgoing beam intensity 
          IntPolarization=0.0,                       // integration of all polarization values 
          T_avrg, P_avrg;                            // average transmission and polarization 
   double LarmorMatrix[3][3];
@@ -95,6 +97,12 @@ int main(int argc, char **argv)
   VectorType pos, dir;	
   VectorType V;	
   Neutron    OutNeutron, ScatNeutron;
+  int spinState = 0;
+  int n_abs = 0;
+  VectorType pol_dir;
+  VectorType Spin_dir;
+  const double cutoff = 1e-6;  // Precision threshold for spin alignment
+  double dot_product = 0.0;   // dot product of spin and pol field
 
   // initialization
   // --------------
@@ -113,6 +121,8 @@ int main(int argc, char **argv)
   InitVector(Pos1);   InitVector(Pos2);
   InitVector(SpinVector);
   InitVector(Path);   InitVector(V);
+  InitVector(pol_dir);
+  InitVector(Spin_dir);
 
   InitNeutron(&OutNeutron); InitNeutron(&ScatNeutron);
   Init3x3Matrix(LarmorMatrix);
@@ -133,8 +143,7 @@ int main(int argc, char **argv)
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
-        /*InputNeutrons[i].Position[0]	= 0.;*/
+      {
         InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
         TOF  = InputNeutrons[i].Time;
@@ -144,11 +153,40 @@ int main(int argc, char **argv)
 
         CopyVector(InputNeutrons[i].Position, Pos);
         CopyVector(InputNeutrons[i].Vector, Dir);
-        CopyVector(InputNeutrons[i].Spin, SpinVector); 
+        CopyVector(InputNeutrons[i].Spin, SpinVector);
+        CopyVector(InputNeutrons[i].Spin, Spin_dir); 
+
+        /* Check whether the neutron is absorbed or transmitted */
+        CopyVector(guide_field_pol, pol_dir);
+        NormVector(pol_dir);
+
+        dot_product = ScalarProduct(Spin_dir, pol_dir);
+        if (fabs(dot_product - 1.0) < cutoff)   // Close to 1 â†’ Parallel
+          spinState = 1;  
+        else if (fabs(dot_product + 1.0) < cutoff)  // Close to -1 â†’ Antiparallel
+          spinState = -1;  
+        else
+          spinState = 0;  // Neither fully aligned nor fully anti-aligned
+
+        /* case where neutron spin and field are perpendicular */
+        if(spinState == 0) {
+          fprintf(LogFilePtr,"Warning: neutron spin polarization and field are perpendicular.\n");
+          fprintf(LogFilePtr,"Spin vector: %4.3f, %4.3f, %4.3f\n", Spin_dir[0], Spin_dir[1], Spin_dir[2]);
+          fprintf(LogFilePtr,"Pol dir: %4.3f, %4.3f, %4.3f\n", pol_dir[0], pol_dir[1], pol_dir[2]);
+          fprintf(LogFilePtr,"Hint: check them and change the direction of one of them.\n");
+          return 1;
+        }
 
         /* compute polarization and transmission location corresponding to the wavelength */
-        datanumber = (int) (WL * 100.); 
-        if(datanumber > FLD_SIZE) goto getlost;   
+        datanumber = (int) (WL * 100.);
+        if(datanumber > FLD_SIZE) goto getlost; 
+        if(!bCalc) aPolData_wl = aPolData[datanumber];
+
+
+        if ( AbsorptionProbability( WL, spinState) == 1) {
+          n_abs = n_abs + 1;
+          goto getlost;
+        }
 
         /* translates into frame of the field domain */
         SubVector(Pos, PosMain); 
@@ -166,7 +204,7 @@ int main(int argc, char **argv)
         if(IntersectionWithCylinder(DimMain, pos, dir, Pos1, Pos2) == 0) goto getlost; 
 
         /* rotates coordinates to previous frame */
-        RotBackVector(RotMatrixMain, Pos1 );
+        RotBackVector(RotMatrixMain, Pos1);
         RotBackVector(RotMatrixMain, Pos2);
 
         /* ordering */
@@ -180,11 +218,11 @@ int main(int argc, char **argv)
         nTotPrec1 += nPrecessions1;
         nTraj1++;
 
-        FillRotMatrixZY(LarmorMatrix, PhaseShift, 0); 
+        FillRotMatrixX(LarmorMatrix, PhaseShift); 
 
-        RotVector(RotMatrixG_Field, SpinVector); 
+        RotVector(RotMatrixG_Field, SpinVector);
         RotVector(LarmorMatrix, SpinVector);
-        RotBackVector(RotMatrixG_Field, SpinVector); 
+        RotBackVector(RotMatrixG_Field, SpinVector);
 
         /* moment of arriving at the domain wall, new position */
         TOF += TOF1;
@@ -192,7 +230,7 @@ int main(int argc, char **argv)
         CopyVector(Pos1, Pos);
 
         /* time of precession in the domain field - precession calculated in the field frame */
-        RotVector(RotMatrixGM_Field, SpinVector); 
+        RotVector(RotMatrixGM_Field, SpinVector);
 
         TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
         PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(LengthVector(guide_field_pol));  
@@ -200,7 +238,7 @@ int main(int argc, char **argv)
         nTotPrec2 += nPrecessions2;
         nTraj2++;
 
-        FillRotMatrixZY(LarmorMatrix, PhaseShift, 0);
+        FillRotMatrixX(LarmorMatrix, PhaseShift); 
 
         RotVector(LarmorMatrix, SpinVector);
         RotBackVector(RotMatrixGM_Field, SpinVector);
@@ -234,26 +272,19 @@ int main(int argc, char **argv)
         CopyVector(Dir, Path);
         MultiplyByScalar(Path, - Pos[0]/ Dir[0] );
         AddVector(Pos, Path);  
+        
 
-        /* time of precession in the guide field again - precession calculated in the field frame */
+        /* time of precession in the guide field - precession calculated in the field frame */
         RotVector(RotMatrixG_Field, SpinVector);
-
+      
         PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  
         nPrecessions3 = PhaseShift/2./M_PI;
         nTotPrec3 += nPrecessions3;
         nTraj3++;
 
-        FillRotMatrixZY(LarmorMatrix, PhaseShift, 0);
+        FillRotMatrixX(LarmorMatrix, PhaseShift); 
         RotVector(LarmorMatrix, SpinVector);
         RotBackVector(RotMatrixG_Field, SpinVector);
-	
-        /* flipping process at some time */ 
-        CartesianToSpherical(SpinVector, &the, &phi);
-
-        pDown = sqrt(1. - aPolData[datanumber]);
-        the = 2. * (double) asin(pDown *(double) sin(the/2.));
-
-        SphericalToCartesian(SpinVector, &the, &phi);
 
         /* Output matters */
         Prob *= aTransData[datanumber]; 
@@ -296,6 +327,7 @@ my_exit:
   if (nTraj2 > 0) fprintf(LogFilePtr,"                              in polarizer    : %7.2lf\n",   nTotPrec2/nTraj2);
   if (nTraj3 > 0) fprintf(LogFilePtr,"                              after polarizer : %7.2lf\n\n", nTotPrec3/nTraj3);
 
+  fprintf(LogFilePtr, "Number of neutrons absorbed: %d\n",n_abs);
   /* write geometry file */
   SetGeometry("orange");
   
@@ -429,7 +461,7 @@ void OwnInit(int argc, char *argv[])
   else  
   { roty_g = 0.0; rotz_g = 0.0; 
   }
-  FillRotMatrixZY(RotMatrixG_Field, roty_g, rotz_g); 
+  FillRotMatrixZY(RotMatrixG_Field,roty_g,rotz_g); 
 
   CopyVector(field_guide,     guide_field_pol); 
   AddVector (guide_field_pol, field_pol);
@@ -550,4 +582,38 @@ void ReadPolAndTrans()
     break;
   }
   fclose(pFile);
+}
+
+double AbsorptionProbability(double wavelength, int spinState) {
+    double Mue = 0.0, Nue = 0.0;
+    double Polarization = 0.0;
+    double AbsProb = 0.0;
+    double tmp_rand = 0.0;
+
+    tmp_rand = MonteCarlo(0.,1.);
+    
+    if (bCalc) {  
+        /* Analytical Calculation */
+        Mue = (polXsection * wavelength) * 1.E-24 * density;  
+        Nue = (polHe3 / 100.0) * Mue;  
+        
+        Polarization = tanh(Nue * DimMain[2]);
+    } else {  
+        /* Uses Polarisation from file */
+        Polarization = aPolData_wl;
+    }
+
+    /* Define absorption probability based on spin state */
+    if (spinState == 1) {  // Spin parallel to field
+        AbsProb = 0.5 * (1 - Polarization);
+    } else {  // Spin antiparallel
+        AbsProb = 0.5 * (1 + Polarization);
+    }
+
+    /* Absorb trajectory with probability AbsProb */
+    if (tmp_rand < AbsProb) {
+        return 1.0;  // Absorbed
+    } else {
+        return 0.0;  // Not absorbed
+    }
 }

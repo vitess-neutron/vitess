@@ -1,0 +1,152 @@
+#description of input fields
+# type: title, file, string, float, int, switch (yes, no), combo (for selection list)
+# descr: description of the parameter lable
+# tooltip: detailed description shown when mouse cursor remains over label
+# default: optional default value for parameter
+# min: optional minimum value
+# max: optional maximum value
+# column: column of parameter in gui (0-2),default = 0, title and file are always streched over all columns
+# prefix: prefix for parameter in pipe
+
+sm_ensemble_parallel:
+  - category: "compatibility" # new module: sm_ensemble
+
+  - sParFile :
+      type: "file"
+      plottable: false
+      editable: true
+      descr:   "mirror file"
+      tooltip: "name of the input file containing the geometry and properties of the mirrors"
+      prefix:  "-P"
+  - sCollisionFile:
+      type: "file"
+      plottable: true
+      editable: false
+      descr:   "collision file"
+      tooltip: "name of the output file containing all points of collisions with mirrors"
+      prefix:  "-C"
+
+  - nMaxCollision:
+      type:    "int"
+      descr:   "max. number of collisions"
+      tooltip: "After this number of collision, simulation stops and the coordinates are written out"
+      default:  100
+      min:       0
+      column:    0
+      prefix:  "-M"
+  - ePolAxis:      #  VtAxis  Axis_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "spin quant. direction"
+      tooltip: "direction of spin quantisation in accordance with input data (e.g. source module)"
+      enum:    "VtAxis"
+      options: ["X_AXIS","Y_AXIS","Z_AXIS","NO_AXIS"]
+      default: "NO_AXIS"
+      column:   1
+      prefix:  "-Q"
+
+  - bNewFormat :
+      type:    "switch"
+      descr:   "new file format"
+      tooltip: "yes: choose the new format of the geometry file using m-values\nno : use the old file format (see Help|sm_ensemble for details)"
+      default:  yes
+      column:   0
+      prefix:  "-F"
+  - bIncrColor:
+      type:    "switch"
+      descr:   "Modify  color"
+      tooltip: "YES: Increase the neutron color by 1 for each mirror reflection\nno : Keep the color as it is)"
+      default:  no
+      column:   1
+      prefix:  "-R"
+  - eMirrMat:    #  VtMirrMat  MirrMat_Txt2ID(const char* sText)
+      type:    "combo"
+      descr:   "substrate material"
+      tooltip: "Material of the mirror substrate for a treatment of the neutron absorption by passing through the mirror. Available: Silicon, Sapphire and 'Other' \nBeware that 'Other' only works with the old file format"
+      enum:    "VtMirrMat"
+      options: ["VT_MIRR_OTHER","VT_MIRR_SI","VT_MIRR_SAPPH"]
+      default:  "VT_MIRR_SI"
+      column:   2
+      prefix:  "-S"
+
+  - bCollisionFile:
+      type:    "switch"
+      descr:   "output in file"
+      tooltip: "yes: write out all positions, where neutrons hit one of the mirrors, into the collision file\nno : do not write out anything"
+      default:  yes
+      column:   0
+      prefix:  "-T"
+  - MinWeight:
+      type:    "float"
+      descr:   "min. weight for collision file"
+      tooltip: "minimal neutron weight to write the trajectory ot the collision file"
+      default: 0.0
+      min:     0.0
+      column:  1
+      prefix:  "-b"
+
+  - FrameOutX:
+      type:    "float"
+      descr:   "X' [cm]"
+      tooltip: "x coordinate of the output frame"
+      default: 20.0
+      column:  0
+      prefix:  "-r"
+  - FrameOutY:
+      type:    "float"
+      descr:   "Y' [cm]"
+      tooltip: "y coordinate of the output frame"
+      default: 0.0
+      column:  1
+      prefix:  "-s"
+  - FrameOutZ:
+      type:    "float"
+      descr:   "Z' [cm]"
+      tooltip: "z coordinate of the output frame"
+      default: 0.0
+      column:  2
+      prefix:  "-t"
+
+  - FrameOutHor:
+      type:    "float"
+      descr:   "horiz. angle [deg]"
+      tooltip: "Rotation angle of the output frame in horizontal direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
+      default: 0.0
+      column:  0
+      prefix:  "-h"
+  - FrameOutVert:
+      type:    "float"
+      descr:   "vert. angle [deg]"
+      tooltip: "Rotation angle of the output frame in vertical direction (first rotation)\n(0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
+      default: 0.0
+      column:  1
+      prefix:  "-v"
+
+#  - WndWmin:
+#     type:    "float"
+#     descr:   "Wmin [cm]"
+#     tooltip: "lower limit of the visualized range in horizontal direction (usually x-axis)"
+#     default: -10.0
+#     column:  0
+#     prefix:  "-w"
+#  - WndWmax:
+#     type:    "float"
+#     descr:   "Wmax [cm]"
+#     tooltip: "upper limit of the visualized range in horizontal direction (usually x-axis)"
+#     default: 200.0
+#     column:  1
+#     prefix:  "-W"
+#  - WndHmin:
+#     type:    "float"
+#     descr:   "Hmin [cm]"
+#     tooltip: "lower limit of the visualized range in the second dimension (y- or z-axis)"
+#     default: -10.0
+#     column:  0
+#     prefix:  "-a"
+#  - WndHmax:
+#     type:    "float"
+#     descr:   "Hmax [cm]"
+#     tooltip: "upper limit of the visualized range in the second dimension (y- or z-axis)"
+#     default: 10.0
+#     column:  1
+#     prefix:  "-A"
+

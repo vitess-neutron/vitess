@@ -9,6 +9,8 @@
 # prefix: prefix for parameter in pipe
 
 detector:
+  - category: "detector"
+
   - Title_bas:
       type:    "title"
       default: "Basic detector properties"
@@ -201,8 +203,9 @@ detector:
       type:    "title"
       default: "Detector efficiency"
   - sEffFile :
-      type:    "file"
+      type: "file"
       plottable: true
+      editable: true
       descr:   "lambda efficiency"
       tooltip: "File containing two columns: wavelength and efficiency.\nIf an efficiency file is given, other efficiency data are ignored."
       prefix:  "-E"
@@ -319,8 +322,9 @@ detector:
       column:  1
       prefix:  "-z"
   - OutFile :
-      type:    "file"
+      type: "file"
       plottable: false
+      editable: false
       descr:   "output file"
       tooltip: "Detecor output in event mode (3D position, time, weight), written by last detector in array.\nIf left blank or the array box is ticked, no output file will be written."
       prefix:  "-O"

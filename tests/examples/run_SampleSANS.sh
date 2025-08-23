@@ -1,0 +1,9 @@
+#!/bin/sh
+[ -z "$V" ] && V=/tmp/vitess/MODULES
+[ -z "$P" ] && P=/tmp/vitess/FILES/EXAMPLES/SampleSANS
+[ -z "$L" ] && L=/tmp/vitess66615cebvpipelog
+SUFFIX="$(uname -s)_$(uname -m)"
+$V/source_${SUFFIX} -S1 --Z1 --U1.0e-12 --G1 --T0 --B10000 --P$P --N1 --L${L}01 -a$P/Reactor.mod -n5000000 -l1 -m4.0 -t0.0 -M6.0 -T0.0 -d1 -b0.0 -c0.0 -y0.5 -z0.5 -D600 -w3.0 -h3.0 -i0 -s200 -X1 -Y0 -V0 -P0 -A0 -k0 | $V/velselect_${SUFFIX} --Z1 --U1.0e-12 --G1 --T0 --B10000 --P$P --N2 --L${L}02 -l25 -r14.5 -s420 -w72 -c48.3 -d0.04 -o11.5 | $V/monitor1_${SUFFIX} -k1 --Z1 --U1.0e-12 --G1 --T0 --B10000 --P$P --N3 --L${L}03 -O$P/sans_lambda.dat -n60 -C-1 -m3.5 -M6.5 -f0 -c0 -p1 -e0 -t-1.e10 -T1.e10 | $V/spacewindow_${SUFFIX} --Z1 --U1.0e-12 --G1 --T0 --B10000 --P$P --N4 --L${L}04 -l0.05 -R0 -r1 -y0 -z0 -w-1.5 -W1.5 -h-1.5 -H1.5 -A0.0 -S0 -F0 -p-1 -P-1 -f-1 -d0 -c6 -t0.01 -T0 | $V/spacewindow_${SUFFIX} --Z1 --U1.0e-12 --G1 --T0 --B10000 --P$P --N5 --L${L}05 -l800 -R0 -r1 -y0 -z0 -w-0.75 -W0.75 -h-0.75 -H0.75 -A0.0 -S0 -F0 -p-1 -P-1 -f-1 -d0 -c6 -t0.01 -T0 | $V/sample_sans_${SUFFIX} --Z1 --U1.0e-12 --G1 --T0 --B10000 --P$P --N6 --L${L}06 -S$P/sphere.san -M10 -A1 -I0 | $V/detector_${SUFFIX} --Z1 --U1.0e-12 --G1 --T0 --B10000 --P$P --N7 --L${L}07 -B -G2 -a1 -U0 -A1 -q-1 -Q-1 -S-1 -d0 -P90 -T0 -D800 -h60 -w60 -t1 -r120 -c120 -n1 -u0 -v0 -l0 -m5 -p4 -k293 -e0.8 -o0 -b0 -f0 -s -V0 -W0 -x2 -z | $V/eval_elast_${SUFFIX} --Z1 --U1.0e-12 --G1 --T0 --B10000 --P$P --N8 --L${L}08 -k2 -o$P/spectsans.dat -n75 -m0 -M0.075 -d0.215 -r5.0 -p1 -c0 -A-1 -w0 -t0 -T0 -e-1.e10 -E1.e10 -C-1 --Fno_file
+rm -f $P/result.txt
+cat ${L}?? >> $P/result.txt
+rm ${L}*

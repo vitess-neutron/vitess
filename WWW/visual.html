@@ -7,21 +7,21 @@
   <title>Module Visual</title>
 </head>
   <body>
-  
+
 <h1>VITESS Module Visual&nbsp;&nbsp; (Unix, Linux)</h1>
-  
+
 <h3> Visulalisation via PGPLOT GRAPHIC LIBRARY</h3>
-The aim of this module is to visualize the neutron beam <b>DURING simulation.</b> 
+The aim of this module is to visualize the neutron beam <b>DURING simulation.</b>
 This module does not disturbe the normal processing of the pipe. There are four
-options of visualization: 
+options of visualization:
 <h3> 1 - circular beam YZ ,</h3>
-  
+
 <h3> 2 - rectangular beam YZ,</h3>
-  
+
 <h3> 3 - visualise time of arrival(wavelength),</h3>
-  
+
 <h3> 4 - visualise wavelength(time of arrival).</h3>
-Visualization during the simulation can be very useful for the understanding 
+Visualization during the simulation can be very useful for the understanding
 of the instrument and the checking of the instrument configuration. The third
 and fourth types of visualization is useful for study frame overlap effect.
 For first and second type of visualization you may choose visualization at
@@ -30,43 +30,43 @@ calculates the center position of the neutron beam, and average time of flight
 for option 1 and 2&nbsp; of visualization. For options 3 and 4 it only calculates
 the average time of flight. Only first 10000 trajectories will be printed.
 <h3> Examples</h3>
- An example of circular beam YZ visualization of multiple-hole collimator 
-is given: 
-<center> 
+ An example of circular beam YZ visualization of multiple-hole collimator
+is given:
+<center>
 <p><img src="windows2.gif">
 </p>
 </center>
-  
+
 <p>An example of rectangular beam YZ visualization of space + rectangle window
-is given further. It shows that the effect of gravity can be significant. 
+is given further. It shows that the effect of gravity can be significant.
 The beam is shifted down: </p>
-<center> 
+<center>
 <p><img src="window2.gif">
 </p>
 </center>
-  
-<p>The example of visualization beam characteristic for system CWS-source 
+
+<p>The example of visualization beam characteristic for system CWS-source
 plus guide can be seen here: </p>
-<center> 
+<center>
 <p><img src="visual1.gif">
 </p>
 </center>
-  
+
 <h3> Options:</h3>
  -R type of visualization; range: 1 or 2 or 3 or 4 -r radius of circle, which
 will appear, range: &gt; 0; -y Y coordinate of the centre of the circle; -z
-Z coordinate of the centre of the circle; -m minimal value of wavelength; 
+Z coordinate of the centre of the circle; -m minimal value of wavelength;
 -M maximal value of wavelength; -t minimal value of time of flight; -T maximal
 value of time of flight. <br>
-Next options describe rectangular windows: -h bottom of window (z-coordinate);&nbsp; 
+Next options describe rectangular windows: -h bottom of window (z-coordinate);&nbsp;
 -H top of window (z-coordinate); -w left side of window (y-coordinate); -W
 right side of window (y-coordinate); -k this option is only active in the
 first and the second type of visualization, 0 - visualization of all wavelenghts
-(default), 1 - visualization of neutrons within the given wavelength range 
-You can choose a visual output device by option -o: value 1 - output to display, 
+(default), 1 - visualization of neutrons within the given wavelength range
+You can choose a visual output device by option -o: value 1 - output to display,
 value 2 - output to file, value 3 - output to file and to display too
 <hr><a href="vitess.html">Back to VITESS overview</a> <br>
-<a href="mailto:vitess@helmholtz-berlin.de">vitess@helmholtz-berlin.de</a> 
+<a href="mailto:vitess@fz-juelich.de">vitess@fz-juelich.de</a>
 
 </body>
 </html>

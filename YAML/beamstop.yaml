@@ -30,7 +30,7 @@ beamstop:
   - bProp:
       type:    "switch"
       descr:   "beam propagation"
-      tooltip: "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop"
+      tooltip: "'no' (default): neutrons remain on the sample surface\n'yes'         : neutrons are propagated to the beamstop in the visualization if they hit it"
       default: no
       column:  1
       prefix:  "-p"

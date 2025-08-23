@@ -12,8 +12,9 @@ sample_s_q:
   - category:  "sample"
 
   - sParFile :                  # -S         [-]    parameter file name
-      type:    "file"
+      type: "file"
       plottable: false
+      editable: true
       descr:   "sample file"
       tooltip: "File containing geometry and scattering parameters of the sample\nThese parameters are only used if they are not given as direct input parameters."
       prefix:  "-S"
@@ -188,8 +189,9 @@ sample_s_q:
       prefix:  "-G"
       column:  0
   - sStructFile :                  # file       [-]    structure factor file name (of the sample material)
-      type:    "file"
+      type: "file"
       plottable: true
+      editable: true
       descr:   "structure factor file"
       tooltip: "This file contains information to determine the scattering probability for each reflection. The first contains the momentum transfer values Q [1/Ang] and the second the corresponding value for S"
       prefix:  "-s"

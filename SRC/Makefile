@@ -3,44 +3,83 @@
 SHELL = /bin/sh
 
 ifndef VITESS_VERSION
-VITESS_VERSION = 3.6
+VITESS_VERSION = 3.7
 endif
 MODULES_DIR = ../MODULES
 GSLPATH = ./rng
 G2PATH = ./g2-0.72
+NCRYSTALPATH = ./ncrystal
+KDSOURCEPATH := ./kdsource
 
 SYS := $(shell uname -s)
 ARCH := $(shell uname -m)
 TODAY := $(shell date '+%Y-%m-%d')
 FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
-CC = cc
-CFLAGS = -O3 -pthread -Wall -Wno-cast-qual -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
-CXX = c++
+CC ?= cc
+ARCHFLAGS =
+CFLAGS = $(ARCHFLAGS) -pthread -Wall -Wno-cast-qual -Wno-incompatible-pointer-types -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
+CXX ?= c++
 CXXFLAGS = $(CFLAGS)
-CPPFLAGS=
+CPPFLAGS =
 LDFLAGS = -L. -L"$(GSLPATH)"
 LDLIBS = -lvitess -lgslran -lm
 AR = ar
-ARFLAGS = rv
-INSTALL = install
+ARFLAGS = rsv
+INSTALL = install -s
 RM = rm -f
+RMDIR = rm -rf
+LN = ln -s
+CMAKEFLAGS = -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX)
+
+DARWIN_UNIVERSAL = NO
+ifeq ($(SYS),Darwin)
+NOGD ?= 1
+ifeq ($(ARCH),arm64)
+DARWIN_UNIVERSAL = YES
+ARCHFLAGS =  -arch x86_64 -arch arm64
+CMAKEFLAGS += "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+endif
+else
+NOGD ?= 0
+endif
 
 ifndef NOG2
-CFLAGS += -DDO_PNG -DDO_X11 -DDO_GD -DVT_GRAPH -I"$(G2PATH)/include"
+CFLAGS += -I"$(G2PATH)/include" -DDO_PNG -DDO_X11 -DVT_GRAPH
 LDFLAGS += -L"$(G2PATH)"
-LDLIBS += -lg2 -lgd -lpng -lz -lfreetype -lXpm -lX11
+LDLIBS += -lg2 -lpng -lz -lfreetype -lXpm -lX11
+ifeq ($(NOGD), 0)
+CFLAGS += -DDO_GD
+LDLIBS += -lgd
+endif
 G2OPTS =
 ifeq ($(SYS),Darwin)
-G2OPTS += --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
+G2OPTS += --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib --disable-shared
 CFLAGS += -I/opt/X11/include
 LDFLAGS += -L/opt/X11/lib
 endif
 endif
 
-ifdef DEBUG
-CFLAGS += -g -O0 -DDEBUG=1
+DEBUG ?= 0
+ifeq ($(DEBUG), 0)
+CFLAGS += -O3 -DNDEBUG
+ifdef LTO
+CFLAGS += -flto
+LDFLAGS += -O3 -flto
 endif
+else
+CFLAGS += -g -O0 -DDEBUG=1
+CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Debug
+ifeq ($(DEBUG), 2)
+CFLAGS += -fsanitize=address
+LDFLAGS += -fsanitize=address
+endif
+endif
+
+ifdef AVX
+CFLAGS += -mavx
+endif
+
 
 # Vitess modules to build
 ALL = ascii2bin \
@@ -104,6 +143,7 @@ pol_mirror \
 polariser_he3 \
 polariser_sm \
 precessionfield \
+prism  \
 read_in \
 resonator_drabkin \
 rotating_field \
@@ -130,11 +170,19 @@ spacewindow_multiple \
 spin_reset \
 standard_deviation \
 surface_file \
+template \
 velselect \
 window \
 writeout
+
+ifdef LIBTORCHPATH
+ALL += source_ai
+endif
 ifndef NOG2
 ALL += visual
+endif
+ifndef NONCRYSTAL
+ALL += sample_ncrystal
 endif
 
 # objects used by multiple modules
@@ -164,30 +212,57 @@ all: $(ALL)
 
 .PHONY: clean
 clean:
-	$(RM) *.o *.a $(ALL)
+	-$(RM) *.o *.a $(ALL)
+
+.PHONY: distclean
+distclean: clean
 	$(MAKE) -C "$(GSLPATH)" clean
-	[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
+	-[ -f "$(G2PATH)/Makefile" ] && $(MAKE) -C "$(G2PATH)" clean
+	-$(RMDIR) "$(KDSOURCEPATH)/build" "$(KDSOURCEPATH)/install"
+	-$(RMDIR) "$(NCRYSTALPATH)/build" "$(NCRYSTALPATH)/install"
 
 .PHONY: install
+ifeq ($(DARWIN_UNIVERSAL),YES)
+install: $(ALL)
+	for F in $(ALL); do \
+		$(INSTALL) $${F} $(MODULES_DIR)/$${F}_$(SYS)_arm64; \
+		$(LN) $${F}_$(SYS)_arm64 $(MODULES_DIR)/$${F}_$(SYS)_x86_64 || true; \
+	done
+else
 install: $(ALL)
 	for F in $(ALL); do \
 		$(INSTALL) $${F} $(MODULES_DIR)/$${F}_$(SYS)_$(ARCH); \
 	done
+endif
 
 
 # build libraries
 $(G2PATH)/libg2.a:
-	cd $(G2PATH); ./configure $(G2OPTS)
+	cd $(G2PATH); ./configure $(G2OPTS) --disable-shared CC=$(CC) CXX=$(CXX) CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
 	$(MAKE) -C "$(G2PATH)" all
 
 $(GSLPATH)/libgslran.a:
-	$(MAKE) -C "$(GSLPATH)" libgslran.a
+	$(MAKE) -C "$(GSLPATH)" libgslran.a CC=$(CC) CXX=$(CXX) CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
+
+$(KDSOURCEPATH)/install/lib/libkdsource.a:
+	cmake -S"$(KDSOURCEPATH)" -B"$(KDSOURCEPATH)/build" -DCMAKE_INSTALL_PREFIX="$(realpath $(KDSOURCEPATH))/install" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF $(CMAKEFLAGS)
+	cmake --build $(KDSOURCEPATH)/build $(filter -j%,$(MAKEOPTS))
+	cmake --install $(KDSOURCEPATH)/build
+
+$(NCRYSTALPATH)/install/lib/libNCrystal.a:
+	cmake -S"$(NCRYSTALPATH)" -B"$(NCRYSTALPATH)/build" -DCMAKE_INSTALL_PREFIX="$(realpath $(NCRYSTALPATH))/install" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF $(CMAKEFLAGS)
+	cmake --build $(NCRYSTALPATH)/build $(filter -j%,$(MAKEOPTS))
+	cmake --install $(NCRYSTALPATH)/build
 
 libvitess.a: $(COMMON)
 	$(AR) $(ARFLAGS) $@ $^
 
 ifndef NOG2
 cpgplot.o: | $(G2PATH)/libg2.a
+endif
+
+ifndef NONCRYSTAL
+sample_ncrystal: | $(NCRYSTALPATH)/install/lib/libNCrystal.a
 endif
 
 $(ALL): | libvitess.a $(GSLPATH)/libgslran.a
@@ -220,11 +295,18 @@ monochromator: monochromator.cpp monochrclass.cpp
 
 opt_sim: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
 
-read_in: random_sampler.c
+read_in: CFLAGS += -I$(KDSOURCEPATH)/install/include
+read_in: LDFLAGS += -L$(KDSOURCEPATH)/install/lib
+read_in: LDLIBS += -lmcpl -lkdsource -lxml2
+read_in: read_in.c random_sampler.c | $(KDSOURCEPATH)/install/lib/libkdsource.a
+
+sample_ncrystal: CFLAGS += -I$(NCRYSTALPATH)/install/include
+sample_ncrystal: LDFLAGS += -L$(NCRYSTALPATH)/install/lib
+sample_ncrystal: LDLIBS += -lNCrystal -ldl
 
 sample_nxs: sample_nxs.c nxs.c sgclib.c sgfind.c sghkl.c sgio.c sgsi.c
 
-sample_reflectom: bender_inter_data.c
+sample_reflectom: sample_reflectom.c bender_inter_data.c
 
 sample_s_q: sample_s_q.c sq_calc.c
 
@@ -234,6 +316,13 @@ window: window.c bender_inter_data.c
 
 spacewindow_multiple: spacewindow_multiple.c bender_inter_data.c
 
+ifdef LIBTORCHPATH
+# -D_GLIBCXX_USE_CXX11_ABI=0 might be necessary depending binaries
+source_ai: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/include -I$(LIBTORCHPATH)/include/torch/csrc/api/include
+source_ai: LDFLAGS += -L$(LIBTORCHPATH)/lib 
+source_ai: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/lib
+source_ai: source_ai.cpp
+endif
 
 # keep old module names for compatibility
 chopper_fermi_parallel: chopper_fermi

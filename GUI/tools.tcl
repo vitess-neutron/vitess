@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme fromme@helmholtz-berlin.de
+### M. Fromme  
 ### June 1999
 
 ###
@@ -159,7 +159,7 @@ proc adjustScrollRegion {w {cw ""}} {
     # find the real height of the content window cw
     set y  [winfo height $cw]
   }
-  
+
   # configure canvas scroll region height to real value + 40 pixel
   $sw configure -scrollregion [lreplace [$sw cget -scrollregion] 3 3 [expr 40 + $y]]
 }
@@ -184,15 +184,15 @@ proc helpLink {w s m {item ""}} {
 }
 
 proc helpButton {w s m {item ""}} {
-  global buttonColor
+  global buttonColor buttonColorFont
   if {$item == ""} {set item $s}
   button $w.$m -text $s -command [list showHelpItem $item]\
-      -font [sbuttonFont] -background $buttonColor
+      -font [sbuttonFont] -background $buttonColor -fg $buttonColorFont
   $w window create end -window $w.$m
 }
 
 proc helpFrame {w {mode ""}} {
-  global bgColor buttonColor
+  global bgColor buttonColor versionNumber
   set w $w.helpframe
   frame $w
   pack $w -expand yes -fill both -padx 4
@@ -205,7 +205,10 @@ proc helpFrame {w {mode ""}} {
 
   $w tag configure tl -underline on -font [labelFont]
 
-  helpButton $w {Getting Help} t5 Help
+  $w insert end "Welcome to "
+  $w insert end "VITESS $versionNumber"
+  $w insert end \n
+
   $w insert end {
 
 You can get help about every
@@ -213,13 +216,18 @@ You can get help about every
   - module by clicking on the module number or choosing the menu Help
 
 }
-  helpLink $w Help t10
+
+  helpButton $w {Getting Help} t5 Help
+
+  #helpLink $w Help t10
   $w insert end {
 
-Alternativly, you can visit web pages at
+For more information, you can visit relevant web pages at
+
+- https://vitess.fz-juelich.de/
 }
 
-  helpLink $w https://www.fz-juelich.de/en/jcns/expertise/simulations t11
+  helpLink $w "- https://www.fz-juelich.de/en/jcns/expertise/simulations" t10
   $w insert end {
 
 For further questions, please send an email to vitess@fz-juelich.de
@@ -248,12 +256,12 @@ proc headLine {w text} {
   pack  $w.headline -side top -fill both -padx 0.5m -pady 0.5m
 }
 proc bButton {w text command} {
-  global buttonColor
-  button $w -font [buttonFont] -text $text -command $command -background $buttonColor
+  global buttonColor buttonColorFont
+  button $w -font [buttonFont] -text $text -command $command -background $buttonColor -fg $buttonColorFont
 }
 proc bsButton {w text command} {
-  global buttonColor
-  button $w -font [sbuttonFont] -text $text -command $command -background $buttonColor
+  global buttonColor buttonColorFont
+  button $w -font [sbuttonFont] -text $text -command $command -background $buttonColor -fg $buttonColorFont
 }
 proc bPack {args} {
   foreach but $args {
@@ -350,7 +358,7 @@ proc isNot {v args} {
 # Hack: If the global variable belongs to an entry, we might have tried
 #       to delete that beast earlier, but were able only to set its value
 #       UNDEFINED. We treat these variables as unknown, and set the given
-#       value then. 
+#       value then.
 ###
 proc forceDef {a val} {
   upvar #0 $a v
@@ -890,7 +898,7 @@ proc fDialogTypes {operation ext ifile def types} {
     }
     return [tk_getOpenFile -filetypes $types]
   }
-  
+
   set ifile [file tail $ifile]
   if {$def != ""} {
     set rc [tk_getSaveFile -filetypes $types  \
@@ -904,7 +912,7 @@ proc fDialogTypes {operation ext ifile def types} {
 proc fileDialog {operation {ext ""} {ifile Untitled}} {
   global browse_ext_mode tcl_platform
   set def [entryVal defdirectory]
-  if {$tcl_platform(os) == "Darwin" && $browse_ext_mode == "all"} {
+    if {$tcl_platform(os) == "Darwin" && $browse_ext_mode == "all"} {
     return [fDialog $operation $ext $ifile $def]
   }
   return [fDialogTypes $operation $ext $ifile $def [getFileDialogTypes $ext]]
@@ -994,7 +1002,7 @@ proc findFile {root name} {
     foreach d $dirl {
       set f [file join $d $name]
       # puts "DEBUG look at $f"
-      if [file exists $f] { 
+      if [file exists $f] {
         return $f
       }
       set pat [file join $d *]

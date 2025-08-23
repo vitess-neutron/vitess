@@ -32,7 +32,7 @@ void  SetGeometry(char* sColor);            // fills the structure stGeometry fo
 /******************************/
 // Input parameters
 VtShape eShape=FALSE;          // -R  [cm]   criterion: shape of window, 'circular' or 'rectangular' 
-short   bProp=FALSE;           // -p  [cm]   criterion: propagate to beamstop  0: no,  1: yes
+short   bProp=FALSE;           // -p  [cm]   criterion: propagate neutrons in visualization to beamstop  0: no,  1: yes
 double  Width   =0.0,          // -W  [cm]   width of a rectangular beamstop 
         Height  =0.0,          // -H  [cm]   height of a rectangular beamstop 
         Radius  =0.0,          // -r  [cm]   radius of a circular beamstop  
@@ -187,7 +187,7 @@ void  OwnInit(int argc, char* argv[])
 			switch (argv[i][1])
 			{
 			  case 'p':
-				  bProp = atoi(&argv[i][2]);        // criterion: propagate to beamstop  0: no,  1: yes
+				  bProp = atoi(&argv[i][2]);        // criterion: propagate in visualization to beamstop  0: no,  1: yes
 				  if (bProp == FALSE)
 					  bOldFrame = TRUE;
 				  break;

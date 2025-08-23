@@ -467,7 +467,7 @@ void OwnCleanup()
 /*******************************************************/
 /** fills the structure stGeometry for visualization  **/
 /*******************************************************/
-void SetGeometryData(char* sColor)
+void SetGeometryData(const char* sColor)
 {
   int    nPieces    = 25;    //      number of pieces and
   double PieceLenM  =  0.5,  //  [m] length of one piece

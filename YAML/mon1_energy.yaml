@@ -14,6 +14,7 @@ monitor1:
   - sMonFile:                 # -O    [-]   monitor output file containing intensity as a function of the chosen parameter
       type:    "file"
       plottable: true
+      editable: false
       descr:   "monitor file"
       tooltip: "monitor output file containing intensity as a function of of the neutron energy [meV]"
       default: "monitor.dat"
@@ -21,6 +22,7 @@ monitor1:
   - sRefFile:                 # -R    [-]   Reference input file containing data to normalize the monitor data
       type:    "file"
       plottable: false
+      editable: false
       descr:   "reference file"
       tooltip: "Reference input file containing data to normalize the monitored energy spectrum"
       prefix:  "-R"

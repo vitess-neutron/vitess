@@ -12,6 +12,7 @@
 /* 1.6  Mar 2020  K. Lieutenant  new central visualization parameters                                   */
 /* 1.6a Oct 2021  K. Lieutenant  tidying up finished                                                    */
 /* 1.7  Jun 2023  K. Lieutenant  header + update                                                        */
+/* 1.8  Oct 2024  N. Violini     coh/incoh scattering separation                                        */
 /********************************************************************************************************/
 
 #include <stdio.h>
@@ -37,8 +38,12 @@
 /** Global Variables            **/
 /*********************************/
 // Input parameters
-char	  	*FileNameTOF=NULL,            // -E   [-]   output file for the TOF spectrum
-          *FileNameEnergy=NULL;         // -G   [-]   output file for showing the energy transfer spectrum
+char	  	*FileNameTOF_up=NULL,            // -E   [-]   output file for the TOF spectrum
+          *FileNameEnergy_up=NULL,         // -G   [-]   output file for showing the energy transfer spectrum
+          *FileNameTOF_do=NULL,            // -   [-]   output file for the TOF spectrum of spin-flip
+          *FileNameEnergy_do=NULL;         // -   [-]   output file for showing the energy transfer spectrum of spin-flip
+
+
 VtInstGeom eGeomOption=VT_NO_I_GEOM;    // -A   [-]   geometry option:   0: direct geometry   1: indirect geometry
 short      bTofCorr= TRUE,              // -t   [-]   criterion: correction to true flight path length from sample to detector:  0: no   1: yes
            bBoseF  = FALSE,             // -D   [-]   criterion: divide by Bose factor  (not used in Vitess 3)  
@@ -59,25 +64,32 @@ double     PrimaryFlightPath  =0.0,     // -a  [cm]   Distance from moderator to
            AngleRange=180.0;            // -k  [deg]  [AngleCntr - AngleRange, AngleCntr + AngleRange]
 
 // Variables determined from input parameters or trajectory data
-long       nTrjTotT   = 0,              //      [-]   total number of trajectories within TOF binning
-           nTrjTotE   = 0,              //      [-]   total number of trajectories within energy binning
+long       nTrjTotT[2]   = {0,0},              //      [-]   total number of trajectories within TOF binning
+           nTrjTotE[2]   = {0,0},              //      [-]   total number of trajectories within energy binning
            nBunches   = 1,              //      [-]   number of bunches started
-           nTrjT[BINS_BUFFER+1],        //      [-]   number of trajectories contributing to count rate in the TOF bins 
-           nTrjE[BINS_BUFFER+1];        //      [-]   number of trajectories contributing to count rate in the energy bins 
+           nTrjT[2][BINS_BUFFER+1],        //      [-]   number of trajectories contributing to count rate in the TOF bins 
+           nTrjE[2][BINS_BUFFER+1];        //      [-]   number of trajectories contributing to count rate in the energy bins 
 double     EnergyRef  =0.0,             //     [meV]  energy and corresponding to reference wavelength
            VelocityRef=0.0,             //    [cm/ms] energy and velocity and corresponding to reference wavelength
            TofRef   =0.0,               //     [ms]   TOF for the reference part, i.e. primary flight path for direct geometry and secondary for indirect geometry
-           TotIntTOF=0.0,               //     [n/s]  total intensity within TOF binning 
-           TotIntE  =0.0,               //     [n/s]  total intensity within E binning
+           TotIntTOF_tot =0.0,               //     [n/s]  total intensity within TOF binning 
+           TotIntE_tot  =0.0,               //     [n/s]  total intensity within E binning
+           TotIntTOF[2] = {0.0, 0.0}, //     [n/s]  total intensity for each spin option within TOF binning
+           TotIntE[2] = {0.0, 0.0},   //     [n/s]  total intensity for each spin option within E binning
+    
            t[BINS_BUFFER+1],            //     [ms]   limits of the time channels  (min. and max. value) 
            e[BINS_BUFFER+1],            //     [meV]  limits of the energy channels  (min. and max. value) 
-           prob_t[BINS_BUFFER+1],       //     [n/s]  count rates in the time channels 
-           prob_e[BINS_BUFFER+1];       //     [n/s]  count rates in the energy channels  
+           prob_t[2][BINS_BUFFER+1],       //     [n/s]  count rates in the time channels 
+           prob_e[2][BINS_BUFFER+1];       //     [n/s]  count rates in the energy channels  
 double     alpha=0.0, beta=0.0;
 char       sPar [2][9]={"TOF", "energy"},//           name of the x-axis parameter
            sUnit[2][6]={"ms", "meV"};    //           unit of the x-axis parameter
 
-
+VectorType  SpinVector, 
+            spin_up = {0.0,0.0,0.0}, 
+            spin_do = {0.0,0.0,0.0};
+int sndex = 0 ;     // spin index identifier
+int legacy = 0 ;    // identifies the legacy case where only two files were given as input: FileNameEnergy_up and FileNameTOF_up
 
 /******************************/
 /** Prototypes               **/
@@ -87,8 +99,9 @@ double BoseFactor(double T, double w);    // Bose factor
 void   OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
 void   InitArrays();                      // Allocates memory and initializes evaluation arrays 
 void   OwnCleanup();                      // Closes files   
-void   UpdateMon(long iBnch);             // Updates evaluation output file 
+void   UpdateMon(long iBnch, long iBunches, char FileNameEnergy_up[256], char FileNameTOF_up[256], int jj);             // Updates evaluation output file 
 
+int spin_index(VectorType Spin, int legacy);
 
 /******************************/
 /** Program                  **/
@@ -107,7 +120,8 @@ int main(int argc, char **argv)
   _eModule=MCN_EVAL1_INELAST;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.7");
+  InitVector(SpinVector);
+  PrintModuleName(_eModule, "1.8");
   OwnInit(argc, argv);
  
   bVisInstalled = FALSE;
@@ -129,11 +143,12 @@ int main(int argc, char **argv)
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         iBnch++;
-        UpdateMon(iBnch);
+        //UpdateMon(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
       { 
+        CopyVector(InputNeutrons[i].Spin, SpinVector);
         // check color and flight direction
         if (iColor != ANY_COLOR  &&  iColor != InputNeutrons[i].Color) goto no_match;
 
@@ -160,19 +175,24 @@ int main(int argc, char **argv)
         }
 
         /* binning process  */
+        // checks and return the spin index based on the spin value
+        spin_index(SpinVector, legacy);
+
         for(k=0; k<nBins; k++)
         {
           if( (TofToDet > t[k]) && (TofToDet <= t[k+1]) )
-          { prob_t[k] += InputNeutrons[i].Probability; 
-            TotIntTOF += InputNeutrons[i].Probability; 
-            nTrjT[k] += 1 ;
-            nTrjTotT++;
+          { prob_t[sndex][k] += InputNeutrons[i].Probability; 
+            TotIntTOF[sndex] += InputNeutrons[i].Probability;
+            TotIntTOF_tot += InputNeutrons[i].Probability;
+            nTrjT[sndex][k] += 1;
+            nTrjTotT[sndex]++;
           }
           if( (DelE > e[k]) && (DelE <= e[k+1]) )
-          { prob_e[k] += InputNeutrons[i].Probability; // * TransformFactor(DelE) / BoseFactor(Temperature, DelE) ; 
-            TotIntE   += InputNeutrons[i].Probability; 
-            nTrjE[k] += 1 ;
-            nTrjTotE++;
+          { prob_e[sndex][k] += InputNeutrons[i].Probability; // * TransformFactor(DelE) / BoseFactor(Temperature, DelE) ; 
+            TotIntE[sndex]   += InputNeutrons[i].Probability;
+            TotIntE_tot += InputNeutrons[i].Probability; 
+            nTrjE[sndex][k] += 1 ;
+            nTrjTotE[sndex]++;
           }
         }
 
@@ -186,14 +206,17 @@ int main(int argc, char **argv)
   }
 
 // Finish: writes and closes evaluate file, writes to log and instrument file, frees memory
-// ----------------------------------------------------------------------------------------
-my_exit:
-  // Output
-  fprintf(LogFilePtr, "\ntotal intensity within TOF and E binning: %11.3e  %11.3e\n", TotIntTOF, TotIntE);
+  // ----------------------------------------------------------------------------------------
+  my_exit:
+  fprintf(LogFilePtr, " Spin up      : %10.6f , %10.6f, %10.6f\n", spin_up[0], spin_up[1], spin_up[2]);
+  fprintf(LogFilePtr, " Spin down    : %10.6f , %10.6f, %10.6f\n", spin_do[0], spin_do[1], spin_do[2]);
 
+  fprintf(LogFilePtr, "\ntotal intensity within TOF and E binning: %11.3e  %11.3e\n", TotIntTOF_tot, TotIntE_tot);
+  
   // writes evaluation output
-  UpdateMon(nBunches);  
-	
+  UpdateMon(iBnch, nBunches, FileNameEnergy_up, FileNameTOF_up,0);
+  UpdateMon(iBnch, nBunches, FileNameEnergy_do, FileNameTOF_do,1);
+
   OwnCleanup();
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
@@ -235,6 +258,9 @@ double betha;
 /*******************************************************/
 /** Reads input parameters and sets global variables  **/
 /*******************************************************/
+  //  abcdefghijklmnopqrstuvwxyz
+  //  abcdefghijk m      t
+  //  A CDE GH    M      T
 void OwnInit(int argc, char *argv[])
 {
   char   sInstGeom[21], sErrMsg[50];
@@ -267,10 +293,10 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'E':
-        FileNameTOF = &argv[1][2];
+        FileNameTOF_up = &argv[1][2];
         break;
       case 'G':
-	      FileNameEnergy = &argv[1][2];
+	      FileNameEnergy_up = &argv[1][2];
         break;
 
       case 'a':
@@ -317,6 +343,14 @@ void OwnInit(int argc, char *argv[])
       case 'k':
         sscanf(&argv[1][2], "%lf", &AngleRange) ;
         break;
+
+      case 'H':
+        FileNameTOF_do = &argv[1][2];
+        break;
+
+      case 'T':
+	      FileNameEnergy_do = &argv[1][2];
+        break;
     }
     argc--;
     argv++;
@@ -325,8 +359,14 @@ void OwnInit(int argc, char *argv[])
 
   // checks
   // ------
-  if (FileNameEnergy==NULL || FileNameTOF==NULL)
+  if (FileNameEnergy_do==NULL || FileNameTOF_do==NULL)
+  {
+    if(FileNameEnergy_up==NULL || FileNameTOF_up==NULL)
+    {
     Error("No output file given");
+    }
+    legacy = 1;
+  }
 
   if (eGeomOption!=VT_DIRECT_GEOM &&	eGeomOption!=VT_INVERT_GEOM)
   {
@@ -411,9 +451,12 @@ void OwnInit(int argc, char *argv[])
   InstGeom_ID2Txt(sInstGeom, eGeomOption);
   fprintf(LogFilePtr,"\noption %s\n", sInstGeom);
 
-  if(FileNameTOF    != NULL) fprintf(LogFilePtr," TOF spectrum file   : '%s'\n", FileNameTOF) ;
-  if(FileNameEnergy != NULL) fprintf(LogFilePtr," energy spectrum file: '%s'\n", FileNameEnergy) ;
+  if(FileNameTOF_up    != NULL) fprintf(LogFilePtr," TOF spectrum file spin-up  : '%s'\n", FileNameTOF_up) ;
+  if(FileNameEnergy_up != NULL) fprintf(LogFilePtr," energy spectrum file spin-up: '%s'\n", FileNameEnergy_up) ;
+  if(FileNameTOF_do    != NULL) fprintf(LogFilePtr," TOF spectrum file spin-down  : '%s'\n", FileNameTOF_do) ;
+  if(FileNameEnergy_do != NULL) fprintf(LogFilePtr," energy spectrum file spin-down: '%s'\n", FileNameEnergy_do) ;
 
+  
   fprintf(LogFilePtr, " number of bins       : %4ld     \n", nBins);
   fprintf(LogFilePtr, " primary flight path  : %9.4f m  \n secondary flight path: %9.4f m \n",           PrimaryFlightPath/100.0, SecondaryFlightPath/100.0);
   fprintf(LogFilePtr, " reference wavelength : %9.4f Ang\n time offset          : %9.4f ms\n",           LambdaRef, TimeOffset);
@@ -449,21 +492,24 @@ void OwnInit(int argc, char *argv[])
 /********************************************************/
 void InitArrays()
 {
-  long k=0;     // index of channel
+  long j=0;     // index of channel
+  long l=0;    // index of spin
 
   /* calculates TOF channel boundaries and init p_TOF*/
   t[0] = MinTOF ; 
   e[0] = MinE ;
-  prob_t[0] = prob_e[0] = 0.0; 
-  nTrjT[0]  = nTrjE[0] = 0;
+  prob_t[0][0] = prob_e[0][0] = 0.0; 
+  nTrjT[0][0]  = nTrjE[0][0] = 0;
 
-  for(k=1; k<=nBins; k++)
+  for(j=1; j<=nBins; j++)
   {
-    t[k] = alpha *t[k-1] + beta ;
-    e[k] = e[k-1] + (MaxE - MinE) / nBins ;
-
-    prob_t[k] = prob_e[k]   = 0.0; 
-    nTrjT[k]  = nTrjE[k] = 0;
+    t[j] = alpha *t[j-1] + beta ;
+    e[j] = e[j-1] + (MaxE - MinE) / nBins ;
+    for (l=0; l<2; l++)
+    {
+    prob_t[l][j] = prob_e[l][j] = 0.0; 
+    nTrjT[l][j] = nTrjE[l][j] = 0;
+    }
   }
 }
 
@@ -480,7 +526,7 @@ void OwnCleanup()
 /*******************************************************/
 /**  Updates evaluation output file                   **/
 /*******************************************************/
-void UpdateMon(long iBnch)
+void UpdateMon(long iBnch, long nBunches, char FileNameEnergy_up [256], char FileNameTOF_up [256], int jj)
 {
   long   iBin=0;                 // index of bins in x-axix and for main monitor
   double BinCtr=0.0,             // center of the current bin 
@@ -490,15 +536,16 @@ void UpdateMon(long iBnch)
         *pFileEnergy=NULL;
 
   // open files
-  if (FileNameTOF!=NULL)
-    pFileTOF = OpenOutputFile(FileNameTOF, FALSE, "wt");
-  if (FileNameEnergy!=NULL)
-    pFileEnergy = OpenOutputFile(FileNameEnergy, FALSE, "wt");
+  if (FileNameTOF_up!=NULL)
+    pFileTOF = OpenOutputFile(FileNameTOF_up, FALSE, "wt");
+  if (FileNameEnergy_up!=NULL)
+    pFileEnergy = OpenOutputFile(FileNameEnergy_up, FALSE, "wt");
 
   // write spectra 
   if (pFileTOF != NULL)
   {
-    WriteHeader1DB(pFileTOF, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntTOF, nTrjTotT, sPar[0], sUnit[0]);
+    WriteHeader1DB(pFileTOF, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntTOF[jj], nTrjTotT[jj],
+                             sPar[0], sUnit[0], MinTOF, MaxTOF);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;
@@ -509,19 +556,20 @@ void UpdateMon(long iBnch)
     {	
       BinCtr = (t[iBin]+t[iBin+1])/2.0;
 
-      if (nTrjT[iBin]==0) 
+      if (nTrjT[jj][iBin]==0) 
         sigma = 0.0;
       else
-        sigma = prob_t[iBin]/sqrt((double)nTrjT[iBin]); 
+        sigma = prob_t[jj][iBin]/sqrt((double)nTrjT[jj][iBin]); 
 
-      fprintf(pFileTOF,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*prob_t[iBin], f_norm*sigma, nTrjT[iBin]);
+      fprintf(pFileTOF,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*prob_t[jj][iBin], f_norm*sigma, nTrjT[jj][iBin]);
     }
     fclose(pFileTOF);
   }
 
   if (pFileEnergy != NULL)
   {
-    WriteHeader1DB(pFileEnergy, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntE, nTrjTotE, sPar[1], sUnit[1]);
+    WriteHeader1DB(pFileEnergy, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntE[jj], nTrjTotE[jj],
+                                sPar[1], sUnit[1], MinE, MaxE);
 
     if (iBnch > 0 && nBunches > 1)
       f_norm = (double) nBunches / (double) iBnch;
@@ -532,13 +580,51 @@ void UpdateMon(long iBnch)
     {	
       BinCtr = (e[iBin]+e[iBin+1])/2.0;
 
-      if (nTrjE[iBin]==0) 
+      if (nTrjE[jj][iBin]==0) 
         sigma = 0.0;
       else
-        sigma = prob_e[iBin]/sqrt((double)nTrjE[iBin]); 
+        sigma = prob_e[jj][iBin]/sqrt((double)nTrjE[jj][iBin]); 
 
-      fprintf(pFileEnergy,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*prob_e[iBin], f_norm*sigma, nTrjE[iBin]);
+      fprintf(pFileEnergy,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*prob_e[jj][iBin], f_norm*sigma, nTrjE[jj][iBin]);
     }
     fclose(pFileEnergy);
   }
 }
+
+/************************************************************/
+  /** Function to determine the spin state (up = 0, down =1) **/
+  /************************************************************/
+  int spin_index(VectorType Spin, int legacy)
+  {
+    if (legacy == 0)
+    {
+      // Assuming spin "up" if the majority of components are positive
+      // and "down" if the majority are negative
+      int positive_count = 0;
+      int negative_count = 0;
+      int i = 0;
+
+      for (i = 0; i < 3; i++) {
+          if (Spin[i] > 0) {
+              positive_count++;
+          } else if (Spin[i] < 0) {
+              negative_count++;
+          }
+      }
+
+      if (positive_count > negative_count) {
+          sndex = 0;
+          if (spin_up[0] == 0 && spin_up[1] == 0 && spin_up[2] == 0)
+          CopyVector(Spin, spin_up);
+      } else {
+          sndex = 1;
+          if (spin_do[0] == 0 && spin_do[1] == 0 && spin_do[2] == 0)
+          CopyVector(Spin, spin_do);
+      }
+    }
+    if (legacy == 1)
+    {
+     sndex = 0;
+    }
+    return sndex;
+  }

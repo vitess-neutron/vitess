@@ -5,7 +5,7 @@
     polycrystalline materials based on the composition of a crystallographic unit
     cell.
 
-    @author Mirko Boin, Helmholtz-Zentrum Berlin f&uuml;r Materialien und Energy GmbH, <boin@helmholtz-berlin.de>
+    @author Mirko Boin, Helmholtz-Zentrum Berlin f&uuml;r Materialien und Energy GmbH
     @version 1.4
 
 */

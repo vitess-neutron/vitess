@@ -85,7 +85,7 @@ double     RotMatrixSample[3][3],      //                      rotation matrix t
 int main(int argc, char **argv) 
 {
   long       repet=0, i=0;
-  double     TOF=0.0, WL=0.0, Prob=0.0, 
+  double     TOF=0.0, WL=0.0, Prob=0.0, TofOut=0.0,
              PathLength   =0.0, PathLengthHol   =0.0, 
              MaxPathLength=0.0, MaxPathLengthHol=0.0;
   VectorType Pos1f ={0.0,0.0,0.0}, Pos2f  ={0.0,0.0,0.0}, Pos3f={0.0,0.0,0.0}, Pos4f={0.0,0.0,0.0}, 
@@ -360,7 +360,7 @@ int main(int argc, char **argv)
         else  // neutron passes if: iColor >= 0 and iColor != neutron
         {
           OutNeutron = InputNeutrons[i]; 
-          PropagateX(&OutNeutron, TranslOut[0]);
+          PropagateX(&OutNeutron, &TofOut, TranslOut[0]);
           WriteIAP(&OutNeutron, VT_PASSED);
           // SubVector(OutNeutron.Position, PosSample) ;
           TransformIn2Out(OutNeutron.Position, OutNeutron.Vector);

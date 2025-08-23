@@ -14,19 +14,22 @@ mon1_brl:
   - sMonFile:              #     -O  "monitor file"
       type:    "file"
       plottable: true
+      editable: false
       descr:   "monitor file"
       tooltip: "Monitor output file containing brilliance or brilliance transfer as a function of the chosen parameter"
       default: "Sample.brl"
       prefix:  "-O"
   - sRefFile:              #     -S  "reference file"
-      type:    "file"
+      type: "file"
       plottable: false
+      editable: true
       descr:   "reference file"
       tooltip: "Brilliance file used as reference (it is used to calculate the brilliance transfer)"
       prefix:  "-S"
   - sFluxFile:              #     -F  "flux file"
-      type:    "file"
+      type: "file"
       plottable: false
+      editable: true
       descr:   "flux file"
       tooltip: "This file is used to monitor the average and max. brilliance as a function of the given parameter set.\n1 line is written in each simulation"
       prefix:  "-F"

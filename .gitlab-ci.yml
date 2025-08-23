@@ -1,10 +1,11 @@
 variables:
-  VITESS_VERSION: "3.6"
+  VITESS_VERSION: "3.7"
 
 stages:
   - build
   - test
   - package
+  - publish
 
 workflow:
   rules:
@@ -29,9 +30,8 @@ workflow:
   extends: .compile-base
   script:
     - cd SRC
-    - make
+    - make all LTO=1
     - make install
-    - make clean
     - cd ..
     - mkdir artifacts-${OS}-${ARCH}
     - cp -r MODULES artifacts-${OS}-${ARCH}
@@ -39,58 +39,110 @@ workflow:
     paths:
       - artifacts-${OS}-${ARCH}/
 
-compile-rocky8:
+.compile-linux:
   extends: .compile-unix
+  variables:
+    LINUX_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-linux-data.git"
+    LINUX_DATA_USER: "gitlab+deploy-token-147"
+    LINUX_DATA_PASSWORD: "gldt-UDysz-dxdz-iXsSPQRy-"
+    LIBTORCHFILE: "libtorch-cxx11-abi-2.2.2.zip"
+    LIBTORCHPATH: "${CI_PROJECT_DIR}/vitess-data/libtorch"
+
+.linux_before_script: &linux_before_script
+  - git clone -b vitess${VITESS_VERSION} https://${LINUX_DATA_USER}:${LINUX_DATA_PASSWORD}@${LINUX_DATA_REPO} vitess-data
+  - cd vitess-data
+  - unzip "${LIBTORCHFILE}"
+  - cd ..
+
+compile-rocky8:
+  extends: .compile-linux
   rules:
     - when: on_success
   image: rockylinux:8
   variables:
     OS: Rocky8
     ARCH: x86_64
+    LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
+    - dnf install -y epel-release
+    - dnf install -y make gcc-toolset-12 libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - . /opt/rh/gcc-toolset-12/enable
+    - *linux_before_script
 
 compile-rocky9:
-  extends: .compile-unix
+  extends: .compile-linux
   image: rockylinux:9
   variables:
     OS: Rocky9
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - *linux_before_script
 
 compile-centos7:
-  extends: .compile-unix
+  extends: .compile-linux
   image: centos:7
   variables:
     OS: CentOS7
     ARCH: x86_64
+    NONCRYSTAL: 1
+    LIBTORCHPATH:
   before_script:
-    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel
+    - sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS*.repo
+    - sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS*.repo
+    - sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS*.repo
+    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip libxml2-devel
+    - *linux_before_script
+    - cd vitess-data
+    - ./cmake-3.28.5-linux-x86_64.sh --skip-license --prefix=/usr/local
+    - cd ..
 
 compile-ubuntu:
-  extends: .compile-unix
+  extends: .compile-linux
   image: ubuntu:latest
   variables:
     OS: Ubuntu
     ARCH: x86_64
   before_script:
     - apt-get update
-    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev
+    - *linux_before_script
+
+compile-fedora40:
+  extends: .compile-linux
+  image: fedora:40
+  variables:
+    OS: Fedora40
+    ARCH: x86_64
+  before_script:
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - *linux_before_script
+
+compile-debian:
+  extends: .compile-linux
+  image: debian:bookworm
+  variables:
+    OS: Debian
+    ARCH: x86_64
+  before_script:
+    - apt-get update
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev
+    - *linux_before_script
 
 compile-darwin:
   extends: .compile-unix
   rules:
     - when: on_success
-  image: macos:catalina-xcode
+  image: macos:sonoma-xcode
   tags:
-    - libvirt
+    - utm
   variables:
     OS: Darwin
-    ARCH: x86_64
+    ARCH: universal
     DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
     DARWIN_DATA_USER: "gitlab+deploy-token-92"
     DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
+    NOGD: 0
   before_script:
     - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
     - cd vitess-data
@@ -99,14 +151,17 @@ compile-darwin:
     - sudo hdiutil detach /Volumes/XQuartz-2.8.2
     - tar xzf libgd-2.3.3.tar.gz
     - cd libgd-2.3.3
-    - ./configure --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib
+    - ./configure --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib --disable-shared CC="cc" CXX="c++" CFLAGS="-arch x86_64 -arch arm64" CXXFLAGS="-arch x86_64 -arch arm64"
     - make
     - sudo make install
     - cd ..
+    - tar xzf cmake.tgz
+    - sudo cp -a CMake.app /Applications/
+    - sudo ln -s /Applications/CMake.app/Contents/bin/cmake /usr/local/bin/cmake
     - cd ..
   artifacts:
     paths:
-      - artifacts-Darwin-x86_64/
+      - artifacts-Darwin-universal/
 
 
 compile-windows:
@@ -148,11 +203,55 @@ test-rocky8:
   image: rockylinux:8
   needs:
     - job: compile-rocky8
+  variables:
+    LINUX_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-linux-data.git"
+    LINUX_DATA_USER: "gitlab+deploy-token-147"
+    LINUX_DATA_PASSWORD: "gldt-UDysz-dxdz-iXsSPQRy-"
+    LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
+    LD_LIBRARY_PATH: "${CI_PROJECT_DIR}/vitess-data/libtorch/lib"
   before_script:
-    - dnf install -y python3 python3-pyyaml
+    - dnf install -y epel-release
+    - dnf install -y make gcc-toolset-12 libXpm gd zlib git unzip python3 python3-pyyaml libxml2
+    - . /opt/rh/gcc-toolset-12/enable
+    - *linux_before_script
   script:
     - cp -rf artifacts-Rocky8-x86_64/MODULES .
-    - python3 TOOLS/check_yaml.py
+    - python3 tests/check_yaml.py
+    - tests/check_examples.sh
+
+test-darwin:
+  stage: test
+  image: macos:sonoma-xcode
+  tags:
+    - utm
+  needs:
+    - job: compile-darwin
+  variables:
+    DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
+    DARWIN_DATA_USER: "gitlab+deploy-token-92"
+    DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
+  before_script:
+    - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
+    - cd vitess-data
+    - sudo hdiutil attach XQuartz-2.8.2.dmg
+    - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
+    - sudo hdiutil detach /Volumes/XQuartz-2.8.2
+    - cd ..
+  script:
+    - cp -rf artifacts-Darwin-universal/MODULES .
+    - tests/check_examples.sh
+
+test-largefiles:
+  stage: test
+  image: rockylinux:9
+  needs: []
+  script:
+    - LARGEFILES="$(find . -type f -size +100M -not -path './.git/*' -print)";
+      if [ -n "${LARGEFILES}" ]; then
+        echo "The following files exceed the github limit of 100MB:";
+        echo "${LARGEFILES}";
+        exit 1;
+      fi
 
 package:
   stage: package
@@ -164,7 +263,7 @@ package:
       allow_failure: true
   script:
     - mkdir Downloads
-    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-x86_64 Windows10-x86 Rocky9-x86_64; do
+    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-universal Windows10-x86 Rocky9-x86_64 Fedora40-x86_64 Debian-x86_64; do
         mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
         cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
         cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;
@@ -174,3 +273,39 @@ package:
   artifacts:
     paths:
       - Downloads/
+
+pages:
+  stage: publish
+  image: rockylinux:9
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "develop"
+      when: manual
+      allow_failure: true
+    - when: never
+  dependencies: []
+  script:
+    - cp -r WWW public
+    - echo '/vitess/ /vitess/vitess.html 301' > public/_redirects
+  artifacts:
+    paths:
+    - public
+
+sync:
+  stage: publish
+  environment: sync
+  image: rockylinux:9
+  only:
+    - master@vitess/vitess
+    - develop@vitess/vitess
+    - tags@vitess/vitess
+  dependencies: []
+  before_script:
+    - dnf install -y git
+  script:
+    - mkdir --mode=700 ~/.ssh
+    - echo -e "-----BEGIN OPENSSH PRIVATE KEY-----\n${VITESS_GITHUB_KEY}\n-----END OPENSSH PRIVATE KEY-----" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+    - echo "${GITHUB_HOST_KEY}" >> ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
+    - git clone --mirror "$CI_REPOSITORY_URL" vitess_mirror
+    - cd vitess_mirror && git push -f --tags git@github.com:vitess-neutron/vitess.git refs/heads/master refs/heads/develop

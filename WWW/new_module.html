@@ -1,0 +1,321 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="stylesheet" type="text/css" href="default.css">
+  <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+  <title>Module Template</title>
+</head>
+
+<h1> New VITESS Modules </h1>
+
+<body>
+  If any module or feature is missing for a VITESS simulation, there are the following possibilities:
+  <p>
+    1. You contact us asking to add this feature (email: vitess@fz-juelich.de).
+    While we release new versions only once or twice a year, we keep constantly a working branch of the development in our GIT system, which allows to add new features relatively quickly.
+    A version containing this new features can then be downloaded. It will work, but is of course not as well tested as a normal release.
+  </p>
+  <p>
+    2. You switch to McStas or any other tool supporting input and output of events (neutron trajectories) using MCPL, by the following steps:
+    - export the events (=neutron trajectories) before the missing module using MCPL (or McStas) format
+    - import them in the other program
+    - simulate this component using the other program
+    - export the resulting events
+    - import them in VITESS
+    - continue the VITESS simulation
+  </p>
+  <p>
+    3. If you have already a program that does the simulation, you can use the module <b>external_command</b> (now in folder 'new module') where you give only 3 parameters:
+    the executable, a string of parameters and the name of a parameter file (description see below).
+  </p>
+  <p>
+    4. You write your own VITESS module
+    We have written a <b>template_module</b> that will facilitate writing modules as it contains the structure, many important functions and all kinds of parameters.
+    It is also included in the GUI. See the description below how to convert it to your own module
+  </p>
+  <br>
+
+
+  <h2> External command </h2>
+  <p>
+    The module <b>external_command</b> runs a user written VITESS module that is not controlled by a dedicated GUI window. Instead, the general module 'external_commmand' is used.
+    Here, you can give only 3 parameters: the executable, the name of a file containing parameters (optional) and a string of parameters in the form "-g47.11 -Ffilename.dat ...." (optional).
+    The executable has to be given with its full path. The file containing parameters is supposed to be in the parameter directory. <br />
+    This module is included in the pipe command by adding:
+    Given executable + option string + content of the option file + general options of the whole simulation (random number, gravity flag etc.) <br />
+    Note that this module is treated like all other VITESS modules in the simulation, i.e. it will get neutrons in VITESS format from the previous module.
+    If it cannot handle that, you have to use <b>writeout</b> as the last module before this one to export the events in a proper format and start a new simulation reading these events in the <b>external_command</b> module.
+  </p>
+
+  <h4>Parameters in module 'external_command'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+      <tr>
+        <td valign="top">external exe-file</td>
+        <td valign="top">Full path and file name of the executable program</td>
+        <td valign="top">   </td>
+        <td valign="top">   </td>
+      </tr>
+      <tr>
+        <td valign="top">option file</td>
+        <td valign="top">
+          File with options for the external command. It is expected in the parameter directory.
+          This file may contain several lines, which are concatenated to a blank separated string.
+        </td>
+        <td valign="top">   </td>
+        <td valign="top">   </td>
+      </tr>
+      <tr>
+        <td valign="top">option string</td>
+        <td valign="top">This option string is passed as it is to the external command </td>
+        <td valign="top">   </td>
+        <td valign="top">   </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <br>
+  <h2> VITESS Module serving as a Template for a New Module </h2>
+  <p>
+    This module is not meant to be used in an simulation; it is meant to help a user to create a his own Vitess module.
+    There are 4 to 5 important steps to consider when developing a module:<br />
+
+    1 - Write the module source code in C or C++ and include it in the SRC folder. <br />
+    2 - Include the module in the Makefile located in `SRC/Makefile` and compile the software to generate the binary.<br />
+    3 - Include the module to the Graphical User Interface (GUI).<br />
+    4 - Add a YAML file describing your module.<br />
+    5 - Ideally you also add information about this module in a new or existing help file (see existing html files in folder WWW).<br />
+
+    After following these steps, the new binary should be located in the MODULES folder and the module should appear in the GUI.
+    It is probably best to rename 'template' by a good name for your module, both for the name of the C file and the YAML file, as well as in the Make file and in the file 'vitess.tcl', which defines the GUI windows.
+    Alternatively, you can create a new C and YAML file and add all information to the Make file and the GUI file 'vitess.cl' in the same way as 'template' is added there. <br />
+    In what follows, we explain each one of these steps in detail with an example.
+  </p>
+  <br />
+  <p>
+    <h4>  1. Write your module </h4>
+
+    We provide the `template.c` source file in the `SRC` directory. This template serves as an example on how to create your own module.
+    <br />
+    A first consideration is that modules are defined by module IDs. These are listed in a `typdef enum` that is in `defines.h`.
+    We have created a general module ID called `MCN_TEMPLATE`, but you can directly add a new module ID to the list.
+    If you do so, it is also necessary to modify the `CompID2Name` function in `convert.c` to copy the name of the module given the ID (create a new line and follow the logic in this function).
+    Finally, you also need to modify the `Name2CompID` function in `convert.c` in the same way, so that it knows how to convert from name to module ID and vice versa.
+    <br />
+    In the following part of the template, the general initialization is performed by means of the `Init` function, and a `PrintModuleName` function.
+    After this, you must write an `OwnInit` function (given in the template) that sets the input parameters of the module and their flags to be used in the command line interface.
+    After treating all neutrons, `Cleanup` has to be called for writing into the log file and adding a line to `instrument.inf`, which stores the position of each compontent in a global co-ordinate system.
+    Finally, the function `SetGeometry` written for the instrument visualization has to be called.
+    <br />
+    There are several functions that `Vitess` offers to interact with the software.
+    Important ones are `ReadNeutrons`, which reads neutrons from the input stream and returns the number of neutrons read,
+    and `WriteNeutron`, which writes a neutron to the output buffer that will be sent to the next module. You can find them mostly in `init.c`.
+    There are also some `Neutron` structures like `InputNeutrons` (stores the input neutron Buffer) or `OutputNeutrons` (stores the output neutron Buffer), which contain the input and output neutron phase space variables.
+    The `Neutron` structure type definition can be found in `defines.h`.
+    <br />
+    Some function in `general.c` in `init.c` facilitate handling structures or files, e.g. `CopyVector`, `InitRotMatrix`, `LinesInFile`, `InitNeutron`.
+    There are also some auxiliary functions to convert between physical properties, like for example `ENERGY_FROM_LAMBDA` or `LAMBDA_FROM_V`.
+    These functions can be found in `general.c` and may be useful for yor specific module.
+    <br />
+    'template.c' is based on 'slit.c', one of the simplest modules. It is recommended to look at some other modules in the `SRC` folder to see how these functions work and are implemented.
+  </p>
+  <br />
+  <p>
+    <h4>  2. Include the module in the Makefile `SRC/Makefile` and compile </h4>
+
+    To be able to compile the Vitess software with your newly generated module it is necessary to include it into the `Makefile` which is located in `SRC/Makefile`
+    <br />
+    If the generated component does not have any external dependencies (best case), then it is sufficient to add the nametag to the `ALL` variable inside the `Makefile`, i.e.
+    <br />
+    `ALL = ascii2bin \ ... \ template \ ... \ writeout`.
+    <br />
+    Otherwise, you have to give a new entry in ''# additional dependencies', inside the `Makefile` something like
+    <br />
+    `template: template.c template_add_module.c `
+    <br />
+    <br />
+    Now, whenever running
+
+    <pre>
+      $make all
+    </pre>
+
+    the new module will be compiled together with the rest of the bundle and you will see the binary inside the folder. Afterwards, you can run
+
+    <pre>
+      $make install
+    </pre>
+
+    to move the binaries into the `MODULES` folder. You may also run
+
+    <pre>
+      $make clean
+    </pre>
+
+    to clean the current directory of the binaries created.
+
+    Now you have your module included in the vitess package and you can already add it to a command line pipeline to start using it!
+  </p>
+  <br />
+  <p>
+    <h4>  3. Include the module to the Graphical User Interface (GUI) by modifying ''GUI/vitess.tcl' </h4>
+
+    This part is optional; it is needed if you intend to use the module by means of the GUI (recommended).
+    GUI files are inside the `GUI` folder. It is necessary to modify the `vitess.tcl` file to include a module by the following two steps: <br />
+    <br />
+    First, add the module to the list of available modules by modifying the `AvailableSET` function.
+    In the example, we added the `template_module` inside the `new_module` folder giving it the name 'template_module' in the GUI and calling the executable 'template' from the MODULES folder.
+    You can either replace 'template_module' and 'template' by the name of your module or add your name in the GUI and the name of the executable somewhere else in the table, e.g. adding another type of sample.
+    <pre>
+      set AvailableSET {
+        {beamstop {} beamstop}
+        ...
+        {new_module {external_command template_module} {external_command template}}
+        ...
+      }
+    </pre>
+
+    Then add (also inside `vitess.tcl`) the function that defines the module content in the GUI:
+    <pre>
+    ### Template Module
+    set template_moduleESET {
+      {tmpt_fname pareditablefile "file.dat" {"file" "name of the .... file" "" F} r}
+      {tmpt_flag1 select no {"switch" "Flag 1: Description of switch 1" "" a} {{"flag 1" 0}}}
+      {tmpt_nitem int    1 {"number\nof items" "Description of the number of items" "" n} 1 100 1}
+      {tmpt_nvals int    1 {"number\nof values" "Description of the number of values" "" N} 1}
+      {}
+      {"Dimension" header}
+      {tmpt_par_a float "" {"par A [unit]" "Description of parameter A" "" A} ge0}
+      {tmpt_par_b float "" {"par B [unit]" "Description of parameter A" "" B} ge0}
+      {tmpt_dist float ""  {"distance\nto device [cm]" "Distance from the origin to the device (along the x-axis)" "" D} ge0}
+      {}
+      {tmpt_dir radio N    {"axis" "axis of .... direction (N: no direction)" "" Q} {X Y Z N} {0 1 2 -1}}
+    }
+    </pre>
+
+    You will find these lines in the `vitess.tcl` file around line 790. If you chose to replace the template by your module, you have to replace the name in 'template_moduleESET'.
+    Otherwise, you have to add a function, whose name consists of your (GUI) module name plus ESET. <br />
+    In this example, the GUI of the template_module has the following items:
+    <br />
+    <b>Line 1</b>: <br />
+    An input file box with a button to search for (that is the pareditablefile definition), which has a label "file". A right click gives the help text "name of the .... file". <br />
+    In the GUI, the default value is "file.dat"; and "F" identifies the parameter.
+    The content of this item (at start of the simulation) is passed to the C kernel - for the default value, it is "-Ffile.dat" - where "-F" is used in the function OwnInit() to identify this parameter..
+    And "file.dat" is copied to th corresponding parameter in the C code.
+    (Tag letters do not necessarily have much logic, but they must be the same as set in the `OwnInit` function since these will be used to generate the command line prompt.
+    <br />
+    <b>Line 2</b><br />
+    A switch labeled "switch" and "flag 1" with the help text "Flag 1: Description of switch 1" and default value 'off'=0. This parameter is marked by "-a".
+    Following the first example, the information is transfered to the C code as "-a0" for 'off' as "-a1" for 'on'.
+    <br />
+    <b>Lines 3 and 4</b>: <br />
+    Two integer numbers, both with default value 1 and help text "Description of ...", labeled "number of items/values", tagged "-n" and "-N". The 2nd has a possible range of 1 to 100.
+    They will be transfered to the C code as "-n1 -M1" (for the default values).
+    <br />
+    <b>Lines 5 and 10</b>: <br />
+    The empty containers {} cause the following item to be in the next row on the GUI.
+    <br />
+    <b>Line  6</b>: <br />
+    Header "Dimension" on the GUI
+    <br />
+    <b>Lines 7 - 9</b>: <br />
+    Three floating point numbers defining the geometry of the device, tagged by "-A", "-B" and "-D", labeled "par A [unit}" etc, all without default values".
+    For parameter values 2.5, 4.2 and 100.0, the parameter string would be "-A2.5 -B4.2 -D100.0". <br />
+    <b>Line 11</b>:
+    <br />
+    Radio button to choose an axis, e.g. an rotation axis or a quantization direction, tagged "axis", labeled "-Q", default "no axis".
+    The chosen value - X, Y, Z or N - is converted to 9, 1, 2 and -1 resp. This corresponds to the enum 'VtAxis'. Accordingly, this is used in the C code.
+    To convert back to text, the function Axis_ID2Txt() is used.
+    <br />
+  </p>
+  <p>
+    Altogether, the parameter string "-Ffile.dat-A2.5 -B4.2 -D100.0"If you intend to add more parameters, just add more containers {} into the `set`.
+  </p>
+  <p>
+    <h4>  4. Add the YAML file (will be needed in VITESS 4) </h4>
+
+    This if for the module compatibility for future versions of Vitess. A YAML file will be required from version 4.0 onwards. This file should be located in the `YAML` folder of the VITESS directory.
+    For general guidelines on how to create the YAML file, visit  <a href="https://iffgit.fz-juelich.de/vitess/vitess-python/-/wikis/Vitess%20YAML%20file%20format"> YAML files description. </a>
+    The YAML files are simple to read and you can get the basic ingredients by reading the YAML files of other modules.
+  </p>
+  <p>
+    <h4>  5. Add an HTML help file (optional) </h4>
+
+    The help file begins with a short comparison of modules simulating similar components, e.g. different kinds of sample.
+    Then it describes what happens inside this module. Finally, there is a table containing a descriptioin of all parameters of the module.
+  </p>
+
+  <br>
+  <h4>Parameters in module 'template'</h4>
+  <table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top"><b>Parameter<br> Unit<br></b></td>
+        <td valign="top"><b>Description<br>      </b></td>
+        <td valign="top"><b>Range or Values<br>  </b></td>
+        <td valign="top"><b>Command Option<br>   </b></td>
+      </tr>
+      <tr>
+        <td valign="top">file</td>
+        <td valign="top">Name of a file, which may be an input file (e.g. containing parameters or a spectrum) or an output file (e.g. from a monitor)</td>
+        <td valign="top">default: 'file.dat' </td>
+        <td valign="top"> -F </td>
+      </tr>
+      <tr>
+        <td valign="top">flag 1</td>
+        <td valign="top">Here you can choose between 2 options, i.e. to switch it on or off</td>
+        <td valign="top">'on' or 'off' </td>
+        <td valign="top"> -a </td>
+      </tr>
+      <tr>
+        <td valign="top">number of items</td>
+        <td valign="top">In this field, you give any integer number. In the C code, it will be moved to a parameter of type 'int' </td>
+        <td valign="top">0 &ge; n &ge; 100</td>
+        <td valign="top"> -n      </td>
+      </tr>
+      <tr>
+        <td valign="top">number</td>
+        <td valign="top">In this field, you give any integer number. In the C code, it will be moved to a parameter of type 'long' </td>
+        <td valign="top"> &ge; 0</td>
+        <td valign="top"> -N      </td>
+      </tr>
+      <tr>
+        <td valign="top">par A</td>
+        <td valign="top">Example for a float parameter: width of a rectangular slit [cm]</td>
+        <td valign="top">&gt;= 0  </td>
+        <td valign="top">-A       </td>
+      </tr>
+      <tr>
+        <td valign="top">par B</td>
+        <td valign="top">Example for a float parameter: height of a rectangular slit [cm]</td>
+        <td valign="top">&gt;= 0  </td>
+        <td valign="top">-B       </td>
+      </tr>
+      <tr>
+        <td valign="top">distance<br>[cm]</td>
+        <td valign="top">the distance from the origin (usually the exit of the previous component) to the slit along the x-axis </td>
+        <td valign="top">&gt;= 0 </td>
+        <td valign="top">-D      </td>
+      </tr>
+      <tr>
+        <td valign="top">axis</td>
+        <td valign="top">Axis used to define the axis of rotation, the orientation or the axis of quantization </td>
+        <td valign="top">'X', 'Y', ''Z', 'NoAxis'</td>
+        <td valign="top">-Q      </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+  <a href="vitess.html">Back to start page</a><br>
+  <a href="mailto:vitess@fz-juelich.de">Email vitess@fz-juelich.de</a>
+</body>
+</html>

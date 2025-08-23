@@ -1,0 +1,157 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+ <!-- Developer Notes -->
+ <!-- This file contains direct links to the Git repo subfolder /FILES/TUTORIALS/, so if it changes location, the links have to be updated accordingly. -->
+ <!-- The file location is currently /FILES/TUTORIALS/ -->
+ <!-- The css style file is currently located in /WWW/ -->
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" type="text/css" href="default.css">
+    <link rel="shortcut icon" type="image/x-icon" href="vitess.ico" />
+    <title>Vitess Tutorials</title>
+</head>
+
+<header>
+    <h1>Vitess Tutorials</h1>
+</header>
+<!-- <nav>
+    <a href="#BeginnerExample">Beginnner Example</a>
+    <a href="#DetectorExample">Detector Example</a>
+    <a href="#GuideExample">Guide Example</a>
+    <a href="#RayTracingExample">Ray-tracing Example</a>
+    <a href="#SamplesExample">Samples Example</a>
+    <a href="#SuperMirrorExample">Super-mirror Systems Example</a>
+</nav> -->
+<div class="container">
+    <section>
+        <p>This page contains exercises that illustrate the usage and special features of different VITESS modules. Some
+            exercises are taken from the joint Vitess/McStas workshop that took place in Berlin 18.-20.09.2013; the
+            respective McStas examples can be found at <a href="http://2013.essworkshop.org/" target="_blank"
+                rel="noopener">http://2013.essworkshop.org/</a>. These exercises are based on VITESS 3.1. Input files
+            are given in the subdirectories, as well as .pdf files containing detailed description of the exercises as
+            well as (some) solutions.</p>
+    </section>
+    <section>
+        <div id="BeginnerExample" class="anchor"></div>
+        <h2>Beginner Example</h2>
+        <p>The <a
+                href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/BeginnerExample?ref_type=heads">BeginnerExample</a>
+            folder contains an introduction to VITESS simulations and basic usage of the most common modules. It is
+            divided in two parts:</p>
+        <ul>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/BeginnerExample/Talk_Ex1_VitessComponents.pdf?ref_type=heads"><strong>Ex1:</strong></a>
+                Source, sample, and detector modules.</li>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/BeginnerExample/Talk_Ex1_VitessComponents.pdf?ref_type=heads">
+                    <strong>Ex2:</strong></a> Guide and chopper modules.</li>
+        </ul>
+        <p>Useful material that can be found in the same folder:</p>
+        <ul>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/BeginnerExample/ESSpowder_common.pdf?ref_type=heads">ESSpowder_common.pdf</a>
+                describes the instrument setup to be simulated.</li>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/BeginnerExample/ESSpowder_VITESS.pdf?ref_type=heads">ESSpowder_VITESS.pdf</a>
+                contains instructions on how to implement this in VITESS.</li>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/BeginnerExample/Solutions?ref_type=heads">Solutions</a>
+                in GUI files for both <a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/BeginnerExample/Solutions/Ex1.3.gui?ref_type=heads">Ex1</a>
+                and <a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/BeginnerExample/Solutions/Ex2.2.gui?ref_type=heads">Ex2</a>
+                are provided.</li>
+        </ul>
+    </section>
+    <section>
+        <div id="DetectorExample" class="anchor"></div>
+        <h2>Detector Example</h2>
+        <p>In this <a
+                href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/DetectorExample?ref_type=heads">exercise</a>
+            we want to see how different kinds of neutron detectors can be modeled in VITESS. We concentrate on
+            artificial setups showing the detector performance.</p>
+        <ul>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/DetectorExample/Exercise_Detector.pdf?ref_type=heads"><strong>Ex3:</strong></a>
+                Detection material and efficiency, resolution effects, tube geometry, detector array, event mode
+                output file.</li>
+        </ul>
+    </section>
+    <section>
+        <div id="GuideExample" class="anchor"></div>
+        <h2>Guide Example</h2>
+        <p>In the <a
+                href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/GuideExample?ref_type=heads">GuideExample</a>
+            directory, different types of guides are considered and their differences are compared.</p>
+        <ul>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/GuideExample/Exercises_GuidesAdvanced.pdf?ref_type=heads"><strong>Ex4:</strong></a>
+                Straight, curved, kinked, ballistic, and elliptic guides.</li>
+        </ul>
+    </section>
+    <section>
+        <div id="RaytracingExample" class="anchor"></div>
+        <h2>Ray-tracing Example</h2>
+        <p>In this <a
+                href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/RaytracingExample?ref_type=heads">exercise</a>,
+            we assume we have optimized a guide system using m=6 mirror coating. Now we want to find out where in
+            the guide we can use a lower coating without losing flux on the sample. We don’t want to use a high
+            coating to reflect a lot of neutrons that get lost somewhere else in the system, or contribute to
+            background! Therefore, we use raytracing to select the neutrons we want, and then choose the coating
+            appropriate to transport them.</p>
+        <ul>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/RaytracingExample/Raytracing.pdf?ref_type=heads"><strong>Ex5:</strong></a>
+                Use neutron raytracing to determine supermirror coating (m-value) necessary in different guide
+                sections.</li>
+        </ul>
+    </section>
+    <section>
+        <div id="#SamplesExample" class="anchor"></div>
+        <h2>Samples</h2>
+        <p>In this <a
+                href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/Samples?ref_type=heads">exercise
+                folder</a> we study in more detail the sample modules in Vitess, both for <a
+                href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/Samples/Diffraction_SingleWavelength?ref_type=heads">diffraction</a>
+            and <a
+                href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/Samples/Reflection?ref_type=heads">reflection</a>.
+        </p>
+        <ul>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/Samples/Sample-exercise.pdf?ref_type=heads"><strong>Ex6:</strong></a>
+                Reconstruct powder samples, get the background from sample environment, create a sample for
+                reflectometry and study the differences between considering or not the incoherent scattering.</li>
+        </ul>
+        <section>
+        </section>
+        <div id="#SuperMirrorExample" class="anchor"></div>
+        <h2>Super-mirror Systems Example</h2>
+        <p>Finally, the <a
+                href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/SupermirrorSystems?ref_type=heads">SupermirrorSystems
+                folder</a> contains an exercise to model complex systems of supermirrors using the sm_ensemble
+            module. In this module, any user-defined coordinates and orientation of supermirror plates can be given.
+            You will build a bi-spectral beam extraction system consisting of several, differently inclined mirrors
+            surrounded by guide walls.</p>
+        <ul>
+            <li><a
+                    href="https://iffgit.fz-juelich.de/vitess/vitess/-/tree/develop/FILES/TUTORIALS/SupermirrorSystems/SupermissorSystems.pdf?ref_type=heads"><strong>Ex7:</strong></a>
+                Build a bi-spectral beam extraction system consisting of several mirrors inserted partly into a
+                guide.</li>
+        </ul>
+    </section>
+    <hr>
+    <a href="https://vitess.iffgit.fz-juelich.de/vitess/vitess.html">Back to Documentation page</a><br>
+    <a href="http://vitess.fz-juelich.de">VITESS homepage</a><br>
+    <a href="mailto:vitess@fz-juelich.de">Email vitess@fz-juelich.de</a>
+</div>
+<footer>
+    <p id="last-modified">Last modified: </p>
+</footer>
+
+<script>
+    document.getElementById('last-modified').innerText += document.lastModified;
+</script>
+</body>
+
+</html>

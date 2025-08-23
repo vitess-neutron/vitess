@@ -497,7 +497,7 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
 
         for (j=1; j < maxColumn; j++) 
         {
-          strncpy(&format[strlen(format)-4], "%*lf ", 5);
+          strncpy(&format[strlen(format)-4], "%*lf ", 6);
           strcat(format, "%lf ");
           sscanf(sRemainBuffer, format, &parBuffer[j]);
         }
@@ -534,6 +534,7 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
         }
       }
 
+      free(parBuffer);
       fclose(pStrucFile);
       fprintf(LogFilePtr,"Read %ld lines from the structure factor file %s.\n", NumLines, sStrFileName);
 

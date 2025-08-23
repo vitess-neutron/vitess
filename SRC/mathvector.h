@@ -44,10 +44,15 @@ class MathVector {
 
   MathVector Rotate(double alphaX=0, double alphaY=0, double alphaZ=0);
 
-  double Mod();
-  MathVector Unit();
+  double Mod();       // returns absolute value (or length) of the vector
+  void   Norm();      // sets the length of thee vector to 1
+  MathVector Unit();  // returns a vector normalized to length 1 
+
   double Phi();
   double Theta();
+
+  double DivY();   // Divergence as used in neutron scattering for a beam along the x axis.
+  double DivZ();
 
   // Phi and Theta as usually defined for neutron scattering experiment, e.g. diffraction
   double PhiSc();

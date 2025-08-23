@@ -1,0 +1,2 @@
+#!/bin/sh
+grplot $PFILENAME use_bins:1

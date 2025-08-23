@@ -84,7 +84,7 @@ void OwnInit(int argc, char *argv[]);
 void LoadReflFile(ReflFile* pReflFile);
 void FillReflContainer(ReflFile* reflStruct, double m);
 void OwnCleanup();
-void SetGeometryData(char* sColor);
+void SetGeometryData(const char* sColor);
 
 int ProcessNeutron(Neutron* n);
 

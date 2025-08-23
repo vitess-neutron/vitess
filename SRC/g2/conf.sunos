@@ -1,6 +1,0 @@
-env CFLAGS=-I/net/usr/include LDFLAGS=-L/net/usr/lib LIBS='-lpng -lz -lm' configure
-make depend
-make
-cp  ./src/g2.h ./src/PS/g2_PS.h ./src/X11/g2_X11.h ./src/GIF/g2_GIF.h SunOS
-in demo/Makefile bei LDFLAGS -lpng hinzufügen
-make demo

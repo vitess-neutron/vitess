@@ -72,6 +72,15 @@ double MathVector::Mod()
   return sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
 }
 
+void MathVector::Norm()
+{
+  int i = 0;
+  double len = sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
+
+  for (i = 0; i < 3; i++)
+    x[i] /= len;
+}
+
 MathVector MathVector::Unit()
 {
   double mod = sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
@@ -81,28 +90,35 @@ MathVector MathVector::Unit()
 
 double MathVector::Phi()
 {
-
   return atan2(x[1], x[0]);
-  
 }
 
 double MathVector::Theta()
 {
   return atan2(x[2], sqrt(x[0]*x[0] + x[1]*x[1]));
-  
 }
+
+
+double MathVector::DivY()
+{
+  return atan2(x[1], x[0]);
+}
+
+double MathVector::DivZ()
+{
+  return atan2(x[2], x[0]);
+}
+
 
 double MathVector::PhiSc()
 {
-
   return atan2(x[2], x[1]);
-  
 }
 
 double MathVector::ThetaSc()
 {
+  Norm();
   return acos(x[0]);
-  
 }
 
 

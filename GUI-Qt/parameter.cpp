@@ -109,7 +109,9 @@ void Parameter::getModulSubParameter(YAML::Node& configParam,QString modulName)
            QString parName = QString::fromStdString(it->first.as<string>());
            //list of the single parameter definitions: type,descr,default,min,max,column,prefix
            //definitions of one parameter
-
+           if (parName.toStdString() == "category"){
+               continue;
+           }
            YAML::Node configParamDef = it->second;
            foreach(QString key,mapParam.keys())
            {

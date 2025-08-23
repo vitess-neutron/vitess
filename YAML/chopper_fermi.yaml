@@ -24,6 +24,7 @@ chopper_fermi:
   - sOutFile :
       type:    "file"
       plottable: false
+      editable: false
       descr:   "geometry file"
       tooltip: "output file of the curved channel geometry"
       prefix:  "-G"
@@ -113,7 +114,6 @@ chopper_fermi:
       descr:   "phase [deg]"
       tooltip: "Chopper orientation at time = 0"
       default:   0.0
-      min:       0.0001
       column:    1
       prefix:  "-q"
   - OptLambda :

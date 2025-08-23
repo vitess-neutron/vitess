@@ -1,29 +1,159 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
 
-body { font-size: 100%; font-family: Times; color: #222; background-color: #fff;}
-td,
+header {
+    background-color: #ffffff;
+    color: #023d6b;
+    padding-top: 0px; 
+    padding-right: 1%;
+    padding-bottom: 0px;
+    padding-left: 1%;
+    text-align: center;
+    position: fixed;
+    width: 98%;
+    top: 0;
+    left: 0;
+    display: flex; /* Use flexbox to arrange items horizontally */
+    align-items: center; /* Align items vertically in the center */
+    justify-content: space-between; /* Space out the logos and center the title */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2em;
+    text-align: center;
+}
+
+/* Ensure the logo remains small */
+.logo {
+    max-width: 100px; /* Set the desired maximum width */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: 15px; /* Add some space between the logo and the title */
+}
+
+/* Styling for the website title */
+.site-title {
+    font-size: 24px; /* Set font size of the title */
+    color: #023d6b; /* Text color */
+    margin: 0; /* Remove default margin */
+}
+
+nav {
+    background-color: #023d6b;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    top: 70px;
+    /* Adjust based on header height */
+    z-index: 999;
+}
+
+nav a {
+    float: left;
+    display: block;
+    color: #fff;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+}
+
+nav a:hover {
+    background-color: #adbde3;
+    color: #000;
+}
+
+.container {
+    max-width: 900px;
+    margin: 20px auto 20px;/* Adjust top margin based on header and nav height */
+    padding: 120px;
+    padding-top: 0 px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+section {
+    padding-top: 20px;
+    margin: 0 0;
+}
+
+.anchor {
+    display: block;
+    position: relative;
+    top: -120px; /* Height of the fixed header */
+    visibility: hidden;
+}
+
+h2 {
+    color: #023d6b;
+    padding-bottom: 10px;
+}
+
+footer {
+    background-color: #adbde3;
+    color: #333;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table,
 th,
-input,
-select,
-textarea,
-p,
-div { font-family: Times; letter-spacing: 0em; vertical-align: top; }
-img { border: 0px; }
+td {
+    border: 1px solid #ddd;
+}
 
-ol,
-ul { margin-left: 0px; margin-top: -0.3em; margin-bottom: 1.3em; padding: 0px; }
-ul li	{ margin-left: 17px; }
-ol li	{ margin-left: 30px; }
-ol, ul ol { list-style: decimal; }
-form 	  { margin: 0px; }
+th,
+td {
+    padding: 12px;
+    text-align: left;
+}
 
-h1 { font-family: Arial, Helvetica, sans-serif; font-size: 140%; }
-h2 { font-family: Arial, Helvetica, sans-serif; font-size: 110%; }
-h3 { font-family: Arial, Helvetica, sans-serif; }
-h4 { font-family: Arial, Helvetica, sans-serif; }
+th {
+    background-color: #adbde3;
+}
 
-a,
-a:link,
-a:active  { color: #002d73; text-decoration: none; }
-a:visited { color: #35638e; text-decoration: none; }
-a:hover	  { color: #002d73; text-decoration: underline; }
-a:visited:hover	{ color: #002d73; text-decoration: underline; }
+.sidebar {
+    background-color: #f9f9f9;
+    padding: 20px;
+    margin-right: 20px;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-content {
+    flex: 1;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+}

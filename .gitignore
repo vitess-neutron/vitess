@@ -6,9 +6,11 @@ SRC/*
 *.a
 *.dylib
 *.so
-*.dll
 *.pyc
 __pycache__/
 MODULES/*_Darwin_x86_64
 MODULES/*_Linux_x86_64
+MODULES/*_arm64
 MODULES/*.exe
+*.un~
+.DS_Store

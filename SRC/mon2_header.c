@@ -17,7 +17,7 @@
 /******************************/
 #define PrintFloat(a)  {double v = a; if (v==0) fputs("0 ",fMonitor); else printFloatItem(v,fMonitor); }
 #define PrintItem(f,a) {double v = a; if (v==0) fputs("0 ",fMonitor); else fprintf(fMonitor,f,v); }
-#define PrintInt(f,a)  {int    v = a; if (v==0) fputs("0 ",fMonitor); else fprintf(fMonitor,f,v); }
+#define PrintInt(f,a)  {long   v = a; if (v==0) fputs("0 ",fMonitor); else fprintf(fMonitor,f,v); }
 #define Newline fputc('\n',fMonitor)
 
 
@@ -30,75 +30,120 @@
 /*********************************************************/
 /* 'WriteHeader1D/2D': Writes 1D/2D monitor file header  */
 /*********************************************************/
-void WriteHeader1D(FILE* fMonitor, const char *sType, short bWeight, 
-                   int nBinsX, const char* sPar, const char* sUnit) 
+void WriteHeader1D(FILE* fMonitor, const char *sFctType, short bWeight, 
+                   int nBinsX, const char* sPar, const char* sUnitX,
+                   double Xmin, double Xmax) 
 {
-  fprintf(fMonitor,"# Monitor 1D %s %s:  %d bins: %s/%s\n", sType,
-          bWeight==FALSE ? "(events)" : "(weight)",
-          nBinsX, sPar, sUnit);
-  fputs("# Data x        F(x)      DeltaF(x)  events\n", fMonitor);  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
+  char sUnitZ[20]="";
+
+  if (strcmp(sFctType, "intensity")==0  || strcmp(sFctType, "Intensity")==0)
+    strcpy(sUnitZ, "n/s");
+  if (strcmp(sFctType, "brilliance")==0 || strcmp(sFctType, "Brilliance")==0)
+    strcpy(sUnitZ, "n/(cm^2 s Ang sr)");
+
+ #ifdef G2_LIB
+   fprintf(fMonitor,"# Monitor 1D %s %s:  %d bins: %s/%s\n", sFctType,
+           bWeight==FALSE ? "(events)" : "(weight)",
+           nBinsX, sPar, sUnitX);
+   fputs("# Data x        F(x)      DeltaF(x)  events\n", fMonitor);  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
+ #else
+   fprintf(fMonitor,"# title : 1D Monitor  %s:\n", bWeight==FALSE ? "(events)" : "(weight)");
+   fprintf(fMonitor,"# x_label : %s [%s]\n",         sPar,     sUnitX);
+   fprintf(fMonitor,"# y_label : %s [%s]\n",         sFctType, sUnitZ);
+   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",  Xmin,     Xmax);
+ #endif
 
   return;
 }
 
 void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCol, long iBnch, long nBnch, int nBinsX, 
-                    double IntMon, long nTrjMon, const char* sPar, const char* sUnit) 
+                    double IntMon, long nTrjMon, const char* sPar, const char* sUnitX,
+                    double Xmin, double Xmax) 
 {
   char sDate[11], sTime[9],
+       sUnitZ[20]="",
        sOutType[12]="Monitor";
 
   OutputBufferFlush(0);
+
   GetActDate(sDate, DATE_STD);
   GetActTime(sTime);
+
   if (bEval==TRUE)
     strcpy(sOutType, "Evaluation");
 
-  fprintf(fMonitor, "# 1D %s %s\n# x-axis:%3d bins: %s [%s]\n", sOutType, sFctType, nBinsX, sPar, sUnit);
-  fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
+  if (strcmp(sFctType, "intensity")==0  || strcmp(sFctType, "Intensity")==0)
+    strcpy(sUnitZ, "n/s");
+  else if (strcmp(sFctType, "brilliance")==0 || strcmp(sFctType, "Brilliance")==0)
+    strcpy(sUnitZ, "n/(cm^2 s Ang sr)");
+
+ #ifdef G2_LIB
+   fprintf(fMonitor, "# 1D %s %s\n# x-axis:%3d bins: %s [%s]\n", sOutType, sFctType, nBinsX, sPar, sUnitX);
+ #else
+   fprintf(fMonitor, "# title : 1D %s:\n",           sOutType);
+   fprintf(fMonitor, "# x_label : %s [%s]\n",        sPar,     sUnitX);
+   fprintf(fMonitor, "# y_label : %s [%s]\n",        sFctType, sUnitZ);
+   fprintf(fMonitor, "# x_range : %10.3f, %10.3f\n", Xmin,     Xmax);
+ #endif
+
+  fprintf(fMonitor, "# Date: %s  Time: %s\n",          sDate, sTime);
   fprintf(fMonitor, "# Total intensity: %10.3e n/s   Trajectories:%11.0f\n", GetTotInt(iCol), NumNeutWritten - (double)NumEobWritten);
   fprintf(fMonitor, "# Within binning : %10.3e n/s   Trajectories:%11ld  (incl. filters and eval. time)\n", IntMon, nTrjMon);
   fprintf(fMonitor, "# Bunches: %ld of %ld written\n", iBnch, nBnch);
-  fprintf(fMonitor, "# Data x        F(x)       DeltaF(x)    events\n");  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
+
+ #ifdef G2_LIB
+   fprintf(fMonitor, "# Data x        F(x)       DeltaF(x)    events\n");  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
+ #endif
 
   return;
 }
 
-void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight, 
-                   int nBinsX, const char* sAxisTitleX, int nBinsY, const char* sAxisTitleY) 
+void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, short bWeight, 
+                   int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax, 
+                   int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax) 
 {
   char   sFormat [16]="";             // text describing the 2D output format
-
+  
   Format2D_ID2Txt(sFormat, eFormat);  // fills static string 'sFormat'
-
-  fprintf(fMonitor,"#Monitor 2D %s, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sType, sFormat,
-          bWeight==FALSE ? "(events)" : "(weight)",
-          nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
-
-  switch (eFormat)
-  {
-    case MATRIX:
-      fputs("# Data y        F(x,y) \n              ", fMonitor);
-      break;
-
-    case MATR_CMPT:
-    case MATR_INT:
-      fputs("# Data y   F(x,y)\n          ", fMonitor);
-      break;
-
-    case XYZ:
-    case XYZ_CMPT: 
-      fputs("#x  y  z\n", fMonitor);
-      break;
-  }
-
+  
+ #ifdef G2_LIB
+   fprintf(fMonitor,"#Monitor 2D %s, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sFctType, sFormat,
+           bWeight==FALSE ? "(events)" : "(weight)",
+           nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
+   switch (eFormat)
+   {
+     case MATRIX:
+       fputs("# Data y        F(x,y) \n              ", fMonitor);
+       break;
+  
+     case MATR_CMPT:
+     case MATR_INT:
+       fputs("# Data y   F(x,y)\n          ", fMonitor);
+       break;
+  
+     case XYZ:
+     case XYZ_CMPT: 
+       fputs("#x  y  z\n", fMonitor);
+       break;
+   }
+ #else
+   fprintf(fMonitor,"# title : 2D Monitor %s  %s:\n",   sFctType, bWeight==FALSE ? "(events)" : "(weight)");
+   fprintf(fMonitor,"# x_label : %s\n",                 sAxisTitleX);
+   fprintf(fMonitor,"# y_label : %s\n",                 sAxisTitleY);
+   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",     Xmin, Xmax);
+   fprintf(fMonitor,"# y_range :     %10.3e, %10.3e\n", Ymin, Ymax);
+ #endif
+  
   return;
 }
 
 
 void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sFctType, short bWeight, long iBnch, long nBnch, double IntMon, long nTrjMon, 
-                   int nBinsX, const char* sAxisTitleX, int nBinsY, const char* sAxisTitleY) 
+                   int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax, 
+                   int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax) 
 {
   char   sEvents [11]="", sDate[11], sTime[9],
+         sUnitZ  [20]="",
          sFormat [16]="",             // text describing the 2D output format
          sOutType[12]="Monitor";
   double MeasTime    =1.0;            // measurement time
@@ -112,8 +157,21 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
     strcpy(sEvents," (events)");
   if (bEval==TRUE)
     strcpy(sOutType, "Evaluation");
+  if (strcmp(sFctType, "intensity")==0  || strcmp(sFctType, "Intensity")==0)
+    strcpy(sUnitZ, "n/s");
+  if (strcmp(sFctType, "brilliance")==0 || strcmp(sFctType, "Brilliance")==0)
+    strcpy(sUnitZ, "n/(cm^2 s Ang sr)");
 
-  fprintf(fMonitor, "# 2D %s %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sOutType, sFctType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
+ #ifdef G2_LIB
+   fprintf(fMonitor, "# 2D %s %s%s, Format: %s \n# x-axis:%3d bins: %s  \n# y-axis:%3d bins: %s\n", sOutType, sFctType, sEvents, sFormat, nBinsX, sAxisTitleX, nBinsY, sAxisTitleY);
+ #else
+   fprintf(fMonitor,"# title : 2D %s  %s  %s:\n",       sOutType, sFctType, sUnitZ);
+   fprintf(fMonitor,"# x_label : %s\n",                 sAxisTitleX);
+   fprintf(fMonitor,"# y_label : %s\n",                 sAxisTitleY);
+   fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",     Xmin, Xmax);
+   fprintf(fMonitor,"# y_range :     %10.3e, %10.3e\n", Ymin, Ymax);
+ #endif
+
   fprintf(fMonitor, "# Date: %s  Time: %s\n", sDate, sTime);
   if (eFormat==MATR_INT)
   { MeasTime = ReadMeasTime();
@@ -126,22 +184,24 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
   }
   fprintf(fMonitor, "# Bunches: %ld of %ld written\n", iBnch, nBnch);
 
-  switch (eFormat)
-  {
-    case MATRIX:
-      fputs("# Data y        F(x,y)\n          ", fMonitor);
-      break;
+ #ifdef G2_LIB
+   switch (eFormat)
+   {
+     case MATRIX:
+       fputs("# Data y        F(x,y)\n          ", fMonitor);
+       break;
 
-    case MATR_CMPT:
-    case MATR_INT:
-      fputs("# Data y   F(x,y)\n          ", fMonitor);
-      break;
+     case MATR_CMPT:
+     case MATR_INT:
+       fputs("# Data y   F(x,y)\n          ", fMonitor);
+       break;
 
-    case XYZ:
-    case XYZ_CMPT: 
-      fputs("#x  y  z\n", fMonitor);
-      break;
-  }
+     case XYZ:
+     case XYZ_CMPT: 
+       fputs("#x  y  z\n", fMonitor);
+       break;
+   }
+ #endif
 
   return;
 }
@@ -260,7 +320,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
             error = binc <= 0 ? 0 : binc * sqrt(1./c);
             PrintItem(" %5.3E ", binc);
             PrintItem("%5.3E ", error);
-            fprintf(fMonitor, "%ld\n", c);
+            fprintf(fMonitor, "%d\n", c);
           }
         }
         Newline;
