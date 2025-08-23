@@ -82,11 +82,12 @@ double       maxEv=-1;                   // -M        maximal numver of events r
 int          sample=0;                   // -J        random sample or not
 int          use_kde=1;                  // -K        Where to use KDE or just read the particles from the MCPL file refered in the xml file.
 
-extern char* sInstrInfIn;                // --I       instrument file that is read (default 'instrument.inf')
+/*
 extern char* _sTraceFileName;            // -T        name of the file containing the trajectories to be traced or started
 extern VtTrace _eTraceMode;              // -t        NO_TRACING     : no tracing
                                          //           WRITE_TRC_FILES: write trace files for traj. of interest
                                          //           ONLY_TRC_TRAJ  : simulation only with traj. of interest
+*/
 
 // Variables determined from input parameters or trajectory data
 FILE*        pInFile[NF_MAX];            //           pointer to input file

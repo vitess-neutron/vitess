@@ -1,6 +1,8 @@
 #ifndef BENDER_INTER_DATA_H
 #define BENDER_INTER_DATA_H
 
+#include "defines.h"
+
 /***********************************************************************/
 /* bender_inter_data.h                                                 */
 /* Prototypes of functions to calculate attenuation in materials       */
@@ -18,6 +20,6 @@ void   Gadolinium(double wavelen[],    double mu[],  long* pVal);       // These
 void   Cadmium   (double wavelen[],    double mu[],  long* pVal);
 void   Bor10     (double wavelen[],    double mu[],  long* pVal);
 void   Eu        (double wavelen[],    double mu[],  long* pVal);
-void   Silicon   (double wavelen[],    double mu[],  long* pVal); 
+void   Silicon   (double wavelen[],    double mu[],  long* pVal);
 
 #endif
