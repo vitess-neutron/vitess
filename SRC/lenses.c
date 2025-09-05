@@ -296,13 +296,16 @@ int main(int argc, char *argv[])
 
   SetGeometry("green");
 
+  fprintf(LogFilePtr,"\n");
+
   /* Do the general cleanup */
   Cleanup(Endpoint.D + NumberOfLenses*TransOut[0], TransOut[1], TransOut[2], 0.0, 0.0);
 
-  if( ServiceInfoK == 1 ) fprintf(COLLFILE, "\n");
-  if( ServiceInfoK == 1 ) fclose(COLLFILE);
-
-  fprintf(LogFilePtr,"\n");
+  if( ServiceInfoK == 1 ) {
+    fprintf(COLLFILE, "\n");
+    fclose(COLLFILE);
+    COLLFILE = NULL;
+  }
 
   return(0);
 }

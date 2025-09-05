@@ -804,20 +804,27 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   if(OutputFilePtr && OutputFilePtr != stdout)
     fclose(OutputFilePtr);
 
-#ifdef REALLY_FREE_THINGS_THE_OS_KILLS_ELSE
   /* release the buffer memory */
-  if (InputNeutrons!=NULL)
+  if (InputNeutrons!=NULL) {
     free(InputNeutrons);
-  if (OutputNeutrons!=NULL)
+    InputNeutrons = NULL;
+  }
+  if (OutputNeutrons!=NULL) {
     free(OutputNeutrons);
-  if (ParDir != NULL)
+    OutputNeutrons = NULL;
+  }
+  if (ParDir != NULL) {
     free(ParDir);
-  if (InstallDir != NULL)
+    ParDir = NULL;
+  }
+  if (InstallDir != NULL) {
     free(InstallDir);
+    InstallDir = NULL;
+  }
 
   /* free GNU gsl rng state var */
   gsl_rng_free (vit_gsl_rng);
-#endif
+  vit_gsl_rng = NULL;
 
   // subtract number of dummy data sets first
   NumNeutRead    -= NumEobRead;
@@ -863,8 +870,14 @@ void Cleanup(double dShiftX, double dShiftY, double dShiftZ,
   }
 #endif
 
-  if (LogFileName) fclose(LogFilePtr);
-  if (TrajFilePtr) fclose(TrajFilePtr);
+  if (LogFileName) {
+    fclose(LogFilePtr);
+    LogFilePtr = NULL;
+  }
+  if (TrajFilePtr) {
+    fclose(TrajFilePtr);
+    TrajFilePtr = NULL;
+  }
 }
 
 

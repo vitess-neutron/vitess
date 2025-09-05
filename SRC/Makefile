@@ -70,6 +70,7 @@ endif
 else
 CFLAGS += -g -O0 -DDEBUG=1
 CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Debug
+INSTALL = install
 ifeq ($(DEBUG), 2)
 CFLAGS += -fsanitize=address
 LDFLAGS += -fsanitize=address
