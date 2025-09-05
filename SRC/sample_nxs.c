@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 {
   /* sample */
   NXS_UnitCell   uc;               /* unit cell definitions (from nxs.h) */
-  NXS_AtomInfo   *atomInfoList;    /* list for atom parameters */
+  NXS_AtomInfo *atomInfoList=NULL; /* list for atom parameters */
   double     DetFacCoh=0.0,        /* cares about the detector coverage      */
              DetFacInc=0.0;        /* for coherent and incoherent scattering */
   double     Lbf=0.0;              /* full path length of the neutron in the sample with its initial direction */
@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
   int        nxs_init_success = 0;
   VectorType InISP[2]={{0.0,0.0,0.0},{0.0,0.0,0.0}};             /* neutron intersection before scattering */
   Neutron    InNeutron;
+  char       *filename;
 
   // initialisation
   // --------------
@@ -167,10 +168,19 @@ int main(int argc, char *argv[])
 
   /* read unit cell parameters from file 
      try the name from paramter input first, then the name from file */
-  numAtoms = nxs_readParameterFile( FullInName(pNxsFileNameI), &uc, &atomInfoList ); 
+  uc.atomInfoList = NULL;
+  uc.hklList = NULL;
+  uc.sgInfo.ListSeitzMx = NULL;
+  filename = FullInName(pNxsFileNameI);
+  numAtoms = nxs_readParameterFile(filename, &uc, &atomInfoList );
+  free(filename);
+  filename = NULL;
   if( numAtoms < 1 )
   {
-    numAtoms = nxs_readParameterFile( FullInName(sNxsFileNameF), &uc, &atomInfoList ); 
+    filename = FullInName(sNxsFileNameF);
+    numAtoms = nxs_readParameterFile(filename, &uc, &atomInfoList );
+    free(filename);
+    filename = NULL;
     if( numAtoms < 1 )
     {
       NXS_AtomInfo ai;
@@ -408,6 +418,25 @@ int main(int argc, char *argv[])
   SetGeometry("white");
   
   /* Do module specific cleanups */
+  if (atomInfoList != NULL) {
+    free(atomInfoList);
+    atomInfoList = NULL;
+  }
+  if (uc.atomInfoList != NULL) {
+    free(uc.atomInfoList);
+    uc.atomInfoList = NULL;
+  }
+  if (uc.hklList != NULL) {
+    for (i = 0; i < uc.nHKL; i ++) {
+      free(uc.hklList[i].equivHKL);
+    }
+    free(uc.hklList);
+    uc.hklList = NULL;
+  }
+  if (uc.sgInfo.ListSeitzMx != NULL) {
+    free(uc.sgInfo.ListSeitzMx);
+    uc.sgInfo.ListSeitzMx = NULL;
+  }
   OwnCleanup(StrucFac);
 
   /* Do the general cleanup */

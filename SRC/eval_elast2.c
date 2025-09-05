@@ -293,6 +293,11 @@ my_exit:
 	fflush(LogFilePtr);
 
 	//Cleanup
+  for(i = 0; i < INDEX(nBinsX, nBinsY)+1; i++) {
+    if (bin[i] != NULL) {
+      free(bin[i]);
+    }
+  }
   free(bin);
   if (bin_sorted!=NULL)
     free(bin_sorted);

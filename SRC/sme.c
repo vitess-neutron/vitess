@@ -283,13 +283,16 @@ int main(int argc, char **argv)
 
  my_exit:
 
-  if (p==1) fclose(COLLFILE);
+  if (p==1) {
+    fclose(COLLFILE);
+    COLLFILE = NULL;
+  }
 
   OwnCleanup();
 
-  Cleanup(TranslOutput[0], TranslOutput[1], TranslOutput[2], OutputAngleHoriz,OutputAngleVert);
-
   fprintf(LogFilePtr," \n");
+
+  Cleanup(TranslOutput[0], TranslOutput[1], TranslOutput[2], OutputAngleHoriz,OutputAngleVert);
 
   return 0;
 }

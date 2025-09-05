@@ -238,10 +238,10 @@ int main(int argc, char **argv)
   
   /* Do module specific cleanups */
   OwnCleanup(); 
+  fprintf(LogFilePtr," \n");
 
   /* Do the general cleanup */
   Cleanup   (TranslOut[0], TranslOut[1], TranslOut[2], 0.0,0.0);	
-  fprintf(LogFilePtr," \n");
 
   return 0;
 }
