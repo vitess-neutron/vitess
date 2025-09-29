@@ -862,9 +862,9 @@ void VitessParameters()
         if (bF_cDirection) { SP(form[cDirX],   "%9.6f");     FP("  dir_x  ");
                              SP(form[cDirY],   "%9.6f");     FP("  dir_y  ");
                              SP(form[cDirZ],   "%9.6f");     FP("  dir_z  "); }
-        if (bF_cSpin)      { SP(form[cSpinX],  "%4.1f");     FP("sp_x");
-                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "%6.3f");     FP("spin_x");
+                             SP(form[cSpinY],  "%6.3f");     FP("spin_y");
+                             SP(form[cSpinZ],  "%6.3f");     FP("spin_z"); }
       }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
@@ -901,9 +901,9 @@ void VitessParameters()
         if (bF_cDirection) { SP(form[cDirX],   " %9.6f");    FP("   dir_x  ");
                              SP(form[cDirY],   "%9.6f");     FP("  dir_y  ");
                              SP(form[cDirZ],   "%9.6f");     FP("  dir_z  "); }
-        if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("  sp_x");
-                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "  %6.3f");   FP("  spin_x");
+                             SP(form[cSpinY],  "%6.3f");     FP("spin_y");
+                             SP(form[cSpinZ],  "%6.3f");     FP("spin_z"); }
       }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
@@ -939,24 +939,24 @@ void McStasParameters()
 
   if (eSeparator==VT_BLANK)
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "#   weight        pos_x     pos_y     pos_z     speed_x  speed_y   speed_z      TOF       P_x  P_y  P_z \n";
-      sUnits   = "#    [n/s]         [m]       [m]       [m]       [m/s]    [m/s]     [m/s]       [s]       [1]  [1]  [1] \n";
-      sOutform = "%13.6e  %9.6f %9.6f %9.6f  %8.3f %8.3f %10.3f  %11.9f  %4.1f %4.1f %4.1f";
+    { sHeader  = "#   weight        pos_x     pos_y     pos_z     speed_x  speed_y   speed_z      TOF        P_x    P_y    P_z \n";
+      sUnits   = "#    [n/s]         [m]       [m]       [m]       [m/s]    [m/s]     [m/s]       [s]        [1]    [1]    [1] \n";
+      sOutform = "%13.6e  %9.6f %9.6f %9.6f  %8.3f %8.3f %10.3f  %11.9f  %6.3f %6.3f %6.3f";
     }
     else
-    { sHeader  = "#   weight         pos_x         pos_y         pos_z         speed_x       speed_y       speed_z          TOF            P_X           P_Y           P_Z \n";
+    { sHeader  = "#   weight         pos_x         pos_y         pos_z         speed_x       speed_y       speed_z          TOF            P_x           P_y           P_z \n";
       sUnits   = "#    [n/s]          [cm]          [cm]          [cm]          [m/s]         [m/s]         [m/s]           [s]            [1]           [1]           [1] \n";
       sOutform = "%13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e  %13.6e %13.6e %13.6e";
     }
   }
   else
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "#   weight\t   pos_x\t   pos_y\t   pos_z\t  speed_x\t  speed_y\t   speed_z\t    TOF \t  P_x\t P_y\t P_z \n";
-      sUnits   = "#    [n/s]\t    [m] \t    [m] \t    [m] \t   [m/s] \t   [m/s] \t    [m/s] \t    [s] \t  [1]\t [1]\t [1] \n";
-      sOutform = "%13.6e\t%9.6f\t%9.6f\t%9.6f\t%8.3f\t%8.3f\t%10.3f\t%11.9f\t %4.1f\t%4.1f\t%4.1f";
+    { sHeader  = "#   weight\t   pos_x\t   pos_y\t   pos_z\t  speed_x\t  speed_y\t   speed_z\t    TOF \t   P_x\t  P_y\t  P_z \n";
+      sUnits   = "#    [n/s]\t    [m] \t    [m] \t    [m] \t   [m/s] \t   [m/s] \t    [m/s] \t    [s] \t   [1]\t  [1]\t  [1] \n";
+      sOutform = "%13.6e\t%9.6f\t%9.6f\t%9.6f\t%8.3f\t%8.3f\t%10.3f\t%11.9f\t %6.3f\t%6.3f\t%6.3f";
     }
     else
-    { sHeader  = "#    weight\t    pos_x\t     pos_y\t    pos_z\t   speed_x\t   speed_y\t   speed_z\t      TOF\t      P_X\t      P_Y\t      P_Z \n";
+    { sHeader  = "#    weight\t    pos_x\t     pos_y\t    pos_z\t   speed_x\t   speed_y\t   speed_z\t      TOF\t      P_x\t      P_y\t      P_z \n";
       sUnits   = "#     [n/s]\t     [cm]\t      [cm]\t     [cm]\t    [m/s] \t    [m/s] \t    [m/s] \t      [s]\t      [1]\t      [1]\t      [1] \n";
       sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
     }
