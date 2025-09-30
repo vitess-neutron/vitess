@@ -26,8 +26,8 @@
 /************************************/
 /** Definitions, structures, enums **/
 /************************************/
-#define	FLD_SIZE	    1000
-#define	STRING_BUFFER   50
+#define FLD_SIZE      1000
+#define STRING_BUFFER   50
 
 
 /**************************/
@@ -35,7 +35,7 @@
 /**************************/
 void  OwnInit(int argc, char *argv[]);              // Reads input parameters and sets global parameters
 void  OwnCleanup();                                 // Does module specific cleanup
-void  SetGeometry(char* sColor);                    // Fills the structure stGeometry for visualization 
+void  SetGeometry(char* sColor);                    // Fills the structure stGeometry for visualization
 void  ReadParameterFile();                          // Reads parameters from file
 void  ReadReflFile(char* sFilename, double* pData); // Reads reflectivity data from file
 
@@ -44,20 +44,20 @@ void  ReadReflFile(char* sFilename, double* pData); // Reads reflectivity data f
 /** Global Variables         **/
 /******************************/
 // Input parameters
-char      *ParameterFileName=NULL,     // -P        [-]   pointer to the name of the parameter file  
-          *ReflUpFileName=NULL,        // -U        [-]   pointer to the name of the reflectivity file for spin-up neutrons 
+char      *ParameterFileName=NULL,     // -P        [-]   pointer to the name of the parameter file
+          *ReflUpFileName=NULL,        // -U        [-]   pointer to the name of the reflectivity file for spin-up neutrons
           *ReflDownFileName=NULL;      // -D        [-]   pointer to the name of the reflectivity file for spin-down neutrons
 VectorType PosSM;                      // -a -b -c  [cm]  center position of the rectangular polariser
 double     AngleSMHoriz=0.0,           // -H       [deg]  horizontal rotation angle (about z axis) of the polarizer - removed !!!
            AngleSMVert=0.0;            // -V       [deg]  vertical rotation (about y axis) angle of the polarizer
 VectorType TranslOut;                  // -R -E -G  [cm]  position of the new origin  (in the co-ordinate of the old origin)
 double     AnglOutHoriz=0.0,           // -h       [deg]  horizontal angle of the output frame, relative to input orientation
-           AnglOutVert=0.0;            // -v       [deg]  vertical angle of the output frame, relative to input orientation - removed !!!   
+           AnglOutVert=0.0;            // -v       [deg]  vertical angle of the output frame, relative to input orientation - removed !!!
 
 VectorType DimSM,                      //    file   [cm]  size of the rectangular polariser
            guide_field,                //    file   [Gs]  guide field
            analysis_dir;               //    file    [-]  analysis direction
-int        NoCh=0;                     //    file    [-]  number of channels 
+int        NoCh=0;                     //    file    [-]  number of channels
 double     WallTh=0.0;                 //    file   [cm]  thickness of the blades dividing the channels
 
 // Data read from file
@@ -66,10 +66,10 @@ double     rupdata  [FLD_SIZE],        //    file    [-]  reflectivity data for 
 
 // Variables determined from input parameters or trajectory data
 double     RotMatrixSM [3][3],         //            [-]  rotation matrix to tranform into the frame of the polarizer
-           RotMatrixOut[3][3],         //            [-]  rotation matrix to tranform into the output frame  
+           RotMatrixOut[3][3],         //            [-]  rotation matrix to tranform into the output frame
            RotMatrixField[3][3],       //            [-]  rotation matrix to tranform into the frame of the guide field
            RotMatrixAnalysis[3][3],    //            [-]  rotation matrix to tranform into the frame of the quantization direction
-           WidthCh=0.0,                //           [cm]  channel width and 
+           WidthCh=0.0,                //           [cm]  channel width and
            ProbCutoff=0.0;             //            [-]  = wei_min: minimal accepted weight of the neutron trajectory
 
 
@@ -80,19 +80,19 @@ int main(int argc, char **argv)
 {
   int        datanumber=0;
   long       NumOut=0, i=0, m=0;
-  double		 TOF=0.0, TOFprec=0.0, WL=0.0, Prob=0.0, 
+  double     TOF=0.0, TOFprec=0.0, WL=0.0, Prob=0.0,
              phi=0.0, phinew=0.0, the=0.0, thenew=0.0,
              aUU=1.0, aDD=1.0;
-  double     szog=0.0,  shift=0.0, 
-             PhaseShift=0.0, 
+  double     szog=0.0,  shift=0.0,
+             PhaseShift=0.0,
              NumberPrecessions = 0.0,
              TotNumPrec=0.0,
              //IntegralIntensity = 0.0,
              Refl=0.0;                // reflectivity at the supermirror
   double     LarmorMatrix[3][3];
-  VectorType Pos, Dir, SpinVector, 
+  VectorType Pos, Dir, SpinVector,
              Path, n,                 // displacement vector*/
-             postop, posbot;          // position of intersection with polarizer cuboid (postop: position along axis > 0, posbot: position < 0) 
+             postop, posbot;          // position of intersection with polarizer cuboid (postop: position along axis > 0, posbot: position < 0)
   Neutron    OutNeutron, ReflNeutron, ScatNeutron;
 
   // some variables to count neutron cases
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
   ReadReflFile(ReflDownFileName, rdowndata);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   InitVector(Pos);    InitVector(Dir);
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
   while((ReadNeutrons())!= 0)
   {
     for(i=0;i<NumNeutGot;i++)
-    { 
+    {
       CHECK;
 
       // Only write out event if EOB line is found, otherwise process trajectory
@@ -138,16 +138,17 @@ int main(int argc, char **argv)
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         TOF  = InputNeutrons[i].Time;
         WL   = InputNeutrons[i].Wavelength;
         Prob = InputNeutrons[i].Probability;
 
         CopyVector(InputNeutrons[i].Position, Pos);
         CopyVector(InputNeutrons[i].Vector,   Dir);
-        CopyVector(InputNeutrons[i].Spin, SpinVector); 
+        CopyVector(InputNeutrons[i].Spin, SpinVector);
 
-        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
+        InputNeutrons[i].Vector[0] = sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
+        NormVector(SpinVector);
 
         /* translates into frame of the SM  */
         SubVector(Pos, PosSM);
@@ -161,12 +162,12 @@ int main(int argc, char **argv)
         /* select channel and shift vertically to its frame */
 
         // entrance plane, vertical to x-axis
-        n[0]=1.0; n[1]=n[2]=0.0; 
+        n[0]=1.0; n[1]=n[2]=0.0;
 
         if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[0]/2., posbot) == TRUE)&&(fabs(posbot[1]) < DimSM[1]/2.)&&(fabs(posbot[2]) < DimSM[2]/2.)&&(Dir[0] > 0.))
         {
           double epsilonZ = (posbot[2] + DimSM[2]/2.) / DimSM[2] * (double) NoCh;
-          int    No = (int) floor(epsilonZ)+1; 
+          int    No = (int) floor(epsilonZ)+1;
 
           shift = (WidthCh + WallTh) *(- (NoCh -1)/2. + (No - 1));
           Pos[2] += - shift;
@@ -175,34 +176,34 @@ int main(int argc, char **argv)
             n_out_ch += 1;
             goto getlost;
           }
-        } 
-        else 
-        { 
+        }
+        else
+        {
           n_no_int += 1;
-          goto getlost;                      
+          goto getlost;
         }
 
         TOFprec = 0.0;
 
         /* reflecting in channels top/bottom */
-        for (m = 1; m < 1000; m++)		
+        for (m = 1; m < 1000; m++)
         {
           int r=0;
           CHECK;
           /* reflection on top/bottom */
-          n[2]=1.0; n[0]=n[1]=0.0;	
+          n[2]=1.0; n[0]=n[1]=0.0;
 
           // top plane
           if ((PlaneLineIntersect(Pos, Dir, n, + WidthCh/2., postop) == TRUE)&&(postop[0] > (Pos[0]+0.1))&&(fabs(postop[0]) < DimSM[0]/2.)&&(Dir[2] > 0.))
           {
             /* polarizing */
-	          szog= fabs(asin(Dir[2]));
-            datanumber = (int) (szog *180./M_PI * 1000./WL); 
+            szog= fabs(asin(Dir[2]));
+            datanumber = (int) (szog *180./M_PI * 1000./WL);
             if (datanumber > 1000)
             { aUU = 0.0;
               aDD = 0.0;
             }
-            else 
+            else
             { aUU = sqrt(rupdata  [datanumber]);
               aDD = sqrt(rdowndata[datanumber]);
             }
@@ -232,8 +233,8 @@ int main(int argc, char **argv)
               TOFprec += (postop[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
               CopyVector(postop, Pos);
-              Dir[2] *= -1; r=1;				/*ps(i+1); ps(m); ps(+77);goto getlost;ps(the);*/
-              the = thenew; 
+              Dir[2] *= -1; r=1;        /*ps(i+1); ps(m); ps(+77);goto getlost;ps(the);*/
+              the = thenew;
               phi = phinew;
 
               /* point of reflection for trajectory visualization */
@@ -245,13 +246,13 @@ int main(int argc, char **argv)
                 ScatNeutron.Probability *= (1.0 - Refl);
                 WriteScatIAP(&ScatNeutron, VT_REFLECTED, RotMatrixSM, PosSM);
               }
-              goto contin;  
+              goto contin;
             }
-          } 
+          }
 
           // bottom plane
           if ((PlaneLineIntersect(Pos, Dir, n, - WidthCh/2., posbot) == TRUE)&&(posbot[0] > (Pos[0]+0.1))&&(fabs(posbot[0]) < DimSM[0]/2.)&&(Dir[2] < 0.))
-          {            
+          {
             /* polarizing */
             szog= fabs(asin(Dir[2]));
 
@@ -260,7 +261,7 @@ int main(int argc, char **argv)
             { aUU = 0.0;
               aDD = 0.0;
             }
-            else 
+            else
             { aUU = rupdata  [datanumber];
               aDD = rdowndata[datanumber];
             }
@@ -278,7 +279,7 @@ int main(int argc, char **argv)
               goto getlost;
             }
             else
-            {               
+            {
               Refl  = sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.));
               Prob *= Refl;
               /* calculates new theta when reflection amplitudes are reasonable values */
@@ -290,9 +291,9 @@ int main(int argc, char **argv)
               TOFprec += (posbot[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
               CopyVector(posbot, Pos);
-              Dir[2] *= -1; r=1;			
+              Dir[2] *= -1; r=1;
 
-              the = thenew; 
+              the = thenew;
               phi = phinew;
 
               /* point of reflection for trajectory visualization */
@@ -304,13 +305,13 @@ int main(int argc, char **argv)
                 ScatNeutron.Probability *= (1.0 - Refl);
                 WriteScatIAP(&ScatNeutron, VT_REFLECTED, RotMatrixSM, PosSM);
               }
-              goto contin;  
+              goto contin;
             }
           }
 
-         contin:;	
+         contin:;
           /* absorption on the sides */
-          n[1]=1.0; n[0]=n[2]=0.0; 
+          n[1]=1.0; n[0]=n[2]=0.0;
 
           if ((PlaneLineIntersect(Pos, Dir, n, + DimSM[1]/2, postop) == TRUE) && (Dir[1] > 0.) && (postop[0] > Pos[0])&&(fabs(postop[0]) < DimSM[0]/2.))
           {
@@ -323,8 +324,8 @@ int main(int argc, char **argv)
               WriteScatIAP(&ScatNeutron, VT_ABSORBED, RotMatrixSM, PosSM);
             }
             goto getlost;
-          } 
-	        
+          }
+
           if ((PlaneLineIntersect(Pos, Dir, n, - DimSM[1]/2, posbot) == TRUE) && (Dir[1] < 0.) && (posbot[0] > Pos[0])&&(fabs(posbot[0]) < DimSM[0]/2.))
           {
             n_abs_sides += 1;
@@ -335,8 +336,8 @@ int main(int argc, char **argv)
               WriteScatIAP(&ScatNeutron, VT_ABSORBED, RotMatrixSM, PosSM);
             }
             goto getlost;
-          } 
-	
+          }
+
           if (r==0) goto leave; /* cannot be reflected anymore */
         }
 
@@ -365,13 +366,13 @@ int main(int argc, char **argv)
 
         /* Write last intersection point - the other intersection points and the absorption points should be added in the m-loop (lines 174 - 246) */
         if (bVisTraj && Pos[0] > 1.0e-6)           // Pos[0] equal or close to 0.0 means no reflection or absorption in the mirror stack
-        { 
+        {
           CopyNeutron(&InputNeutrons[i], &ReflNeutron);
           ReflNeutron.Probability = Prob;
           CopyVector(Pos, ReflNeutron.Position);
           CopyVector(SpinVector, ReflNeutron.Spin);
           WriteWWP(&ReflNeutron, VT_REFLECTED);    // direction and TOF not needed
-        } 
+        }
 
         /* Rotate back into the original frame before applying precession */
         RotBackVector(RotMatrixAnalysis, SpinVector);
@@ -379,14 +380,14 @@ int main(int argc, char **argv)
         RotVector(RotMatrixField, SpinVector);
         /* precession in the guide field */
         //PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(guide_field[0]);
-        PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(LengthVector(guide_field)); 
+        PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(LengthVector(guide_field));
         NumberPrecessions = PhaseShift/2./M_PI;
         TotNumPrec       += NumberPrecessions;
 
         FillRotMatrixX(LarmorMatrix, PhaseShift);
-        RotVector(LarmorMatrix, SpinVector); 
+        RotVector(LarmorMatrix, SpinVector);
         RotBackVector(RotMatrixField, SpinVector);
-        
+
         // checks that values of spin=0 return to 0 after two transformations in double precision
         if (fabs(SpinVector[0]) < 1e-12) SpinVector[0] = 0.0;
         if (fabs(SpinVector[1]) < 1e-12) SpinVector[1] = 0.0;
@@ -403,10 +404,10 @@ int main(int argc, char **argv)
 
         CopyVector(Dir, Path);
         MultiplyByScalar(Path, - Pos[0]/ Dir[0] );
-        AddVector(Pos, Path); 
-      
+        AddVector(Pos, Path);
+
         /* transmit coordinates which were not changed, the rest overwrite below */
-        OutNeutron = InputNeutrons[i]; 
+        OutNeutron = InputNeutrons[i];
         OutNeutron.Time = TOF + TOFprec;
         OutNeutron.Probability = Prob;
 
@@ -427,7 +428,7 @@ int main(int argc, char **argv)
       }
     }
   }
-   
+
   // Finish: write log, geometry and instrument file, free memory
   // ------------------------------------------------------------
 my_exit:
@@ -440,9 +441,9 @@ my_exit:
 
   /* write geometry file */
   SetGeometry("orange");
-  
+
   /* Do module specific cleanups */
-  OwnCleanup(); 
+  OwnCleanup();
 
   /* Do the general cleanup */
   Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHoriz, AnglOutVert);
@@ -478,7 +479,7 @@ void OwnInit(int argc, char *argv[])
   }
 
   ProbCutoff = wei_min;
-	
+
   while(argc>1)
   {
     switch(argv[1][1])
@@ -532,53 +533,53 @@ void OwnInit(int argc, char *argv[])
     argc--;
     argv++;
   }
-	 
-  /* reads parameter file */
-  ReadParameterFile(); 
 
-  /*	 checks some values */
+  /* reads parameter file */
+  ReadParameterFile();
+
+  /*   checks some values */
 
   /* prints parameters into log file for verification */
-  if (((NoCh+1)/2. - floor((NoCh+1)/2.)) > 0.0) 
-  {	NoCh += -1; 
+  if (((NoCh+1)/2. - floor((NoCh+1)/2.)) > 0.0)
+  {  NoCh += -1;
     fprintf(LogFilePtr,"\nWARNING: Number of channels must be odd! Set %d. \n", NoCh);
   }
-		
-  // fprintf(LogFilePtr,"cutoff probability		=     %8.1e\n",  ProbCutoff);
+
+  // fprintf(LogFilePtr,"cutoff probability    =     %8.1e\n",  ProbCutoff);
   fprintf(LogFilePtr,"center pos. x, y, z  : (%9.4f, %9.4f, %9.4f) cm\n", PosSM[0], PosSM[1], PosSM[2]);
   fprintf(LogFilePtr,"length, height, width: (%9.4f, %9.4f, %9.4f) cm\n", DimSM[0], DimSM[2], DimSM[1]);
   fprintf(LogFilePtr,"inclination          :  %9.4f deg\n", AngleSMVert);
-  fprintf(LogFilePtr,"output pos. x, y, z  : (%9.4f, %9.4f, %9.4f) cm\n", TranslOut[0], TranslOut[1], TranslOut[2]); 	
-  fprintf(LogFilePtr,"  and direction      :  %9.4f deg hor.,   %9.4f deg vert.\n",  AnglOutHoriz, AnglOutVert); 
+  fprintf(LogFilePtr,"output pos. x, y, z  : (%9.4f, %9.4f, %9.4f) cm\n", TranslOut[0], TranslOut[1], TranslOut[2]);
+  fprintf(LogFilePtr,"  and direction      :  %9.4f deg hor.,   %9.4f deg vert.\n",  AnglOutHoriz, AnglOutVert);
 
   /* converts degs in radian etc. */
   AngleSMHoriz *= M_PI/180.;
-  AngleSMVert	 *= M_PI/180.;
+  AngleSMVert   *= M_PI/180.;
   AnglOutHoriz *= M_PI/180.;
   AnglOutVert  *= M_PI/180.;
 
   FillRotMatrixZY(RotMatrixSM,  AngleSMVert, AngleSMHoriz);
   FillRotMatrixZY(RotMatrixOut, AnglOutVert, AnglOutHoriz);
-	
+
   WidthCh = (DimSM[2] - (NoCh+1)*WallTh)/NoCh;
 
   if (LengthVector(analysis_dir) !=0){
-    CartesianToEulerZY(analysis_dir, &roty, &rotz); 
+    CartesianToEulerZY(analysis_dir, &roty, &rotz);
   }
-  else{ 
-    roty = 0.0; 
-    rotz = 0.0; 
+  else{
+    roty = 0.0;
+    rotz = 0.0;
   }
   FillRotMatrixZY(RotMatrixAnalysis, roty, rotz);
 
   if (LengthVector(guide_field) !=0){
-    CartesianToEulerZY(guide_field, &roty, &rotz); 
+    CartesianToEulerZY(guide_field, &roty, &rotz);
   }
-  else{ 
-    roty = 0.0; 
-    rotz = 0.0; 
+  else{
+    roty = 0.0;
+    rotz = 0.0;
   }
-  FillRotMatrixZY(RotMatrixField, roty, rotz); 	
+  FillRotMatrixZY(RotMatrixField, roty, rotz);
 
 }/* End OwnInit */
 
@@ -602,7 +603,7 @@ void SetGeometry(char* sColor)
 
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
@@ -655,7 +656,7 @@ void ReadParameterFile()
 /** reads reflectivity file  **/
 /******************************/
 void ReadReflFile(char* sFilename, double* pData)
-{ 
+{
   char   sBuffer[CHAR_BUF_SMALL]="";
   long count=0;
   int  nRows=0;
@@ -664,8 +665,8 @@ void ReadReflFile(char* sFilename, double* pData)
 
   nRows=LinesInFile(pFile);
   if (pFile != NULL)
-  { 
-    for(count=0; count < nRows; count++) 
+  {
+    for(count=0; count < nRows; count++)
     { ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
       StrgScanLF(sBuffer, &pData[10*count], 10*(nRows-count), 0);
     }
