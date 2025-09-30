@@ -162,7 +162,6 @@ int               bLogTimes=0;             // print out computation times to the
 static void  setInstallDirectory(char *arg);
 static char* setDir (char *arg);
 static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel);
-static void  TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
 static McCompID GetModId(char* sBuffer);                            // returns ID of the module from a line in 'instrument.inf'
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
 static void  writeCompressed();
@@ -211,13 +210,13 @@ char* FullOutName(const char* fileName)
    and exits with error message if bErrMsg=TRUE     */
 FILE* OpenInputFile(const char *sFilename, short bErrMsg, const char* sMode)
 {
-  FILE* pFile=NULL;
-  char* sFullName;
+  char *sFullName = NULL;
+  FILE *pFile = NULL;
 
-  if (sFilename!=NULL) {
+  if (sFilename != NULL) {
     sFullName = FullInName(sFilename);
     if (sFullName) {
-      if (bErrMsg==TRUE)
+      if (bErrMsg)
         pFile = fileOpen(sFullName, sMode);
       else
         pFile = fopen(sFullName, sMode);
@@ -229,10 +228,10 @@ FILE* OpenInputFile(const char *sFilename, short bErrMsg, const char* sMode)
 
 FILE* OpenInputFile2(const char *sFilename, const char* sContent, const char* sMode)
 {
-  FILE* pFile=NULL;
-  char* sFullName;
+  char *sFullName = NULL;
+  FILE *pFile = NULL;
 
-  if (sFilename!=NULL) {
+  if (sFilename != NULL) {
     sFullName = FullInName(sFilename);
     if (sFullName) {
       pFile = fileOpen2(sFullName, sMode, sContent);
@@ -245,13 +244,13 @@ FILE* OpenInputFile2(const char *sFilename, const char* sContent, const char* sM
 
 FILE* OpenOutputFile(const char *sFilename, short bErrMsg, const char* sMode)
 {
-  FILE* pFile=NULL;
-  char* sFullName;
+  char *sFullName = NULL;
+  FILE *pFile = NULL;
 
-  if (sFilename!=NULL) {
+  if (sFilename != NULL) {
     sFullName = FullOutName(sFilename);
     if (sFullName) {
-      if (bErrMsg==TRUE)
+      if (bErrMsg)
         pFile = fileOpen(sFullName, sMode);
       else
         pFile = fopen(sFullName, sMode);
@@ -263,17 +262,16 @@ FILE* OpenOutputFile(const char *sFilename, short bErrMsg, const char* sMode)
 
 FILE* OpenPackInpFile(const char *sFilename, const char* sPath, short bErrMsg)
 {
-  FILE* pFile=NULL;
+  FILE *pFile = NULL;
 
-  if (sFilename!=NULL) {
-    if (bErrMsg==TRUE)
+  if (sFilename != NULL) {
+    if (bErrMsg)
       pFile = fileOpen(FullInstallName(sFilename, sPath), "r");
     else
       pFile = fopen(FullInstallName(sFilename, sPath), "r");
   }
   return (pFile);
 }
-
 
 // tools for detached fwrite
 static FILE *TWfile;
@@ -667,11 +665,12 @@ void Init(int argc, char **argv, const McCompID eModule)
       OutputFilePtr = OpenOutputFile(OutputFileName, TRUE, "wb");
       if (OutputFilePtr)
       {
+        char *sFullName = FullOutName(OutputFileName);
         if (CompressionMode)
           compressModeW = CompressionMode; // it has been stated explicitly
-        else if (strstr(FullOutName(OutputFileName), ".float."))
+        else if (strstr(sFullName, ".float."))
           compressModeW = 2;               // by filename convention
-        else if (strstr(FullOutName(OutputFileName), ".nodebug."))
+        else if (strstr(sFullName, ".nodebug."))
           compressModeW = 1;               // by filename convention
 
         if (compressModeW == 1)
@@ -680,6 +679,7 @@ void Init(int argc, char **argv, const McCompID eModule)
           fwrite("cmp2", 1, 4, OutputFilePtr);
         else
           compressModeW = 0;               // to catch an unknown CompressionMode
+        free(sFullName);
       }
     }
   }
@@ -1509,12 +1509,12 @@ void WriteGeomData(VectorType vBegPos, double Length)
         MultiplyByScalar(vRelPos, 0.5*Length);
         Transform (vAbsCntr, vRelPos, vBegPos);
         strcpy(description, sModuleName);
-        strncat(description, ":white", 6);
+        strncat(description, ":white", 7);
         fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description);
         DrawCylinder(pGeomFile, (const char*) description, vAbsCntr, vDir, Length, 5.0);
       } else {
         strcpy(description, sModuleName);
-        strncat(description, ":grey", 5);
+        strncat(description, ":grey", 6);
         fprintf(LogFilePtr, "Description for module w/o visualisation: %s \n", description);
         DrawRectangle(pGeomFile, (const char*) description, vBegPos, vDir, 15.0, 15.0, 0.);
       }
@@ -2107,15 +2107,16 @@ static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
   return pResult;
 }
 
-static void TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel)
+void TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel)
 {
-  strcpy(pPath, "");
+  pPath[0] = '\0';
 
   switch (sel)
-  { case PAR_DIR  : if (ParDir    !=NULL) strcpy(pPath, ParDir);     break;
-    case INSTL_DIR: if (InstallDir!=NULL) strcpy(pPath, InstallDir); break;
-    case IN_DIR   : if (InputDir  !=NULL) strcpy(pPath, InputDir);   break;
-    case OUT_DIR  : if (OutputDir !=NULL) strcpy(pPath, OutputDir);  break;
+  {
+    case PAR_DIR  : if (ParDir    != NULL) strcpy(pPath, ParDir);     break;
+    case INSTL_DIR: if (InstallDir!= NULL) strcpy(pPath, InstallDir); break;
+    case IN_DIR   : if (InputDir  != NULL) strcpy(pPath, InputDir);   break;
+    case OUT_DIR  : if (OutputDir != NULL) strcpy(pPath, OutputDir);  break;
   }
 
   AddSlash(pPath);

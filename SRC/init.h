@@ -62,6 +62,8 @@ FILE* OpenInputFile   (const char *sName, short bErrMsg, const char* sMode);    
 FILE* OpenInputFile2  (const char *sFilename, const char* sContent, const char* sMode);   // opens file in the input folder with extended error message   
 FILE* OpenPackInpFile (const char *sFilename, const char* sPath, short bErrMsg);          // opens input file from the installation directory
 
+void TotalPath        (char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
+
 void Init             (int argc, char **argv, const McCompID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
                        double dHorizAngle, double dVertAngle);

@@ -146,7 +146,7 @@ double (*GetProb  )(ReflCond *RefOut, int cNeut) = NULL;
 
 
 // Function for gamma calculation
-void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVal, // Calculates the gamma production 
+void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVal, // Calculates the gamma production
                          double mirrMaxM, Escaping_MCPL_particles* pOutParticles); // according to Kolvetov's work
 
 
@@ -154,8 +154,8 @@ void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVa
 /** Global variables         **/
 /******************************/
 
-// REMEMBER: Do not write to a global variable in process_neutron, 
-// with the only exception of arrays, where the thread index is used 
+// REMEMBER: Do not write to a global variable in process_neutron,
+// with the only exception of arrays, where the thread index is used
 // to restrict write access to a part for that thread only!
 
 extern long iModuleId;
@@ -164,50 +164,50 @@ extern long iModuleId;
 // input parameters
 // ----------------
 // geometry and coating
-VtGdeShape eGuideShapeY=VT_CONSTANT,  // -Y   [-]   shape of the guide in horizontal direction 
-           eGuideShapeZ=VT_CONSTANT;  // -Z   [-]   shape of the guide in vertical direction             
-const char *ShapeFileName          // -S   [-]   name of the file containing the sizes of the guide, output or input file
-          ="guide_shape.dat";     
+VtGdeShape eGuideShapeY=VT_CONSTANT,  // -Y   [-]   shape of the guide in horizontal direction
+           eGuideShapeZ=VT_CONSTANT;  // -Z   [-]   shape of the guide in vertical direction
+const char *ShapeFileName             // -S   [-]   name of the file containing the sizes of the guide, output or input file
+          = "guide_shape.dat";
 long   nPieces   = 1;              // -N   [-]   number of guide pieces
-double GuideEntrWidth= 0.0,        // -w  [cm]   height of the guide exit              
-       GuideEntrHeight=0.0,        // -h  [cm]   height of the guide entrance           
-       GuideExitWidth= 0.0,        // -W  [cm]   width of the guide exit  
-       GuideExitHeight=0.0,        // -H  [cm]   width of the guide entrance  
-       piecelength=0.0,            // -p  [cm]   length of 1 piece of the guide 
-       Radius  = 0.0,              // -R   [m]   radius of a guide that is curved (in horizontal plane)       
-       D_Foc2Y = 0.0,              // -f  [cm]   pos. behind guide of 2nd focal point in horizontal direction (for elliptic shape) 
-       D_Foc2Z = 0.0,              // -F  [cm]   pos. behind guide of 2nd focal point in vertical direction (for elliptic shape) 
-       MValGenL =1.0,              // -L   [-]   m-value for left wall 
-       MValGenR =1.0,              // -Q   [-]   m-value for right wall 
-       MValGenTB=1.0;              // -G   [-]   m-value for top and bottom wall 
+double GuideEntrWidth = 0.0,       // -w  [cm]   height of the guide exit
+       GuideEntrHeight = 0.0,      // -h  [cm]   height of the guide entrance
+       GuideExitWidth = 0.0,       // -W  [cm]   width of the guide exit
+       GuideExitHeight = 0.0,      // -H  [cm]   width of the guide entrance
+       piecelength = 0.0,          // -p  [cm]   length of 1 piece of the guide
+       Radius  = 0.0,              // -R   [m]   radius of a guide that is curved (in horizontal plane)
+       D_Foc2Y = 0.0,              // -f  [cm]   pos. behind guide of 2nd focal point in horizontal direction (for elliptic shape)
+       D_Foc2Z = 0.0,              // -F  [cm]   pos. behind guide of 2nd focal point in vertical direction (for elliptic shape)
+       MValGenL = 1.0,             // -L   [-]   m-value for left wall
+       MValGenR = 1.0,             // -Q   [-]   m-value for right wall
+       MValGenTB = 1.0;            // -G   [-]   m-value for top and bottom wall
 
-char  *ReflFileNameL=NULL;         // -i   [-]   name of the reflectivity file for the left plane
-char  *ReflFileNameR=NULL;         // -I   [-]   name of the reflectivity file for the right plane 
-char  *ReflFileNameT=NULL;         // -j   [-]   name of the reflectivity file for the top plane
-char  *ReflFileNameB=NULL;         // -J   [-]   name of the reflectivity file for the bottom plane
+char  *ReflFileNameL = NULL;       // -i   [-]   name of the reflectivity file for the left plane
+char  *ReflFileNameR = NULL;       // -I   [-]   name of the reflectivity file for the right plane
+char  *ReflFileNameT = NULL;       // -j   [-]   name of the reflectivity file for the top plane
+char  *ReflFileNameB = NULL;       // -J   [-]   name of the reflectivity file for the bottom plane
 
 // special features
-short  keyAbut   = 0;              // -a   [-]   flag: abutment loss  0: no  1: yes 
-long   nChannels = 1,              // -b   [-]   number of (vertical) channels 
-       nColour   =-1;              // -g   [-]   colour necessary for the trajectory to be regarded (-1 means all). Others are passed unchanged to the next module.  
-short  AddToColor= 0;              // -A   [-]   value added to the color on each reflection
-double spacer=0.0,                 // -s  [cm]   width of the blades dividing the channels         
-       AbutLen =0.0,               // -l  [cm]   area around the connection of guide segments, where neutrons are absorbed 
-       WaviAmpl=0.0,               // -r  [deg]  maximal (VT_WAVI_RECT) or RMS (VT_WAVI_GAUSS) deviation from normal of the waviness of the guide surface 
-       MuScat=0.0,                 // -M [1/cm]  total macroscopic scattering cross-section
-       MuAbs =0.0,                 // -m [1/cm]  macroscopic absorption cross-section for 1.798 Ang 
+short  keyAbut   =  0;             // -a   [-]   flag: abutment loss  0: no  1: yes
+long   nChannels =  1,             // -b   [-]   number of (vertical) channels
+       nColour   = -1;             // -g   [-]   colour necessary for the trajectory to be regarded (-1 means all). Others are passed unchanged to the next module.
+short  AddToColor = 0;             // -A   [-]   value added to the color on each reflection
+double spacer   = 0.0,             // -s  [cm]   width of the blades dividing the channels
+       AbutLen  = 0.0,             // -l  [cm]   area around the connection of guide segments, where neutrons are absorbed
+       WaviAmpl = 0.0,             // -r  [deg]  maximal (VT_WAVI_RECT) or RMS (VT_WAVI_GAUSS) deviation from normal of the waviness of the guide surface
+       MuScat   = 0.0,             // -M [1/cm]  total macroscopic scattering cross-section
+       MuAbs    = 0.0,             // -m [1/cm]  macroscopic absorption cross-section for 1.798 Ang
        rotplane = 0.0;             // -n  [deg]  rotation angle to create additional planes  (see help file for details)
 VtWaviDistr eWaviDistr=VT_WAVI_RECT; //    [-]   shape of the waviness distribution   VT_WAVI_RECT   VT_WAVI_GAUSS
 
 // Reflection list
-char  *ReflParamFileName=NULL;      // -o   [-]   Name of the file for a reflection list. Giving a filename activiates this option. 
-int    nReflMinCnt  = 0;            // -e   [-]   Minimum number of reflections within the guide for reflection list output 
-int    nReflMaxCnt  = 0;            // -E   [-]   Maximum number of reflections within the guide for reflection list output 
-int    nReflMinCntY = 0;            // -c   [-]   Minimum number of reflections on the horizontal guide for reflection list output 
-int    nReflMaxCntY = 0;            // -C   [-]   Maximum number of reflections on the horizontal guide for reflection list output 
-int    nReflMinCntZ = 0;            // -d   [-]   Minimum number of reflections on the vertical guide for reflection list output 
-int    nReflMaxCntZ = 0;            // -D   [-]   Maximum number of reflections on the vertical guide for reflection list output 
-VtListVbs eReflVbs=VT_LSTM_NO;      // -v   [-]   Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated. 
+char  *ReflParamFileName=NULL;      // -o   [-]   Name of the file for a reflection list. Giving a filename activiates this option.
+int    nReflMinCnt  = 0;            // -e   [-]   Minimum number of reflections within the guide for reflection list output
+int    nReflMaxCnt  = 0;            // -E   [-]   Maximum number of reflections within the guide for reflection list output
+int    nReflMinCntY = 0;            // -c   [-]   Minimum number of reflections on the horizontal guide for reflection list output
+int    nReflMaxCntY = 0;            // -C   [-]   Maximum number of reflections on the horizontal guide for reflection list output
+int    nReflMinCntZ = 0;            // -d   [-]   Minimum number of reflections on the vertical guide for reflection list output
+int    nReflMaxCntZ = 0;            // -D   [-]   Maximum number of reflections on the vertical guide for reflection list output
+VtListVbs eReflVbs=VT_LSTM_NO;      // -v   [-]   Print position of trajectory for every guide peace until the trajectory leaves the guide or is terminated.
 VtListPar eReflPar=VT_LIST_PASS_LF; /* -O   [-]   Trajectories to be written out:
                                                  1 = only those leaving the guide;
                                                  2 = all successfull reflections; no matter if the trajectory reaches the guide end
@@ -216,13 +216,13 @@ VtListPar eReflPar=VT_LIST_PASS_LF; /* -O   [-]   Trajectories to be written out
                                                  4 = all
                                                  a negative number adds a line feed between each trajectory */
 // Reflection plot
-char      *ReflPlotFileName=NULL;    // -P   [-]   name of the file for writing teflectiond fot plotting. Giving a filename activiates this option. 
-VtPlotFilt ePlotFilt = VT_PLOT_ALL;  // -B   [-]   Plot filter:  0 = any   1 = only scattered   2 = only died 
+char      *ReflPlotFileName=NULL;    // -P   [-]   name of the file for writing teflectiond fot plotting. Giving a filename activiates this option.
+VtPlotFilt ePlotFilt = VT_PLOT_ALL;  // -B   [-]   Plot filter:  0 = any   1 = only scattered   2 = only died
 VtPlotPar KeyX = dKeyPositionX;      // -t   [-]   key defining x parameter for reflection plot
 VtPlotPar KeyY = dKeym;              // -T   [-]   key defining y parameter for reflection plot
 VtPlotPar KeyProb = dKeyProbability; // -V   [-]   key for f(x,y) for reflection plot
 long   nbinsX=1000,                  // -k   [-]   number of X bins in reflection plot
-       nbinsY= 100;                  // -K   [-]   number of Y bins in reflection plot 
+       nbinsY= 100;                  // -K   [-]   number of Y bins in reflection plot
 double MinX=    0.0,                 // -x  [var]  lower bound of X range in reflection plot
        MaxX= 1000.0,                 // -X  [var]  upper bound of X range in reflection plot
        MinY=    0.0,                 // -u  [var]  lower bound of Y range in reflection plot
@@ -235,49 +235,53 @@ char  *MCPLParamFileName=NULL;     // -Z   [-]   name of the file for the gamma 
 // Parameters determined from input parameters
 // -------------------------------------------
 mcpl_outfile_t* pReflMCPLThread;   //      [-]   file for writing the MCPL output
-FILE  *pReflParam=NULL;            //      [-]   file for writing each reflection 
-FILE  *pReflPlot=NULL;             //      [-]   file for writing each reflection as plot 
-FILE  *pReflL=NULL;                //      [-]   file for describing left plane of guide 
-FILE  *pReflR=NULL;                //      [-]   file for describing right plane of guide 
-FILE  *pReflT=NULL;                //      [-]   file for describing top plane of guide 
-FILE  *pReflB=NULL;                //      [-]   file for describing bottom plane of guide 
+FILE  *pReflParam = NULL;          //      [-]   file for writing each reflection
+FILE  *pReflPlot = NULL;           //      [-]   file for writing each reflection as plot
+FILE  *pReflL = NULL;              //      [-]   file for describing left plane of guide
+FILE  *pReflR = NULL;              //      [-]   file for describing right plane of guide
+FILE  *pReflT = NULL;              //      [-]   file for describing top plane of guide
+FILE  *pReflB = NULL;              //      [-]   file for describing bottom plane of guide
+char sRefFileFullL[512] = "";      //            full path to reflectivity files
+char sRefFileFullR[512] = "";
+char sRefFileFullT[512] = "";
+char sRefFileFullB[512] = "";
 
-long   nSpacers  = 0,              //      [-]   number of blades dividing the (vertical) channels 
-       nPlanes   = 4;              //      [-]   number of walls (4 for rectangular cross-section) 
-int    keyAddPlane = 0;            //      [-]   additional planes: 0 = none, 1 = top/bottom, 2 = left/right 
+long   nSpacers  = 0,              //      [-]   number of blades dividing the (vertical) channels
+       nPlanes   = 4;              //      [-]   number of walls (4 for rectangular cross-section)
+int    keyAddPlane = 0;            //      [-]   additional planes: 0 = none, 1 = top/bottom, 2 = left/right
 
-double GuideMaxHeight=0.0,         //            max. height and width of guide for elliptic shape 
-       GuideMaxWidth=0.0,          //            
-       D_Foc1Y=0.0,                //            pos. of 1st focal point in horizontal direction (for elliptic shape) 
-       D_Foc1Z=0.0,                //            pos. of 1st focal point in vertical direction (for elliptic shape) 
-       LcntrY =0.0,                //            centre positions of ellipse 
-       LcntrZ =0.0,                //            
-       SAxisY =0.0, LAxisY = 0.0,  //            short and long axes of the ellipses 
-       SAxisZ =0.0, LAxisZ = 0.0,  //            
-       AparY = 0.0,                //            factor of quadratic term in parabola  
-       AparZ = 0.0,                //            
-       TotalLength=0.0,            //            total length of the guide  
-       DeltaX=0.0, DeltaY=0.0,     //            length in x- and y-direction of the total guide  
-       beta=0.0,   beta_ges=0.0;   //            angle of declination between 2 pieces  and of the total guide 
+double GuideMaxHeight=0.0,         //            max. height and width of guide for elliptic shape
+       GuideMaxWidth=0.0,          //
+       D_Foc1Y=0.0,                //            pos. of 1st focal point in horizontal direction (for elliptic shape)
+       D_Foc1Z=0.0,                //            pos. of 1st focal point in vertical direction (for elliptic shape)
+       LcntrY =0.0,                //            centre positions of ellipse
+       LcntrZ =0.0,                //
+       SAxisY =0.0, LAxisY = 0.0,  //            short and long axes of the ellipses
+       SAxisZ =0.0, LAxisZ = 0.0,  //
+       AparY = 0.0,                //            factor of quadratic term in parabola
+       AparZ = 0.0,                //
+       TotalLength=0.0,            //            total length of the guide
+       DeltaX=0.0, DeltaY=0.0,     //            length in x- and y-direction of the total guide
+       beta=0.0,   beta_ges=0.0;   //            angle of declination between 2 pieces  and of the total guide
 double XpceZero = 0.0;             //     [cm]   x position of 1st guide piece
 double startPoint=0.0,             //            beginning of the elliptic guide, (not needed here)
-       endPoint  =0.0;             //            end of the elliptic guide,       (not needed here)            
-double AreaY=0.0, AreaZ=0.0;       //    [cm^2]  Approximate area of guide plane 
-GuidePiece *pPieces;               //            Holds piece Informations. Replaces Xpce, Ypce, Zpce 
+       endPoint  =0.0;             //            end of the elliptic guide,       (not needed here)
+double AreaY=0.0, AreaZ=0.0;       //    [cm^2]  Approximate area of guide plane
+GuidePiece *pPieces;               //            Holds piece Informations. Replaces Xpce, Ypce, Zpce
 VtGdeWall eGwExit = GW_EXIT,       //      [-]   structure describing the entrance plane
           eGwInit = GW_INIT;       //      [-]   structure describing the exit plane
 
-extern VectorType BegPosS,         //     [cm]   end position of prev. section = origin of this section in absolute co-ordinate system 
-                  BegPosM;         //     [cm]   end position of prev. module = origin of this module in absolute co-ordinate system   
+extern VectorType BegPosS,         //     [cm]   end position of prev. section = origin of this section in absolute co-ordinate system
+                  BegPosM;         //     [cm]   end position of prev. module = origin of this module in absolute co-ordinate system
 
-extern double RotMatrixS[3][3],    //            matrix to rotate from abs. co-ordinate system to co-ordinate system of last section   
-              RotY, RotZ;          //            hor. and vert. rotation of the local co-ordinate system relative to the absolute one  
+extern double RotMatrixS[3][3],    //            matrix to rotate from abs. co-ordinate system to co-ordinate system of last section
+              RotY, RotZ;          //            hor. and vert. rotation of the local co-ordinate system relative to the absolute one
 
-// Extended FROM FILE 
+// Extended FROM FILE
 ReflFile* pReflFiles  = {NULL};    //      [-]   structure containing information about a reflectivity file
 long      nReflFiles  = 0;         //      [-]   number of reflectivity files read or calculated
 long      maxReflFiles= 0;         //      [-]   maximum number of reflectivity files (used for memory allocation)
- 
+
 // Reflection Plot variables
 double *bpostX,  *bpostY;          //      [-]   limits of the bins
 BINDATA **binXY, **binX, **binY;
@@ -287,14 +291,14 @@ mcpl_particle_t* particleT;        //            Each Thread have an own tempora
 double** RotMatrixSThread;         //            The thread's own rotation vector*/
 double** BegPosSThread;            //            The thread's own position vector*/
 short    sMCPLWrite=0;             //            Write MCPL file? 0: NO; 1: only gamma; 2: only neutron; 3: gamma and neutron */
-Escaping_MCPL_particles* pMCPLparticles; //      for returning results from CalcGammaAndNeutron() func. 
+Escaping_MCPL_particles* pMCPLparticles; //      for returning results from CalcGammaAndNeutron() func.
 //SERIAL double RotMatrixSThread[3][3];
 //SERIAL double BegPosSThread[3];
 
 // Constants
 // ---------
 // Gamma energies for the gamma production output of MCPL
-double gamma_energy [] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0,   1.5, 
+double gamma_energy [] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0,   1.5,
                           2.0,  3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0};
 double gamma_fractionNi[]={0.003722, 0.015513, 0.048432, 0.047485, 0.198059, 0.002809,
                            0.003142, 0.06579,  0.054534, 0.028872, 0.063882, 0.050286,
@@ -343,7 +347,7 @@ int main(int argc, char *argv[])
 
   /******************************************/
   /** Initialisation and parameter input   **/
-  /******************************************/  
+  /******************************************/
   _eModule=MCN_GUIDE;
 
   Init(argc,argv, _eModule);
@@ -351,7 +355,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp     = TRUE;
 
   // allocate for planes + exit plane
@@ -363,13 +367,13 @@ int main(int argc, char *argv[])
   TGuide[0].Wall = Guide.Wall;
   for (i=1; i<=NThreads; i++)
     TGuide[i].Wall = copyWalls(Guide.Wall);
-  
+
   // needPreRand value:
   // 100 would mean pre-compute 100 random numbers per neutron
   // -1 (any negative value) means use an individual random number generator per thread
   needPreRand = ((NThreads && WaviAmpl) || sMCPLWrite) ? -1 : 0;
 
-  if (NThreads > 0 && pReflParam) 
+  if (NThreads > 0 && pReflParam)
   {
     int allsize;
     char *buf;
@@ -377,13 +381,13 @@ int main(int argc, char *argv[])
     if (! (buf = (char*) malloc(allsize)))
       myExit("ERROR: Not enough memory for reflection data!\n");
     perThreadMaxOut = allsize / NThreads;
-    for (i=0; i<NThreads; i++) 
+    for (i=0; i<NThreads; i++)
     {
       rThreadO[i] = buf;
       buf += perThreadMaxOut;
     }
     processPipedNeutronsWithOutput(NThreads, processNeutron, flushOutput, 1, needPreRand);
-  } 
+  }
   else
   {
     processPipedNeutrons(NThreads, processNeutron, 1, needPreRand);
@@ -391,12 +395,12 @@ int main(int argc, char *argv[])
 
   /* set description for instrument plot */
   beta_ges = (nPieces-1)*beta;
-  if (Radius != 0.0)  
+  if (Radius != 0.0)
   {
     DeltaX = Radius*sin(beta_ges)       + 0.5*piecelength*(cos(beta_ges)+1.0);
     DeltaY = Radius*(1.0-cos(beta_ges)) + 0.5*piecelength* sin(beta_ges);
-  } 
-  else 
+  }
+  else
   {
     DeltaX = TotalLength;
     DeltaY = 0.0;
@@ -417,32 +421,33 @@ int main(int argc, char *argv[])
 /******************************************************************************/
 // 'OwnInit' reads the input parameter and checks the values
 /******************************************************************************/
-void OwnInit   (int argc, char *argv[]) 
+void OwnInit   (int argc, char *argv[])
 {
   long  i,j;
-  char  *arg=NULL, sLine[512];
-  FILE* pFile=NULL;
+  char *arg = NULL, sLine[512];
+  FILE *pFile = NULL;
   char  sRefFileL[512] = "", sRefFileR[512] = "", sRefFileT[512] = "", sRefFileB[512] = "";
-  double MValueL=0.0, MValueR=0.0, MValueT=0.0, MValueB=0.0;
+  double MValueL = 0.0, MValueR = 0.0, MValueT = 0.0, MValueB = 0.0;
   ReflFile *pRefFileLast;
-  double bintervalX=1.0, bintervalY=1.0;
+  double bintervalX = 1.0, bintervalY = 1.0;
   int ibinX, ibinY;
   int k;
+  char *sFullName = NULL;
 
   MsgInit();
   InitVector(BegPosM);
   InitVector(BegPosS);
 
   // guide parameter character usage:
-  //free                                                                                                  y   
+  //free                                                                                                  y
   //used a A b B c C d D e E f F g G h H i I j J k K l L m M n  N o O p P q Q r R s S t T u U v V w W x X   Y z Z
 
-  for (i=1; i<argc; i++) 
+  for (i=1; i<argc; i++)
   {
     if (argv[i][0] == '+') continue;  //these have been processed by Init()
 
     arg = &argv[i][2];
-    switch (argv[i][1]) 
+    switch (argv[i][1])
     {
     case 'i':  /* left plane */
       pReflL = tryOpen( (ReflFileNameL = arg), "coating of left plane");
@@ -457,7 +462,7 @@ void OwnInit   (int argc, char *argv[])
       pReflB = tryOpen( (ReflFileNameB = arg), "coating of bottom plane");
       break;
     case 'o':  /* Reflection parameter writeout */
-      if ((pReflParam = OpenInputFile(arg, FALSE, "w"))) 
+      if ((pReflParam = OpenInputFile(arg, FALSE, "w")))
       {
         fprintf(pReflParam,
                 "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n"
@@ -492,23 +497,23 @@ void OwnInit   (int argc, char *argv[])
 
       MCPLParamFileName=arg;
       char mcpl_tmp_filename[1024];
-      for (k=0; k<=NThreads; ++k)
-      {
-        if(k==0)
-        {
-          sprintf(mcpl_tmp_filename, "%s.mcpl", FullOutName(arg));
+      sFullName = FullOutName(arg);
+      for (k = 0; k <= NThreads; ++k) {
+        if (k == 0) {
+          sprintf(mcpl_tmp_filename, "%s.mcpl", sFullName);
           remove(mcpl_tmp_filename);
-        } 
-        else
-        { sprintf(mcpl_tmp_filename, "%s.tmp%d.mcpl", FullOutName(arg), k);
+        } else {
+          sprintf(mcpl_tmp_filename, "%s.tmp%d.mcpl", sFullName, k);
         }
 
         pReflMCPLThread[k] = mcpl_create_outfile(mcpl_tmp_filename);
 
-        //Init the Threads own tmp particle
-        memset(particleT+k, '\0', sizeof(mcpl_particle_t));
+        // Init the Threads own tmp particle
+        memset(particleT + k, '\0', sizeof(mcpl_particle_t));
       }
-      //End of MCPL related code 
+      free(sFullName);
+      sFullName = NULL;
+      //End of MCPL related code
       break;
 
     case 'O':
@@ -528,7 +533,7 @@ void OwnInit   (int argc, char *argv[])
                                 */
       break;
     case 'P':  /* Reflection parameter plot */
-      if ((pReflPlot = OpenInputFile(arg, FALSE, "w"))) 
+      if ((pReflPlot = OpenInputFile(arg, FALSE, "w")))
       {
         fprintf(pReflPlot,
                 "#   X          Y        counts   Mode    0       5       10    RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z   WeightSum\n"
@@ -559,11 +564,11 @@ void OwnInit   (int argc, char *argv[])
     case 'D':    /* Maximum number of reflections on the vertical guide for reflection list output */
       nReflMaxCntZ = atoi(arg);
       break;
-      
+
     case 'S':    /* shape file */
       ShapeFileName=arg;
       break;
-      
+
     case 'h':
       GuideEntrHeight = atof(arg);
       break;
@@ -576,7 +581,7 @@ void OwnInit   (int argc, char *argv[])
     case 'W':
       GuideExitWidth = atof(arg);
       break;
-      
+
     case 'L':
       MValGenL  = atof(arg);
       break;
@@ -586,26 +591,26 @@ void OwnInit   (int argc, char *argv[])
     case 'G':
       MValGenTB = atof(arg);
       break;
-      
+
     case 'f':
-      D_Foc2Y = atof(arg);      // distance of focus point behind guide exit 
+      D_Foc2Y = atof(arg);      // distance of focus point behind guide exit
       break;
     case 'F':
-      D_Foc2Z = atof(arg);      // distance of focus point behind guide exit 
+      D_Foc2Z = atof(arg);      // distance of focus point behind guide exit
       break;
-      
+
     case 'n':
       rotplane = atof(arg); /* Additional planes: rot angle */
-      if (fabs(rotplane) >= 90.0) 
+      if (fabs(rotplane) >= 90.0)
       {
         rotplane = 0.0;
-      } 
-      else if (fabs(rotplane) > 0.0) 
+      }
+      else if (fabs(rotplane) > 0.0)
       {
         double rot;
         keyAddPlane = rotplane > 0.0 ? 1 : 2;
         rot = rotplane;
-        while (fabs(rot) < 90.0) 
+        while (fabs(rot) < 90.0)
         {
           rot += rotplane;
           nPlanes += 4;
@@ -630,14 +635,14 @@ void OwnInit   (int argc, char *argv[])
     case 'Z':                   /*                 3: parabolic                          */
       eGuideShapeZ = (VtGdeShape) atol(arg); /*                 4: elliptic                           */
       break;
-      
+
     case 'M':
       MuScat =  atof(arg); /* macroscopic scattering coeff. in 1/cm */
       break;
     case 'm':
       MuAbs  =  atof(arg); /* macroscopic absorption coeff. in 1/cm */
       break;
-      
+
     case 'b':
       nChannels = atol(arg); /* bender: No. of channels  */
       nSpacers  = nChannels - 1;
@@ -645,7 +650,7 @@ void OwnInit   (int argc, char *argv[])
     case 's':
       spacer = atof(arg); /* width of the blades dividing the channels in cm */
       break;
-      
+
     case 'a':
       keyAbut = (short) atoi(arg); /* key for abutment loss  0: no (default), 1: yes  */
       break;
@@ -662,39 +667,39 @@ void OwnInit   (int argc, char *argv[])
       WaviAmpl  =  atof(arg)*M_PI/180.0;   /* Maximal or RMS angle of deviation from normal in rad */
       WaviAmpl  =  tan(WaviAmpl);
       break;
-      
+
     case 'k':
       nbinsX = atol(arg); /* number of X bins */
       break;
     case 'K':
       nbinsY = atol(arg); /* number of Y bins */
       break;
-      
+
     case 'x':
       MinX = atof(arg);   /* lower bound of X range */
       break;
     case 'X':
       MaxX = atof(arg);   /* upper bound of X range */
       break;
-      
+
     case 'u':
       MinY = atof(arg);   /* lower bound of Y range */
       break;
     case 'U':
       MaxY = atof(arg);   /* upper bound of Y range */
       break;
-      
+
     case 't':    /* Key for x parameter */
       KeyX = (VtPlotPar) atoi(arg);
       break;
     case 'T':    /* Key for y parameter */
       KeyY = (VtPlotPar) atoi(arg);
       break;
-      
+
     case 'V':    /* Probability weighting key */
       KeyProb = (VtPlotPar) atoi(arg);
       break;
-      
+
     case 'g':
       nColour = atol(arg);       /*  excludes all neutrons with diff. Colour, if nColour >= 0 */
       break;
@@ -708,8 +713,8 @@ void OwnInit   (int argc, char *argv[])
   /* ------------ */
 
   /* consistency of abutment loss parameters */
-  if (keyAbut==ON  && AbutLen==0.0) AbutLen=0.5;  
-  if (keyAbut==OFF && AbutLen > 0.0)  
+  if (keyAbut==ON  && AbutLen==0.0) AbutLen=0.5;
+  if (keyAbut==OFF && AbutLen > 0.0)
     Error("Inconsistent abutment loss parameters");
 
   /* combination: orientation - shape */
@@ -730,28 +735,28 @@ void OwnInit   (int argc, char *argv[])
       dSinBetH = sin(beta/2.0);
       FillRotMatrixZ(RotMatrix, beta);
     }
-  } 
+  }
   else
   { if (Radius!=0.0)
       Error("Curvature of guide only supported in options 'curved' and 'linear+curved', please delete radius or switch to one of these options");
   }
 
   /* Exit and entrance size */
-  if (eGuideShapeZ==VT_CONSTANT) 
+  if (eGuideShapeZ==VT_CONSTANT)
   {
     if (GuideExitHeight != GuideEntrHeight)
       Error("In guides of constant height, exit and entrance height have to be equal");
-  } 
+  }
   else if (GuideExitHeight== 0.0)
   {
     Error("You must enter the height of the guide exit");
   }
 
-  if (eGuideShapeY==VT_CONSTANT || eGuideShapeY==VT_CURVED) 
+  if (eGuideShapeY==VT_CONSTANT || eGuideShapeY==VT_CURVED)
   {
     if (GuideExitWidth != GuideEntrWidth)
       Error("In curved and constant guides, exit and entrance width have to be equal");
-  } 
+  }
   else if (GuideExitWidth == 0.0)
   {
     Error("You must enter the width of the guide exit");
@@ -764,21 +769,21 @@ void OwnInit   (int argc, char *argv[])
       Error("More than 1 piece is necessary for this shape");
   }
 
-  if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE) 
+  if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
   {
     pFile = OpenInputFile(ShapeFileName, FALSE, "r");
-    if (pFile) 
+    if (pFile)
     {
       nPieces      = LinesInFile(pFile) - 1;
       TotalLength  = GetLengthFromFile(pFile);
       maxReflFiles = (nPieces+1) * 4;
-    } 
+    }
     else
     { myExit1("ERROR: Input file %s could not be read !\n", ShapeFileName);
     }
-  } 
+  }
   else
-  { 
+  {
     TotalLength  = nPieces*piecelength;
     maxReflFiles = 4;
   }
@@ -789,7 +794,7 @@ void OwnInit   (int argc, char *argv[])
   memset(pReflFiles, '\0', maxReflFiles * sizeof(ReflFile));
 
   /* bottom plane */
-  if (pReflB == NULL && pReflT != NULL) 
+  if (pReflB == NULL && pReflT != NULL)
   {
     pReflB = pReflT;
     ReflFileNameB = ReflFileNameT;
@@ -801,7 +806,7 @@ void OwnInit   (int argc, char *argv[])
   GetValueY = SetValueFunction(KeyY);
   GetProb   = SetValueFunction(KeyProb);
 
-  if (pReflPlot) 
+  if (pReflPlot)
   {
     bpostX = (double*) calloc(nbinsX+1, sizeof(double));
     bpostY = (double*) calloc(nbinsY+1, sizeof(double));
@@ -822,21 +827,21 @@ void OwnInit   (int argc, char *argv[])
   /* Calculation of height, width and channel-width of beginning and end of pieces */
   pPieces = (GuidePiece*) calloc(nPieces+1, sizeof(GuidePiece));
 
-  if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE) 
+  if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
   {
     pRefFileLast = GetReflData(MValGenL, ReflFileNameL, pReflL);
 
-    for (j=0; j <= nPieces; j++) 
+    for (j=0; j <= nPieces; j++)
     {
       ReadLine(pFile, sLine, sizeof(sLine)-1);
 
       sRefFileL[0] = sRefFileR[0] = sRefFileT[0] = sRefFileB[0] = '\0';
       sscanf(sLine, "%lf %lf %lf %s %s %s %s", &pPieces[j].Xpce, &pPieces[j].Ypce, &pPieces[j].Zpce,
              (char *)&sRefFileL, (char *)&sRefFileR, (char *)&sRefFileT, (char *)&sRefFileB);
-      MValueL = atof(sRefFileL); if (MValueL > 0.0) strcpy(sRefFileL, " "); 
-      MValueR = atof(sRefFileR); if (MValueR > 0.0) strcpy(sRefFileR, " "); 
-      MValueT = atof(sRefFileT); if (MValueT > 0.0) strcpy(sRefFileT, " "); 
-      MValueB = atof(sRefFileB); if (MValueB > 0.0) strcpy(sRefFileB, " "); 
+      MValueL = atof(sRefFileL); if (MValueL > 0.0) strcpy(sRefFileL, " ");
+      MValueR = atof(sRefFileR); if (MValueR > 0.0) strcpy(sRefFileR, " ");
+      MValueT = atof(sRefFileT); if (MValueT > 0.0) strcpy(sRefFileT, " ");
+      MValueB = atof(sRefFileB); if (MValueB > 0.0) strcpy(sRefFileB, " ");
 
       pPieces[j].Xpce *= 100.0;
       if (j==0) XpceZero = pPieces[0].Xpce;
@@ -848,7 +853,7 @@ void OwnInit   (int argc, char *argv[])
       pPieces[j].Wchan = (2.0*pPieces[j].Ypce - nSpacers*spacer)/(double)nChannels;
       if (pPieces[j].Wchan <= 0.0)
         Error("Geometry impossible. Channel width gets zero (or less)");
-      if (j>0) 
+      if (j>0)
       {
         AreaY += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
         AreaZ += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
@@ -857,7 +862,7 @@ void OwnInit   (int argc, char *argv[])
       allocRdata(&(pPieces[j].RData), nPlanes);
 
       /* Calculate Area for this reflectivity file; only valid for squared guide */
-      if (j > 0) 
+      if (j > 0)
       {
         if (pPieces[j-1].RData[GW_LEFT])
           pPieces[j-1].RData[GW_LEFT]->area   += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
@@ -870,54 +875,86 @@ void OwnInit   (int argc, char *argv[])
       }
 
       /* Either load standard reflectivity file or use userdefined one */
-      switch (sRefFileL[0]) 
-      {
-        case ':':  pPieces[j].RData[GW_LEFT]   = pRefFileLast; break;                                      // "use previous"
-        case '\0': pPieces[j].RData[GW_LEFT]   = GetReflData(MValGenL, ReflFileNameL, pReflL); break;      // standard files
-        case ' ':  pPieces[j].RData[GW_LEFT]   = GetReflData(MValueL, NULL, NULL);             break;      // m-value from file
-        default:   pPieces[j].RData[GW_LEFT]   = GetReflData(0.0, FullInName(sRefFileL), NULL);  // file from file
-                   pRefFileLast = pPieces[j].RData[GW_LEFT];
-                   break;
+      switch (sRefFileL[0]) {
+      case ':':
+        // "use previous"
+        pPieces[j].RData[GW_LEFT] = pRefFileLast;
+        break;
+      case '\0':
+        // standard files
+        pPieces[j].RData[GW_LEFT] = GetReflData(MValGenL, ReflFileNameL, pReflL);
+        break;
+      case ' ':
+        // m-value from file
+        pPieces[j].RData[GW_LEFT] = GetReflData(MValueL, NULL, NULL);
+        break;
+      default:
+        TotalPath(sRefFileFullL, sRefFileL, "", IN_DIR);
+        // file from file
+        pPieces[j].RData[GW_LEFT] = GetReflData(0.0, sRefFileFullL, NULL);
+        pRefFileLast = pPieces[j].RData[GW_LEFT];
+        break;
       }
 
-      switch (sRefFileR[0]) 
-      {
-        case ':':  pPieces[j].RData[GW_RIGHT]  = pRefFileLast; break;
-        case '\0': pPieces[j].RData[GW_RIGHT]  = GetReflData(MValGenR, ReflFileNameR, pReflR); break;
-        case ' ':  pPieces[j].RData[GW_RIGHT]  = GetReflData(MValueR, NULL, NULL);             break;    
-        default:   pPieces[j].RData[GW_RIGHT]  = GetReflData(0.0, FullInName(sRefFileR), NULL);
-                   pRefFileLast = pPieces[j].RData[GW_RIGHT];
-                   break;
+      switch (sRefFileR[0]) {
+      case ':':
+        pPieces[j].RData[GW_RIGHT] = pRefFileLast;
+        break;
+      case '\0':
+        pPieces[j].RData[GW_RIGHT] = GetReflData(MValGenR, ReflFileNameR, pReflR);
+        break;
+      case ' ':
+        pPieces[j].RData[GW_RIGHT] = GetReflData(MValueR, NULL, NULL);
+        break;
+      default:
+        TotalPath(sRefFileFullR, sRefFileR, "", IN_DIR);
+        pPieces[j].RData[GW_RIGHT] = GetReflData(0.0, sRefFileFullR, NULL);
+        pRefFileLast = pPieces[j].RData[GW_RIGHT];
+        break;
       }
 
-      switch (sRefFileT[0]) 
-      {
-        case ':':  pPieces[j].RData[GW_TOP]    = pRefFileLast; break;
-        case '\0': pPieces[j].RData[GW_TOP]    = GetReflData(MValGenTB, ReflFileNameT, pReflT); break;
-        case ' ':  pPieces[j].RData[GW_TOP]    = GetReflData(MValueR, NULL, NULL);             break;    
-        default:   pPieces[j].RData[GW_TOP]    = GetReflData(0.0, FullInName((char *)&sRefFileT), NULL);
-                   pRefFileLast = pPieces[j].RData[GW_TOP];
-                   break;
+      switch (sRefFileT[0]) {
+      case ':':
+        pPieces[j].RData[GW_TOP] = pRefFileLast;
+        break;
+      case '\0':
+        pPieces[j].RData[GW_TOP] = GetReflData(MValGenTB, ReflFileNameT, pReflT);
+        break;
+      case ' ':
+        pPieces[j].RData[GW_TOP] = GetReflData(MValueR, NULL, NULL);
+        break;
+      default:
+        TotalPath(sRefFileFullT, sRefFileT, "", IN_DIR);
+        pPieces[j].RData[GW_TOP] = GetReflData(0.0, sRefFileFullT, NULL);
+        pRefFileLast = pPieces[j].RData[GW_TOP];
+        break;
       }
 
-      switch (sRefFileB[0]) 
-      {
-        case ':':  pPieces[j].RData[GW_BOTTOM] = pRefFileLast; break;
-        case '\0': pPieces[j].RData[GW_BOTTOM] = GetReflData(MValGenTB, ReflFileNameB, pReflB); break;
-        case ' ':  pPieces[j].RData[GW_BOTTOM] = GetReflData(MValueR, NULL, NULL);             break;    
-        default:   pPieces[j].RData[GW_BOTTOM] = GetReflData(0.0, FullInName((char *)&sRefFileB), NULL);
-                   pRefFileLast = pPieces[j].RData[GW_BOTTOM];
-                   break;
+      switch (sRefFileB[0]) {
+      case ':':
+        pPieces[j].RData[GW_BOTTOM] = pRefFileLast;
+        break;
+      case '\0':
+        pPieces[j].RData[GW_BOTTOM] = GetReflData(MValGenTB, ReflFileNameB, pReflB);
+        break;
+      case ' ':
+        pPieces[j].RData[GW_BOTTOM] = GetReflData(MValueR, NULL, NULL);
+        break;
+      default:
+        TotalPath(sRefFileFullB, sRefFileB, "", IN_DIR);
+        pPieces[j].RData[GW_BOTTOM] = GetReflData(0.0, sRefFileFullB, NULL);
+        pRefFileLast = pPieces[j].RData[GW_BOTTOM];
+        break;
       }
 
       /* for additional planes use pointers. WARNING please use same order of assingment as in other functions */
-      if (nPlanes > 4) 
+      if (nPlanes > 4)
       {
         double rot = rotplane;
         int cPlane = GW_RIGHT;
-        while (fabs(rot) < 90.0 && cPlane < eGwExit) 
+        while (fabs(rot) < 90.0 && cPlane < eGwExit)
         {
-          switch (keyAddPlane) 
+          switch (keyAddPlane)
           {
             case 1:
               pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_TOP];
@@ -935,7 +972,7 @@ void OwnInit   (int argc, char *argv[])
           rot += rotplane;
         }
       }
-	  }
+    }
 
     TotalLength = RoundP(pPieces[nPieces].Xpce - pPieces[0].Xpce, 7);
     GuideEntrWidth = pPieces[0].Ypce*2.;
@@ -943,12 +980,12 @@ void OwnInit   (int argc, char *argv[])
     GuideExitWidth = pPieces[nPieces].Ypce*2.;
     GuideExitHeight = pPieces[nPieces].Zpce*2.;
     piecelength  = TotalLength / (double)nPieces; /* Use piecelength with care in the case of nonequidistant planes */
-  } 
-  else 
+  }
+  else
   {
     pFile = OpenOutputFile(ShapeFileName, FALSE, "w+");
 
-    for (j=0; j <= nPieces; j++) 
+    for (j=0; j <= nPieces; j++)
     {
       pPieces[j].Xpce  = j*piecelength;
       pPieces[j].Ypce  = Width (pPieces[j].Xpce)/2.0;
@@ -956,14 +993,14 @@ void OwnInit   (int argc, char *argv[])
       pPieces[j].Wchan = (2.0*pPieces[j].Ypce - nSpacers*spacer)/(double)nChannels;
       if (pPieces[j].Wchan <= 0.0)
         Error("Geometry impossible. Channel width gets zero (or less)");
-      if (pFile) 
+      if (pFile)
       {
-        if (j==0) 
+        if (j==0)
         {
           fprintf(pFile,
                   "# length [m]  width [cm]  height [cm] \n"
                   "#-------------------------------------\n");
-        } else 
+        } else
         {
           AreaY += (pPieces[j-1].Ypce+pPieces[j].Ypce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
           AreaZ += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
@@ -975,7 +1012,7 @@ void OwnInit   (int argc, char *argv[])
       allocRdata(&(pPieces[j].RData), nPlanes);
 
       /* Calculate Area for this reflectivity file; only valid for squared guide */
-      if (j > 0) 
+      if (j > 0)
       {
         if (pPieces[j-1].RData[GW_LEFT])
           pPieces[j-1].RData[GW_LEFT]->area   += (pPieces[j-1].Zpce+pPieces[j].Zpce)*(pPieces[j].Xpce-pPieces[j-1].Xpce);
@@ -993,13 +1030,13 @@ void OwnInit   (int argc, char *argv[])
       pPieces[j].RData[GW_TOP]    = GetReflData(MValGenTB, ReflFileNameT, pReflT);
       pPieces[j].RData[GW_BOTTOM] = GetReflData(MValGenTB, ReflFileNameB, pReflB);
 
-      if (nPlanes > 4) 
+      if (nPlanes > 4)
       {
         double rot = rotplane;
         int cPlane = GW_RIGHT;
-        while (fabs(rot) < 90.0 && cPlane < eGwExit) 
+        while (fabs(rot) < 90.0 && cPlane < eGwExit)
         {
-          switch (keyAddPlane) 
+          switch (keyAddPlane)
           {
             case 1:
               pPieces[j].RData[++cPlane] = pPieces[j].RData[GW_TOP];
@@ -1027,7 +1064,7 @@ void OwnInit   (int argc, char *argv[])
 /******************************************************************************/
 // 'showAndCompleteSetup' evaluates and writes the input parameters
 /******************************************************************************/
-void showAndCompleteSetup() 
+void showAndCompleteSetup()
 {
   int i;
 
@@ -1039,7 +1076,7 @@ void showAndCompleteSetup()
     fprintf(LogFilePtr, " -> %7.4f x %7.4f cm^2", GuideExitWidth, GuideExitHeight);
   fprintf(LogFilePtr, "\n\nHorizontal: ");
 
-  switch (eGuideShapeY) 
+  switch (eGuideShapeY)
   {
     case VT_ELLIPTIC:
       fprintf(LogFilePtr, "elliptic shape\n"
@@ -1071,7 +1108,7 @@ void showAndCompleteSetup()
   fprintf(LogFilePtr, " area (top+bottom) :%8.3f m^2\n", AreaY*2./1e4);
 
   fprintf(LogFilePtr, "Vertical  : ");
-  switch (eGuideShapeZ) 
+  switch (eGuideShapeZ)
   {
     case VT_ELLIPTIC:
       fprintf(LogFilePtr, "elliptic shape\n"
@@ -1103,13 +1140,13 @@ void showAndCompleteSetup()
 
   if (Radius != 0.0)  // curved guide
     fprintf(LogFilePtr,"\n%ld kink(s) with an angle of %8.4f deg  each\n", nPieces-1, 180.0/M_PI*beta);
-  
+
   for(i=0; i < nReflFiles; i++)
   {
-    if (pReflFiles[i].filename) 
+    if (pReflFiles[i].filename)
     {
       fprintf(LogFilePtr,"\nReflectivity file  : %s\n", pReflFiles[i].filename);
-      if (pReflFiles[i].pfile) 
+      if (pReflFiles[i].pfile)
       {
         PrintMaximalM(pReflFiles[i].Rdata, pReflFiles[i].maxdata);
       } else {
@@ -1129,7 +1166,7 @@ void showAndCompleteSetup()
   {
     fprintf(LogFilePtr,"The walls have no waviness\n");
   }
-  else 
+  else
   {
     fprintf(LogFilePtr,"The walls have a waviness of %10.3e deg\n", atan(WaviAmpl)*180.0/M_PI);
     if (eWaviDistr==VT_WAVI_GAUSS)
@@ -1185,9 +1222,9 @@ void showAndCompleteSetup()
 
 /******************************************************************************/
 // Callback routine 'processNeutron' is responsible to process neutron i;
-// thread_i indicates the tread which is performing, in case of serial execution this is thread 0 
+// thread_i indicates the tread which is performing, in case of serial execution this is thread 0
 /******************************************************************************/
-void processNeutron(int neutron_i, int thread_i) 
+void processNeutron(int neutron_i, int thread_i)
 {
   ReflCond *PRefOut;
   long   j, kChan;
@@ -1214,13 +1251,13 @@ void processNeutron(int neutron_i, int thread_i)
     WriteNeutronParallel(myneutron, thread_i);
   }
   else
-  { 
+  {
     if (nColour!=-1 && nColour!=myneutron->Color) goto dump; //Wrong color neutrons will be written!
 
     /* myneutron->Position.X = 0.0;   !!!!!!!! */
     CopyVector(BegPosM, BegPosS);
     memcpy(RotMatrixS, RotMatrixM, sizeof(RotMatrixS));
-  
+
     // Initialize the matrices for parallel MCPL output
     if (sMCPLWrite !=0)
     {
@@ -1254,16 +1291,16 @@ void processNeutron(int neutron_i, int thread_i)
     gW = &(guide.Wall[0]);
 
     /************** start channel option *********************/
-    if (nChannels > 1) 
+    if (nChannels > 1)
     {
       int k;
-      for (k=0; k < nChannels; k++) 
+      for (k=0; k < nChannels; k++)
       {
         right_beg = -GuideEntrWidth/2.0 + k*(pPieces[0].Wchan + spacer);
         left_beg  = right_beg + pPieces[0].Wchan;
 
-        if (    (right_beg < myneutron->Position[1]) 
-             && (left_beg  > myneutron->Position[1]))  
+        if (    (right_beg < myneutron->Position[1])
+             && (left_beg  > myneutron->Position[1]))
         {
           kChan = k;
           myneutron->Color = (short)(k+1);
@@ -1307,28 +1344,28 @@ void processNeutron(int neutron_i, int thread_i)
     PRefOut->insert_at = 0;
     PRefOut->cneutrons = 0;
 
-    for (j=0; j < nPieces; j++) 
+    for (j=0; j < nPieces; j++)
     {
       CHECK;
 
       // In case of several pieces:
       //   planes must be adjusted for each piece (depending on the guide shape)
-      if (nPieces > 1) 
+      if (nPieces > 1)
       {
         dXpce = pPieces[j+1].Xpce - pPieces[j].Xpce;
 
-        switch (eGuideShapeY) 
+        switch (eGuideShapeY)
         {
           case VT_CURVED:
           case VT_LIN_CURV:
             /* last piece has an output plane normal to the guide direction, the others are tilted  */
-            if (j == nPieces-1) 
+            if (j == nPieces-1)
             {
               gW[eGwExit].A =  1.0;
               gW[eGwExit].B =  0.0;
               gW[eGwExit].D = -dXpce;
-            } 
-            else 
+            }
+            else
             {
               gW[eGwExit].A =  dCosBetH;
               gW[eGwExit].B =  dSinBetH;
@@ -1351,7 +1388,7 @@ void processNeutron(int neutron_i, int thread_i)
           case VT_ELLIPTIC:
           case VT_FROM_FILE:
             /* left and right walls are moved  */
-            if (nChannels > 1) 
+            if (nChannels > 1)
             {
               right_beg = -pPieces[j].Ypce   + kChan*(pPieces[j].Wchan + spacer);
               left_beg  =  right_beg + pPieces[j].Wchan;
@@ -1361,8 +1398,8 @@ void processNeutron(int neutron_i, int thread_i)
               dDelYl    = left_end  - left_beg;
               Length2r  = sqrt(dXpce*dXpce+dDelYr*dDelYr);
               Length2l  = sqrt(dXpce*dXpce+dDelYl*dDelYl);
-            } 
-            else 
+            }
+            else
             {
               right_beg = -pPieces[j].Ypce;
               left_beg  =  pPieces[j].Ypce;
@@ -1383,7 +1420,7 @@ void processNeutron(int neutron_i, int thread_i)
           default:;
         }
 
-        switch (eGuideShapeZ) 
+        switch (eGuideShapeZ)
         {
           case VT_PARABOLIC:
           case VT_ELLIPTIC:
@@ -1406,17 +1443,17 @@ void processNeutron(int neutron_i, int thread_i)
       }
 
       // Option: Oktogonaler Guide
-      if (nPlanes > 4) 
+      if (nPlanes > 4)
       {
         double cx, sx, rot;
         long cPlane;
         rot = rotplane;
         cPlane = GW_RIGHT;
-        while (fabs(rot) < 90.0 && cPlane < eGwExit) 
+        while (fabs(rot) < 90.0 && cPlane < eGwExit)
         {
           cx = cos(rot/180.*M_PI);
           sx = sin(rot/180.*M_PI);
-          switch (keyAddPlane) 
+          switch (keyAddPlane)
           {
             case 1:
               cPlane++;
@@ -1465,43 +1502,43 @@ void processNeutron(int neutron_i, int thread_i)
           }
           rot += rotplane;
         }
-      
+
         /****************************************************************************************/
         /* Check to see if the neutron is initially in the entrance to the guide...             */
         /****************************************************************************************/
-        if (j == 0) 
+        if (j == 0)
         {
           double d = 0;
           int k;
-          for (k=0; k < eGwExit; k++) 
+          for (k=0; k < eGwExit; k++)
           {
-            d = (gW[k].B*myneutron->Position[1] + 
-                 gW[k].C*myneutron->Position[2] + 
+            d = (gW[k].B*myneutron->Position[1] +
+                 gW[k].C*myneutron->Position[2] +
                  gW[k].D) / gW[k].D;
             if (d < 0)
               break;
           }
-          if (d < 0) 
+          if (d < 0)
           {
             test=FALSE;
-            WriteIAP(myneutron, VT_OUTSIDE); 
+            WriteIAP(myneutron, VT_OUTSIDE);
             break; // quit npieces loop
           }
         }
       }
-    
+
       if (eReflVbs != VT_LSTM_NO && j == 0)
         WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwInit, 0., 0.);
       //if (j == 0)
-      //  WriteIAP(myneutron, VT_ENTERED); 
-    
+      //  WriteIAP(myneutron, VT_ENTERED);
+
       // donkey work routine
       TimeOF1 = PathThroughGuideGravOrder1(thread_i, myneutron, guide, &pPieces[j], PRefOut, j);
 
       if (eReflVbs == VT_LSTM_EDGE && j == nPieces-1)
         WriteReflParam(PRefOut, thread_i, 5, myneutron, &pPieces[j], eGwExit, 0., 0.);
 
-      if (TimeOF1 == -1.0) 
+      if (TimeOF1 == -1.0)
       {
         test=FALSE;
         break; // trajectory is lost, quit npieces loop
@@ -1514,14 +1551,14 @@ void processNeutron(int neutron_i, int thread_i)
 
       /* Position vector for interaction points adjusted  */
       if (bVisTraj)
-      {  
+      {
         VectorType Shift={0.0,0.0,0.0};  /* Shift of end position  */
 
         Shift[0]= dXpce;
         RotBackVector(RotMatrixS, Shift);    // Transforms Shift from Section coord. syst. to Guide coord. system
         AddVector(BegPosS, Shift);           // Increments BegPosS with Shift
       }
-    
+
       // Update BegPosS for absolute position calculations for MCPL output
       if (sMCPLWrite !=0)
       {
@@ -1531,14 +1568,14 @@ void processNeutron(int neutron_i, int thread_i)
           //SERIAL RotBackVector(RotMatrixSThread, Shift);
           //SERIAL AddVector(BegPosSThread, Shift);
       }
-      //End of matrix update 
+      //End of matrix update
 
-	    /* For curved guide: frame rotated for next piece, but not after last piece */
+      /* For curved guide: frame rotated for next piece, but not after last piece */
       if (Radius != 0.0)
-      { 
+      {
         /* horizontal position and flight direction adjusted */
         if (j < nPieces-1)
-        { 
+        {
           RotVector(RotMatrix, myneutron->Position);
           RotVector(RotMatrix, myneutron->Vector);
           RotVector(RotMatrix, myneutron->Spin);
@@ -1550,7 +1587,7 @@ void processNeutron(int neutron_i, int thread_i)
           /* RotMatrixSThread must be updated for MCPL */
           if (sMCPLWrite!=0)
           {
-              FillRMatrixZY(RotMatrixSThread[3*thread_i], RotY, RotZ+(j+1)*beta); 
+              FillRMatrixZY(RotMatrixSThread[3*thread_i], RotY, RotZ+(j+1)*beta);
               //SERIAL FillRMatrixZY(RotMatrixSThread, RotY, RotZ+(j+1)*beta);
           }
         }
@@ -1563,19 +1600,19 @@ void processNeutron(int neutron_i, int thread_i)
     if ( (pReflParam || pReflPlot) &&
          (abs(PRefOut->RefCount) >= nReflMinCnt && (abs(PRefOut->RefCount) <= nReflMaxCnt || nReflMaxCnt == 0)) &&
          (PRefOut->RefCountY >= nReflMinCntY && (PRefOut->RefCountY <= nReflMaxCntY || nReflMaxCntY == 0)) &&
-         (PRefOut->RefCountZ >= nReflMinCntZ && (PRefOut->RefCountZ <= nReflMaxCntZ || nReflMaxCntZ == 0)) ) 
+         (PRefOut->RefCountZ >= nReflMinCntZ && (PRefOut->RefCountZ <= nReflMaxCntZ || nReflMaxCntZ == 0)) )
     {
       int condition;
-      switch (abs(eReflPar)) 
+      switch (abs(eReflPar))
       {
         case 1:  condition = (PRefOut->RefCount > 0); break;
         case 2:
         case 3:  condition = (PRefOut->RefCount != -1 && PRefOut->RefCount != 0); break;
         default: condition = 1;
       }
-      if (condition) 
+      if (condition)
       {
-        if (pReflParam) 
+        if (pReflParam)
         {
           char *s = PRefOut->Output;
           if (NThreads <= 0 || thread_i <= 0)
@@ -1583,10 +1620,10 @@ void processNeutron(int neutron_i, int thread_i)
             // in serial mode, or if we are thread 0: print to file
             fprintf(pReflParam, eReflPar < 0 ? "%s\n" : "%s", s);
           }
-          else 
+          else
           {
             int len = PRefOut->insert_at;
-            if (eReflPar < 0) 
+            if (eReflPar < 0)
             {
               s[len] = '\n';
               len++;
@@ -1602,8 +1639,8 @@ void processNeutron(int neutron_i, int thread_i)
     if (test==FALSE) return;
 
     if (fabs(myneutron->Position[1]) > 0.5*GuideExitWidth ||
-        fabs(myneutron->Position[2]) > 0.5*GuideExitHeight) 
-    { 
+        fabs(myneutron->Position[2]) > 0.5*GuideExitHeight)
+    {
       CountMessageThread(thread_i, GUID_OUT_OF_EXIT, myneutron->ID);
       WriteIAP(myneutron, VT_OUT_OF_WND);
       return;
@@ -1639,19 +1676,19 @@ void processNeutron(int neutron_i, int thread_i)
 /************************************************************************************/
 // 'OwnCleanup' collects data from threads, writes out messages and coating results
 /************************************************************************************/
-void OwnCleanup() 
+void OwnCleanup()
 {
-  if (NThreads > 0) 
+  if (NThreads > 0)
   {
     int i,count;
-    for (i=0; i<NThreads; i++) 
+    for (i=0; i<NThreads; i++)
     {
       if ((count = C_M[0][i]))
         CountMessageID_C(GUID_NO_PLANE,    C_I[0][i], count);
       if ((count = C_M[1][i]))
         CountMessageID_C(GUID_OUT_OF_EXIT, C_I[1][i], count);
     }
-    if (pReflPlot) 
+    if (pReflPlot)
       MergeBins();
     printMCStatistic(LogFilePtr);
   }
@@ -1692,8 +1729,8 @@ void OwnCleanup()
       }
     }
   }
-  
-  if (pReflPlot) 
+
+  if (pReflPlot)
   {
     writeBindata();
     fclose(pReflPlot);
@@ -1715,7 +1752,7 @@ void SetGeometry(char* sColor)
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
- 
+
     stGeometry.pHull = (VtHull*)calloc(nPieces, sizeof(VtHull));
     stGeometry.nHulls = nPieces;
 
@@ -1752,17 +1789,17 @@ void SetGeometry(char* sColor)
 
 
 /******************************************************************************/
-// Gets reflectivity data by either reading or calculating the data 
+// Gets reflectivity data by either reading or calculating the data
 /******************************************************************************/
-ReflFile* GetReflData(double MValue, char *sFilename, FILE *file) 
+ReflFile* GetReflData(double MValue, char *sFilename, FILE *file)
 {
   int iFile = 0;    // index of already loaded reflectivity files
- 
+
   if (sFilename==NULL && MValue==0.0)
     return NULL;
- 
+
   // check if this coating already exists in the list
-  for (iFile = 0; iFile < nReflFiles; iFile++) 
+  for (iFile = 0; iFile < nReflFiles; iFile++)
   {
     // if the name is given, m values are ignored, compare filenames
     if (sFilename!=NULL)
@@ -1776,7 +1813,7 @@ ReflFile* GetReflData(double MValue, char *sFilename, FILE *file)
        #endif
     }
     // otherwise m-values are compared
-    else  
+    else
     {
       if (MValue > 0.0 && pReflFiles[iFile].MValue==MValue)
         return &pReflFiles[iFile];
@@ -1802,26 +1839,26 @@ ReflFile* GetReflData(double MValue, char *sFilename, FILE *file)
 /******************************************************************************/
 // Loads Reflectivity data from file. Give pReflFile as input
 /******************************************************************************/
-void   LoadReflFile(ReflFile* pReflFile) 
+void   LoadReflFile(ReflFile* pReflFile)
 {
-  long   count = 0, i=0, 
+  long   count = 0, i=0,
          nCols = 0, nRows=0;
-  int    nVals;          // number of Q and R values in the 2-column-file R(Q)                 
+  int    nVals;          // number of Q and R values in the 2-column-file R(Q)
   char   sBuffer[CHAR_BUF_SMALL]="";
- 
-  if (pReflFile && pReflFile->filename) 
+
+  if (pReflFile && pReflFile->filename)
   {
     if (pReflFile->pfile == NULL)
       pReflFile->pfile = OpenInputFile(pReflFile->filename, TRUE, "r");
-    
-    if (pReflFile->pfile != NULL) 
+
+    if (pReflFile->pfile != NULL)
     {
       nCols = ColumnsInFile(pReflFile->pfile);
       nRows = LinesInFile  (pReflFile->pfile);
-      
-      if (nCols==2 && nRows > 1)  
+
+      if (nCols==2 && nRows > 1)
       // Reflectivity file as R(Q) assumed
-      { 
+      {
         double aQ[ROFQ_MAX], aR[ROFQ_MAX];  // Q and reflectivity values given in the file
         nVals = ReadRofQ(pReflFile->pfile, aQ, aR);
         pReflFile->maxdata = NumDataPtsQ(aQ[nVals-1]);
@@ -1829,18 +1866,18 @@ void   LoadReflFile(ReflFile* pReflFile)
         pReflFile->MValue  = 0.0;
         SetReflData(pReflFile->Rdata, aQ, aR, nVals);
       }
-      else 
+      else
       // Reflectivity file as R(theta) corr. to 0.000,0.001, 0.002, ... deg, ref. wavelength 1 A, 10 values per line
-      { 
+      {
         pReflFile->Rdata = (double*) calloc(10*nRows, sizeof(double));
         pReflFile->MValue=0.0;
-        for(count=0; count < nRows; count++) 
+        for(count=0; count < nRows; count++)
         { ReadLine(pReflFile->pfile, sBuffer, sizeof(sBuffer)-1);
           i += StrgScanLF(sBuffer, &pReflFile->Rdata[10*count], 10*(nRows-count), 0);
         }
         pReflFile->maxdata = i;
       }
- 
+
       fclose(pReflFile->pfile);
     }
   }
@@ -1852,23 +1889,23 @@ void   LoadReflFile(ReflFile* pReflFile)
 /******************************************************************************/
 void CalcReflData(ReflFile* pReflFile)
 {
-  double Angle, 
+  double Angle,
          AngleMax;
   int    i=0;
- 
+
   AngleMax = 0.1*(pReflFile->MValue+0.2);
- 
+
   pReflFile->pfile   = NULL;
   pReflFile->filename= NULL;
   pReflFile->maxdata = (long)    ceil(1000*AngleMax)+1;
   pReflFile->Rdata   = (double*) calloc(pReflFile->maxdata, sizeof(double));
- 
+
   for (Angle=0.000; Angle <= AngleMax; Angle+=0.001)
-  { 
+  {
     pReflFile->Rdata[i] = ReflTypical(QbyRefl(1.0, Angle), pReflFile->MValue);  // table designed for 1 Ang neutrons
     i++;
   }
-    
+
   return;
 }
 
@@ -1876,29 +1913,29 @@ void CalcReflData(ReflFile* pReflFile)
 /******************************************************************************/
 // calculates height or width of the guide (depending on guide shape option)
 /******************************************************************************/
-double Height(double dLength) 
+double Height(double dLength)
 {
   double dHeight=0.0,
          FocDistZ,     // half distance of focal points of the ellipse
-         L_end;        // end of parabel 
- 
+         L_end;        // end of parabel
+
   switch (eGuideShapeZ)
   {
     case VT_CONSTANT:
     case VT_CURVED:
       dHeight = GuideEntrHeight;
       break;
- 
+
     case VT_LINEAR:
       dHeight = GuideEntrHeight + (GuideExitHeight-GuideEntrHeight)/TotalLength * dLength;
       break;
- 
+
     case VT_PARABOLIC:
       AparZ   = TotalLength/(sq(GuideEntrHeight) - sq(GuideExitHeight));
       L_end   = AparZ * sq(GuideEntrHeight);
       dHeight = sqrt((L_end-dLength)/AparZ);
       break;
- 
+
     case VT_ELLIPTIC:
       C_CalculateEllipseParameters(GuideEntrHeight, GuideExitHeight, TotalLength/100.0, D_Foc2Z/100.0, &LAxisZ, &SAxisZ, &startPoint, &endPoint);
       FocDistZ       = 100.0 * sqrt(sq(LAxisZ) - sq(SAxisZ)); // m -> cm
@@ -1908,16 +1945,16 @@ double Height(double dLength)
       D_Foc1Z        = 2.0*FocDistZ - TotalLength - D_Foc2Z;
       dHeight        = GuideMaxHeight * sqrt(1.0 - sq((dLength-LcntrZ)/LAxisZ));
       break;
- 
+
     default:
       Error("Shape unknown");
   }
-  
+
   // test for proper value
   if (dHeight == dHeight+1.0       // test for infinity
       || dHeight!=dHeight)         // test for 'not a number'
     Error("Height of the guide element could not be determined");
- 
+
   return dHeight;
 }
 
@@ -1926,25 +1963,25 @@ double Width(double dLength)
   double dWidth=0.0,
          FocDistY,      // half distance of focal points of the ellipse
          L_end;         // end of parabel or 2nd part of ellipse (center to exit)
- 
+
   switch (eGuideShapeY)
   {
     case VT_CONSTANT:
     case VT_CURVED:
       dWidth = GuideEntrWidth;
       break;
- 
+
     case VT_LINEAR:
     case VT_LIN_CURV:
       dWidth = GuideEntrWidth + (GuideExitWidth-GuideEntrWidth)/TotalLength * dLength;
       break;
- 
+
     case VT_PARABOLIC:
       AparY  = TotalLength/(sq(GuideEntrWidth) - sq(GuideExitWidth));
       L_end  = AparY * sq(GuideEntrWidth);
       dWidth = sqrt((L_end-dLength)/AparY);
       break;
- 
+
     case VT_ELLIPTIC:
       C_CalculateEllipseParameters(GuideEntrWidth, GuideExitWidth, TotalLength/100.0, D_Foc2Y/100.0, &LAxisY, &SAxisY, &startPoint, &endPoint);
       FocDistY      = 100.0*sqrt(sq(LAxisY) - sq(SAxisY)); // m -> cm
@@ -1954,16 +1991,16 @@ double Width(double dLength)
       D_Foc1Y       = 2.0*FocDistY - TotalLength - D_Foc2Y;
       dWidth        = GuideMaxWidth * sqrt(1.0 - sq((dLength-LcntrY)/LAxisY));
       break;
- 
+
     default:
       Error("Shape unknown");
   }
-  
+
   // test for proper value
   if (dWidth == dWidth+1.0       // test for infinity
       || dWidth!=dWidth)         // test for 'not a number'
     Error("Width of the guide element could not be determined");
- 
+
   return dWidth;
 }
 
@@ -1980,16 +2017,16 @@ double GetLengthFromFile(FILE *pFile)
   double tempX, tempY, tempZ;
   char   sTmp1[30]="", sTmp2[30]="", sTmp3[30]="", sTmp4[30]="";
 
-  fpos_t position;	
+  fpos_t position;
   fgetpos (pFile, &position);
 
   for (j=0; j <= nPieces; j++)
-  {	
+  {
     ReadLine(pFile, sLine, sizeof(sLine)-1);
- 
-    sscanf(sLine, "%lf %lf %lf %s %s %s %s", &tempX, &tempY, &tempZ, 
+
+    sscanf(sLine, "%lf %lf %lf %s %s %s %s", &tempX, &tempY, &tempZ,
                                              sTmp1,  sTmp2,  sTmp3, sTmp4);
- 
+
     if (j == 0)       Xstart = 100.0*tempX;
     if (j == nPieces) Xend   = 100.0*tempX;
   }
@@ -2005,7 +2042,7 @@ double GetLengthFromFile(FILE *pFile)
 /******************************************************************************/
 double PathThroughGuideGravOrder1(int thread_i,
                                   Neutron *pThisNeutron, NeutronGuide guide,
-                                  GuidePiece *Pce, ReflCond *RefOut, long iPiece) 
+                                  GuidePiece *Pce, ReflCond *RefOut, long iPiece)
 {
   /***********************************************************************************/
   /* This routine calculates the trajectory a neutron follows through a simple       */
@@ -2019,73 +2056,73 @@ double PathThroughGuideGravOrder1(int thread_i,
   /* Significantly rewritten by Sergey Manoshin Feb 2001                             */
   /* Note! The function returns the Time Of Flight                                   */
   /***********************************************************************************/
- 
+
   int     datanumber,
           iColl=0,          // index of collisions
           k = GW_INIT;
   VtGdeWall ThisCollision = GW_INIT;
   double  degangular, ThisReflectivity=0.;
   double  TimeOF,         // time of flight to any wall
-          TimeOFmin,      // shortest time of flight to a wall (found so far) 
+          TimeOFmin,      // shortest time of flight to a wall (found so far)
           TimeOFTotal=0.0;// total time of flight through the guide segment
-  double  HitDist,        // distance between point of reflection and end of guide segment 
+  double  HitDist,        // distance between point of reflection and end of guide segment
           DOTP;
   VectorType vWallN,      // normal to the plane wall
              vWaviN;      // normal to the wall with its waviness
   Neutron TempNeutron, NearestNeutron; // Local copies of the actual trajectory for loops
- 
- 
+
+
   /***********************************************************************************/
   /* The main loop here is continuous: the neutron will continue to bounce around,   */
   /* until it is absorbed or intercepts with the exit plane.                         */
   /***********************************************************************************/
- 
+
   while(TRUE)
   {
     TimeOFmin = 99999999999999999.9;
- 
+
     /***********************************************************************************/
     /* Loop through all five planes....                                                */
     /***********************************************************************************/
     for (k=GW_TOP; k < eGwInit; k++) { /* GW_TOP = 0, GW_INIT = 5 */
-        
+
       /***********************************************************************************/
       /* Find the point where this neutron trajectory intercepts the current plane       */
       /***********************************************************************************/
-      
+
       /*Save current neutron, because the function 'NeutronPlaneIntersectionGrav' has
         modified trajectory data  */
       CopyNeutron(pThisNeutron, &TempNeutron);
- 
+
       if (keygrav == 1)
         TimeOF = NeutronPlaneIntersectionGrav(&TempNeutron, guide.Wall[k]);
       else
         TimeOF = NeutronPlaneIntersection1   (&TempNeutron, guide.Wall[k]);
- 
+
       /***********************************************************************************/
       /* If this intercept point is behind the neutrons current position, pass control to*/
       /* the top of the loop: OR Time of flight <= 0.0, Fixed Manoshin Sergey 19.02.00   */
       /***********************************************************************************/
       if ((TimeOF<=0.0) || (TempNeutron.Position[0] < pThisNeutron->Position[0]))
         continue;
- 
+
       /***********************************************************************************/
       /* If this calculated distance is not the shortest so far, return to the top of the*/
       /* loop.  TimeOF -> min                                                            */
       /***********************************************************************************/
       if (TimeOF > TimeOFmin)
         continue;
- 
+
       /***********************************************************************************/
       /* The intercept of the neutron with this wall is the nearest so far, so accept it */
       /* temporarily.                                                                    */
       /***********************************************************************************/
-      
+
       CopyNeutron(&TempNeutron, &NearestNeutron);
       TimeOFmin = TimeOF;
       ThisCollision = (VtGdeWall) k;
     }
- 
+
     /***********************************************************************************/
     /* Having looped through all five planes, the current values of NearestNeutron,    */
     /* TimeOFmin and ThisCollision, reflect the coordinates, distance and index        */
@@ -2093,12 +2130,12 @@ double PathThroughGuideGravOrder1(int thread_i,
     /*(i.e. the exit window) reset the neutron coordinates to this point, add the path */
     /* length to this point to the running total and return that total.                */
     /***********************************************************************************/
- 
+
     if (ThisCollision == eGwExit)
     {
       if (NearestNeutron.Vector[0] < 0.0)
         return -1.0;
- 
+
       /*  Neutrons hitting the surface close to the guide exit are removed,
           but not in the last segment (iPiece=nPieces-1)                          */
       if (iPiece!=nPieces-1 && AbutLen > 0.0)
@@ -2109,12 +2146,12 @@ double PathThroughGuideGravOrder1(int thread_i,
           return -1.0;
         }
       }
- 
+
       if (NearestNeutron.Probability < wei_min)
       { WriteIAP(&NearestNeutron, VT_ABSORBED);
         return -1.0;
-      }   
-     
+      }
+
       pThisNeutron->Position[0] = NearestNeutron.Position[0];
       pThisNeutron->Position[1] = NearestNeutron.Position[1];
       pThisNeutron->Position[2] = NearestNeutron.Position[2];
@@ -2122,15 +2159,15 @@ double PathThroughGuideGravOrder1(int thread_i,
       pThisNeutron->Vector  [0] = sqrt(1.0 - sq(pThisNeutron->Vector[1])
                                            - sq(pThisNeutron->Vector[2]));
       pThisNeutron->Probability = NearestNeutron.Probability;
- 
+
       if (eReflVbs == VT_LSTM_YES && RefOut)
         WriteReflParam(RefOut, thread_i, 5, pThisNeutron, Pce, ThisCollision, 0., 0.);
- 
-      if (iPiece == nPieces-1) 
+
+      if (iPiece == nPieces-1)
       {
         WriteIAP(pThisNeutron, VT_EXITED);
-      } 
-      else 
+      }
+      else
       {
        // WriteIAP(pThisNeutron, VT_TRANSIT);
       }
@@ -2153,49 +2190,49 @@ double PathThroughGuideGravOrder1(int thread_i,
         }
       }
     }
- 
+
     /***********************************************************************************/
     /* If the angle of intersection of the flight path and the guide wall exceeds the  */
     /* critical angle of the guide, the neutron is absorbed.                           */
     /* Otherwise the probability is reduced by the reflectivity of the plane.          */
     /***********************************************************************************/
- 
+
     vWallN[0] = guide.Wall[ThisCollision].A;
     vWallN[1] = guide.Wall[ThisCollision].B;
     vWallN[2] = guide.Wall[ThisCollision].C;
-    
+
     /* Normalize normal vector to the reflection plane */
     if (LengthVector(vWallN) == 0.0)
       return -1.0;
     NormVector(vWallN);
- 
+
     /* influence of rough surface */
     if (WaviAmpl == 0.0)
       CopyVector(vWallN, vWaviN);
     else
       /* rough surface must not alter the side from which the neutron comes */
-      do 
+      do
       {
         double V[3];
         ran_dir_3d_par(V, thread_i);
         vWaviN[0] = vWallN[0] + WaviAmpl*V[0];
         vWaviN[1] = vWallN[1] + WaviAmpl*V[1];
         vWaviN[2] = vWallN[2] + WaviAmpl*V[2];
-        
+
         /* Renormalize vector */
         if (LengthVector(vWaviN) == 0.0) return -1.0;
         NormVector(vWaviN);
       }
       while (ScalarProduct(NearestNeutron.Vector, vWallN) * ScalarProduct(NearestNeutron.Vector, vWaviN) < 0.0);
- 
+
     /* angle between normal vector and neutron flight direction (in degree) */
     degangular = fabs(90 - AngleVectors(NearestNeutron.Vector, vWaviN));
- 
+
     /* Determine number of reflectivity value in reflectivty file */
     datanumber = (int)(degangular*1000.0 / NearestNeutron.Wavelength);
- 
+
     /* Choose the reflectivity file/value and multiply probability by reflectivity value */
-    if ((int)ThisCollision < eGwExit) 
+    if ((int)ThisCollision < eGwExit)
     {
       if (Pce->RData[ThisCollision]==NULL || datanumber >= Pce->RData[ThisCollision]->maxdata)
       {
@@ -2203,21 +2240,21 @@ double PathThroughGuideGravOrder1(int thread_i,
           WriteReflParam(RefOut, thread_i, 10, &NearestNeutron, Pce, ThisCollision, degangular, 0.);
         WriteIAP(&NearestNeutron, VT_ABSORBED);
         return -1.0;
-      } 
+      }
       else
       { ThisReflectivity = ReflInterpol(NearestNeutron.Wavelength, degangular, Pce->RData[ThisCollision]->Rdata, Pce->RData[ThisCollision]->maxdata);
         //ThisReflectivity = Pce->RData[ThisCollision]->Rdata[datanumber];
       }
-    } 
-    else 
+    }
+    else
     {
       CountMessageThread(thread_i, GUID_NO_PLANE, NearestNeutron.ID);
       return -1.0;
     }
- 
+
     NearestNeutron.Probability *= ThisReflectivity;
- 
-    if (NearestNeutron.Probability < wei_min) 
+
+    if (NearestNeutron.Probability < wei_min)
     {
       NearestNeutron.Probability = 0.;
       if (RefOut)
@@ -2225,7 +2262,7 @@ double PathThroughGuideGravOrder1(int thread_i,
       WriteIAP(&NearestNeutron, VT_ABSORBED);
       return -1.0;
     }
- 
+
     /***********************************************************************************/
     /* Calculate the direction of the reflected neutron.                               */
     /* Set the neutron coordinates to coordinates of the collision                     */
@@ -2233,14 +2270,14 @@ double PathThroughGuideGravOrder1(int thread_i,
     /* calculate new count rate                                                        */
     /* return to the begining of the loop and find the next collision                  */
     /***********************************************************************************/
- 
+
     DOTP = ScalarProduct(vWaviN, NearestNeutron.Vector);
- 
+
     /* Reflection must alter direction relative to wall orientation */
     pThisNeutron->Vector[0] = NearestNeutron.Vector[0] - 2.0*DOTP*vWaviN[0];
     pThisNeutron->Vector[1] = NearestNeutron.Vector[1] - 2.0*DOTP*vWaviN[1];
     pThisNeutron->Vector[2] = NearestNeutron.Vector[2] - 2.0*DOTP*vWaviN[2];
-    
+
     while (ScalarProduct(pThisNeutron->Vector, vWallN) * ScalarProduct(NearestNeutron.Vector, vWallN) > 0.0)
     {
       pThisNeutron->Vector[0] -= 2.0*DOTP*vWaviN[0];
@@ -2248,24 +2285,24 @@ double PathThroughGuideGravOrder1(int thread_i,
       pThisNeutron->Vector[2] -= 2.0*DOTP*vWaviN[2];
     }
     NormVector(pThisNeutron->Vector);
- 
+
     /* CopyVector(NearestNeutron.Position, pThisNeutron->Position); */
     pThisNeutron->Position[0] = NearestNeutron.Position[0];
     pThisNeutron->Position[1] = NearestNeutron.Position[1];
     pThisNeutron->Position[2] = NearestNeutron.Position[2];
 
     pThisNeutron->Probability = NearestNeutron.Probability;
- 
+
     if(ThisCollision == GW_TOP || ThisCollision == GW_BOTTOM)
       pThisNeutron->Color += AddToColor;
     else if(ThisCollision == GW_LEFT || ThisCollision == GW_RIGHT)
       pThisNeutron->Color += AddToColor*100;
-    
+
     TimeOFTotal += TimeOFmin;
- 
+
     // Graphical output
     if (RefOut) WriteReflParam(RefOut, thread_i, 0, pThisNeutron, Pce, ThisCollision, degangular, ThisReflectivity);
- 
+
     NearestNeutron.Probability *= (1.0/ThisReflectivity - 1.0);       // intensity loss by reflection (for IAP output)
     WriteIAP(&NearestNeutron, VT_REFLECTED);
   }
@@ -2281,13 +2318,13 @@ double PathThroughGuideGravOrder1(int thread_i,
 // For module guide this means to write to the pReflParam file if any data have been recorded
 // by threads 1,2,... ; output from thread 0 directly goes to pReflParam.
 // ----------------------------------------------------------------------------------------------
-void flushOutput() 
+void flushOutput()
 {
   int c, n;
   if (NThreads <= 0 || pReflParam == 0) return;
   for (n=0; n < NThreads; n++)
   {
-    if ((c = rThreadOCount[n])) 
+    if ((c = rThreadOCount[n]))
     {
       fwrite(rThreadO[n], 1, c, pReflParam);
       rThreadOCount[n] = 0;
@@ -2296,7 +2333,7 @@ void flushOutput()
 }
 
 
-static Plane* copyWalls (Plane *g) 
+static Plane* copyWalls (Plane *g)
 {
   Plane *c;
   int sz = (nPlanes+1) * sizeof(Plane);
@@ -2306,7 +2343,7 @@ static Plane* copyWalls (Plane *g)
 }
 
 
-static void addThreadOutput(int thread_i, char *s, int len) 
+static void addThreadOutput(int thread_i, char *s, int len)
 {
   int n,c;
   if (len <= 0) return;
@@ -2318,45 +2355,45 @@ static void addThreadOutput(int thread_i, char *s, int len)
 }
 
 
-static void CountMessageThread (int thread_i, VtMsgID code, TotalID id) 
+static void CountMessageThread (int thread_i, VtMsgID code, TotalID id)
 {
   int i;
-  if (thread_i-- <= 0) 
+  if (thread_i-- <= 0)
   {
     CountMessageID(code, id);
     return;
   }
- 
+
   i = code == GUID_NO_PLANE ? 0 : 1;
- 
-  if (! C_M[i][thread_i]) 
+
+  if (! C_M[i][thread_i])
     C_I[i][thread_i] = id;
   C_M[i][thread_i]++;
 }
 
 
-static void MergeThreadBins (BINDATA **bin, int pixcount) 
+static void MergeThreadBins (BINDATA **bin, int pixcount)
 {
   // merge neutron path statistics of threads n=1,2,..,NThreads to that of thread 0
   int i,n;
   BINDATA **thread_bin, *tpi, *bpi;
- 
+
   thread_bin = bin;
- 
-  for (n=1; n<=NThreads; n++) 
+
+  for (n=1; n<=NThreads; n++)
   {
     thread_bin += pixcount;
     for (i=0; i<pixcount; i++)
     {
-      if ((tpi = thread_bin[i])) 
+      if ((tpi = thread_bin[i]))
       {
         // we have data for pixel i of thread n
-        if ((bpi = bin[i])) 
+        if ((bpi = bin[i]))
         {
           // we have data for that pixel of thread 0, too
           addPixStat(bpi, tpi);
-        } 
-        else 
+        }
+        else
         {
           // just use thread n's data for bin
           bin[i] = tpi;
@@ -2367,7 +2404,7 @@ static void MergeThreadBins (BINDATA **bin, int pixcount)
 }
 
 
-static void MergeBins () 
+static void MergeBins ()
 {
   MergeThreadBins(binX, nbinsX*(nPlanes+1));
   MergeThreadBins(binY, nbinsY*(nPlanes+1));
@@ -2375,19 +2412,19 @@ static void MergeBins ()
 }
 
 
-static FILE* tryOpen(const char *sFilename, const char *sPurpose) 
+static FILE* tryOpen(const char *sFilename, const char *sPurpose)
 {
   FILE* pFile=OpenInputFile(sFilename, FALSE, "r");
-  if (pFile==NULL) 
+  if (pFile==NULL)
   { fprintf(LogFilePtr, "ERROR: File %s containing %s could not be opened\n", sFilename, sPurpose);
     exit(-1);
   }
- 
+
   return pFile;
 }
 
 
-static void allocRdata (ReflFile ***p, int c) 
+static void allocRdata (ReflFile ***p, int c)
 {
   ReflFile **np;
   if (*p) return;
@@ -2410,28 +2447,28 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
     "  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f\n";
   double     DivY, DivZ, mVal, Qz;
   char       buffer[256];
- 
+
   if (pReflParam==NULL && pReflPlot==NULL) return;
- 
+
   DivY = (double)atan2(pNeutron->Vector[1], pNeutron->Vector[0]);
   DivY *= 180.0/M_PI;
   if ((pNeutron->Vector[1]==0.0) && (pNeutron->Vector[0]==0.0))
     DivY = 0.0;
- 
+
   DivZ = (double)atan2(pNeutron->Vector[2], pNeutron->Vector[0]);
   DivZ *= 180.0/M_PI;
   if ((pNeutron->Vector[2]==0.0) && (pNeutron->Vector[0]==0.0))
     DivZ = 0.0;
- 
+
   Qz = 4.*M_PI/pNeutron->Wavelength*sin(degangular*M_PI/180.);
   mVal = Qz/0.02174;
- 
+
   buffer[0] = 0;
- 
-  if (pReflParam) 
+
+  if (pReflParam)
   {
     int c;
-    switch (Mode) 
+    switch (Mode)
     {
       case 10: c = 'F'; break; // Neutron died
       case  5: c = '-'; break; // GW_EXIT
@@ -2448,7 +2485,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
               pNeutron->Vector[0],   pNeutron->Vector[1],   pNeutron->Vector[2],
               pNeutron->Spin[0],     pNeutron->Spin[1],     pNeutron->Spin[2]);
   }
- 
+
   // Start MCPL output
   // Calculate absolute position
   double absPos[3]={pNeutron->Position[0], pNeutron->Position[1], pNeutron->Position[2]};
@@ -2457,7 +2494,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
     int j;
     RotBackVector(RotMatrixSThread[thread_i*3], absPos);
     //SERIAL RotBackVector(RotMatrixSThread, absPos);
- 
+
     for (j=0; j<3; j++)
       absPos[j] = BegPosSThread[thread_i][j] + absPos[j];
   }
@@ -2467,26 +2504,26 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
     //Calculate gamma and neutron intensities
     if(ThisCollision == GW_TOP || ThisCollision == GW_BOTTOM)
     {
-      CalcGammaAndNeutron(pNeutron->Probability, reflectivity, pNeutron->Wavelength, mVal, 
+      CalcGammaAndNeutron(pNeutron->Probability, reflectivity, pNeutron->Wavelength, mVal,
                           MValGenTB, pMCPLparticles+thread_i);
     }
     else if(ThisCollision == GW_LEFT)
     {
-      CalcGammaAndNeutron(pNeutron->Probability, reflectivity, pNeutron->Wavelength, mVal, 
+      CalcGammaAndNeutron(pNeutron->Probability, reflectivity, pNeutron->Wavelength, mVal,
                           MValGenL, pMCPLparticles+thread_i);
     }
     else if(ThisCollision == GW_RIGHT)
     {
-      CalcGammaAndNeutron(pNeutron->Probability, reflectivity, pNeutron->Wavelength, mVal, 
+      CalcGammaAndNeutron(pNeutron->Probability, reflectivity, pNeutron->Wavelength, mVal,
                           MValGenR, pMCPLparticles+thread_i);
     }
     else
     {
         fprintf(LogFilePtr, "Problem with m-value calculation in MCPL output! Using m-value of right side.\n\n");
-      CalcGammaAndNeutron(pNeutron->Probability, reflectivity, pNeutron->Wavelength, mVal, 
+      CalcGammaAndNeutron(pNeutron->Probability, reflectivity, pNeutron->Wavelength, mVal,
                           MValGenR, pMCPLparticles+thread_i);
     }
- 
+
     double cosTheta, cosPhi, sinTheta, sinPhi, phi;
     int i;
     for (i=0; i<MAX_GAMMA_NUM; i++)
@@ -2494,7 +2531,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
       particleT[thread_i].position[0] = absPos[0];
       particleT[thread_i].position[1] = absPos[1];
       particleT[thread_i].position[2] = absPos[2];
-   
+
       cosTheta=(VranPar(thread_i)-0.5)*2;
       sinTheta=sqrt(1-pow(cosTheta,2));
       phi=VranPar(thread_i)*2*M_PI;
@@ -2503,55 +2540,55 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
       particleT[thread_i].direction[0] = sinTheta*cosPhi;
       particleT[thread_i].direction[1] = sinTheta*sinPhi;
       particleT[thread_i].direction[2] = cosTheta;
-   
+
       particleT[thread_i].ekin = gamma_energy[i];
       particleT[thread_i].time = pNeutron->Time;
       particleT[thread_i].pdgcode = 22;
       particleT[thread_i].weight = (pMCPLparticles+thread_i)->gammaInt[i];
       //Add gamma particle
-      mcpl_add_particle( pReflMCPLThread[thread_i], &particleT[thread_i]); 
+      mcpl_add_particle( pReflMCPLThread[thread_i], &particleT[thread_i]);
     }
   }
-  
+
   //Escaping neutron output
   if ((sMCPLWrite==2) || (sMCPLWrite==3))
   {
       double dir[3]={pNeutron->Vector[0], pNeutron->Vector[1], pNeutron->Vector[2]};
       RotBackVector(RotMatrixSThread[thread_i*3], dir);
-      
+
       particleT[thread_i].position[0] = absPos[0];
       particleT[thread_i].position[1] = absPos[1];
       particleT[thread_i].position[2] = absPos[2];
       particleT[thread_i].direction[0] = dir[0];
       particleT[thread_i].direction[1] = dir[1];
       particleT[thread_i].direction[2] = dir[2];
-  
+
       particleT[thread_i].ekin = 1.0e-12 * ENERGY_FROM_LAMBDA(pNeutron->Wavelength);
       particleT[thread_i].time = pNeutron->Time;
       particleT[thread_i].pdgcode = 2112;
       particleT[thread_i].weight = pNeutron->Probability;
       //Add neutron particle
       mcpl_add_particle( pReflMCPLThread[thread_i], &particleT[thread_i]);
-  }  
+  }
   //End MCPL output
- 
-  if ((Mode == 0) || (Mode == 5 && RefOut->RefCount >= 0) || (Mode != 0 && abs(eReflPar) > 2)) 
+
+  if ((Mode == 0) || (Mode == 5 && RefOut->RefCount >= 0) || (Mode != 0 && abs(eReflPar) > 2))
   {
     NeutronEx *rp;
     int slen, to_alloc;
- 
+
     slen = strlen(buffer);
     if (slen) {
       // add string to Output
       to_alloc = 1 + (slen > allocText ? slen : allocText);
-      if (RefOut->Output == 0) 
+      if (RefOut->Output == 0)
       {
         if (!(RefOut->Output = malloc(to_alloc)))
           myExit("unable to malloc refl string\n");
         RefOut->alloc_text = to_alloc;
         RefOut->insert_at = 0;
-      } 
-      else if (RefOut->insert_at + slen >= RefOut->alloc_text) 
+      }
+      else if (RefOut->insert_at + slen >= RefOut->alloc_text)
       {
         RefOut->alloc_text += to_alloc;
         if (!(RefOut->Output = realloc(RefOut->Output, RefOut->alloc_text)))
@@ -2560,25 +2597,25 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
       memcpy(RefOut->Output + RefOut->insert_at, buffer, slen+1);
       RefOut->insert_at += slen;
     }
- 
+
     // add neutron to reflection storage /* neutrons */
-    if (((int)ThisCollision < eGwExit) && 
-      ((ePlotFilt == VT_PLOT_ALL) || ((ePlotFilt == VT_PLOT_SCAT) && (Mode == 0)) || ((ePlotFilt == VT_PLOT_DIED) && (Mode == 10)))) 
+    if (((int)ThisCollision < eGwExit) &&
+      ((ePlotFilt == VT_PLOT_ALL) || ((ePlotFilt == VT_PLOT_SCAT) && (Mode == 0)) || ((ePlotFilt == VT_PLOT_DIED) && (Mode == 10))))
     {
       // first fetch enough space for that
-      if (RefOut->alloc_neutrons == 0) 
+      if (RefOut->alloc_neutrons == 0)
       {
         if (!(RefOut->neutrons = malloc(allocNeutrons * sizeof(NeutronEx))))
           myExit("unable to malloc refl storage\n");
         RefOut->alloc_neutrons = allocNeutrons;
-      } 
-      else if (RefOut->alloc_neutrons <= RefOut->cneutrons) 
+      }
+      else if (RefOut->alloc_neutrons <= RefOut->cneutrons)
       {
         RefOut->alloc_neutrons += allocNeutrons;
         if (!(RefOut->neutrons = realloc(RefOut->neutrons, RefOut->alloc_neutrons * sizeof(NeutronEx))))
           myExit("unable to realloc refl storage\n");
       }
- 
+
       rp = &(RefOut->neutrons[RefOut->cneutrons]);
       CopyNeutron(pNeutron, &(rp->neutron));
       rp->neutron.Position[0] += Pce->Xpce + XpceZero;
@@ -2593,7 +2630,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
     }
   }
 
-  if (Mode != 5) 
+  if (Mode != 5)
   {
     RefOut->RefCount++;
     if (ThisCollision <= GW_BOTTOM)       // GW_TOP || GW_BOTTOM
@@ -2604,7 +2641,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
   }
 }
 
-void PrintMaximalM(double *RData, long i) 
+void PrintMaximalM(double *RData, long i)
 {
   long count;
   for(count=i-1; count >= 0; count--)
@@ -2626,19 +2663,19 @@ int FindIndexXY(double Xval, double Yval, int *ibinX, int *ibinY, int iplane)
   *ibinY = iy = (int)((Yval - MinY) / ((MaxY - MinY) / (double)nbinsY));
   if (iy >= nbinsY)
     return -1;
- 
+
   return INDEX(ix, iy, iplane);
 }
 
 
-static int writeReflPix (BINDATA *pix, int datarange) 
+static int writeReflPix (BINDATA *pix, int datarange)
 { //datarange: 0 = XY; 1 = X; 2 = Y
   double ProbSum;
   NeutronEx *bp;
- 
+
   const char *fstr="%10.4f %10.4f %10d %5.1f %7d %7d %7d %5.2f %5.2f %5.2f %c%c%09lu %3d   %8.5f %6.2f %12.5f %8.4f %8.4f"
     "  %c %5.2f  %7.3f %8.5f %11.3e  %10.4f %10.4f %10.4f  %9.6f %9.6f %9.6f   %4.1f %4.1f %4.1f %11.3e\n";
- 
+
   // Generate averages
   bp = &(pix->ndata);
   if (pix->ProbSum <= 0.) return 0;
@@ -2662,7 +2699,7 @@ static int writeReflPix (BINDATA *pix, int datarange)
   pix->RefCount           /= ProbSum;
   pix->RefCountY          /= ProbSum;
   pix->RefCountZ          /= ProbSum;
- 
+
   fprintf(pReflPlot, fstr,
           (datarange!=2)?pix->X:0.0, (datarange!=1)?pix->Y:0.0, pix->Counts,
           ((double)(bp->Mode)/ProbSum),
@@ -2683,18 +2720,18 @@ static int writeReflPix (BINDATA *pix, int datarange)
 }
 
 
-static void writeBindata () 
+static void writeBindata ()
 {
   int ibinXY, ibinX, ibinY, iplane, cout;
   BINDATA *pix;
   char buf[4][40];
- 
+
   memset(buf, 0, 4*40); // clean initialisation
- 
+
   GetKeyName(KeyX, buf[0]);
   GetKeyName(KeyY, buf[1]);
   GetKeyName(KeyProb, buf[2]);
-  
+
   fprintf(pReflPlot, "#BinX:%s   BinY:%s   Weight:%s\n#==Data==\n", buf[0], buf[1], buf[2]);
   for (iplane = -1; iplane < nPlanes; iplane++)
   {
@@ -2709,35 +2746,35 @@ static void writeBindata ()
       }
       if (eReflPar < 0 && cout>0) fprintf(pReflPlot,"\n");
     }
- 
-    if (iplane==-1) 
+
+    if (iplane==-1)
     { fprintf(pReflPlot, "\n#==XData==\n");
-    } 
-    else 
-    { fprintf(pReflPlot, "\n#==XData%d==\n", iplane+1); 
+    }
+    else
+    { fprintf(pReflPlot, "\n#==XData%d==\n", iplane+1);
     }
     for (ibinX=0; ibinX < nbinsX; ibinX++)
       if ((pix = binX[ibinX + nbinsX*(iplane+1)]))
         writeReflPix(pix, 1);
- 
+
     if (eReflPar < 0) fprintf(pReflPlot,"\n");
-    
-    if (iplane==-1) 
+
+    if (iplane==-1)
     { fprintf(pReflPlot, "\n#==YData==\n");
-    } 
-    else 
-    { fprintf(pReflPlot, "\n#==YData%d==\n", iplane+1); 
+    }
+    else
+    { fprintf(pReflPlot, "\n#==YData%d==\n", iplane+1);
     }
     for (ibinY=0; ibinY < nbinsY; ibinY++)
       if ((pix = binY[ibinY + nbinsY*(iplane+1)]))
         writeReflPix(pix, 2);
- 
+
     if (eReflPar < 0) fprintf(pReflPlot,"\n");
   }
 }
 
 
-static void applyPixStat(ReflCond *RefOut, double ValProb, NeutronEx *bp, NeutronEx *rp, BINDATA *pix) 
+static void applyPixStat(ReflCond *RefOut, double ValProb, NeutronEx *bp, NeutronEx *rp, BINDATA *pix)
 {
   bp->degangular          += ValProb * rp->degangular;
   bp->m                   += ValProb * rp->m;
@@ -2758,24 +2795,24 @@ static void applyPixStat(ReflCond *RefOut, double ValProb, NeutronEx *bp, Neutro
   bp->neutron.Spin[0]     += ValProb * rp->neutron.Spin[0];
   bp->neutron.Spin[1]     += ValProb * rp->neutron.Spin[1];
   bp->neutron.Spin[2]     += ValProb * rp->neutron.Spin[2];
- 
+
   pix->ProbSum   += ValProb;
   pix->RefCount  += ValProb * abs(RefOut->RefCount);
   pix->RefCountY += ValProb * RefOut->RefCountY;
   pix->RefCountZ += ValProb * RefOut->RefCountZ;
- 
-  switch (rp->Mode) 
+
+  switch (rp->Mode)
   {
     case 0:  pix->Mode0++;  break;
     case 5:  pix->Mode5++;  break;
     case 10: pix->Mode10++; break;
   }
-  
+
   pix->Counts++;
 }
 
 
-static void addPixStat(BINDATA *bpix,  BINDATA *rpix) 
+static void addPixStat(BINDATA *bpix,  BINDATA *rpix)
 {
   NeutronEx *bp, *rp;
   bp = &(bpix->ndata);
@@ -2799,30 +2836,30 @@ static void addPixStat(BINDATA *bpix,  BINDATA *rpix)
   bp->neutron.Spin[0]     += rp->neutron.Spin[0];
   bp->neutron.Spin[1]     += rp->neutron.Spin[1];
   bp->neutron.Spin[2]     += rp->neutron.Spin[2];
- 
+
   bpix->ProbSum   += rpix->ProbSum;
   bpix->RefCount  += rpix->RefCount;
   bpix->RefCountY += rpix->RefCountY;
   bpix->RefCountZ += rpix->RefCountZ;
- 
+
   bpix->Mode0  += rpix->Mode0;
   bpix->Mode5  += rpix->Mode5;
   bpix->Mode10 += rpix->Mode10;
-  
+
   bpix->Counts +=  rpix->Counts;
 }
 
 
-static void doBinDetail(ReflCond *RefOut, NeutronEx *rp, double ValProb, int ibinX, int ibinY, BINDATA **ppix) 
+static void doBinDetail(ReflCond *RefOut, NeutronEx *rp, double ValProb, int ibinX, int ibinY, BINDATA **ppix)
 {
   BINDATA *pix;
   NeutronEx *bp;
-  
+
   if ((pix = *ppix))
   {
     bp = &(pix->ndata);
   }
-  else 
+  else
   {
     *ppix = pix = (BINDATA *) calloc(1, sizeof(BINDATA));
     pix->X = (bpostX[ibinX] + bpostX[ibinX+1]) / 2.0;
@@ -2832,7 +2869,7 @@ static void doBinDetail(ReflCond *RefOut, NeutronEx *rp, double ValProb, int ibi
     bp->neutron.Debug = rp->neutron.Debug;
     bp->ThisCollision = rp->ThisCollision;
   }
-  
+
   applyPixStat(RefOut, ValProb, bp, rp, pix);
 }
 
@@ -2842,29 +2879,29 @@ void DoBin(ReflCond *RefOut, int thread_i)
   int ibinX, ibinY, ibinXY, cNeut;
   double ValX, ValY, ValProb;
   NeutronEx *rp;
- 
-  for (cNeut = 0; cNeut < RefOut->cneutrons; cNeut++) 
+
+  for (cNeut = 0; cNeut < RefOut->cneutrons; cNeut++)
   {
     ValX = GetValueX(RefOut, cNeut);
     ValY = GetValueY(RefOut, cNeut);
     ibinXY = FindIndexXY(ValX, ValY, &ibinX, &ibinY, -1);
     if (ibinXY < 0) continue;
     ValProb = GetProb(RefOut, cNeut);
- 
+
     rp = &(RefOut->neutrons[cNeut]);
-  
-    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
+
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
                 binX  + ibinX  + thread_i*nbinsX*(nPlanes+1));
-    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
                 binY  + ibinY  + thread_i*nbinsY*(nPlanes+1));
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
                 binXY + ibinXY + thread_i*nbinsX*nbinsY*(nPlanes+1));
     //if (rp->ThisCollision < GW_EXIT) {
-    
+
     ibinXY = FindIndexXY(ValX, ValY, &ibinX, &ibinY, rp->ThisCollision);
-    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
                 binX  + ibinX  + (rp->ThisCollision+1)*nbinsX + thread_i*nbinsX*(nPlanes+1));
-    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY, 
+    doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
                 binY  + ibinY  + (rp->ThisCollision+1)*nbinsY + thread_i*nbinsY*(nPlanes+1));
     doBinDetail(RefOut, rp, ValProb, ibinX, ibinY,
                 binXY + ibinXY + thread_i*nbinsX*nbinsY*(nPlanes+1));
@@ -2930,7 +2967,7 @@ GetVal SetValueFunction(const VtPlotPar key)
     #define dKeySpinZ         26
   */
 
-  switch (key) 
+  switch (key)
   {
     case iKeyMode:          return &GetValueKeyMode;
     case iKeyMode0:         return &GetValueNone;
@@ -2965,7 +3002,7 @@ GetVal SetValueFunction(const VtPlotPar key)
 
 void GetKeyName(const VtPlotPar key, char* buf)
 {
-  switch (key) 
+  switch (key)
   {
     case iKeyMode:          sprintf(buf, "%s:%d", "Mode"                    , key); break;
     case iKeyMode0:         sprintf(buf, "%s:%d", "Mode0"                   , key); break;
@@ -2999,53 +3036,53 @@ void GetKeyName(const VtPlotPar key, char* buf)
 
 
 /***************************************************************************************************
-/*Calculates the produced gamma and transmitted neutron intensity according to NIMA 922(2019)p.98-107
-/* Input parameters:
-/*    -incI         :  Incident neutron intensuty before reflection [1/s]
-/*    -reflectivity :  Reflectivity of mirror [1]
-/*    -wl           :  neutron wavelength [Angstroem]
-/*    -mVal         :  m-value of reflevtion
-/*    -mirrMaxM     :  m-value of mirror
-/*    -pOutParticles:  Pointer to a Escaping_MCPL_particles struct
+ *Calculates the produced gamma and transmitted neutron intensity according to NIMA 922(2019)p.98-107
+ * Input parameters:
+ *    -incI         :  Incident neutron intensuty before reflection [1/s]
+ *    -reflectivity :  Reflectivity of mirror [1]
+ *    -wl           :  neutron wavelength [Angstroem]
+ *    -mVal         :  m-value of reflevtion
+ *    -mirrMaxM     :  m-value of mirror
+ *    -pOutParticles:  Pointer to a Escaping_MCPL_particles struct
 ****************************************************************************************************/
 void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVal,
-                                            double mirrMaxM, Escaping_MCPL_particles* pOutParticles) 
+                                            double mirrMaxM, Escaping_MCPL_particles* pOutParticles)
 {
   double Niabs, Tiabs;
   double lossNeutronI = incI * (1 - reflectivity);
   int i;
-  
+
   // Total reflection
   if (mVal<=1)
   {
-    double Niabswl=0.1348;     
+    double Niabswl=0.1348;
     Niabs=Niabswl*wl*lossNeutronI;
     Tiabs=0;
-    
+
     if ((pOutParticles->neutronInt=lossNeutronI-Niabs-Tiabs)<0)
     { // check if absorption is larger than the loss
       double q;
-      q=lossNeutronI/(Niabs+Tiabs); 
+      q=lossNeutronI/(Niabs+Tiabs);
       Niabs*=q;
       Tiabs*=q;
       pOutParticles->neutronInt=0;
     }
-    
+
     for (i=0; i<MAX_GAMMA_NUM; ++i)
     {
         pOutParticles->gammaInt[i] = Niabs*gamma_fractionNi[i] + Tiabs*gamma_fractionTi[i];
     }
   }
-  
+
   // Supermirror reflection
-  if ( (mVal>1) && (mVal<=mirrMaxM) ) 
+  if ( (mVal>1) && (mVal<=mirrMaxM) )
   {
     Niabs = (0.005 + 0.005 * (mVal - 1))*incI;
     Tiabs =  0.0045 * (mVal - 1)*incI;
     if ((pOutParticles->neutronInt=lossNeutronI-Niabs-Tiabs)<0)
     { // absorption is larger than the loss
       double q;
-      q=lossNeutronI/(Niabs+Tiabs);    
+      q=lossNeutronI/(Niabs+Tiabs);
       Niabs*=q;
       Tiabs*=q;
       pOutParticles->neutronInt=0;
@@ -3055,15 +3092,15 @@ void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVa
       pOutParticles->gammaInt[i] = Niabs*gamma_fractionNi[i] + Tiabs*gamma_fractionTi[i];
     }
   }
-  
+
   // Neutron escape
   if(mVal>mirrMaxM){
     Niabs=0.0025 * (mirrMaxM +0.1) * (mirrMaxM +0.1)/mVal*incI;
     Tiabs=0.00225 * (mirrMaxM - 0.9) * (mirrMaxM + 0.1)/mVal*incI;
-    
+
     if ((pOutParticles->neutronInt=lossNeutronI-Niabs-Tiabs)<0){ // absorption is larger than the loss
       double q;
-      q=lossNeutronI/(Niabs+Tiabs); 
+      q=lossNeutronI/(Niabs+Tiabs);
       Niabs*=q;
       Tiabs*=q;
       pOutParticles->neutronInt=0;

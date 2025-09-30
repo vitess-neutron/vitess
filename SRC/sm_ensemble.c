@@ -1207,11 +1207,11 @@ static double CollideWall(const int thread_i, const double WL, const VectorType 
 		
     the = M_PI_2 - acos(fabs(dir[0]));
 
-    if (SpinVector[quant_dir] == 1. && useQuantDir) 
+    if (useQuantDir && SpinVector[quant_dir] == 1.)
     {/* spin up */
       index_expon=0; index_mued1=0; index_mued2=1; index_theta=0;
     } 
-    else if (SpinVector[quant_dir] == -1. && useQuantDir) 
+    else if (useQuantDir && SpinVector[quant_dir] == -1.)
     {/* spin down */
       index_expon=1; index_mued1=2; index_mued2=3; index_theta=1;
     } 

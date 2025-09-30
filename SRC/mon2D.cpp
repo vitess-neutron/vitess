@@ -502,7 +502,7 @@ void Mon2D::ParId2Text(char* sParName, const VtMonPar ePar)
 	  case DIV_Y    : strcpy(sParName, "div_y/deg");     break;
 	  case DIV_Z    : strcpy(sParName, "div_z/deg");     break;
 	  case LAMBDA   : strcpy(sParName, "lambda/Ang");    break;
-	  case ENERGY   : strcpy(sParName, "energy/µeV");    break; 
+	  case ENERGY   : strcpy(sParName, "energy/ÂµeV");    break; 
 	  case TIME     : strcpy(sParName, "time/ms");       break; 
 	  case K_Y      : strcpy(sParName, "k_y/(1/Ang)");   break;
 	  case K_Z      : strcpy(sParName, "k_z/(1/Ang)");   break; 
@@ -524,7 +524,7 @@ void Mon2D::ParId2Text(char* sParName, const VtMonPar ePar)
     case DIR_PHI  : 
 	  case DIR_THETA: strcat(sParName, " [deg]");   break;
 	  case LAMBDA   : strcat(sParName, " [Ang]");   break;
-	  case ENERGY   : strcat(sParName, " [µeV]");   break; 
+	  case ENERGY   : strcat(sParName, " [ÂµeV]");   break; 
 	  case TIME     : strcat(sParName, " [ms]");    break; 
 	  case K_Y      : 
 	  case K_Z      : strcat(sParName, " [1/Ang]"); break; 
@@ -559,6 +559,7 @@ void Mon2D::FreeMemory()
     free(dataArrayPol);
   }
   if (polAnalysisVector) delete polAnalysisVector;
+  if (polAnalysisRotMatrix) delete polAnalysisRotMatrix;
 
   return; 
 }

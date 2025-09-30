@@ -569,6 +569,7 @@ void Mon1D::FreeMemory()
       free (dataArrayPolWeights[ii]);
     }
     if (polAnalysisVector) delete polAnalysisVector;
+    if (polAnalysisRotMatrix) delete polAnalysisRotMatrix;
   }
   
   return;
