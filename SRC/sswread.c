@@ -243,8 +243,8 @@ void ssw_internal_grabhdr( const char * filename, int is_gzip, int64_t hdrlen,
     while(toread) {
       int chunk = (hdrlen>16384?16384:(int)hdrlen);
       int nb = fread(hdrbuf+pos,1,chunk,fh);
-      if (!nb)
-        ;//printf("SSW Error: read failure\n");
+      // if (!nb)
+      //   printf("SSW Error: read failure\n");
       assert(toread >= nb);
       toread -= nb;
       pos += nb;
@@ -255,7 +255,7 @@ void ssw_internal_grabhdr( const char * filename, int is_gzip, int64_t hdrlen,
 
 ssw_file_t ssw_open_and_procrec0( const char * filename )
 {
-  ssw_fileinternal_t * f = (ssw_fileinternal_t*)calloc(sizeof(ssw_fileinternal_t),1);
+  ssw_fileinternal_t * f = calloc(1, sizeof(ssw_fileinternal_t));
   assert(f);
 
   ssw_file_t out;
@@ -443,28 +443,28 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
 
-  ;//printf("ssw_open_file: Opened file \"%s\":\n",bn);
+  //printf("ssw_open_file: Opened file \"%s\":\n",bn);
 
   const char * expected_kods = (f->mcnp_type == SSW_MCNPX?"mcnpx":"mcnp");
-  if (strcmp(f->kods,expected_kods)!=0) {
-    ;//printf("ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);
-  }
+  // if (strcmp(f->kods,expected_kods)!=0) {
+  //   printf("ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);
+  // }
 
-  if (f->mcnp_type==SSW_MCNP6) {
-    if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
-      ;//printf("ssw_open_file WARNING: Untested MCNP6 source version : \"%s\". (feedback"
-       //      " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
-    }
-  } else if (f->mcnp_type==SSW_MCNPX) {
-    if ( strcmp(f->vers,"2.5.0")!=0 && strcmp(f->vers,"2.6.0")!=0
-         && strcmp(f->vers,"2.7.0")!=0 && strcmp(f->vers,"26b")!=0 )
-      ;//printf("ssw_open_file WARNING: Untested MCNPX source version : \"%s\". (feedback"
-       //      " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
-  } else if (f->mcnp_type==SSW_MCNP5) {
-    if ( strcmp(f->vers,"5")!=0 )
-      ;//printf("ssw_open_file WARNING: Untested MCNP5 source version : \"%s\". (feedback"
-         //    " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
-  }
+  // if (f->mcnp_type==SSW_MCNP6) {
+  //   if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
+  //     printf("ssw_open_file WARNING: Untested MCNP6 source version : \"%s\". (feedback"
+  //           " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
+  //   }
+  // } else if (f->mcnp_type==SSW_MCNPX) {
+  //   if ( strcmp(f->vers,"2.5.0")!=0 && strcmp(f->vers,"2.6.0")!=0
+  //        && strcmp(f->vers,"2.7.0")!=0 && strcmp(f->vers,"26b")!=0 )
+  //     printf("ssw_open_file WARNING: Untested MCNPX source version : \"%s\". (feedback"
+  //          " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
+  // } else if (f->mcnp_type==SSW_MCNP5) {
+  //   if ( strcmp(f->vers,"5")!=0 )
+  //     printf("ssw_open_file WARNING: Untested MCNP5 source version : \"%s\". (feedback"
+  //           " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
+  // }
 
   return out;
 }
@@ -737,14 +737,14 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
     nx /= 4;//ignore two lowest bits, maybe used to indicate cell-source-particle and energy-group mode (??)
     p->rawtype = nx;
     p->pdgcode = conv_mcnp6_ssw2pdg(nx);
-    if (!p->pdgcode)
-      ;//printf("ssw_load_particle WARNING: Could not convert raw MCNP6 SSW type (%li) to pdg code\n",(long)(p->rawtype));
+    // if (!p->pdgcode)
+    //   printf("ssw_load_particle WARNING: Could not convert raw MCNP6 SSW type (%li) to pdg code\n",(long)(p->rawtype));
   } else if ( f->mcnp_type == SSW_MCNPX ) {
     p->isurf = nx % 1000000;
     p->rawtype = nx / 1000000;
     p->pdgcode = conv_mcnpx_ssw2pdg(p->rawtype);
-    if (!p->pdgcode)
-      ;//printf("ssw_load_particle WARNING: Could not convert raw MCNPX SSW type (%li) to pdg code\n",(long)(p->rawtype));
+    // if (!p->pdgcode)
+    //   printf("ssw_load_particle WARNING: Could not convert raw MCNPX SSW type (%li) to pdg code\n",(long)(p->rawtype));
   } else {
     assert( f->mcnp_type == SSW_MCNP5 );
     nx /= 8;//Guess: Get rid of some bits that might be used for something else
@@ -752,8 +752,8 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
     p->rawtype = nx / 1000000;
     p->rawtype /= 100;//Guess: Get rid of some "bits" that might be used for something else
     p->pdgcode = (p->rawtype==1?2112:(p->rawtype==2?22:0));//only neutrons and gammas in MCNP5
-    if (!p->pdgcode)
-      ;//printf("ssw_load_particle WARNING: Could not convert raw MCNP5 SSW type (%li) to pdg code\n",(long)(p->rawtype));
+    // if (!p->pdgcode)
+    //   printf("ssw_load_particle WARNING: Could not convert raw MCNP5 SSW type (%li) to pdg code\n",(long)(p->rawtype));
   }
   p->dirz = sqrt(fmax(0.0, 1. - p->dirx*p->dirx-p->diry*p->diry));
   if (ssb[1]<0.0)

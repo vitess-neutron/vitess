@@ -2282,16 +2282,20 @@ static int readCompressedNeutrons (void) {
 
     switch (colword >> 1) {
     case 3: // new spin up
-      memcpy((char*)spinUp, p, sizeof(VectorType));
+      memcpy(spinUp, p, sizeof(VectorType));
+      memcpy(pn->Spin, spinUp, sizeof(VectorType));
       GULP(sizeof(VectorType));
+      break;
     case 1: // spin up
-      memcpy((void*) &pn->Spin, (void*)spinUp, sizeof(VectorType));
+      memcpy(pn->Spin, spinUp, sizeof(VectorType));
       break;
     case 4: // new spin down
-      memcpy((char*)spinDown, p, sizeof(VectorType));
+      memcpy(spinDown, p, sizeof(VectorType));
+      memcpy(pn->Spin, spinDown, sizeof(VectorType));
       GULP(sizeof(VectorType));
+      break;
     case 2: // spin down
-      memcpy((void*) &pn->Spin, (void*)spinDown, sizeof(VectorType));
+      memcpy(pn->Spin, spinDown, sizeof(VectorType));
       break;
     default:
       return 0;     /* bad data */

@@ -63,16 +63,16 @@ extern VtSystem eSystem;
 /******************/
 void InitArrays()
 {
-	short j=0;
+  short j=0;
 
-	memset(sLine,   '\0',MAX_MOD*BUFLEN);
-	memset(sFile,   '\0',MAX_FIL*    50);
-	memset(sSimName,'\0',MAX_SIM*    50);
-	memset(sParList,'\0',MAX_SIM*   200);
-	memset(sParId,  '\0',MAX_PAR*     4);
-	memset(sParVal, '\0',MAX_PAR*    51);
-	for (j=0; j < MAX_PAR; j++)
-		nModNo[j]=0;
+  memset(sLine,   '\0',MAX_MOD*BUFLEN);
+  memset(sFile,   '\0',MAX_FIL*    50);
+  memset(sSimName,'\0',MAX_SIM*    50);
+  memset(sParList,'\0',MAX_SIM*   200);
+  memset(sParId,  '\0',MAX_PAR*     4);
+  memset(sParVal, '\0',MAX_PAR*    51);
+  for (j=0; j < MAX_PAR; j++)
+    nModNo[j]=0;
 }
 
 
@@ -80,28 +80,28 @@ void InitArrays()
 /*************************************/
 short ReadBatchFile()
 {
-	short m=0;  /* counts modules           */
-	FILE* pFileR=NULL;
-	char  sFileName    [60]="";
+  short m=0;  /* counts modules           */
+  FILE* pFileR=NULL;
+  char  sFileName    [60]="";
 
-	sprintf(sFileName, "%s.bat", sCommName);
-	pFileR = fopen(sFileName, "r");
-	if (pFileR==NULL)
-	{	printf("\nFile '%s' does not exist\n", sFileName);
-		return(-1);
-	}
-	GetLine(pFileR, sBuffer);
-	GetLine(pFileR, sBuffer);
+  sprintf(sFileName, "%s.bat", sCommName);
+  pFileR = fopen(sFileName, "r");
+  if (pFileR==NULL)
+  {  printf("\nFile '%s' does not exist\n", sFileName);
+    return(-1);
+  }
+  GetLine(pFileR, sBuffer);
+  GetLine(pFileR, sBuffer);
 
-	while(GetLine(pFileR, sBuffer) && m < MAX_MOD)
-	{	StripCmdLine(sBuffer, cShort);
-		strcpy      (sLine[m], sBuffer);
-		m++;
-	}
+  while(GetLine(pFileR, sBuffer) && m < MAX_MOD)
+  {  StripCmdLine(sBuffer, cShort);
+    strcpy      (sLine[m], sBuffer);
+    m++;
+  }
 
-	fclose(pFileR);
+  fclose(pFileR);
 
-	return m;
+  return m;
 }
 
 
@@ -110,7 +110,7 @@ short ReadBatchFile()
 short ReadInfoFile(short* pFileNo, char* sSeriesname)
 {
   short i=0;        /* counts simulations        */
-  int	nNoFiles=0; /* number of batch files to be generated (1 or 2) */
+  int  nNoFiles=0; /* number of batch files to be generated (1 or 2) */
   char  sFileName[60]="";
   FILE* pFileR=NULL;
 
@@ -189,7 +189,7 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
       int n;
       sscanf(sBuffer, "%s%n", sSimName[i], &n);
       while (sBuffer[n] == ' ')
-	n++;
+  n++;
       strcpy(sParList[i], sBuffer+n);
       i++;
     }
@@ -203,62 +203,62 @@ short ReadInfoFile(short* pFileNo, char* sSeriesname)
 /****************************/
 void WriteCommand(FILE* pFile, short nMod, short bEcho)
 {
-	short m;
-	
-	if (bEcho)
-	{	fprintf(pFile, "%c", cNL);
-		for (m=0; m < nMod; m++)
-		{	fprintf(pFile, "echo %s >> %sHistory.txt%c", sLine[m], sPDir, cNL);
-		}
-	}
+  short m;
 
-	fprintf(pFile, "%s", sLine[0]);
-	for (m=1; m < nMod; m++)
-	{	
-		fprintf(pFile, " | %s", sLine[m]);
-	}
-	fprintf(pFile, "%c", cNL);
+  if (bEcho)
+  {  fprintf(pFile, "%c", cNL);
+    for (m=0; m < nMod; m++)
+    {  fprintf(pFile, "echo %s >> %sHistory.txt%c", sLine[m], sPDir, cNL);
+    }
+  }
+
+  fprintf(pFile, "%s", sLine[0]);
+  for (m=1; m < nMod; m++)
+  {
+    fprintf(pFile, " | %s", sLine[m]);
+  }
+  fprintf(pFile, "%c", cNL);
 }
-	
+
 
 /* Changing the command file xxx.bat to the lower level batch file xxxV.bat (2 files option) or
    to the command with the parameters of the 'iSim'th simulation (1 file option)                 */
 /*************************************************************************************************/
 short ChangeParam(short iSim)
 {
-	short j,   /* counts number of varied parameters */
-	      k, kBeg, kMax, m;
-	char *pEnd,
-	      sComp  [4];
+  short j,   /* counts number of varied parameters */
+        k, kBeg, kMax, m;
+  char *pEnd,
+        sComp  [4];
 
-	/* for the 1-file-series and the fit option the parameters must be scanned first */
-	if (iSim>=0 && iSim < MAX_SIM)	
-		StrgScanS(sParList[iSim], &sParVal[0][0], MAX_PAR, 51);
-	j=0;
-	while (sParId[j]!=NULL && strlen(sParId[j]) > 0)
-	{	// determine the line number from the module number
-		m = (short) (nModNo[j]-1);
-		pEnd = NULL;
-		kBeg = 0;
-		kMax = (short) (strlen(sLine[m])-2);
-		// searching for the parameter in the line
-		for (k=0; k < kMax; k++)
-		{	StrgCopy(sComp, sLine[m]+k, strlen(sParId[j]));
-			// looking for the beginning and the end of the parameter
-			if (strcmp(sComp, sParId[j])==0)
-			{	kBeg = (short) (k + strlen(sParId[j]));
-				pEnd = strchr(sLine[m]+k, ' ');
-				k=kMax;
-			}	
-		}
-		if (kBeg > 0)
-			SubstPar(sLine[m], kBeg, pEnd, j+1, sParVal[j]);
-		else
-			printf("\nERROR: parameter %s in module %d not found\n", sParId[j], nModNo[j]);
-		j++;
-	}
+  /* for the 1-file-series and the fit option the parameters must be scanned first */
+  if (iSim>=0 && iSim < MAX_SIM)
+    StrgScanS(sParList[iSim], &sParVal[0][0], MAX_PAR, 51);
+  j=0;
+  while (strlen(sParId[j]) > 0)
+  {  // determine the line number from the module number
+    m = (short) (nModNo[j]-1);
+    pEnd = NULL;
+    kBeg = 0;
+    kMax = (short) (strlen(sLine[m])-2);
+    // searching for the parameter in the line
+    for (k=0; k < kMax; k++)
+    {  StrgCopy(sComp, sLine[m]+k, strlen(sParId[j]));
+      // looking for the beginning and the end of the parameter
+      if (strcmp(sComp, sParId[j])==0)
+      {  kBeg = (short) (k + strlen(sParId[j]));
+        pEnd = strchr(sLine[m]+k, ' ');
+        k=kMax;
+      }
+    }
+    if (kBeg > 0)
+      SubstPar(sLine[m], kBeg, pEnd, j+1, sParVal[j]);
+    else
+      printf("\nERROR: parameter %s in module %d not found\n", sParId[j], nModNo[j]);
+    j++;
+  }
 
-	return j;
+  return j;
 }
 
 
@@ -280,63 +280,63 @@ GetLine(FILE* pFile, char* const pLine)
 void
 StripCmdLine(char* const pLine, char cSh)
 {
-	char  *pBlank, *pSlash;
-	int   kBlank;
-	short rc;
+  char  *pBlank, *pSlash;
+  int   kBlank;
+  short rc;
 
-	// change '/' to the right slash
-	ChangeSlash(pLine);
+  // change '/' to the right slash
+  ChangeSlash(pLine);
 
-	// delete leading line feeds and " | "
-	{
-	  int k,v;
-	  for (k=0; (v = pLine[k]) && (v==' ' || v=='|'); k++) ;
-	  if (k)
-	    strcpy(pLine, pLine+k);
-	}
+  // delete leading line feeds and " | "
+  {
+    int k,v;
+    for (k=0; (v = pLine[k]) && (v==' ' || v=='|'); k++) ;
+    if (k)
+      strcpy(pLine, pLine+k);
+  }
 
-	// extract the PATH directory from the command
-	if (strlen(sPath)==0)
-	{	pBlank = strchr(pLine, ' ');
-		kBlank = pBlank-pLine;
-		StrgCopy(sPathSl, pLine, kBlank);
+  // extract the PATH directory from the command
+  if (strlen(sPath)==0)
+  {  pBlank = strchr(pLine, ' ');
+    kBlank = pBlank-pLine;
+    StrgCopy(sPathSl, pLine, kBlank);
 
-		pSlash = strrchr(sPathSl, cSlash)+1;
-		*pSlash= '\0';
-		EraseEndSlash(sPath, sPathSl);
-	}
+    pSlash = strrchr(sPathSl, cSlash)+1;
+    *pSlash= '\0';
+    EraseEndSlash(sPath, sPathSl);
+  }
 
-	// substitute PATH and default directory by abbrevations
-	if (eSystem == VT_UNIX || eSystem == VT_LINUX)
-	{	StrgChange(pLine, sPath, "$VIMG");
-		do
-		{ rc=StrgChange(pLine, sDir,  "$PDIR");
-		}
-		while (rc==TRUE);
-	}
-	else
-	{	StrgChange(pLine, sPath, "V:");
-		do
-		{ rc=StrgChange(pLine, sDir, "P:");;
-		}
-		while (rc==TRUE);
-	}
+  // substitute PATH and default directory by abbrevations
+  if (eSystem == VT_UNIX || eSystem == VT_LINUX)
+  {  StrgChange(pLine, sPath, "$VIMG");
+    do
+    { rc=StrgChange(pLine, sDir,  "$PDIR");
+    }
+    while (rc==TRUE);
+  }
+  else
+  {  StrgChange(pLine, sPath, "V:");
+    do
+    { rc=StrgChange(pLine, sDir, "P:");;
+    }
+    while (rc==TRUE);
+  }
 
-	// Shorten the command
-	if (cSh=='V')
-		StrgChange(pLine, " --B10000", "");	
+  // Shorten the command
+  if (cSh=='V')
+    StrgChange(pLine, " --B10000", "");
 
-	if (eSystem == VT_UNIX || eSystem == VT_LINUX)
-	{	char *p1, *p2, sLog[20]="";
-		p1 = StrgFind  (pLine, "--L/tmp");
-		p2 = StrgFind  (pLine, "vpipelog");
-		StrgCopy  (sLog, p1+3, p2-p1+5);
-		StrgChange(pLine, sLog, sLogFile);	
-	}
-	else
-	{	StrgChange(pLine, "C:\\temp\\vpipelog", sLogFile);	
-	}
-	
+  if (eSystem == VT_UNIX || eSystem == VT_LINUX)
+  {  char *p1, *p2, sLog[20]="";
+    p1 = StrgFind  (pLine, "--L/tmp");
+    p2 = StrgFind  (pLine, "vpipelog");
+    StrgCopy  (sLog, p1+3, p2-p1+5);
+    StrgChange(pLine, sLog, sLogFile);
+  }
+  else
+  {  StrgChange(pLine, "C:\\temp\\vpipelog", sLogFile);
+  }
+
 }
 
 
@@ -345,15 +345,15 @@ StripCmdLine(char* const pLine, char cSh)
 void
 SubstPar(char* pLine, short kBeg, const char* pEnd, int nVar, const char* pVar)
 {
-	char sLeftPart[BUFLEN], sRightPart[BUFLEN]="";
+  char sLeftPart[BUFLEN], sRightPart[BUFLEN]="";
 
-	if (pEnd != NULL)
-		strcpy(sRightPart, pEnd);
-	StrgCopy  (sLeftPart,  pLine, kBeg);
-	if (eModus==VT_SER_2F)
-		sprintf(pLine, "%s%%%d%s", sLeftPart, nVar, sRightPart);
-	else
-		sprintf(pLine, "%s%s%s", sLeftPart, pVar, sRightPart);
+  if (pEnd != NULL)
+    strcpy(sRightPart, pEnd);
+  StrgCopy  (sLeftPart,  pLine, kBeg);
+  if (eModus==VT_SER_2F)
+    sprintf(pLine, "%s%%%d%s", sLeftPart, nVar, sRightPart);
+  else
+    sprintf(pLine, "%s%s%s", sLeftPart, pVar, sRightPart);
 }
 
 
@@ -361,13 +361,13 @@ SubstPar(char* pLine, short kBeg, const char* pEnd, int nVar, const char* pVar)
 /***********************************************************/
 void  EraseEndSlash(char* pStr, char* const pStrSl)
 {
-	int klen;
+  int klen;
 
-	strcpy(pStr, pStrSl);
-	klen = strlen(pStr);
+  strcpy(pStr, pStrSl);
+  klen = strlen(pStr);
 
-	if (pStr[klen-1]==cSlash)
-		pStr[klen-1]='\0';
+  if (pStr[klen-1]==cSlash)
+    pStr[klen-1]='\0';
 }
 
 
@@ -376,24 +376,24 @@ void  EraseEndSlash(char* pStr, char* const pStrSl)
 short
 StrgChange(char* sStr, const char* sOut, const char* sIn)
 {
-	short rc=FALSE;
-	int   k, kout, kmax;
-	char  sRest[BUFLEN];
+  short rc=FALSE;
+  int   k, kout, kmax;
+  char  sRest[BUFLEN];
 
-	kout = strlen(sOut);
-	kmax = strlen(sStr)-kout;
+  kout = strlen(sOut);
+  kmax = strlen(sStr)-kout;
 
-	for (k=0; k < kmax; k++)
-	{
-		if (memcmp(&sStr[k], sOut, kout)==0)
-		{
-			strcpy(sRest, &sStr[k+kout]);
-			sprintf(&sStr[k], "%s%s", sIn, sRest);
-			k =kmax;
-			rc=TRUE;
-		}
-	}
-	return rc;
+  for (k=0; k < kmax; k++)
+  {
+    if (memcmp(&sStr[k], sOut, kout)==0)
+    {
+      strcpy(sRest, &sStr[k+kout]);
+      sprintf(&sStr[k], "%s%s", sIn, sRest);
+      k =kmax;
+      rc=TRUE;
+    }
+  }
+  return rc;
 }
 
 
@@ -402,21 +402,21 @@ StrgChange(char* sStr, const char* sOut, const char* sIn)
 char*
 StrgFind(char* sStr, const char* sSearch)
 {
-	int   k, ksrch, kmax;
-	char* pFind=NULL;
+  int   k, ksrch, kmax;
+  char* pFind=NULL;
 
-	ksrch = strlen(sSearch);
-	kmax  = strlen(sStr)-ksrch;
+  ksrch = strlen(sSearch);
+  kmax  = strlen(sStr)-ksrch;
 
-	for (k=0; k < kmax; k++)
-	{
-		if (memcmp(&sStr[k], sSearch, ksrch)==0)
-		{
-			pFind = &sStr[k];
-			k=kmax;
-		}
-	}
-	return pFind;
+  for (k=0; k < kmax; k++)
+  {
+    if (memcmp(&sStr[k], sSearch, ksrch)==0)
+    {
+      pFind = &sStr[k];
+      k=kmax;
+    }
+  }
+  return pFind;
 }
 
 
@@ -429,9 +429,9 @@ NumerateName (char* sFileLong, char* sFileShort, const short nNumber)
    char sParExt [4],      // extension of file names (with simulation results)
         sParName[99];     // name (without extension) of those files
 
-	strcpy  (sParExt,  sFileShort +strlen(sFileShort)-3);
-	StrgCopy(sParName, sFileShort, strlen(sFileShort)-4);
-	sprintf (sFileLong, "%s%hd.%s", sParName, nNumber, sParExt);
+  strcpy  (sParExt,  sFileShort +strlen(sFileShort)-3);
+  StrgCopy(sParName, sFileShort, strlen(sFileShort)-4);
+  sprintf (sFileLong, "%s%hd.%s", sParName, nNumber, sParExt);
 }
 
 
@@ -442,34 +442,34 @@ NumerateName (char* sFileLong, char* sFileShort, const short nNumber)
 long
 StrgScanHD(const char* sStr, short* pTab, const int nMax)
 {
-	long   k, n=0;
-	const char *pStr;
-	char sNumber[31];
+  long   k, n=0;
+  const char *pStr;
+  char sNumber[31];
 
-	pStr = sStr;
-	do
-	{	/* search of beginning and end of 1st number of (remaining) string */
-		k=0;
-		/* step forward until first number or control character */
-		while (isdigit(pStr[k])==0 && iscntrl(pStr[k])==0)
-			k++;
-		/* step forward until space-like or control character */
-		while (isspace(pStr[k])==0 && iscntrl(pStr[k])==0)
-			k++;
+  pStr = sStr;
+  do
+  {  /* search of beginning and end of 1st number of (remaining) string */
+    k=0;
+    /* step forward until first number or control character */
+    while (isdigit(pStr[k])==0 && iscntrl(pStr[k])==0)
+      k++;
+    /* step forward until space-like or control character */
+    while (isspace(pStr[k])==0 && iscntrl(pStr[k])==0)
+      k++;
 
-		/* separating first number and adding it to the list */
-		if (k > 0)
-		{	
-			StrgCopy(sNumber, pStr, k);
-			if (n >= 0)
-				pTab[n] = (short) atol(sNumber);
-			n++;	
-			pStr += k;
-		}
-	}
-	while (n < nMax && k > 0);
+    /* separating first number and adding it to the list */
+    if (k > 0)
+    {
+      StrgCopy(sNumber, pStr, k);
+      if (n >= 0)
+        pTab[n] = (short) atol(sNumber);
+      n++;
+      pStr += k;
+    }
+  }
+  while (n < nMax && k > 0);
 
-	return(n);
+  return(n);
 }
 
 
@@ -483,28 +483,28 @@ StrgScanS(const char* sStr, char* pTab, const int nMax, const int nTextLen)
   char sNumber[31];
   long   i, k, n=0;
 
-	pStr = (const char*) sStr;
-	do
-	{	/* search of beginning and end of 1st number of (remaining) string */
-		i=0;k=0;
-		/* step forward until first alphanumerical character or point-like character */
-		while (isalnum(pStr[i+k])==0 && ispunct(pStr[i+k])==0 && iscntrl(pStr[i+k])==0)
-			i++;
-		/* step forward until space-like or control character */
-		while (isspace(pStr[i+k])==0 && iscntrl(pStr[i+k])==0)
-			k++;
+  pStr = (const char*) sStr;
+  do
+  {  /* search of beginning and end of 1st number of (remaining) string */
+    i=0;k=0;
+    /* step forward until first alphanumerical character or point-like character */
+    while (isalnum(pStr[i+k])==0 && ispunct(pStr[i+k])==0 && iscntrl(pStr[i+k])==0)
+      i++;
+    /* step forward until space-like or control character */
+    while (isspace(pStr[i+k])==0 && iscntrl(pStr[i+k])==0)
+      k++;
 
-		/* separating first text and adding it to the list */
-		if (k > 0)
-		{	
-			StrgCopy(sNumber, pStr+i, k);
-			if (n >= 0)
-				strcpy(&pTab[n*nTextLen], sNumber);
-			n++;	
-			pStr += (i+k);
-		}
-	}
-	while (n < nMax && k > 0);
+    /* separating first text and adding it to the list */
+    if (k > 0)
+    {
+      StrgCopy(sNumber, pStr+i, k);
+      if (n >= 0)
+        strcpy(&pTab[n*nTextLen], sNumber);
+      n++;
+      pStr += (i+k);
+    }
+  }
+  while (n < nMax && k > 0);
 
-	return(n);
+  return(n);
 }

@@ -41,47 +41,47 @@ FILE* LogFilePtr = NULL;        /* pointer to the log file stream              *
 
 double ENERGY_FROM_LAMBDA(const double x)
 {
-	return(81805.048 / x / x);   /* [Ang]   -> [ueV] */
+  return(81805.048 / x / x);   /* [Ang]   -> [ueV] */
 }
 
 double LAMBDA_FROM_ENERGY(const double e)
 {
-	return(sqrt(81805.048 / e)); /* [ueV]   -> [Ang] */
+  return(sqrt(81805.048 / e)); /* [ueV]   -> [Ang] */
 }
 
 double ENERGY_FROM_V(const double v)
 {
-	return(0.5227033 * v * v);   /* [cm/ms] -> [ueV] */
+  return(0.5227033 * v * v);   /* [cm/ms] -> [ueV] */
 }
 
 double V_FROM_ENERGY(const double e)
 {
-	return(sqrt(e / 0.5227033)); /* [ueV] -> [cm/ms] */
+  return(sqrt(e / 0.5227033)); /* [ueV] -> [cm/ms] */
 }
 
 double LAMBDA_FROM_V(const double x)
 {
-	return(395.60346 / x);       /* [cm/ms] -> [Ang] */
+  return(395.60346 / x);       /* [cm/ms] -> [Ang] */
 }
 
 double V_FROM_LAMBDA(const double x)
 {
-	return(395.60346 / x);       /* [Ang]   -> [cm/ms] */
+  return(395.60346 / x);       /* [Ang]   -> [cm/ms] */
 }
 
 
 double Lambda2E(const double lmbd)
 {
   double L2E = 0.5 * 1.0e23 * sq(H_P)/E_C / MN,   // Ang -> meV
-         E   = L2E / sq(lmbd); 
+         E   = L2E / sq(lmbd);
 
   return(E);
 }
 
 double E2Lambda(const double E)
 {
-  double L2E  = 0.5 * 1.0e23 * sq(H_P)/E_C / MN,  // meV -> Ang 
-         lmbd = sqrt(L2E / E); 
+  double L2E  = 0.5 * 1.0e23 * sq(H_P)/E_C / MN,  // meV -> Ang
+         lmbd = sqrt(L2E / E);
 
   return(lmbd);
 }
@@ -94,7 +94,7 @@ double ReflAngle(const double lambda, const double Q)  // [Ang], [1/Ang] -> [deg
   return(Degrees(thetaR));
 }
 
-double QbyRefl(const double lambda, const double thetaD)  // [Ang], [deg] -> [1/Ang] 
+double QbyRefl(const double lambda, const double thetaD)  // [Ang], [deg] -> [1/Ang]
 {
   double Q = 4.0*M_PI * sin(Radians(thetaD))/lambda;
 
@@ -137,32 +137,32 @@ double Degrees(const double angleR)
 /* computes square of a real value */
 double sq(const double Value)
 {
-	return Value * Value ;
+  return Value * Value ;
 }
 
 
 /* calculates atan2 in the range (0, 2*M_PI) */
 double atan0(const double a, const double b)
 {
-	if (b > 0.)
-	  return (double) atan(a / b) ;
+  if (b > 0.)
+    return (double) atan(a / b) ;
 
-	if (b == 0.)
-	  return M_PI_2 ;
+  if (b == 0.)
+    return M_PI_2 ;
 
-	return (double) atan(a / b) + M_PI ;
+  return (double) atan(a / b) + M_PI ;
 }
 
 /* rounds a value mathematically  */
 double Round(const double value)
 {
-	return floor(value + 0.5);
+  return floor(value + 0.5);
 }
 
 double RoundP(const double value, const int decimal)
 {
-	double f = pow(10.0, decimal);
-	return Round(value * f) / f;
+  double f = pow(10.0, decimal);
+  return Round(value * f) / f;
 }
 
 
@@ -204,11 +204,11 @@ void Exchange(double* pValue1, double* pValue2)
 double ApprSolidAngle(const double HorAngle, const double VertAngle)
 {
   if (VertAngle < 0.55)
-    /* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan³(theta)/3) */
+    /* solution for small angles: Omega = 2 phi * 2(tan(theta)-tan^3(theta)/3) */
     return 4 * HorAngle  * (tan(VertAngle) - pow(tan(VertAngle),3)/3.0);
-	
+
   if (HorAngle < 0.55)
-    /* solution for small angles: Omega = 2(tan(phi)-tan³(phi)/3) * 2 theta */
+    /* solution for small angles: Omega = 2(tan(phi)-tan^3(phi)/3) * 2 theta */
     return 4 * VertAngle * (tan(HorAngle)  - pow(tan(HorAngle),3)/3.0);
 
   /* empirical approximation for large angles */
@@ -234,14 +234,14 @@ double TrueSolidAngleR(const double RadAngle)
 //
 // Lambda: wavelength        [Ang]
 // Angle : inclination angle [deg]
-// M     : nominal m value of the supermirror    
+// M     : nominal m value of the supermirror
 // Rdata : pointer to list of reflectivity values (ReflFile only)
 //
 double ReflSNT(char* sText, const double Q, const double m, const short bPrint)
 {
-  double S,T, 
+  double S,T,
     m2=m,          // m'     : 'real' m value
-    Qc,            // Q_c    : crit. momentum transfer 
+    Qc,            // Q_c    : crit. momentum transfer
     QcNi  =QC_NI,  // Q_c,Ni : crit. momentum transfer of nickel
     R0    =0.99,   // R_0    : reflectivity for 0 <= Q <= Q_c
     alphaQ=0.0,    //          slope Delta_R / Delta_Q
@@ -256,7 +256,7 @@ double ReflSNT(char* sText, const double Q, const double m, const short bPrint)
   { R = R0;
   }
   else
-  { 
+  {
     if (m <= 1.0)
     { R=0.0;
     }
@@ -275,7 +275,7 @@ double ReflSNT(char* sText, const double Q, const double m, const short bPrint)
       }
       T = 0.5 * (1.0 - tanh((Q - m2*QcNi) / W));
       S = (1.0 - alphaQ * (Q-Qc) + betaQ * sq(Q-Qc));
-	    R = R0 * S * T ;
+      R = R0 * S * T ;
     }
   }
 
@@ -285,7 +285,7 @@ double ReflSNT(char* sText, const double Q, const double m, const short bPrint)
   return R;
 }
 
-// Description of a typical reflectivity curve (averaged over all companies) 
+// Description of a typical reflectivity curve (averaged over all companies)
 double ReflTypicalT(char* sText, const double Q, const double m, const short bPrint)
 {
   double R    = 0.0,
@@ -309,7 +309,7 @@ double ReflTypical(const double Q, const double m)
          W    = 0.00157,
          Rcut = Min(R0, 1.096 - 0.0758*m);
 
-  if (m > 1.25)           
+  if (m > 1.25)
     mReal = m + 0.14;     // supermirror coatings have a higher m value than the nomimal value
   else
     mReal = m;            // for Ni, Ni58 etc, the nominal value should be used
@@ -328,7 +328,7 @@ double ReflMirrT(char* sText, const double Q, const double m, const double R0, c
          alpha= 0.0;
 
   if (m > 1.0)
-  { 
+  {
     alpha = (R0 - Rm)/(m - 1.0)/QC_NI;
     S = Min(1.0, 1.0 - alpha*(Q - Qc1));
   }
@@ -345,7 +345,7 @@ double ReflMirrT(char* sText, const double Q, const double m, const double R0, c
   R = R0 * S * T ;
 
   if (bPrint)
-  { 
+  {
     if (m > 1.0) sprintf(sSlope, "* (1 - %5.3f*(Q-Qc))", alpha);
     if (W > 0.0) sprintf(sDecay, "* 0.5*(1 - tanh((Q-%5.3f*Qc)/%7.5f))", m, W);
     sprintf(sText,  "R(Q) = %5.3f %s %s   Rm=%5.3f  Qc=%7.5f 1/Ang", R0, sSlope, sDecay, Rm,Qc);
@@ -357,7 +357,7 @@ double ReflMirrT(char* sText, const double Q, const double m, const double R0, c
 
 // Loads Reflectivity data from a file where R(Q) is given. Give pReflFile as input
 // ----------------------------------------------------------
-int ReadRofQ(FILE* pReflFile, double* aQ, double* aR) 
+int ReadRofQ(FILE* pReflFile, double* aQ, double* aR)
 {
   char   sBuffer[CHAR_BUF_SMALL]="";
   int    k, nLines;           // index and number of lines
@@ -367,10 +367,10 @@ int ReadRofQ(FILE* pReflFile, double* aQ, double* aR)
   for (k=1; k<=nLines && k<ROFQ_MAX; k++)
   {
     ReadLine(pReflFile, sBuffer, sizeof(sBuffer)-1);
-    sscanf(sBuffer, "%lf %lf", &aQ[k], &aR[k]);  
+    sscanf(sBuffer, "%lf %lf", &aQ[k], &aR[k]);
   }
 
-  aQ[0]=0.0; 
+  aQ[0]=0.0;
   aR[0]=aR[1];
 
   return (nLines+1);
@@ -393,10 +393,10 @@ int NumDataPtsM(const double m, const double Qc, const double W)
   int    nPts=0;
 
   ThetaC = ReflAngle(1.0, Qc);
-	ThetaW = ReflAngle(1.0, W);
-	ThetaM = m * ThetaC;
-	// nPts   = (int) ((Max(ThetaM,ThetaC) + 6.0*ThetaW)*1000) + 4;
-	nPts   = (int) (ceil((ThetaM + 6.0*ThetaW)*1000)) + 4;
+  ThetaW = ReflAngle(1.0, W);
+  ThetaM = m * ThetaC;
+  // nPts   = (int) ((Max(ThetaM,ThetaC) + 6.0*ThetaW)*1000) + 4;
+  nPts   = (int) (ceil((ThetaM + 6.0*ThetaW)*1000)) + 4;
 
   return nPts;
 }
@@ -410,13 +410,13 @@ int NumDataPtsM(const double m, const double Qc, const double W)
 // --------------------------------------------------------------------------------------
 void SetReflData(double* pReflDat, const double* aQ, const double* aR, const int nVals)
 {
-  int    j=0;   // index for Vitess reflectivity file  
+  int    j=0;   // index for Vitess reflectivity file
   double theta,        // reflection angle
          Q;            // Q-value of the reflection angle for 1 Ang
   long   nArrayLen=NumDataPtsQ(aQ[nVals-1]);
 
   for (j=0; j < nArrayLen; j++)
-  { 
+  {
     theta = j / 1000.0;
     Q     = QbyRefl(1.0, theta);
     pReflDat[j]= InterpolQ(Q, aQ, aR, nVals);
@@ -431,7 +431,7 @@ double InterpolM(const double m, const double* aM, const double* aR, const int n
   for (k=0; k < nVals-1; k++)
   {
     if (aM[k] <= m && aM[k+1] > m)
-      R = aR[k] + (aR[k+1] - aR[k])/(aM[k+1] - aM[k]) * (m - aM[k]);   
+      R = aR[k] + (aR[k+1] - aR[k])/(aM[k+1] - aM[k]) * (m - aM[k]);
   }
 
   return R;
@@ -445,7 +445,7 @@ double InterpolQ(const double Q, const double* aQ, const double* aR, const int n
   for (k=0; k < nVals-1; k++)
   {
     if (aQ[k] <= Q && aQ[k+1] > Q)
-      R = aR[k] + (aR[k+1] - aR[k])/(aQ[k+1] - aQ[k]) * (Q - aQ[k]);   
+      R = aR[k] + (aR[k+1] - aR[k])/(aQ[k+1] - aQ[k]) * (Q - aQ[k]);
   }
 
   return R;
@@ -550,7 +550,7 @@ short NormVectorX(VectorType Vector)
 double DistVector(const VectorType Vec1, const VectorType Vec2)
 {
   VectorType Vhlp;
-  
+
   CopyVector(Vec1, Vhlp) ;
   SubVector (Vhlp, Vec2);
   return LengthVector(Vhlp);
@@ -606,7 +606,7 @@ double Area(const VectorType v1, const VectorType v2)
   return lv * fabs(sin(acos( ScalarProduct(v1, v2) / lv)) /2.);
 
   //return LengthVector(v1) * LengthVector(v2) *
-  //		fabs(sin(acos( ScalarProduct(v1, v2)/(LengthVector(v1) * LengthVector(v2)))) /2.);
+  //    fabs(sin(acos( ScalarProduct(v1, v2)/(LengthVector(v1) * LengthVector(v2)))) /2.);
 
 }
 
@@ -630,7 +630,6 @@ void InitSurface(SurfaceSecond* pSurface)
   pSurface->R = 0.0;     pSurface->W = 0.0;
 }
 
-
 /****************************************************************************************/
 /*  Basic Matrix Functions                                                              */
 /****************************************************************************************/
@@ -642,7 +641,7 @@ void Init3x3Matrix(double Matrix[3][3])
 
   for (i=0; i < 3; i++)
   { for (j=0; j < 3; j++)
-      Matrix[i][j] = 0.0;  
+      Matrix[i][j] = 0.0;
   }
 }
 
@@ -774,7 +773,7 @@ FILE * fileOpen2(const char* sName, const char* sMode, const char* sContent)
   }
 #endif
 
-  if (! (fp = fopen(sName, sMode))) 
+  if (! (fp = fopen(sName, sMode)))
   {
     fprintf(LogFilePtr, fmt, sName, sContent);
     fflush(LogFilePtr);
@@ -867,7 +866,7 @@ long LinesInFile(FILE *pIn)
   long NumLines=0;
 
   if (pIn!=NULL)
-  { 
+  {
     rewind(pIn);
     while (ReadLine(pIn, Buffer, sizeof(Buffer)-1))
       NumLines++;
@@ -901,33 +900,33 @@ long ColumnsInFile(FILE* pFile)
 
 
 /* ReadLine() reads the next line from the file 'pFile' into string 'pLine' that is not empty and not a comment line (beginning with #)
-	  returning TRUE if a line is found and FALSE otherwise
+    returning TRUE if a line is found and FALSE otherwise
    it strips comments at the end, leading and succeeding blanks, line feeds, tabs and cr
    the maximal number of characters in the string must be given in 'nStrLen'   */
-int ReadLine(FILE* pFile, char* pLine, int nStrLen) 
+int ReadLine(FILE* pFile, char* pLine, int nStrLen)
 {
   int v=0, k=0, kanf=0, kmax=0;
 
   if (pFile)
-  { while (fgets (pLine, nStrLen, pFile)) 
+  { while (fgets (pLine, nStrLen, pFile))
     {
       /* substitute line feeds, tabs and carriage returns with blanks */
-      for (k=0; (v = pLine[k]) && v != '#'; k++) 
+      for (k=0; (v = pLine[k]) && v != '#'; k++)
       {
         if (v=='\n' || v=='\t' || v=='\r')
          pLine[k] = ' ';
       }
       if (k <= 0) continue;
-   
+
       /* strip the comments and leading and succeeding blanks */
       for (kanf = 0; pLine[kanf] == ' '; kanf++) ;
       for (kmax = k-1; kmax >= kanf && pLine[kmax] == ' '; kmax--) ;
       if (kmax < kanf) continue;
-      if (kanf == 0) 
+      if (kanf == 0)
       {
         pLine[kmax+1] = 0;
-      } 
-      else 
+      }
+      else
       {
         for (k = 0; kanf <= kmax; k++, kanf++)
           pLine[k] = pLine[kanf];
@@ -979,20 +978,20 @@ void ReadParComment(FILE *fpt)
 /* Copy 'nLen' bytes of 'sOrigin' into the new string 'sCopy' */
 void StrgCopy(char* sCopy, const char* sOrigin, int nLen)
 {
-	strncpy(sCopy, sOrigin, nLen);
-	sCopy[nLen]='\0';
+  strncpy(sCopy, sOrigin, nLen);
+  sCopy[nLen]='\0';
 }
 
 
 /* Shift string 'sStr' 'kWidth' bytes to the left */
 void StrgLShift(char* sStr, int kWidth)
 {
-	int k, ke;
+  int k, ke;
 
-	ke = strlen(sStr) - kWidth;
+  ke = strlen(sStr) - kWidth;
 
-	for (k=0; k <= ke; k++)
-		sStr[k] = sStr[k+kWidth];
+  for (k=0; k <= ke; k++)
+    sStr[k] = sStr[k+kWidth];
 }
 
 
@@ -1001,35 +1000,35 @@ void StrgLShift(char* sStr, int kWidth)
    returns the number of values found                                    */
 long StrgScanLF(const char* sStr, double* pTab, const int nMax, const int nStart)
 {
-	int k, n=0;
-	const char *pStr;
-	char sNumber[99];
+  int k, n=0;
+  const char *pStr;
+  char sNumber[99];
 
-	pStr = sStr;
-	n   -= nStart;
-	do
-	{	/* search of beginning and end of 1st number of (remaining) string */
-		k=0;
-		/* step forward until first number or control character */
-		while (isdigit(pStr[k])==0 && iscntrl(pStr[k])==0)
-			k++;
-		/* step forward until space-like or control character */
-		while (isspace(pStr[k])==0 && iscntrl(pStr[k])==0)
-			k++;
+  pStr = sStr;
+  n   -= nStart;
+  do
+  {  /* search of beginning and end of 1st number of (remaining) string */
+    k=0;
+    /* step forward until first number or control character */
+    while (isdigit(pStr[k])==0 && iscntrl(pStr[k])==0)
+      k++;
+    /* step forward until space-like or control character */
+    while (isspace(pStr[k])==0 && iscntrl(pStr[k])==0)
+      k++;
 
-		/* separating first number and adding it to the list */
-		if (k > 0)
-		{
-			StrgCopy(sNumber, pStr, k);
-			if (n >= 0)
-				pTab[n] = atof(sNumber);
-			n++;
-			pStr += k;
-		}
-	}
-	while (n < nMax && k > 0);
+    /* separating first number and adding it to the list */
+    if (k > 0)
+    {
+      StrgCopy(sNumber, pStr, k);
+      if (n >= 0)
+        pTab[n] = atof(sNumber);
+      n++;
+      pStr += k;
+    }
+  }
+  while (n < nMax && k > 0);
 
-	return(n);
+  return(n);
 }
 
 
@@ -1043,14 +1042,14 @@ void GetActDate(char* sDate, short eDateFmt)
 
   t = time(NULL);
   tmp = localtime(&t);
-  if (tmp != NULL) 
+  if (tmp != NULL)
   {
     if (eDateFmt==DATE_US)
       strftime(sDate, CHAR_BUF_SMALL, "%m/%d/%y", tmp);
     else
       strftime(sDate, CHAR_BUF_SMALL, "%Y-%m-%d", tmp);
-  } 
-  else 
+  }
+  else
   {
     strncpy(sDate, "Error getting time", CHAR_BUF_SMALL);
   }
@@ -1063,11 +1062,11 @@ void GetActTime(char* sTime)
 
   t = time(NULL);
   tmp = localtime(&t);
-  if (tmp != NULL) 
+  if (tmp != NULL)
   {
     strftime(sTime, CHAR_BUF_SMALL, "%T", tmp);
-  } 
-  else 
+  }
+  else
   {
     strncpy(sTime, "Error getting time", CHAR_BUF_SMALL);
   }
@@ -1080,13 +1079,13 @@ void GetActTime(char* sTime)
 /***************************************************************************/
 void ChangeSlash(char* pStr)
 {
-	int k, kLen;
+  int k, kLen;
 
-	kLen = strlen(pStr);
-	for (k=0; k < kLen; k++)
-	{	if (pStr[k]=='/' || pStr[k]=='\\')
-			pStr[k]=cSlash;
-	}
+  kLen = strlen(pStr);
+  for (k=0; k < kLen; k++)
+  {  if (pStr[k]=='/' || pStr[k]=='\\')
+      pStr[k]=cSlash;
+  }
 }
 
 void AddSlash(char* pStr)

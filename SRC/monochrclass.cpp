@@ -568,7 +568,7 @@ void Monochromator::writePar()
   fprintf(LogFilePtr, "  mosaic spread (hor, vert): %9.4f, %9.4f deg\n",   Degrees(mosaic_fwhm[0]), Degrees(mosaic_fwhm[1]));
   fprintf(LogFilePtr, "  d-spread %10s      : %13.4e Ang  \n",             sSO, d_fwhm);
   fprintf(LogFilePtr, "  reflectivity             : %9.4f \n",             Reflectivity);
-  fprintf(LogFilePtr, "  repetition               : %4ld  \n",             nRepete);
+  fprintf(LogFilePtr, "  repetition               : %4d  \n",             nRepete);
 
   /* crystal parameters */
   fprintf(LogFilePtr, "data from parameter file   : '%s'\n", ParFileName);

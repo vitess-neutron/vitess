@@ -84,9 +84,9 @@
 #include "message.h"
 #include "string.h"
 #include "threadHelper.h"
-#include "mathfunctions.h"
 #include "mcpl.h"
 #include "guide.h"
+#include "mathfunctions.h"
 
 
 /******************************/
@@ -1269,7 +1269,7 @@ void processNeutron(int neutron_i, int thread_i)
           RotMatrixSThread[thread_i*3+i][l] = RotMatrixM[i][l];
         }
       }
-      FillRMatrixZY(RotMatrixSThread[3*thread_i], 0, 0);  //TMP solution because RotMatrixM is not initialized.
+      FillRMatrixZY((MatrixPtr)RotMatrixSThread[3*thread_i], 0, 0);  //TMP solution because RotMatrixM is not initialized.
     }
 
     // Check to see if the neutron is initially in the entrance to the guide
@@ -1432,7 +1432,9 @@ void processNeutron(int neutron_i, int thread_i)
             gW[GW_TOP].C = -dXpce/Length1;
             gW[GW_BOTTOM].A = -dDelZ/Length1;
             gW[GW_BOTTOM].C = -dXpce/Length1;
-            /* no break at this point !!! */
+            gW[GW_TOP].D = -gW[GW_TOP].C * pPieces[j].Zpce;
+            gW[GW_BOTTOM].D = gW[GW_BOTTOM].C * pPieces[j].Zpce;
+            break;
           case VT_LINEAR:
             /* top and bottom walls are moved */
             gW[GW_TOP].D = -gW[GW_TOP].C * pPieces[j].Zpce;
@@ -1563,7 +1565,7 @@ void processNeutron(int neutron_i, int thread_i)
       if (sMCPLWrite !=0)
       {
           VectorType Shift={dXpce, 0.0, 0.0};
-          RotBackVector(RotMatrixSThread[3*thread_i], Shift);
+          RotBackVector((MatrixPtr)RotMatrixSThread[3*thread_i], Shift);
           AddVector(BegPosSThread[thread_i], Shift);
           //SERIAL RotBackVector(RotMatrixSThread, Shift);
           //SERIAL AddVector(BegPosSThread, Shift);
@@ -1587,7 +1589,7 @@ void processNeutron(int neutron_i, int thread_i)
           /* RotMatrixSThread must be updated for MCPL */
           if (sMCPLWrite!=0)
           {
-              FillRMatrixZY(RotMatrixSThread[3*thread_i], RotY, RotZ+(j+1)*beta);
+              FillRMatrixZY((MatrixPtr)RotMatrixSThread[3*thread_i], RotY, RotZ+(j+1)*beta);
               //SERIAL FillRMatrixZY(RotMatrixSThread, RotY, RotZ+(j+1)*beta);
           }
         }
@@ -1937,7 +1939,8 @@ double Height(double dLength)
       break;
 
     case VT_ELLIPTIC:
-      C_CalculateEllipseParameters(GuideEntrHeight, GuideExitHeight, TotalLength/100.0, D_Foc2Z/100.0, &LAxisZ, &SAxisZ, &startPoint, &endPoint);
+      CalculateEllipseParameters(GuideEntrHeight, GuideExitHeight, TotalLength / 100.0, D_Foc2Z / 100.0,
+                                 &LAxisZ, &SAxisZ, &startPoint, &endPoint);
       FocDistZ       = 100.0 * sqrt(sq(LAxisZ) - sq(SAxisZ)); // m -> cm
       GuideMaxHeight = 200.0 * SAxisZ;                        // m -> cm
       LAxisZ        *= 100.0;                                 // m -> cm
@@ -1983,7 +1986,8 @@ double Width(double dLength)
       break;
 
     case VT_ELLIPTIC:
-      C_CalculateEllipseParameters(GuideEntrWidth, GuideExitWidth, TotalLength/100.0, D_Foc2Y/100.0, &LAxisY, &SAxisY, &startPoint, &endPoint);
+      CalculateEllipseParameters(GuideEntrWidth, GuideExitWidth, TotalLength / 100.0, D_Foc2Y / 100.0,
+                                 &LAxisY, &SAxisY, &startPoint, &endPoint);
       FocDistY      = 100.0*sqrt(sq(LAxisY) - sq(SAxisY)); // m -> cm
       GuideMaxWidth = 200.0*SAxisY;                        // m -> cm
       LAxisY       *= 100.0;                               // m -> cm
@@ -2492,7 +2496,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
   if(sMCPLWrite)
   {
     int j;
-    RotBackVector(RotMatrixSThread[thread_i*3], absPos);
+    RotBackVector((MatrixPtr)RotMatrixSThread[thread_i*3], absPos);
     //SERIAL RotBackVector(RotMatrixSThread, absPos);
 
     for (j=0; j<3; j++)
@@ -2554,7 +2558,7 @@ void WriteReflParam(ReflCond *RefOut, int thread_i, int Mode, Neutron *pNeutron,
   if ((sMCPLWrite==2) || (sMCPLWrite==3))
   {
       double dir[3]={pNeutron->Vector[0], pNeutron->Vector[1], pNeutron->Vector[2]};
-      RotBackVector(RotMatrixSThread[thread_i*3], dir);
+      RotBackVector((MatrixPtr)RotMatrixSThread[thread_i*3], dir);
 
       particleT[thread_i].position[0] = absPos[0];
       particleT[thread_i].position[1] = absPos[1];

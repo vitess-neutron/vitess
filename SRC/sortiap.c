@@ -217,6 +217,7 @@ void parseX3dOptionFile() {
       break;
     case 'p':
       GVS(rismat,PRISMAT);
+      break;
     case 'r':
       GVS(ectmat,RECTMAT);
       break;
@@ -806,6 +807,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     if (0 == strcmp(rs, "rism")) {
       vtype = GT_Prism;  nargs = 25;
     }
+    break;
   case 'R':
     if (0 == strcmp(rs, "ectangle")) {
       vtype = GT_Rectangle;  nargs = 9;

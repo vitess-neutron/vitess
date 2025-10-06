@@ -17,11 +17,12 @@ TODAY := $(shell date '+%Y-%m-%d')
 FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
 CC ?= cc
-ARCHFLAGS =
-CFLAGS = $(ARCHFLAGS) -pthread -Wall -Wno-cast-qual -Wno-incompatible-pointer-types -fomit-frame-pointer -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
 CXX ?= c++
-CXXFLAGS = $(CFLAGS)
-CPPFLAGS =
+ARCHFLAGS =
+COMMON_FLAGS = $(ARCHFLAGS) -pthread -Wall -Wextra -Wno-deprecated-declarations -Wno-sign-compare -I"$(GSLPATH)"
+CFLAGS = -std=gnu99 $(COMMON_FLAGS)
+CXXFLAGS = -std=gnu++11 $(COMMON_FLAGS)
+CPPFLAGS = -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 LDFLAGS = -L. -L"$(GSLPATH)"
 LDLIBS = -lvitess -lgslran -lm
 AR = ar
@@ -45,40 +46,41 @@ NOGD ?= 0
 endif
 
 ifndef NOG2
-CFLAGS += -I"$(G2PATH)/include" -DDO_PNG -DDO_X11 -DVT_GRAPH
+COMMON_FLAGS += -I"$(G2PATH)/include" -DDO_PNG -DDO_X11 -DVT_GRAPH
 LDFLAGS += -L"$(G2PATH)"
 LDLIBS += -lg2 -lpng -lz -lfreetype -lXpm -lX11
 ifeq ($(NOGD), 0)
-CFLAGS += -DDO_GD
+COMMON_FLAGS += -DDO_GD
 LDLIBS += -lgd
 endif
 G2OPTS =
 ifeq ($(SYS),Darwin)
 G2OPTS += --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib --disable-shared
-CFLAGS += -I/opt/X11/include
+COMMON_FLAGS += -I/opt/X11/include
 LDFLAGS += -L/opt/X11/lib
 endif
 endif
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 0)
-CFLAGS += -O3 -DNDEBUG
+COMMON_FLAGS += -O3 -DNDEBUG
+CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Release
 ifdef LTO
-CFLAGS += -flto
+COMMON_FLAGS += -flto
 LDFLAGS += -O3 -flto
 endif
 else
-CFLAGS += -g -O0 -DDEBUG=1
+COMMON_FLAGS += -g -O0 -DDEBUG=1 -ffp-contract=off
 CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Debug
 INSTALL = install
 ifeq ($(DEBUG), 2)
-CFLAGS += -fsanitize=address
-LDFLAGS += -fsanitize=address
+COMMON_FLAGS += -fsanitize=address,undefined
+LDFLAGS += -fsanitize=address,undefined
 endif
 endif
 
 ifdef AVX
-CFLAGS += -mavx
+COMMON_FLAGS += -mavx
 endif
 
 
@@ -296,12 +298,12 @@ monochromator: monochromator.cpp monochrclass.cpp
 
 opt_sim: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
 
-read_in: CFLAGS += -I$(KDSOURCEPATH)/install/include
+read_in: COMMON_FLAGS += -I$(KDSOURCEPATH)/install/include
 read_in: LDFLAGS += -L$(KDSOURCEPATH)/install/lib
 read_in: LDLIBS += -lmcpl -lkdsource -lxml2
 read_in: read_in.c random_sampler.c | $(KDSOURCEPATH)/install/lib/libkdsource.a
 
-sample_ncrystal: CFLAGS += -I$(NCRYSTALPATH)/install/include
+sample_ncrystal: COMMON_FLAGS += -I$(NCRYSTALPATH)/install/include
 sample_ncrystal: LDFLAGS += -L$(NCRYSTALPATH)/install/lib
 sample_ncrystal: LDLIBS += -lNCrystal -ldl
 
