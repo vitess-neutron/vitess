@@ -1,6 +1,7 @@
 SRC/*
 !SRC/*.*
 !SRC/*/
+!SRC/Makefile
 *.o
 *.obj
 *.a
@@ -14,3 +15,4 @@ MODULES/*_arm64
 MODULES/*.exe
 *.un~
 .DS_Store
+Xc20?????.log

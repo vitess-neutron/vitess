@@ -81,10 +81,10 @@ void ssw_update_nparticles(FILE* f, int64_t np1pos, int32_t np1,                
                            int64_t nrsspos, int32_t nrss);
 short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv,        // calculation of divergence from flight direction
                      const VectorType Direction);
-void  VitessParameters();                                                        // Defines format for variables and headline in output file 
-void  McStasParameters();                                                        // Sets output parameters for McStas  
-void  MCNP6Parameters();                                                         // Sets output parameters for MCNP6  
-void  MCNPXParameters();                                                         // Sets output parameters for MCNPX  
+void  VitessParameters();                                                        // Defines format for variables and headline in output file
+void  McStasParameters();                                                        // Sets output parameters for McStas
+void  MCNP6Parameters();                                                         // Sets output parameters for MCNP6
+void  MCNPXParameters();                                                         // Sets output parameters for MCNPX
 short ConvertVitess2McStas(McNeutron*       pMcNeut,   const Neutron* pVitNeut); // Conversion from VITESS to McStas trajectory
 short ConvertVitess2MCPL  (mcpl_particle_t* pMcplNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCPL  trajectory
 short ConvertVitess2MCNP6 (Mcnp6Neutron*    pMcnpNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCNP6  trajectory
@@ -92,7 +92,7 @@ short ConvertVitess2MCNPX (McnpxNeutron*    pMcnpNeut, const Neutron* pVitNeut);
 
 void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);            // Vector transfer from VITESS to McStas co-ordinate system
 
-char* FullParName(const char* filename);                                         // function in init.c, adds parameter directory to file name 
+char* FullParName(const char* filename);                                         // function in init.c, adds parameter directory to file name
 
 
 /******************************/
@@ -118,7 +118,7 @@ bF_cTrc=TRUE,
 
 double       FactInt   = 1.0;           //  -I   [-]   factor to normalize to the source intensity from MCNP data
 int          iSurface  = MISSING;       //  -s   [-]   surface ID written to the event file
-char*        pTitle=NULL;               //  -T   [-]   title of the simulation 
+char*        pTitle=NULL;               //  -T   [-]   title of the simulation
 
 double       filtLambdaMin=-1.0,        //  -l  [Ang]  minimal wavelength to be taken into account
 filtLambdaMax= 1.0e10,     //  -L  [Ang]  maximal wavelength to be taken into account
@@ -152,7 +152,7 @@ int32_t orig_np1;
 char*          sOutform=NULL;           //             format for the whole line using McStas, MCNP6 or MCNPX
 char*          sHeader =NULL;           //             header: parameters of the event file
 char*          sUnits  =NULL;           //             header: units used in the event file
-short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence 
+short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence
 bCalcDivZ = FALSE;       //                               or vert. divergence necessary
 char           sVsn[5]="1.15",
         form[15][15]={"","","","","","","","","","","","","","",""};
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
   memset(&OutParticle,  '\0', sizeof(mcpl_particle_t));
 
 
-  // Initialization 
+  // Initialization
   // --------------
   _eModule=MCN_WRITEOUT;
 
@@ -208,7 +208,7 @@ int main(int argc, char **argv)
       // write all trajectories to pipe
       WriteNeutron(&(InputNeutrons[i]));
 
-      // skip the rest if the module is not active 
+      // skip the rest if the module is not active
       if (!bActive) continue;
 
       // Filter wavelength and position
@@ -329,6 +329,7 @@ int main(int argc, char **argv)
 
             ssw_writerecord(pOutFile,ssw_reclen,sizeof(double)*ssw_ssblen,(char*)&ssb[0]);
             used += 1;
+            break;
 
           case VT_MCNPX_FMT:
             if (eDatFormat==VT_BINARY)

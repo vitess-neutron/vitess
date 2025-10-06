@@ -1,0 +1,17 @@
+/*/result.txt
+/*/geometry.inf
+/*/instrument.inf
+/*/simulation.inf
+/*/*_out.dat
+!/*/*_out-ref.dat
+/*/gates.dat
+/*/bender.Log
+/*/*.log
+/*/screen.pos
+Test_EvalSans-2/screen.emt
+Test_Mono-1/Mono-5Layers.dat
+Test_Mono-2/Mono-3Layers.dat
+Test_Mono-3/MonoPST.dat
+Test_Mono-5/Mono-RotCyl.dat
+Test_Mono-6/Mono-DblFoc.dat
+Test_PolSM-4/p_lambda.dat

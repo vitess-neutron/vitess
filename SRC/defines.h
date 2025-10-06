@@ -72,7 +72,10 @@
 #define FREQUENCY_FROM_FIELD(x)  ( 18.324717 * x ) /* rad*kHz from Gauss */
 
 typedef double VectorType[3];
+typedef double *VectorPtr;
 typedef double DoublePair[2];
+typedef double MatrixType[3][3];
+typedef double (*MatrixPtr)[3];
 
 
 /***********************/

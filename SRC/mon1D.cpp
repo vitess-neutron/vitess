@@ -529,7 +529,7 @@ void Mon1D::WriteOut(long iBnch)
         for (iBin = 0; iBin < nBinsX[ii]; iBin++) 
         { 
           //if (dataArrayCounts[ii][iBin] > 0 && dataArrayPolWeights[ii][iBin] > 0) 
-          fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
+          fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7d\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
 	                                                                 dataArrayPol[ii][iBin], dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
         }
       }
@@ -538,7 +538,7 @@ void Mon1D::WriteOut(long iBnch)
         WriteHeader1DB(fMonitor[ii], FALSE, "intensity",    ANY_COLOR, iBnch, nBunches, nBinsX[ii], IntTot[ii], nTrajTot[ii], 
                                      sParName[eParX[ii]].c_str(), sParUnit[eParX[ii]].c_str(), xMin[0], xMax[0]);
         for (iBin = 0; iBin < nBinsX[ii]; iBin++) 
-        { fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7ld\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
+        { fprintf(fMonitor[ii],"%10.4f  %12.5e %12.5e  %7d\n", ((xMin[ii] + xBinSize[ii]*iBin) + (xMin[ii] + xBinSize[ii]*(iBin+1.)))/2.0, 
 	                                                              fNorm * dataArray[ii][iBin], fNorm * dataArrayError[ii][iBin], dataArrayCounts[ii][iBin]);
         }
       }

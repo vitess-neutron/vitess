@@ -506,6 +506,7 @@ static int IsSpecialSeitzMx(T_SgInfo *SgInfo, const T_RTMx *SMx, int ExpandLT)
         { ExpLT = LI_S; break; }
         if (IsSMxTransl0(LI_T, SMx->s.T) == 1)
         { ExpLT = LI_T; break; }
+        break;
       case 'A':
       case 'B':
       case 'C':

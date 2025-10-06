@@ -48,7 +48,7 @@ void  OwnCleanup();                                                             
 
 short ReadVitessTraj(Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads VITESS trajectory
 short ReadMcStasTraj(Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads McStas trajectory
-short ReadMcplTraj  (Neutron* pNeutron);                              // Reads MCPL trajectory 
+short ReadMcplTraj  (Neutron* pNeutron);                              // Reads MCPL trajectory
 short ReadMcnpxTraj (Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads MCNPX  trajectory
 short ReadSSWTraj   (Neutron* pNeutron, int* nTrj, ssw_file_t pFile); // Reads MCNP SSW trajectory
 short ReadMcnp6Traj (Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads MCNP6 trajectory
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
         NumNeutRead += rc;
         WriteNeutron(&InNeutron);
         if (NumNeutRead <= 10)
-        fprintf(LogFilePtr, "%i\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", InNeutron.ID.IDNo, InNeutron.Wavelength, InNeutron.Position[0], InNeutron.Position[1], InNeutron.Position[2],  InNeutron.Vector[0], InNeutron.Vector[1], InNeutron.Vector[2], InNeutron.Time, InNeutron.Probability);
+        fprintf(LogFilePtr, "%lu\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", InNeutron.ID.IDNo, InNeutron.Wavelength, InNeutron.Position[0], InNeutron.Position[1], InNeutron.Position[2],  InNeutron.Vector[0], InNeutron.Vector[1], InNeutron.Vector[2], InNeutron.Time, InNeutron.Probability);
       }
     }
   }
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
     }
     else{
       // sample mode
-      fprintf(LogFilePtr, "\nEntering read_in sampling mode\n"); 
+      fprintf(LogFilePtr, "\nEntering read_in sampling mode\n");
       FILE* sampleFile = tmpfile(); // generate temporary file in which to store sample.
       randomSampleFile(sInputFileName[0], sampleFile, maxEv); // create and store sample.
 
@@ -561,24 +561,11 @@ short ReadMcplTraj(Neutron* pNeutron)
 
 short ReadKDSTraj(Neutron* pNeutron, KDSource *pfile, int perturb, double wcrit)
 {
-    mcpl_particle_t part;
-    short rc = FALSE;
+  mcpl_particle_t part;
 
-    int result = KDS_sample2(pfile, &part, perturb, wcrit, NULL, 1);
+  KDS_sample2(pfile, &part, perturb, wcrit, NULL, 1);
 
-    const mcpl_particle_t* pMcplPtcl = (const mcpl_particle_t*)malloc(sizeof(mcpl_particle_t));
-    memcpy((void*)pMcplPtcl, (const void*)&part, sizeof(mcpl_particle_t));
-
-    if (&part == NULL){
-      rc = VT_EOF;
-    }
-      
-    else{
-      rc = ConvertMcpl2Vitess(pNeutron, pMcplPtcl);
-    }
-    free((void*)pMcplPtcl);
-
-  return(rc);
+  return ConvertMcpl2Vitess(pNeutron, &part);
 }
 
 /******************************************/
@@ -832,14 +819,13 @@ short ConvertMcpl2Vitess(Neutron* pVitNeutron, const mcpl_particle_t* pMcplParti
     pVitNeutron->Time        = pMcplParticle->time;
     pVitNeutron->Probability = pMcplParticle->weight;
 
-    CopyVector(&pMcplParticle->position, &pVitNeutron->Position);
-    CopyVector(&pMcplParticle->direction, &pVitNeutron->Vector);
-    CopyVector(&pMcplParticle->polarisation, &pVitNeutron->Spin);
+    CopyVector(&pMcplParticle->position[0], &pVitNeutron->Position[0]);
+    CopyVector(&pMcplParticle->direction[0], &pVitNeutron->Vector[0]);
+    CopyVector(&pMcplParticle->polarisation[0], &pVitNeutron->Spin[0]);
 
     return(TRUE);
-  }
-  else
-  { return(FALSE);
+  } else {
+    return(FALSE);
   }
 }
 
@@ -876,16 +862,16 @@ void GetId(TotalID* pID)
   static char          ig1='A', ig2='A';
 
   if (ig==4294967295U)
-  {	ig=0;
+  {  ig=0;
     if (ig2=='Z')
-    {	ig2='A'; ig1++;
+    {  ig2='A'; ig1++;
     }
     else
-    {	ig2++;
+    {  ig2++;
     }
   }
   else
-  {	ig++;
+  {  ig++;
   }
   pID->IDGrp[0] = ig1;
   pID->IDGrp[1] = ig2;
@@ -906,5 +892,3 @@ void ConvertDate(const char* sDateUS, char* sDateInt)
   sDateInt[8]=sDateUS[3];
   sDateInt[9]=sDateUS[4];
 }
-
-

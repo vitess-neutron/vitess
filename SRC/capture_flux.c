@@ -21,7 +21,7 @@
 #include "softabort.h"
 
 // To do for version 4
-// - WindowType needs new structure definition and convert function 
+// - WindowType needs new structure definition and convert function
 // - yaml file missing
 
 /******************************/
@@ -35,16 +35,16 @@ void OwnCleanup();                        // Does module specific cleanup
 /** Global and Static Variables **/
 /*********************************/
 // Input parameters
-double ReferenceWavelength=1.798;     // -R  [Ang]  reference wavelength                                                            
-double heightmin  = 0.0,              // -h  [cm]   z-coordinate: bottom of rectangular window             
-       heightmax  = 0.0,              // -H  [cm]   z-coordinate: top of rectangular window                
-       widthmin   = 0.0,              // -w  [cm]   y-coordinate: lower frame value of rectangular window  
-       widthmax   = 0.0,              // -W  [cm]   y-coordinate: higher frame value of rectangular window 
-       winradius  = 0.0,              // -r  [cm]   radius of circular window                              
-       ywincenter = 0.0,              // -y  [cm]   y coordinate: center of circular window                
-       zwincenter = 0.0;              // -z  [cm]   y coordinate: center of circular window                
-double lambdamin  = 0.0,              // -l  [Ang]  Minimum lambda for flux count                          
-       lambdamax  = 0.0;              // -L  [Ang]  Maximum lambda for flux count                          
+double ReferenceWavelength=1.798;     // -R  [Ang]  reference wavelength
+double heightmin  = 0.0,              // -h  [cm]   z-coordinate: bottom of rectangular window
+       heightmax  = 0.0,              // -H  [cm]   z-coordinate: top of rectangular window
+       widthmin   = 0.0,              // -w  [cm]   y-coordinate: lower frame value of rectangular window
+       widthmax   = 0.0,              // -W  [cm]   y-coordinate: higher frame value of rectangular window
+       winradius  = 0.0,              // -r  [cm]   radius of circular window
+       ywincenter = 0.0,              // -y  [cm]   y coordinate: center of circular window
+       zwincenter = 0.0;              // -z  [cm]   y coordinate: center of circular window
+double lambdamin  = 0.0,              // -l  [Ang]  Minimum lambda for flux count
+       lambdamax  = 0.0;              // -L  [Ang]  Maximum lambda for flux count
 long   WindowType = 0;                // -t  [Ang]  0 = No restrictions; 1 = circular window; 2 = rectangular window
 
 // Variables determined from input parameters or trajectory data
@@ -61,24 +61,24 @@ int main(int argc, char **argv)
   double CaptInt=0.0, CaptQuad=0.0, CaptErr=0.0;
   short  bOutOfWindow = FALSE, bOutOfLambda = FALSE;
 
-	/* Initialize the program according to the parameters given   */
+  /* Initialize the program according to the parameters given   */
   _eModule=MCN_CAPTURE;
 
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.13a");
   OwnInit(argc, argv);    // module specific initialization
- 
+
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
- 
+
   DECLARE_ABORT;
-  
-	// loop over trajectories
+
+  // loop over trajectories
   // ----------------------
-	/* Get the neutrons from the file */
+  /* Get the neutrons from the file */
   while((ReadNeutrons())!= 0)
   {
-    for(i=0; i<NumNeutGot; i++) 
+    for(i=0; i<NumNeutGot; i++)
     {
       CHECK;
 
@@ -87,12 +87,12 @@ int main(int argc, char **argv)
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         switch (WindowType)
         {
           case 1:
-            bOutOfWindow = (winradius*winradius < 
-            ((InputNeutrons[i].Position[1] - ywincenter)*(InputNeutrons[i].Position[1] - ywincenter) + 
+            bOutOfWindow = (winradius*winradius <
+            ((InputNeutrons[i].Position[1] - ywincenter)*(InputNeutrons[i].Position[1] - ywincenter) +
             (InputNeutrons[i].Position[2] - zwincenter)*(InputNeutrons[i].Position[2] - zwincenter)));
             break;
           case 2:
@@ -107,16 +107,16 @@ int main(int argc, char **argv)
           bOutOfLambda = FALSE;
 
 
-        if (!bOutOfWindow && !bOutOfLambda) 
+        if (!bOutOfWindow && !bOutOfLambda)
         {
           double col;
 
-          if (ReferenceWavelength <= 0.) 
+          if (ReferenceWavelength <= 0.)
           {
             CaptInt  +=    InputNeutrons[i].Probability;
             CaptQuad += sq(InputNeutrons[i].Probability);
-          } 
-          else 
+          }
+          else
           {
             CaptInt  +=    InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength;
             CaptQuad += sq(InputNeutrons[i].Probability*InputNeutrons[i].Wavelength/ReferenceWavelength);
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
   /* error for the given count rate calculated through adding squared errors
   - of the number  of contributing traj.: sqrt(N) (Poisson distribution)
   - of the average count rate of each trajectory I_s = I_tot/N:
-  sqrt((<I_s²> - <I_s>²)/(N-1))
+  sqrt((<I_sÂ²> - <I_s>Â²)/(N-1))
   as independent contributions */
   if (Ntot > 1)
     CaptErr = sqrt(sq(CaptInt)/Ntot + (Ntot*CaptQuad-sq(CaptInt))/(Ntot-1));
@@ -164,23 +164,23 @@ int main(int argc, char **argv)
     fprintf(LogFilePtr,"Lambda window from %7.3f A to %7.3f A \n", lambdamin, lambdamax);
 
   fprintf(LogFilePtr, "Reference wavelength: %12.3f A\n", ReferenceWavelength);
-  if (avColor != 0.0 && Ntot!=0) 
+  if (avColor != 0.0 && Ntot!=0)
   {
     fprintf(LogFilePtr, "Average color       : %12.3f \n", avColor);
     fprintf(LogFilePtr, "Avr. weighted color : %12.3f \n", avwColor);
   }
-  fprintf(LogFilePtr, "Captured intensity  : %12.3e +/- %12.3e n/s       by %10ld trajectories\n", CaptInt, CaptErr,    Ntot);
+  fprintf(LogFilePtr, "Captured intensity  : %12.3e +/- %12.3e n/s       by %10d trajectories\n", CaptInt, CaptErr,    Ntot);
   fprintf(LogFilePtr, "Capture flux        : %12.3e +/- %12.3e n/(s*cm^2) \n\n",          CaptInt/CaptArea, CaptErr/CaptArea);
-  
+
   // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
   // ----------------------------------------------------------------------------------------
  my_exit:
   /* Do module specific cleanups */
   OwnCleanup();
-  
+
   /* Do the general cleanup */
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
-  
+
   return 0;
 }
 
@@ -188,18 +188,18 @@ int main(int argc, char **argv)
 /*******************************************************/
 /** Reads input parameters and sets global variables  **/
 /*******************************************************/
-void  OwnInit(int argc, char *argv[]) 
+void  OwnInit(int argc, char *argv[])
 {
   int i;
 
-  for(i=1; i<argc; i++) 
-  { 
-    if(argv[i][0]!='+') 
-    { 
+  for(i=1; i<argc; i++)
+  {
+    if(argv[i][0]!='+')
+    {
       switch(argv[i][1])
-      { 
+      {
         case 'R':
-          ReferenceWavelength = atof(&argv[i][2]);  
+          ReferenceWavelength = atof(&argv[i][2]);
           break;
 
         case 't':

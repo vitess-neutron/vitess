@@ -393,7 +393,7 @@ void OwnInit(int argc, char *argv[])
       case 'N':
         sscanf(&argv[1][2], "%ld", &ind_x_max) ;
         if (ind_x_max >= FLD_SIZE_X)
-        { sprintf(sBuffer, "number of domains too large.  Input: %ld   Maximmum is %ld", ind_x_max, FLD_SIZE_X-1);
+        { sprintf(sBuffer, "number of domains too large.  Input: %ld   Maximmum is %d", ind_x_max, FLD_SIZE_X-1);
           Error(sBuffer);
         }
         if ((ind_x_max/2. - floor(ind_x_max/2.)) > 0.) 

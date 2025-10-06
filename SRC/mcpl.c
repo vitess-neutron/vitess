@@ -110,7 +110,7 @@
  #include <fcntl.h>
  #include <io.h>
  #define STDOUT_FILENO 1  // from <unistd.h>
- #define F_OK          0  // from <parser.h>       
+ #define F_OK          0  // from <parser.h>
 #else
  #include <unistd.h>
 #endif
@@ -150,7 +150,7 @@ void mcpl_store_string(char** dest, const char * src)
   if (n>65535) n = 65535;
   if (*dest)
     free(*dest);
-  *dest = (char*)calloc(n+1,1);
+  *dest = calloc(n + 1, 1);
   assert(*dest);
   strncpy( *dest,src,n );
   (*dest)[n] = '\0';
@@ -219,7 +219,7 @@ void mcpl_recalc_psize(mcpl_outfile_t of)
     + 16 * f->opt_userflags;
 }
 
-void mcpl_platform_compatibility_check() 
+void mcpl_platform_compatibility_check()
 {
   mcpl_particle_t pd;
   int32_t m1_32 = -1;
@@ -277,7 +277,7 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   mcpl_outfile_t out;
   out.internal = 0;
 
-  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t*)calloc(sizeof(mcpl_outfileinternal_t),1);
+  mcpl_outfileinternal_t *f = calloc(1, sizeof(mcpl_outfileinternal_t));
   assert(f);
 
   if (!lastdot || strcmp(lastdot, ".mcpl") != 0) {
@@ -337,9 +337,9 @@ void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
   oldn = f->ncomments;
   f->ncomments += 1;
   if (oldn)
-    f->comments = (char **)realloc(f->comments,f->ncomments * sizeof(char*) );
+    f->comments = realloc(f->comments, f->ncomments * sizeof(char *));
   else
-    f->comments = (char **)calloc(f->ncomments,sizeof(char*));
+    f->comments = calloc(f->ncomments, sizeof(char *));
   f->comments[oldn] = 0;
   mcpl_store_string(&(f->comments[oldn]),comment);
 }
@@ -362,23 +362,23 @@ void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
   }
   //store key:
   if (oldn)
-    f->blobkeys = (char **)realloc(f->blobkeys,f->nblobs * sizeof(char*) );
+    f->blobkeys = realloc(f->blobkeys, f->nblobs * sizeof(char *));
   else
-    f->blobkeys = (char **)calloc(f->nblobs,sizeof(char*));
+    f->blobkeys = calloc(f->nblobs, sizeof(char *));
   f->blobkeys[oldn] = 0;
   mcpl_store_string(&(f->blobkeys[oldn]),key);
   //store blob-lengths:
   if (oldn)
-    f->bloblengths = (uint32_t*)realloc(f->bloblengths,f->nblobs * sizeof(uint32_t) );
+    f->bloblengths = realloc(f->bloblengths, f->nblobs * sizeof(uint32_t));
   else
-    f->bloblengths = (uint32_t *)calloc(f->nblobs,sizeof(uint32_t));
+    f->bloblengths = calloc(f->nblobs, sizeof(uint32_t));
   f->bloblengths[oldn] = ldata;
 
   //store data:
   if (oldn)
-    f->blobs = (char **)realloc(f->blobs,f->nblobs * sizeof(char*) );
+    f->blobs = realloc(f->blobs, f->nblobs * sizeof(char *));
   else
-    f->blobs = (char **)calloc(f->nblobs,sizeof(char*));
+    f->blobs = calloc(f->nblobs, sizeof(char *));
   f->blobs[oldn] = (char *)malloc(ldata);
   memcpy(f->blobs[oldn],data,ldata);
 }
@@ -764,7 +764,7 @@ mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
     //problems in multi-threaded user-code. Better disallow and give an error:
     mcpl_error("mcpl_get_empty_particle must not be called more than once per output file");
   } else {
-    f->puser = (mcpl_particle_t*)calloc(sizeof(mcpl_particle_t),1);
+    f->puser = calloc(1, sizeof(mcpl_particle_t));
   }
   return f->puser;
 }
@@ -884,7 +884,7 @@ void mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char ** buf, const ch
     nb = fread(n, 1, sizeof(*n), f->file);
   if (nb!=sizeof(*n))
     mcpl_error(errmsg);
-  *buf = (char*)calloc(*n,1);
+  *buf = calloc(*n, 1);
 #ifdef MCPL_HASZLIB
   if (f->filegz)
     nb = gzread(f->filegz, *buf, *n);
@@ -907,7 +907,7 @@ void mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const char* errmsg)
     nb = fread(&n, 1, sizeof(n), f->file);
   if (nb!=sizeof(n))
     mcpl_error(errmsg);
-  char * s = (char*)calloc(n+1,1);
+  char *s = calloc(n + 1, 1);
 #ifdef MCPL_HASZLIB
   if (f->filegz)
     nb = gzread(f->filegz, s, n);
@@ -933,7 +933,7 @@ mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
   mcpl_file_t out;
   out.internal = 0;
 
-  mcpl_fileinternal_t * f = (mcpl_fileinternal_t*)calloc(sizeof(mcpl_fileinternal_t),1);
+  mcpl_fileinternal_t *f = calloc(1, sizeof(mcpl_fileinternal_t));
   assert(f);
 
   //open file (with gzopen if filename ends with .gz):
@@ -1034,7 +1034,7 @@ mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
 
   //Then some strings:
   mcpl_read_string(f,&f->hdr_srcprogname,errmsg);
-  f->comments = f->ncomments ? (char **)calloc(f->ncomments,sizeof(char*)) : 0;
+  f->comments = f->ncomments ? calloc(f->ncomments, sizeof(char *)) : 0;
   uint32_t i;
   for (i = 0; i < f->ncomments; ++i)
     mcpl_read_string(f,&(f->comments[i]),errmsg);
@@ -1043,15 +1043,15 @@ mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
   f->bloblengths = 0;
   f->blobs = 0;
   if (f->nblobs) {
-    f->blobs = (char **)calloc(f->nblobs,sizeof(char*));
-    f->blobkeys = (char **)calloc(f->nblobs,sizeof(char*));
-    f->bloblengths = (uint32_t *)calloc(f->nblobs,sizeof(uint32_t));
+    f->blobs = calloc(f->nblobs, sizeof(char *));
+    f->blobkeys = calloc(f->nblobs, sizeof(char *));
+    f->bloblengths = calloc(f->nblobs, sizeof(uint32_t));
     for (i =0; i < f->nblobs; ++i)
       mcpl_read_string(f,&(f->blobkeys[i]),errmsg);
     for (i =0; i < f->nblobs; ++i)
       mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), errmsg);
   }
-  f->particle = (mcpl_particle_t*)calloc(sizeof(mcpl_particle_t),1);
+  f->particle = calloc(1, sizeof(mcpl_particle_t));
 
   //At first event now:
   f->current_particle_idx = 0;
@@ -1743,8 +1743,8 @@ void mcpl_warn_duplicates(unsigned n, const char ** filenames)
 
 #ifdef MCPL_THIS_IS_UNIX
   //Bullet proof(ish) way, (st_ino,st_dev) uniquely identifies a file on a system.
-  dev_t * id_dev = (dev_t*)calloc(n*sizeof(dev_t),1);
-  ino_t * id_ino = (ino_t*)calloc(n*sizeof(ino_t),1);
+  dev_t *id_dev = calloc(n, sizeof(dev_t));
+  ino_t *id_ino = calloc(n, sizeof(ino_t));
   unsigned i;
   for (i = 0; i<n; ++i) {
     FILE * fd = fopen(filenames[i],"rb");
@@ -2090,7 +2090,7 @@ int mcpl_str2int(const char* str, size_t len, int64_t* res)
   return 1;
 }
 
-int mcpl_tool(int argc,char** argv) 
+int mcpl_tool(int argc,char** argv)
 {
   mcpl_file_t    fi;
   mcpl_outfile_t fo;
@@ -2196,7 +2196,7 @@ int mcpl_tool(int argc,char** argv)
     } else if (n>=1&&a[0]!='-') {
       //input file
       if (!filenames)
-        filenames = (char **)calloc(argc,sizeof(char*));
+        filenames = calloc(argc, sizeof(char *));
       filenames[nfilenames] = a;
       ++nfilenames;
     } else {

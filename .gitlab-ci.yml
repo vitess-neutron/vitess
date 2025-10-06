@@ -198,48 +198,35 @@ compile-windows:
     paths:
       - artifacts-Windows10-x86/
 
-test-rocky8:
+test-rocky9:
+  extends: compile-rocky9
   stage: test
-  image: rockylinux:8
-  needs:
-    - job: compile-rocky8
-  variables:
-    LINUX_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-linux-data.git"
-    LINUX_DATA_USER: "gitlab+deploy-token-147"
-    LINUX_DATA_PASSWORD: "gldt-UDysz-dxdz-iXsSPQRy-"
-    LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
-    LD_LIBRARY_PATH: "${CI_PROJECT_DIR}/vitess-data/libtorch/lib"
+  needs: []
   before_script:
-    - dnf install -y epel-release
-    - dnf install -y make gcc-toolset-12 libXpm gd zlib git unzip python3 python3-pyyaml libxml2
-    - . /opt/rh/gcc-toolset-12/enable
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3 python3-pyyaml diffutils libasan libubsan
     - *linux_before_script
   script:
-    - cp -rf artifacts-Rocky8-x86_64/MODULES .
-    - python3 tests/check_yaml.py
-    - tests/check_examples.sh
+    - cd SRC
+    - make install DEBUG=2 NOG2=1
+    - cd ..
+    - python3 tests/test_yaml_format.py
+    - tests/test_examples.sh
+    - tests/test_modules.sh
+  artifacts:
+    paths: []
 
 test-darwin:
+  extends: compile-darwin
   stage: test
-  image: macos:sonoma-xcode
-  tags:
-    - utm
-  needs:
-    - job: compile-darwin
-  variables:
-    DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
-    DARWIN_DATA_USER: "gitlab+deploy-token-92"
-    DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
-  before_script:
-    - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
-    - cd vitess-data
-    - sudo hdiutil attach XQuartz-2.8.2.dmg
-    - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
-    - sudo hdiutil detach /Volumes/XQuartz-2.8.2
-    - cd ..
+  needs: []
   script:
-    - cp -rf artifacts-Darwin-universal/MODULES .
-    - tests/check_examples.sh
+    - cd SRC
+    - make install DEBUG=2 NOG2=1
+    - cd ..
+    - tests/test_examples.sh
+    - tests/test_modules.sh
+  artifacts:
+    paths: []
 
 test-largefiles:
   stage: test

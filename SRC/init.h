@@ -18,7 +18,7 @@ extern "C" {
 extern char*         sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
 
 extern McCompID      _eModule;       /* ID of the module                */
-extern double        BlowUp;         /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
+extern double        BlowUp;         /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */
 extern long          BufferSize;     /* size of the neutron input and ouput buffer */
 extern Neutron*      InputNeutrons;  /* input neutron Buffer */
 extern Neutron*      OutputNeutrons; /* output neutron buffer */
@@ -59,7 +59,7 @@ extern double        RotMatrixMX[3][3];
 
 FILE* OpenOutputFile  (const char *sName, short bErrMsg, const char* sMode);              // opens file in the output folder with or without error message
 FILE* OpenInputFile   (const char *sName, short bErrMsg, const char* sMode);              // opens file in the input folder with or without error message
-FILE* OpenInputFile2  (const char *sFilename, const char* sContent, const char* sMode);   // opens file in the input folder with extended error message   
+FILE* OpenInputFile2  (const char *sFilename, const char* sContent, const char* sMode);   // opens file in the input folder with extended error message
 FILE* OpenPackInpFile (const char *sFilename, const char* sPath, short bErrMsg);          // opens input file from the installation directory
 
 void TotalPath        (char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
@@ -95,13 +95,13 @@ void DefineColors     (FILE* pGeomFile);
 void DrawLine         (FILE* pGeomFile, const char* pDescr, VectorType RelPosB,  VectorType RelPosE);
 void DrawRectangle    (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, double rotAngle);
 void DrawTriangle     (FILE* pGeomFile, const char* pDescr, VectorType vEdge1,   VectorType vEdge2, VectorType vEdge3);
-void DrawOpenRect     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 
+void DrawOpenRect     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height,
                        double InnerWidth, double InnerHeight);
 void DrawCircle       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double AngleBeg, double AngleEnd);
-void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double rotAngle); 
-void DrawPrism        (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, VectorType vVertices[6], double PrismHeight); 
-void DrawHull         (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, 
-                       double WidthIn,  double WidthOut, double HeightIn, double HeightOut, double rotAngle); 
+void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double rotAngle);
+void DrawPrism        (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, VectorType vVertices[6], double PrismHeight);
+void DrawHull         (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length,
+                       double WidthIn,  double WidthOut, double HeightIn, double HeightOut, double rotAngle);
 void DrawCylinder     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius);
 void DrawHolCyl       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius, const double InnerRadius);
 void DrawSphere       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, double Radius);
@@ -139,7 +139,7 @@ extern gsl_rng * vit_gsl_rng;
 #ifdef DODEBMACRO
 # if DEBUG
 #  define DEBUG_OUT(...) {fprintf(LogFilePtr, "%s, line %d :", __FILE__, __LINE__); fprintf(LogFilePtr, __VA_ARGS__); fprintf(LogFilePtr, "\n");}
-# else 
+# else
 #  define DEBUG_OUT(...) (void)0
 # endif
 # undef DODEBMACRO
