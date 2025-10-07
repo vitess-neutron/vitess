@@ -56,8 +56,6 @@ workflow:
 
 compile-rocky8:
   extends: .compile-linux
-  rules:
-    - when: on_success
   image: rockylinux:8
   variables:
     OS: Rocky8
@@ -71,6 +69,8 @@ compile-rocky8:
 
 compile-rocky9:
   extends: .compile-linux
+  rules:
+    - when: on_success
   image: rockylinux:9
   variables:
     OS: Rocky9
@@ -201,6 +201,8 @@ compile-windows:
 test-rocky9:
   extends: compile-rocky9
   stage: test
+  rules:
+    - when: on_success
   needs: []
   before_script:
     - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3 python3-pyyaml diffutils libasan libubsan
@@ -218,6 +220,8 @@ test-rocky9:
 test-darwin:
   extends: compile-darwin
   stage: test
+  rules:
+    - when: on_success
   needs: []
   script:
     - cd SRC
