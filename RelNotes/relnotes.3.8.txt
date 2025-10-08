@@ -1,0 +1,9 @@
+VITESS 3.8 Release Notes
+------------------------
+
+Module tests:
+Automated tests have been added that check Modules for changes in output, memory leaks and undefined behavior.
+
+Fixes and improvents:
+- Various memory leaks have been fixed.
+- KDSource now finds its MCPL and bandwith files relative to the xml file.
