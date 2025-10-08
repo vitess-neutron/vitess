@@ -1,5 +1,5 @@
 variables:
-  VITESS_VERSION: "3.7"
+  VITESS_VERSION: "3.8"
 
 stages:
   - build
