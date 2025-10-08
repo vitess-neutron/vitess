@@ -368,6 +368,7 @@ void OwnInit(int argc, char *argv[])
     hSSWFile = ssw_open_file(sInputFileName[0]);
   }
   else if (ePrgFormat==VT_KDS_FMT){
+    KDS_setlogfile(LogFilePtr);
     hKDSFile = KDS_open(sInputFileName[0]);
   }
   else

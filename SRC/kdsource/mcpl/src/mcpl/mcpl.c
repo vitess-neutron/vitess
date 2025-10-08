@@ -106,11 +106,15 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-#include <unistd.h>
 #include <limits.h>
 #ifdef MCPL_THIS_IS_MS
 #  include <fcntl.h>
 #  include <io.h>
+#  define F_OK 0
+#  define STDOUT_FILENO 1
+#  define access(name,type) _access(name,type)
+#else
+#include <unistd.h>
 #endif
 
 #define MCPLIMP_NPARTICLES_POS 8
