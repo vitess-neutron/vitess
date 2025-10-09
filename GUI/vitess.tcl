@@ -5732,8 +5732,9 @@ proc moduleMenus {{n 1}} {
   for {set i 1} {$i <= $maxi} {incr i} {
     set w $Mlf.g$i
     set cm "checkModVar $i"
-    if [winfo exists $w.label] continue
+    set skip [winfo exists $w.label]
     addModMenu $w.label $i
+    if $skip continue
 
     set varName mod$i
     upvar #0 $varName var

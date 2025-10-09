@@ -18,8 +18,6 @@
 #
 # $Id: md5x.tcl,v 1.2 2003/07/26 02:18:00 patthoyts Exp $
 
-package require Tcl 8.2;                # tcl minimum version
-
 # Try and load a compiled extension to help.
 if {[catch {package require tcllibc}]} {
     if {[catch {package require md5c}]} {
