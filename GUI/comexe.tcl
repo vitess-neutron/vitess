@@ -200,9 +200,9 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
     lookWhosConcerned serrep serpar serno $i $mode $serll sermol serpal
 
     switch $var {
-      chopper_fermi_str {set com "chopper_fermi$par$sys -O1"}
-      chopper_fermi_cur {set com "chopper_fermi$par$sys -O2"}
-      guide       {set com "guide$par$sys"}
+      chopper_fermi_str {set com "chopper_fermi$sys -O1"}
+      chopper_fermi_cur {set com "chopper_fermi$sys -O2"}
+      guide       {set com "guide$sys"}
       guide_ideal {set com "guide_elliptic$sys"}
       lense        {set com "lenses$sys"}
       ma_flat       {set com "monochr_analyser$sys -O1"}
@@ -228,7 +228,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       monpol_y      {set com "monitorpol_1d$sys -k5"}
       monpol_z      {set com "monitorpol_1d$sys -k6"}
       quadr_field  {set com "sesans_field$sys"}
-      sm_ensemble {set com "sm_ensemble$par$sys"}
+      sm_ensemble {set com "sm_ensemble$sys"}
       source_ESS_LPTS {set com "source$sys -S3"}
       source_ESS_2012 {set com "source$sys -S3"}
       source_HBS  {set com "source$sys -S3"}
