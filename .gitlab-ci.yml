@@ -142,7 +142,10 @@ compile-darwin:
     DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
     DARWIN_DATA_USER: "gitlab+deploy-token-92"
     DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
+    LIBTORCHVERSION: "2.2.2"
+    LIBTORCHPATH: "${CI_PROJECT_DIR}/vitess-data/libtorch"
     NOGD: 0
+    DARWIN_UNIVERSAL: 1
   before_script:
     - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
     - cd vitess-data
@@ -158,6 +161,13 @@ compile-darwin:
     - tar xzf cmake.tgz
     - sudo cp -a CMake.app /Applications/
     - sudo ln -s /Applications/CMake.app/Contents/bin/cmake /usr/local/bin/cmake
+    - mkdir libtorch
+    - cd libtorch
+    - unzip "../libtorch-macos-arm64-${LIBTORCHVERSION}.zip"
+    - mv libtorch arm64
+    - unzip "../libtorch-macos-x86_64-${LIBTORCHVERSION}.zip"
+    - mv libtorch x86_64
+    - cd ..
     - cd ..
   artifacts:
     paths:
