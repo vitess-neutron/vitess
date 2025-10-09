@@ -5,21 +5,21 @@
 [ -z "${SUFFIX}" ] && SUFFIX="_`uname -s`_`uname -m`"
 
 $V/source${SUFFIX} -S1 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N1 --L${L}01 -a$P/FrmTherm2.mod -n1e6 -l1 -m1.2 -t0 -M1.4 -T0.3 -d1 -b0.0 -c0.0 -y0.5 -z0.5 -D164 -w1.51 -h5.01 -i0 -s200 -X0 -Y0 -V1 -P100 -A0 -k0 | \
-$V/guide_parallel${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N2 --L${L}02 -Y5 -Z5 -S$P/GuidevorBeamstop.txt -w6 -h10 -W6 -H10 -p0 -N1 -R0 -f0 -F0 -L1 -Q1 -G1 -i$P/superm2-.dat -I$P/superm2-.dat -j$P/superm2-.dat -M0 -m0 -a0 -g-1 -A0 -r0 -n0 -O-1 -v0 -e0 -E0 -c0 -C0 -d0 -D0 -B0 -t18 -T10 -V17 -k1000 -x0 -X10000 -K100 -u0 -U10 | \
+$V/guide${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N2 --L${L}02 -Y5 -Z5 -S$P/GuidevorBeamstop.txt -w6 -h10 -W6 -H10 -p0 -N1 -R0 -f0 -F0 -L1 -Q1 -G1 -i$P/superm2-.dat -I$P/superm2-.dat -j$P/superm2-.dat -M0 -m0 -a0 -g-1 -A0 -r0 -n0 -O-1 -v0 -e0 -E0 -c0 -C0 -d0 -D0 -B0 -t18 -T10 -V17 -k1000 -x0 -X10000 -K100 -u0 -U10 | \
 $V/capture_flux${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N3 --L${L}03 -R1.798 -t2 -r0.5 -y0 -z0 -w-1.05 -W1.05 -h-2.45 -H2.45 -l0.0 -L0.0 | \
 $V/beamstop${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N4 --L${L}04 -d0 -R0 -p0 -W2.1 -H4.9 | \
-$V/sm_ensemble_parallel${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N5 --L${L}05 -P$P/sm_beamstop_1.txt -F1 -S1 -R0 -Q-1 -r100 -s0 -t0 -h0 -v0 -T0 -o2 -c1 -w-5 -W105 -a-10 -A10 -M1000 -C$P/collision.dat -m500 | \
+$V/sm_ensemble${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N5 --L${L}05 -P$P/sm_beamstop_1.txt -F1 -S1 -R0 -Q-1 -r100 -s0 -t0 -h0 -v0 -T0 -o2 -c1 -w-5 -W105 -a-10 -A10 -M1000 -C$P/collision.dat -m500 | \
 $V/beamstop${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N6 --L${L}06 -d0 -R0 -p0 -W2.1 -H4.9 | \
-$V/guide_parallel${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N7 --L${L}07 -Y5 -Z5 -S$P/GuideBeamstopFC1.txt -w6 -h10 -W6 -H10 -p0 -N1 -R0 -f0 -F0 -L1 -Q1 -G1 -i$P/superm2-.dat -I$P/superm2-.dat -j$P/superm2-.dat -M0 -m0 -a0 -g-1 -A0 -r0 -n0 -O-1 -v0 -e0 -E0 -c0 -C0 -d0 -D0 -B0 -t18 -T10 -V17 -k1000 -x0 -X10000 -K100 -u0 -U10 | \
+$V/guide${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N7 --L${L}07 -Y5 -Z5 -S$P/GuideBeamstopFC1.txt -w6 -h10 -W6 -H10 -p0 -N1 -R0 -f0 -F0 -L1 -Q1 -G1 -i$P/superm2-.dat -I$P/superm2-.dat -j$P/superm2-.dat -M0 -m0 -a0 -g-1 -A0 -r0 -n0 -O-1 -v0 -e0 -E0 -c0 -C0 -d0 -D0 -B0 -t18 -T10 -V17 -k1000 -x0 -X10000 -K100 -u0 -U10 | \
 $V/capture_flux${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N8 --L${L}08 -R1.798 -t2 -r0.5 -y0 -z0 -w-2.7 -W2.7 -h-4.15 -H4.15 -l0.0 -L0.0 | \
-$V/chopper_fermi_parallel${SUFFIX} -O1 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N9 --L${L}09 -X10 -Y0 -V0 -a8.5 -b5.5 -c2.5 -l54 -m0.012 -r6.1 -n300 -q-36.524 -z1 -p4 | \
+$V/chopper_fermi${SUFFIX} -O1 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N9 --L${L}09 -X10 -Y0 -V0 -a8.5 -b5.5 -c2.5 -l54 -m0.012 -r6.1 -n300 -q-36.524 -z1 -p4 | \
 $V/space${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N10 --L${L}10 -d10 -M0 -m0 | \
 $V/monitor1${SUFFIX} -k1 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N11 --L${L}11 -O$P/postFC1.lda -n100 -C-1 -m0.5 -M5.5 -f0 -c0 -p1 -e0 | \
-$V/guide_parallel${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N12 --L${L}12 -Y5 -Z5 -S$P/GuideFC1HOR.txt -w6 -h10 -W6 -H10 -p0 -N1 -R0 -f0 -F0 -L1 -Q1 -G1 -i$P/superm2-.dat -I$P/superm2-.dat -j$P/superm2-.dat -M0 -m0 -a0 -g-1 -A0 -r0 -n0 -O-1 -v0 -e0 -E0 -c0 -C0 -d0 -D0 -B0 -t18 -T10 -V17 -k1000 -x0 -X10000 -K100 -u0 -U10 | \
+$V/guide${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N12 --L${L}12 -Y5 -Z5 -S$P/GuideFC1HOR.txt -w6 -h10 -W6 -H10 -p0 -N1 -R0 -f0 -F0 -L1 -Q1 -G1 -i$P/superm2-.dat -I$P/superm2-.dat -j$P/superm2-.dat -M0 -m0 -a0 -g-1 -A0 -r0 -n0 -O-1 -v0 -e0 -E0 -c0 -C0 -d0 -D0 -B0 -t18 -T10 -V17 -k1000 -x0 -X10000 -K100 -u0 -U10 | \
 $V/space${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N13 --L${L}13 -d2 -M0 -m0 | \
-$V/guide_parallel${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N14 --L${L}14 -Y5 -Z5 -S$P/GuideHORFC2.txt -w6 -h10 -W6 -H10 -p0 -N1 -R0 -f0 -F0 -L1 -Q1 -G1 -i$P/superm2-.dat -I$P/superm2-.dat -j$P/superm2-.dat -M0 -m0 -a0 -g-1 -A0 -r0 -n0 -O-1 -v0 -e0 -E0 -c0 -C0 -d0 -D0 -B0 -t18 -T10 -V17 -k1000 -x0 -X10000 -K100 -u0 -U10 | \
+$V/guide${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N14 --L${L}14 -Y5 -Z5 -S$P/GuideHORFC2.txt -w6 -h10 -W6 -H10 -p0 -N1 -R0 -f0 -F0 -L1 -Q1 -G1 -i$P/superm2-.dat -I$P/superm2-.dat -j$P/superm2-.dat -M0 -m0 -a0 -g-1 -A0 -r0 -n0 -O-1 -v0 -e0 -E0 -c0 -C0 -d0 -D0 -B0 -t18 -T10 -V17 -k1000 -x0 -X10000 -K100 -u0 -U10 | \
 $V/capture_flux${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N15 --L${L}15 -R1.798 -t2 -r0.5 -y0 -z0 -w-1.125 -W1.125 -h-2.21 -H2.21 -l0.0 -L0.0 | \
-$V/chopper_fermi_parallel${SUFFIX} -O1 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N16 --L${L}16 -X10 -Y0 -V0 -a5 -b2.5 -c2 -l51 -m0.004 -r4 -n300 -q-177.450 -z0 -p4 | \
+$V/chopper_fermi${SUFFIX} -O1 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N16 --L${L}16 -X10 -Y0 -V0 -a5 -b2.5 -c2 -l51 -m0.004 -r4 -n300 -q-177.450 -z0 -p4 | \
 $V/space${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N17 --L${L}17 -d10 -M0 -m0 | \
 $V/monitor1${SUFFIX} -k2 --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N18 --L${L}18 -O$P/postFC2.tim -n200 -C-1 -f1 -c0 -m1.5 -M1.7 -p1 -e0 -l-1.0 -L-1.0 | \
 $V/spacewindow${SUFFIX} --Z1 --U1.0e-25 --G1 --T0 --B10000 --P$P --N19 --L${L}19 -l90 -R1 -r10 -y0 -z0 -w-1 -W1 -h-2.5 -H2.5 -A0.0 -S0 -F0 -c6 -t0.0 -T0 | \
