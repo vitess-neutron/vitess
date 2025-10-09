@@ -8,11 +8,6 @@ cd "${TEST_DIR}/examples" || exit 1
 RESULT=0
 for PIPELINE in run*.sh; do
     FAIL=0
-    # workaround until souce_ai tests run on darwin
-    if [ "${PIPELINE}" = "run_SourceAI.sh" ] && [ ! -x "${V}/source_ai_$(uname -s)_$(uname -m)" ]; then
-        echo "Skipping ${PIPELINE} (module not found)"
-        continue
-    fi
     if [ -x "${PIPELINE}" ]; then
         NAME="$(basename "${PIPELINE#run_}" .sh)"
         CHECK="check_${NAME}.sh"

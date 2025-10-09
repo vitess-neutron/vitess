@@ -33,12 +33,11 @@ RMDIR = rm -rf
 LN = ln -s
 CMAKEFLAGS = -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX)
 
-DARWIN_UNIVERSAL = NO
+DARWIN_UNIVERSAL ?= 0
 ifeq ($(SYS),Darwin)
 NOGD ?= 1
 ifeq ($(ARCH),arm64)
-DARWIN_UNIVERSAL = YES
-ARCHFLAGS =  -arch x86_64 -arch arm64
+ARCHFLAGS = -arch x86_64 -arch arm64
 CMAKEFLAGS += "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
 endif
 else
@@ -225,7 +224,7 @@ distclean: clean
 	-$(RMDIR) "$(NCRYSTALPATH)/build" "$(NCRYSTALPATH)/install"
 
 .PHONY: install
-ifeq ($(DARWIN_UNIVERSAL),YES)
+ifeq ($(DARWIN_UNIVERSAL),1)
 install: $(ALL)
 	for F in $(ALL); do \
 		$(INSTALL) $${F} $(MODULES_DIR)/$${F}_$(SYS)_arm64; \
@@ -320,11 +319,30 @@ window: window.c bender_inter_data.c
 spacewindow_multiple: spacewindow_multiple.c bender_inter_data.c
 
 ifdef LIBTORCHPATH
-# -D_GLIBCXX_USE_CXX11_ABI=0 might be necessary depending binaries
+ifeq ($(DARWIN_UNIVERSAL),1)
+# universal build: assume LIBTORCHPATH has subdiretories for architectures
+source_ai_arm64: ARCHFLAGS = -arch arm64
+source_ai_arm64: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/arm64/include -I$(LIBTORCHPATH)/arm64/include/torch/csrc/api/include
+source_ai_arm64: LDFLAGS += -L$(LIBTORCHPATH)/arm64/lib
+source_ai_arm64: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/arm64/lib
+source_ai_arm64: source_ai.cpp | libvitess.a $(GSLPATH)/libgslran.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+source_ai_x86_64: ARCHFLAGS = -arch x86_64
+source_ai_x86_64: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/x86_64/include -I$(LIBTORCHPATH)/x86_64/include/torch/csrc/api/include
+source_ai_x86_64: LDFLAGS += -L$(LIBTORCHPATH)/x86_64/lib
+source_ai_x86_64: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/x86_64/lib
+source_ai_x86_64: source_ai.cpp | libvitess.a $(GSLPATH)/libgslran.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+source_ai: source_ai_arm64 source_ai_x86_64
+	lipo -create -output  $@ $^
+else
 source_ai: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/include -I$(LIBTORCHPATH)/include/torch/csrc/api/include
-source_ai: LDFLAGS += -L$(LIBTORCHPATH)/lib 
+source_ai: LDFLAGS += -L$(LIBTORCHPATH)/lib
 source_ai: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/lib
 source_ai: source_ai.cpp
+endif
 endif
 
 # keep old module names for compatibility
@@ -363,5 +381,4 @@ spacewindow: window
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 .o:
-	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
-
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
