@@ -585,7 +585,7 @@ void Init(int argc, char **argv, const McCompID eModule)
     LogFilePtr = OpenOutputFile(LogFileName, FALSE, "w");
     if (LogFilePtr == NULL)
     {
-      printf("ERROR: Can't open log file %s%c%s!\n", OutputDir, cSlash, LogFileName);
+      printf("ERROR: Can't open log file %s!\n", LogFileName);
       exit (-1);
     }
   }

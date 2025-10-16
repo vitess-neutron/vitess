@@ -3,6 +3,20 @@
 TESTS_DIR="$(cd "$(dirname "$0")" || exit 2; pwd)"
 VITESS_DIR="$(realpath "${TESTS_DIR}/..")"
 V="${VITESS_DIR}/MODULES"
+[ -z "${TEMP_DIR}" ] && TEMP_DIR="/tmp"
+
+case "$(uname -s)" in
+    # tests under windows with MSYS
+    MSYS*)
+        MSYS=true
+        [ "${TEMP_DIR}" = "/tmp" ] && TEMP_DIR="${TESTS_DIR}/tmp"
+        mkdir -p "${TEMP_DIR}" || exit 1
+        SUFFIX=".exe"
+        export SUFFIX
+        ;;
+    *)
+        ;;
+esac
 
 main() {
     if [ $# -eq 0 ]; then
@@ -32,11 +46,13 @@ run_pipelines() {
     PIPELINE_FAIL=0
     for PIPELINE in "${P}"/*.sh; do
         [ -x "${PIPELINE}" ] || continue
+        [ "${PIPELINE%-win.sh}" = "${PIPELINE}" ] || continue
         SCRIPT="$(basename "${PIPELINE}")"
         [ -n "${FIX_SCRIPTS}" ] && _fix_scripts
         if check_script "${PIPELINE}"; then
             echo "Running pipeline ${SCRIPT} for module test ${TEST_NAME}..."
-            V="${V}" P="${P}" L="/tmp/vitess_test_${TEST_NAME}" "${PIPELINE}" || PIPELINE_FAIL=1
+            # V="${V}" P="${P}" L="${TEMP_DIR}/vitess_test_${TEST_NAME}" "${PIPELINE}" || PIPELINE_FAIL=1
+            V="${V}" P="${P}" L="${TEMP_DIR}/vitess_test_${TEST_NAME}" call_pipeline "${PIPELINE}" || PIPELINE_FAIL=1
             grep -m1 -B1 '^ERROR:' "${P}/result.txt" && PIPELINE_FAIL=1
             grep -m1 'neutron count rate *: *0.0000e+00 +/- *0.000e+00 n/s' "${P}/result.txt" && PIPELINE_FAIL=1
         else
@@ -94,6 +110,22 @@ check_dir() {
     fi
     return ${DIR_FAIL}
 }
+
+if [ "${MSYS}" = "true" ]; then
+    call_pipeline() {
+        SCRIPT='/^\$\{?V\}?/ {
+            s/(\$\{?P\}?[^[:space:]]*)/$(cygpath -w \1)/g;
+            s/(\$\{?L\}?[^[:space:]]*)/$(cygpath -w \1)/g;
+        }'
+        WINPIPE="${1%.sh}-win.sh"
+        sed -E "${SCRIPT}" "${PIPELINE}" > "${WINPIPE}"
+        "${WINPIPE}"
+    }
+else
+    call_pipeline() {
+        "$1"
+    }
+fi
 
 # developer only: fix pipeline scripts
 _fix_scripts() {

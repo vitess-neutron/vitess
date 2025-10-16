@@ -13,20 +13,27 @@ KDSOURCEPATH = .\kdsource\win32
 
 CC = cl.exe
 CXX = cl.exe
-COMMON_FLAGS = /nologo /MT /W3 /Ox /Oy /GF /I "$(GSLPATH)" /I "$(KDSOURCEPATH)\include" /FD /EHsc
-CFLAGS = /std:c11 $(COMMON_FLAGS)
-CXXFLAGS = /std:c++14 $(COMMON_FLAGS)
-CPPFLAGS = /DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR)
+CCFLAGS = /MT /nologo /W3 /GF /EHsc
+CFLAGS = /std:c11 $(CCFLAGS)
+CXXFLAGS = /std:c++14 $(CCFLAGS)
+CPPFLAGS = /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR) /I "$(GSLPATH)" /I "$(KDSOURCEPATH)\include"
 LD = link.exe
 LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /libpath:"$(KDSOURCEPATH)\lib" /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmt.lib
 LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib msvcrt.lib vitess.lib libgsl.lib kdsource.lib mcpl.lib libxml2.lib
 
 !ifndef NOG2
-COMMON_FLAGS = $(COMMON_FLAGS) /DDO_PS /DVT_GRAPH /I "$(G2PATH)\src" /I "$(G2PATH)\src\Win32" /I "$(G2PATH)\src\PS"
+CPPFLAGS = $(CPPFLAGS) /DDO_PS /DVT_GRAPH /I "$(G2PATH)\src" /I "$(G2PATH)\src\Win32" /I "$(G2PATH)\src\PS"
 LDFLAGS = $(LDFLAGS) /libpath:"$(G2PATH)"
 LDLIBS = $(LDLIBS) libg2.lib
 !endif
 
+!ifdef DEBUG
+CCFLAGS = $(CCFLAGS) /Od
+CPPFLAGS = $(CPPFLAGS) /DDEBUG=1
+!else
+CCFLAGS = $(CCFLAGS) /Ox /Oy
+CPPFLAGS = $(CPPFLAGS) /DNDEBUG
+!endif
 
 # Vitess modules to build
 ALL = ascii2bin.exe \
@@ -90,6 +97,7 @@ pol_mirror.exe \
 polariser_he3.exe \
 polariser_sm.exe \
 precessionfield.exe \
+prism.exe \
 read_in.exe \
 resonator_drabkin.exe \
 rotating_field.exe \
@@ -219,19 +227,19 @@ spacewindow.exe: window.exe
 
 
 # suffix rules
-.SUFFIXES: .c .cpp. obj .exe
+.SUFFIXES: .c .cpp .obj .exe
 
 .c.obj:
-	$(CC) $(CPPFLAGS) $(CFLAGS) /c /Fo$@ $**
+	$(CC) $(CFLAGS) $(CPPFLAGS) /c /Fo$@ $**
 
 .cpp.obj:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) /c /Fo$@ $**
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) /c /Fo$@ $**
 
 .c.exe:
-	$(CC) $(CPPFLAGS) $(CFLAGS) /Fe$@ $** $(LDLIBS) /link $(LDFLAGS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fe$@ $** $(LDLIBS) /link $(LDFLAGS)
 
 .cpp.exe:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) /Fe$@ $** $(LDLIBS) /link $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) /Fe$@ $** $(LDLIBS) /link $(LDFLAGS)
 
 .obj.exe:
 	$(LD) $(LDLIBS) $(LDFLAGS) /OUT:$@ $**
