@@ -1,5 +1,5 @@
-DEFS=/D WIN32 /D _WINDOWS /D Vitess
-CPP_PROJ=/O2 /I .\ /I .\gsl $(DEFS) /EHsc /c 
+DEFS=/D WIN32 /D _WINDOWS /D VITESS
+CPP_PROJ=/O2 /I .\ /I .\gsl $(DEFS) /EHsc /c
 CPP=cl
 LIB=lib
 OBJS= .\default.obj .\types.obj .\rng.obj .\error.obj .\stream.obj \
@@ -11,6 +11,8 @@ ALL : .\libgsl.lib
 ".\libgsl.lib" : $(OBJS)
     $(LIB) /OUT:".\libgsl.lib" $(OBJS)
 
+.c.obj:
+	$(CPP) $(CPP_PROJ) $<
 S=default
 $(S).obj : $(S).c
 	$(CPP) $(CPP_PROJ) $(S).c

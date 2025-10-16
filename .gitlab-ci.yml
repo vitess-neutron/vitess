@@ -173,7 +173,6 @@ compile-darwin:
     paths:
       - artifacts-Darwin-universal/
 
-
 compile-windows:
   extends: .compile-base
   rules:
@@ -187,16 +186,16 @@ compile-windows:
     WINDOWS_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-windows-data.git"
     WINDOWS_DATA_USER: "gitlab+deploy-token-91"
     WINDOWS_DATA_PASSWORD: "NzWKCpEizPVzMEUSgxGA"
-  script:
+  before_script:
     - cd /c
     - git clone -b vitess${VITESS_VERSION} https://${WINDOWS_DATA_USER}:${WINDOWS_DATA_PASSWORD}@${WINDOWS_DATA_REPO} vitess-data
     - mv vitess-data/tcl /c/
     - mv vitess-data/gnuplot /c/
     - cd -
+  script:
     - cd SRC
-    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak all
     - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak install
-    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak clean
     - cd ..
     - mkdir artifacts-${OS}-${ARCH}
     - cp -r MODULES artifacts-${OS}-${ARCH}/
@@ -238,6 +237,22 @@ test-darwin:
     - make install DEBUG=2 NOG2=1
     - cd ..
     - tests/test_examples.sh
+    - tests/test_modules.sh
+  artifacts:
+    paths: []
+
+test-windows:
+  extends: compile-windows
+  stage: test
+  rules:
+    - when: on_success
+  needs: []
+  script:
+    - pacman -S --noconfirm diffutils
+    - cd SRC
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak DEBUG=1 all
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak DEBUG=1 install
+    - cd ..
     - tests/test_modules.sh
   artifacts:
     paths: []
