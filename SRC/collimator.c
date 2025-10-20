@@ -30,7 +30,7 @@ void  OwnInit         (int argc, char *argv[]);                                 
 short PathThroughColl (double* tof, Neutron* ThisNeutron, Plane exit_wall, long keygrav);  // calculates the flight time to the exit wall and the point of impact
 void  SetGeometry     (char* sColor);                                                      // fills the structure stGeometry for visualization
 
-int   DetermineChannel(double pos, double coll_min, double chan_dist);                     // determines the channel as a function of horizontal position              
+int   DetermineChannel(double pos, double coll_min, double chan_dist);                     // determines the channel as a function of horizontal position
 int   NumChan         (int nChanTot, int iHull);                                           // calculates the number of channels inside the hull
 int   NumBlds         (int nChanTot, int iHull);                                           // calculates the number of blades inside the hull
 
@@ -40,12 +40,12 @@ int   NumBlds         (int nChanTot, int iHull);                                
 /******************************/
 // Input parameters
 double CollEntrWidth =0.0,      // -w  [cm]   collimator width and height at entrance
-       CollEntrHeight=0.0,      // -h  [cm]   
+       CollEntrHeight=0.0,      // -h  [cm]
        CollExitWidth =0.0,      // -W  [cm]   collimator width and height at exit
-       CollExitHeight=0.0,      // -H  [cm]   
-       Length        =0.0,      // -l  [cm]   length of the collimator       
+       CollExitHeight=0.0,      // -H  [cm]
+       Length        =0.0,      // -l  [cm]   length of the collimator
        BladeWidth    =0.0;      // -s  [cm]   thickness of the blades separating the channels
-long   nChannels=1;             // -n   [-]   number of collimator channels  
+long   nChannels=1;             // -n   [-]   number of collimator channels
 
 // Variables determined from input parameters or trajectory data
 double ChanWin=0.0, ChanWout=0.0;       // width of channel at entrance and exit
@@ -57,12 +57,12 @@ double ChanWin=0.0, ChanWout=0.0;       // width of channel at entrance and exit
 int main(int argc, char *argv[])
 {
   long    i=0;                             // index of trajectories
-  int     iChanIn=0, iChanOut=0;           // channel where neutron enters and leaves    
-  short   bReach=FALSE;                    // boolean: hits exit or not          
+  int     iChanIn=0, iChanOut=0;           // channel where neutron enters and leaves
+  short   bReach=FALSE;                    // boolean: hits exit or not
   double  ChanDistIn=0.0, ChanDistOut=0.0, // distance between neighbouring channels at entrance and exit
-          ChanMinIn=0.0,  ChanMinOut=0.0,  // minimal y-position for channel determination    
-          ToF=0.0;                         // time-of-flight from entrance to exit of the collimator 
-  
+          ChanMinIn=0.0,  ChanMinOut=0.0,  // minimal y-position for channel determination
+          ToF=0.0;                         // time-of-flight from entrance to exit of the collimator
+
   Plane   CollExit;                        // plane determined by the exit area of the the collimator
   Neutron OutNeutron,                      // trajectory written to the output (to be read by the next module)
           AbsNeutron;                      // trajectory at point of absorption (for trajectory)
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   InitNeutron(&OutNeutron);
   InitNeutron(&AbsNeutron);
 
-	// reading of input data and initialisation
+  // reading of input data and initialisation
   // ----------------------------------------
   _eModule=MCN_COLLIMATOR;
 
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   ChanDistIn  =  ChanWin  + BladeWidth;
@@ -94,38 +94,38 @@ int main(int argc, char *argv[])
   CollExit.D = -Length;
 
   DECLARE_ABORT;
-  
-	// loop over trajectories
+
+  // loop over trajectories
   // ----------------------
   while(ReadNeutrons()!= 0)
   {
     for(i=0; i<NumNeutGot; i++)
     {
       CHECK;
-	  
+
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         // Check to see if the neutron is initially in the entrance to the collimator
         // --------------------------------------------------------------------------
         if (fabs(InputNeutrons[i].Position[1]) > CollEntrWidth/2.0 ||
             fabs(InputNeutrons[i].Position[2]) > CollEntrHeight/2.0)
-        { 
+        {
           WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
           continue;
         }
-	  
+
         // find out the entrance channel   (channel = 0 means 'blade position')
         iChanIn = DetermineChannel(InputNeutrons[i].Position[1], ChanMinIn, ChanDistIn);
-	  
+
         if (iChanIn > 0 && iChanIn <= nChannels)
-        {	
+        {
           // Pass a pointer to the neutron and the collimator structure to a subroutine to
-          // calculate the propagation inside  collimator frame                           
-          // Check if neutron leaves inside the exit area and determine the channel       
+          // calculate the propagation inside  collimator frame
+          // Check if neutron leaves inside the exit area and determine the channel
           // ------------------------------------------------------------------------------
           OutNeutron = InputNeutrons[i];
           bReach = PathThroughColl(&ToF, &OutNeutron, CollExit, keygrav);
@@ -148,21 +148,21 @@ int main(int argc, char *argv[])
             }
           }
           else
-          { // otherwise write point of absorption for visualization 
-            if (bVisTraj) 
-            { 
+          { // otherwise write point of absorption for visualization
+            if (bVisTraj)
+            {
               int k;
               double Yr_in=0.0, Yr_out=0.0,  // relative position at entrance at exit: 0.0 - 1.0, rightmost channel, 1.0 - 2.0 next channel to the left ....
                      prc=0.0;                // fraction of the channel length needed to reach the first wall
 
               AbsNeutron = InputNeutrons[i];
-              Yr_in  = (InputNeutrons[i].Position[1] - ChanMinIn)  / ((CollEntrWidth+BladeWidth)/nChannels); 
-              Yr_out = (OutNeutron.Position[1]       - ChanMinOut) / ((CollExitWidth+BladeWidth)/nChannels); 
-            
+              Yr_in  = (InputNeutrons[i].Position[1] - ChanMinIn)  / ((CollEntrWidth+BladeWidth)/nChannels);
+              Yr_out = (OutNeutron.Position[1]       - ChanMinOut) / ((CollExitWidth+BladeWidth)/nChannels);
+
               if (Yr_out > Yr_in)
-                prc = (ceil (Yr_in) - Yr_in) / (Yr_out - Yr_in); 
+                prc = (ceil (Yr_in) - Yr_in) / (Yr_out - Yr_in);
               else if (Yr_out < Yr_in)
-                prc = (floor(Yr_in) - Yr_in) / (Yr_out - Yr_in); 
+                prc = (floor(Yr_in) - Yr_in) / (Yr_out - Yr_in);
 
               for (k=0; k < 3; k++)
                  AbsNeutron.Position[k] = InputNeutrons[i].Position[k] + prc * (OutNeutron.Position[k] - InputNeutrons[i].Position[k]);
@@ -190,9 +190,9 @@ int main(int argc, char *argv[])
   fprintf(LogFilePtr, "width x height : %6.3f x %6.3f cm^2\n", CollEntrWidth, CollEntrHeight);
   if (CollExitWidth != CollEntrWidth || CollExitHeight != CollEntrHeight)
    fprintf(LogFilePtr,"              -> %6.3f x %6.3f cm^2\n", CollExitWidth, CollExitHeight);
-	fprintf(LogFilePtr, "Channel width  : %6.3f -> %5.3f cm \n", ChanWin, ChanWout);
+  fprintf(LogFilePtr, "Channel width  : %6.3f -> %5.3f cm \n", ChanWin, ChanWout);
   fprintf(LogFilePtr, "\n");
-   
+
   SetGeometry("grey");
 
   Cleanup(Length,0.0,0.0, 0.0,0.0);
@@ -215,38 +215,38 @@ void OwnInit   (int argc, char *argv[])
   {
     if(argv[i][0]!='+')
     {
-	    arg=&argv[i][2];
-	    switch(argv[i][1])
-	    {
-	      case 'h':
-	        CollEntrHeight = atof(arg);
-	        break;
-	      case 'H':
-	        CollExitHeight = atof(arg);
-	        break;
-	      case 'w':
-	        CollEntrWidth  = atof(arg);
-	        break;
-	      case 'W':
-	        CollExitWidth  = atof(arg);
-	        break;
+      arg=&argv[i][2];
+      switch(argv[i][1])
+      {
+        case 'h':
+          CollEntrHeight = atof(arg);
+          break;
+        case 'H':
+          CollExitHeight = atof(arg);
+          break;
+        case 'w':
+          CollEntrWidth  = atof(arg);
+          break;
+        case 'W':
+          CollExitWidth  = atof(arg);
+          break;
 
-	      case 'l':
-	        Length    = atof(arg);     // length of the collimator [cm]
-	        break;
-	      case 'n':
-	        nChannels = atol(arg);     // number of the collmator channels
-	        nBlades  = nChannels - 1;
-	        break;
-	      case 's':
-	        BladeWidth =  atof(arg);   // thickness of the blades separating the channels
-	        break;
+        case 'l':
+          Length    = atof(arg);     // length of the collimator [cm]
+          break;
+        case 'n':
+          nChannels = atol(arg);     // number of the collmator channels
+          nBlades  = nChannels - 1;
+          break;
+        case 's':
+          BladeWidth =  atof(arg);   // thickness of the blades separating the channels
+          break;
 
-	      default:
-	        fprintf(LogFilePtr,"ERROR: Unknown command option: %s\n",argv[i]);
-	        exit(-1);
-	        break;
-	    }
+        default:
+          fprintf(LogFilePtr,"ERROR: Unknown command option: %s\n",argv[i]);
+          exit(-1);
+          break;
+      }
     }
   }
 
@@ -302,18 +302,18 @@ void SetGeometry(char* sColor)
  // Geometry data
   if (bVisInstr)
   {
-    int i=0;   // index of hulls 
+    int i=0;   // index of hulls
     double AvrgChanWidth = (CollEntrWidth+CollExitWidth+2.0*BladeWidth)/(2.0*nChannels);
 
     sprintf(sVisDescrpt, "  :%s", sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    stGeometry.nHulls  = nChannels; 
+    stGeometry.nHulls  = nChannels;
     stGeometry.pHull   = (VtHull*) calloc(nChannels, sizeof(VtHull));
 
     for (i=0; i < stGeometry.nHulls; i++)
-    { 
+    {
       stGeometry.pHull[i].WidthIn   = BlowUp * (CollEntrWidth - (double)(nChannels-1)*BladeWidth) / nChannels;
       stGeometry.pHull[i].WidthOut  = BlowUp * (CollExitWidth - (double)(nChannels-1)*BladeWidth) / nChannels;
       stGeometry.pHull[i].HeightIn  = BlowUp *  CollEntrHeight;
@@ -351,11 +351,11 @@ int DetermineChannel(double pos, double coll_min, double chan_dist)
         iChan = ON_BLADE;   // on blade
     }
   else
-    {	iChan = 1;
+    {  iChan = 1;
     }
 
   return iChan;
-} 
+}
 
 
 /***********************************************************************************/
@@ -365,14 +365,14 @@ int DetermineChannel(double pos, double coll_min, double chan_dist)
 int NumChan(int nChanTot, int iHull)
 {
   int nChanHull;   // number of channels included in the hull
- 
-  if (2*(nChanTot/2)==nChanTot)  
+
+  if (2*(nChanTot/2)==nChanTot)
   { // for an even number of (the total number of) channels
-    nChanHull = 2*(iHull/2);      
+    nChanHull = 2*(iHull/2);
   }
   else
   { // for an odd number of channels
-    nChanHull = 2*((iHull+1)/2) - 1;      
+    nChanHull = 2*((iHull+1)/2) - 1;
   }
   return(nChanHull);
 }
@@ -381,15 +381,14 @@ int NumChan(int nChanTot, int iHull)
 int NumBlds(int nChanTot, int iHull)
 {
   int nBldsHull;   // number of spacers included in the hull
- 
-  if (2*(nChanTot/2)==nChanTot)  
+
+  if (2*(nChanTot/2)==nChanTot)
   { // for an even number of channels
-    nBldsHull = 2*((iHull+1)/2) - 1;      
+    nBldsHull = 2*((iHull+1)/2) - 1;
   }
   else
   { // for an odd number of channels
-    nBldsHull = 2*(iHull/2);      
+    nBldsHull = 2*(iHull/2);
   }
   return(nBldsHull);
 }
-

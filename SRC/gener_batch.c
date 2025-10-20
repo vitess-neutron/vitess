@@ -236,4 +236,3 @@ void  OwnInit(int argc, char *argv[])
   if (pFileNameS != NULL)
     bAppend = TRUE;
 }
-

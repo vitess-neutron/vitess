@@ -19,10 +19,10 @@ FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 CC ?= cc
 CXX ?= c++
 ARCHFLAGS =
-COMMON_FLAGS = $(ARCHFLAGS) -pthread -Wall -Wextra -Wno-deprecated-declarations -Wno-sign-compare -I"$(GSLPATH)"
-CFLAGS = -std=gnu99 $(COMMON_FLAGS)
-CXXFLAGS = -std=gnu++11 $(COMMON_FLAGS)
-CPPFLAGS = -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CCFLAGS = $(ARCHFLAGS) -pthread -Wall -Wextra -Wno-deprecated-declarations -Wno-sign-compare
+CFLAGS = -std=gnu99 $(CCFLAGS)
+CXXFLAGS = -std=gnu++11 $(CCFLAGS)
+CPPFLAGS = -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
 LDFLAGS = -L. -L"$(GSLPATH)"
 LDLIBS = -lvitess -lgslran -lm
 AR = ar
@@ -45,41 +45,43 @@ NOGD ?= 0
 endif
 
 ifndef NOG2
-COMMON_FLAGS += -I"$(G2PATH)/include" -DDO_PNG -DDO_X11 -DVT_GRAPH
+CPPFLAGS += -I"$(G2PATH)/include" -DDO_PNG -DDO_X11 -DVT_GRAPH
 LDFLAGS += -L"$(G2PATH)"
 LDLIBS += -lg2 -lpng -lz -lfreetype -lXpm -lX11
 ifeq ($(NOGD), 0)
-COMMON_FLAGS += -DDO_GD
+CPPFLAGS += -DDO_GD
 LDLIBS += -lgd
 endif
 G2OPTS =
 ifeq ($(SYS),Darwin)
 G2OPTS += --with-x --x-includes=/opt/X11/include --x-libraries=/opt/X11/lib --disable-shared
-COMMON_FLAGS += -I/opt/X11/include
+CPPFLAGS += -I/opt/X11/include
 LDFLAGS += -L/opt/X11/lib
 endif
 endif
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 0)
-COMMON_FLAGS += -O3 -DNDEBUG
+CCFLAGS += -O3
+CPPFLAGS += -DNDEBUG
 CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Release
 ifdef LTO
-COMMON_FLAGS += -flto
+CCFLAGS += -flto
 LDFLAGS += -O3 -flto
 endif
 else
-COMMON_FLAGS += -g -O0 -DDEBUG=1 -ffp-contract=off
+CCFLAGS += -g -O0 -ffp-contract=off
+CPPFLAGS += -DDEBUG=1
 CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Debug
 INSTALL = install
 ifeq ($(DEBUG), 2)
-COMMON_FLAGS += -fsanitize=address,undefined
+CCFLAGS += -fsanitize=address,undefined
 LDFLAGS += -fsanitize=address,undefined
 endif
 endif
 
 ifdef AVX
-COMMON_FLAGS += -mavx
+CCFLAGS += -mavx
 endif
 
 
@@ -120,6 +122,7 @@ guide_parallel \
 guide_shape \
 lattice_dist \
 lenses \
+merge \
 merge_spectra \
 mirror_coating \
 mirror_elliptical \
@@ -181,7 +184,7 @@ ifdef LIBTORCHPATH
 ALL += source_ai
 endif
 ifndef NOG2
-ALL += visual
+ALL += visual dist_time
 endif
 ifndef NONCRYSTAL
 ALL += sample_ncrystal
@@ -297,12 +300,12 @@ monochromator: monochromator.cpp monochrclass.cpp
 
 opt_sim: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
 
-read_in: COMMON_FLAGS += -I$(KDSOURCEPATH)/install/include
+read_in: CPPFLAGS += -I$(KDSOURCEPATH)/install/include
 read_in: LDFLAGS += -L$(KDSOURCEPATH)/install/lib
 read_in: LDLIBS += -lmcpl -lkdsource -lxml2
 read_in: read_in.c random_sampler.c | $(KDSOURCEPATH)/install/lib/libkdsource.a
 
-sample_ncrystal: COMMON_FLAGS += -I$(NCRYSTALPATH)/install/include
+sample_ncrystal: CPPFLAGS += -I$(NCRYSTALPATH)/install/include
 sample_ncrystal: LDFLAGS += -L$(NCRYSTALPATH)/install/lib
 sample_ncrystal: LDLIBS += -lNCrystal -ldl
 

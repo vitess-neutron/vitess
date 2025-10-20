@@ -413,4 +413,3 @@ short ReadIniFile(short*  pOut,   short*  pTstPar, VtConstr* pConstr, long*   pS
 
   return rc;
 }
-

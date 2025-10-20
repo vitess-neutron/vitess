@@ -236,4 +236,3 @@ VtAngleSel AngleSel_Txt2ID(const char* sText);
 #endif
 
 #endif
-

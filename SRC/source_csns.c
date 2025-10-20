@@ -32,24 +32,24 @@ static short  s_nSource=ANYSOURCE; /* s_nSource    : ANYSOURCE, ESS, SNS, CSNS  
 /* functions */
 /* --------- */
 
-/* dTemp      : [K]  eff. moderator temperature 
+/* dTemp      : [K]  eff. moderator temperature
    nModType   :      decoupled POISONED, DECOUPLED unpoisoned, COUPLED
-   dPower     : [W]  average source power                    */          
+   dPower     : [W]  average source power                    */
 double CsnsTotalFU(const double dTemp,   const VtModType  eModType, const double dPower)
 {
   double dFUAmpl=0.0;;
 
-  s_nSource = CSNS; 
+  s_nSource = CSNS;
 
   if (dTemp < 100.0)
-  { 
+  {
     if (eModType==POISONED)
       dFUAmpl = dPower * 2.7e10/5.0e06/(25.0/50.0);
     else
       dFUAmpl = dPower * 2.3e11/5.0e06/(25.0/50.0);
   }
   else
-  { 
+  {
     dFUAmpl = dPower * 1.8e11/5.0e06/(25.0/50.0);
   }
   return dFUAmpl;
@@ -57,7 +57,7 @@ double CsnsTotalFU(const double dTemp,   const VtModType  eModType, const double
 
 
 /* dLambda: [Ang]  wavelength                          [Ang]
-   dTime  :  [s]   time (after beginning of pulse)     [s]          
+   dTime  :  [s]   time (after beginning of pulse)     [s]
    dPosY  :  [cm]  horinzontal position on the source  [cm]
    dPosY  :  [cm]  vertical position on the source     [cm]   */
 
@@ -79,4 +79,3 @@ double CsnsModFU(const double dLambda, const double dTime, const double dPosY, c
 
   return dFu;
 }
-  

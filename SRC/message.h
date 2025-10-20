@@ -12,7 +12,7 @@
 #define MAX_MSG  10
 
 typedef enum
-{	
+{
   ALL_BEHIND_COMPONENT   = 001,
   ALL_BEHIND_BEG_COMP    = 002,
   ALL_NEGATIVE_INT       = 003,
@@ -42,9 +42,9 @@ VtMsgID;
 
 typedef struct
 {
-	VtMsgID  eID;
-	long     nNumber;
-	TotalID  TrajID;
+  VtMsgID  eID;
+  long     nNumber;
+  TotalID  TrajID;
 }
 VtMessage;
 

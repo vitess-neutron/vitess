@@ -66,11 +66,11 @@ VectorType Prism, Prism2, NeutronPosition_1, NeutronPosition_0, NeutronPosition_
 
 /* Functions */
 
-double  Reflexion (double w), 
-        ReflexionPrism(double a1, double a), 
-        Refraction1(double a1, double a), 
+double  Reflexion (double w),
+        ReflexionPrism(double a1, double a),
+        Refraction1(double a1, double a),
         Refraction2(double w, double a),
-        RefractionSmallAngle(double w), 
+        RefractionSmallAngle(double w),
         RefreshAngle(Neutron *ThisNeutron, double a6);
 
 /******************************/
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
         InputNeutrons[i].Time = InputNeutrons[i].Time + tof_0;
 
         /* Check if the neutron does not hit the matrix of prisms */
-        if (InputNeutrons[i].Position[1] >=   PrismHeight / 2    || 
+        if (InputNeutrons[i].Position[1] >=   PrismHeight / 2    ||
             InputNeutrons[i].Position[1] <=  -PrismHeight / 2    ||
             InputNeutrons[i].Position[2] >=   EAHeight / 2 ||
             InputNeutrons[i].Position[2] <=  -EAHeight / 2   )
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
             {
               if (absorption >= 1)
               {
-                InputNeutrons[i].Probability = 0; 
+                InputNeutrons[i].Probability = 0;
                 /* Why is this zero and not attenuated by the absorption x-section?*/
               }
 
@@ -602,7 +602,7 @@ int main(int argc, char *argv[])
   /*************************************************************************/
   /** calculates the parameters that are dependent from input parameters  **/
   /*************************************************************************/
-  
+
   void CalcPar()
   {
     /* Calculation of all vectors and planes */
@@ -655,9 +655,9 @@ int main(int argc, char *argv[])
 
     EAHeight = nRows * BaseHeight;
   }
-  
 
-  
+
+
 
 /*******************************************************/
 /** Fills the structure stGeometry for visualization  **/
@@ -667,10 +667,10 @@ void SetGeometry(char* sColor)
 {
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     int        nX=1, nZ=1,
                iX=0, iZ=0, iM=0;
-    VectorType vOrient={0.0,0.0,1.0}, 
+    VectorType vOrient={0.0,0.0,1.0},
                vCntr  ={1.0,0.0,0.0};
 
     double gapX = 0, gapZ = 0;
@@ -679,24 +679,24 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr   = sVisDescrpt;
     stGeometry.eModule  = _eModule;
 
-    nX = nCols; 
+    nX = nCols;
     nZ = nRows;
-    stGeometry.nPrisms = nX * nZ; 
+    stGeometry.nPrisms = nX * nZ;
     stGeometry.pPrism  = calloc(stGeometry.nPrisms, sizeof(VtPrism)); // Memory allocation for prisms
 
     for (iX = 1; iX <= nX; iX++)
-    {  
+    {
       for (iZ = 1; iZ <= nZ; iZ++)
-      { 
+      {
         // Set the center position of the prism
         vCntr[0]  = (2 * iX - 1) * BaseWidth / 2.0 ;
         vCntr[1]  = 0 ;
         vCntr[2] = (iZ - (nZ + 1) / 2.0) * BaseHeight ;
-        
+
         // Small gaps between prisms
         gapX = BaseWidth / 10.0;
         gapZ = BaseHeight / 10.0;
-        
+
         vCntr[0] += gapX;
         vCntr[2] += gapZ;
 
@@ -707,7 +707,7 @@ void SetGeometry(char* sColor)
         stGeometry.pPrism[iM].vVertices[0][0] = vCntr[0] - BaseWidth / 2.0;
         stGeometry.pPrism[iM].vVertices[0][1] = vCntr[1] - PrismHeight / 2.0;
         stGeometry.pPrism[iM].vVertices[0][2] = vCntr[2] - BaseHeight / 2.0;
-        
+
         stGeometry.pPrism[iM].vVertices[1][0] = vCntr[0] + BaseWidth / 2.0;
         stGeometry.pPrism[iM].vVertices[1][1] = vCntr[1] - PrismHeight / 2.0;
         stGeometry.pPrism[iM].vVertices[1][2] = vCntr[2] - BaseHeight / 2.0;

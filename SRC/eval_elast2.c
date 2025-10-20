@@ -747,5 +747,3 @@ int sign(int v)
 {
   return v >= 0 ? 1 : -1;
 }
-
-

@@ -30,9 +30,9 @@
 /*********************************************************/
 /* 'WriteHeader1D/2D': Writes 1D/2D monitor file header  */
 /*********************************************************/
-void WriteHeader1D(FILE* fMonitor, const char *sFctType, short bWeight, 
+void WriteHeader1D(FILE* fMonitor, const char *sFctType, short bWeight,
                    int nBinsX, const char* sPar, const char* sUnitX,
-                   double Xmin, double Xmax) 
+                   double Xmin, double Xmax)
 {
   char sUnitZ[20]="";
 
@@ -56,9 +56,9 @@ void WriteHeader1D(FILE* fMonitor, const char *sFctType, short bWeight,
   return;
 }
 
-void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCol, long iBnch, long nBnch, int nBinsX, 
+void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCol, long iBnch, long nBnch, int nBinsX,
                     double IntMon, long nTrjMon, const char* sPar, const char* sUnitX,
-                    double Xmin, double Xmax) 
+                    double Xmin, double Xmax)
 {
   char sDate[11], sTime[9],
        sUnitZ[20]="",
@@ -98,14 +98,14 @@ void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCo
   return;
 }
 
-void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, short bWeight, 
-                   int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax, 
-                   int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax) 
+void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, short bWeight,
+                   int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax,
+                   int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax)
 {
   char   sFormat [16]="";             // text describing the 2D output format
-  
+
   Format2D_ID2Txt(sFormat, eFormat);  // fills static string 'sFormat'
-  
+
  #ifdef G2_LIB
    fprintf(fMonitor,"#Monitor 2D %s, Format: %s  %s:   %d bins: %s   %d bins: %s\n", sFctType, sFormat,
            bWeight==FALSE ? "(events)" : "(weight)",
@@ -115,14 +115,14 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, sho
      case MATRIX:
        fputs("# Data y        F(x,y) \n              ", fMonitor);
        break;
-  
+
      case MATR_CMPT:
      case MATR_INT:
        fputs("# Data y   F(x,y)\n          ", fMonitor);
        break;
-  
+
      case XYZ:
-     case XYZ_CMPT: 
+     case XYZ_CMPT:
        fputs("#x  y  z\n", fMonitor);
        break;
    }
@@ -133,14 +133,14 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, sho
    fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",     Xmin, Xmax);
    fprintf(fMonitor,"# y_range :     %10.3e, %10.3e\n", Ymin, Ymax);
  #endif
-  
+
   return;
 }
 
 
-void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sFctType, short bWeight, long iBnch, long nBnch, double IntMon, long nTrjMon, 
-                   int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax, 
-                   int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax) 
+void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sFctType, short bWeight, long iBnch, long nBnch, double IntMon, long nTrjMon,
+                   int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax,
+                   int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax)
 {
   char   sEvents [11]="", sDate[11], sTime[9],
          sUnitZ  [20]="",
@@ -197,7 +197,7 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
        break;
 
      case XYZ:
-     case XYZ_CMPT: 
+     case XYZ_CMPT:
        fputs("#x  y  z\n", fMonitor);
        break;
    }
@@ -209,20 +209,20 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
 /*********************************************/
 /* 'WriteOutput2D': Writes 2D monitor file   */
 /*********************************************/
-int WriteOutput2D(FILE* fMonitor, VtFormat2D eFormat, short bWeight, 
-                   int nBinsX, double* BinPosX, 
-                   int nBinsY, double* BinPosY, 
-                   double** IntXY, double** IntXYError, long** nTrajXY) 
+int WriteOutput2D(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
+                   int nBinsX, double* BinPosX,
+                   int nBinsY, double* BinPosY,
+                   double** IntXY, double** IntXYError, long** nTrajXY)
 {
-  return WriteOutput2DB(fMonitor, eFormat, bWeight, 
-                        nBinsX, BinPosX, 
+  return WriteOutput2DB(fMonitor, eFormat, bWeight,
+                        nBinsX, BinPosX,
                         nBinsY, BinPosY, 1.0, IntXY, IntXYError, nTrajXY);
 }
-  
-int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight, 
-                   int nBinsX, double* BinPosX, 
+
+int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
+                   int nBinsX, double* BinPosX,
                    int nBinsY, double* BinPosY, double fNorm,
-                   double** IntXY, double** IntXYError, long** nTrajXY) 
+                   double** IntXY, double** IntXYError, long** nTrajXY)
 {
   int    i=0, j=0, c=0;
   double x=0.0, y=0.0,
@@ -235,7 +235,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
         fprintf(fMonitor, "%10.4f   ", (BinPosX[i] + BinPosX[i+1]) / 2.0);
       Newline;
 
-      for (j=0; j < nBinsY; j++) 
+      for (j=0; j < nBinsY; j++)
       {
         fprintf(fMonitor, "%10.4f  ", (BinPosY[j]+BinPosY[j+1]) / 2.0);
         for (i=0; i < nBinsX; i++)
@@ -250,10 +250,10 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
       break;
 
     case XYZ:
-      for (j=0; j < nBinsY; j++) 
+      for (j=0; j < nBinsY; j++)
       {
         y = (BinPosY[j]+BinPosY[j+1]) / 2.0;
-        for (i=0; i < nBinsX; i++) 
+        for (i=0; i < nBinsX; i++)
         {
           x = (BinPosX[i]+BinPosX[i+1]) / 2.0;
           fprintf(fMonitor, "%10.4f %10.4f  %12.5e %12.5e  %7ld\n", x,y, fNorm*IntXY[i][j], fNorm*IntXYError[i][j], (long)(fNorm*nTrajXY[i][j]));
@@ -267,7 +267,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
         PrintFloat((BinPosX[i] + BinPosX[i+1]) / 2.0);
       Newline;
 
-      for (j = 0; j < nBinsY; j++) 
+      for (j = 0; j < nBinsY; j++)
       {
         PrintItem("%5.1f ", (BinPosY[j] + BinPosY[j+1]) / 2.0);
         for (i = 0; i < nBinsX; i++)
@@ -287,7 +287,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
         PrintItem("%6.1f ", (BinPosX[i] + BinPosX[i+1]) / 2.0);
       Newline;
 
-      for (j = 0; j < nBinsY; j++) 
+      for (j = 0; j < nBinsY; j++)
       {
         PrintItem("%6.1f ", (BinPosY[j] + BinPosY[j+1]) / 2.0);
         for (i = 0; i < nBinsX; i++)
@@ -302,11 +302,11 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
       break;
 
     case XYZ_CMPT:
-      for (j = 0; j < nBinsY; j++) 
+      for (j = 0; j < nBinsY; j++)
       {
         double error, binc;
         y = (BinPosY[j]+BinPosY[j+1]) / 2.0;
-        for (i = 0; i < nBinsX; i++) 
+        for (i = 0; i < nBinsX; i++)
         {
           c = fNorm*nTrajXY[i][j];
           PrintFloat((BinPosX[i]+BinPosX[i+1]) / 2.0);
@@ -314,7 +314,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
           if (c <= 0)
           { fputs(" 0 0 0\n", fMonitor);
           }
-          else 
+          else
           {
             binc  = fNorm*IntXY[i][j];
             error = binc <= 0 ? 0 : binc * sqrt(1./c);
@@ -338,7 +338,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
 /******************************************************************/
 /* 'printFloatItem': Write one float value to the 2D monitor file */
 /******************************************************************/
-void printFloatItem(double v, FILE*f) 
+void printFloatItem(double v, FILE*f)
 {
   static char buf[16];
   int k;

@@ -4,7 +4,7 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to*/
 /* the authors.                                                                             */
 /*                                                                                          */
-/* 1.0  Jun 1999  D. Wechsler							                                                  */
+/* 1.0  Jun 1999  D. Wechsler                                                                */
 /* 1.1  Jun 2001  K. Lieutenant  correction: memory allocation for pAngIn + SOFTABORT       */
 /* 1.2  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.3  Feb 2020  K. Lieutenant  new central visualization parameters                       */
@@ -39,20 +39,20 @@ short  DetChannel(int* pChan, const double NeutAng, const double RotAng); // Det
 // Input parameters
 double  WndWidth = 1.0e10,  // -W  [cm]   width of entrance and exit window
         WndHeight= 1.0e10,  // -H  [cm]   height of entrance and exit window
-        RadiusO  = 0.0,     // -r  [cm]   outer radius of the velocity selector 
-        RadiusI  = 0.0,     // -i  [cm]   inner radius of the velocity selector 
-        Length   = 0.0,     // -l  [cm]   length of the velocity selector 
-        Spacer   = 0.0,     // -d  [cm]   blade thickness   
+        RadiusO  = 0.0,     // -r  [cm]   outer radius of the velocity selector
+        RadiusI  = 0.0,     // -i  [cm]   inner radius of the velocity selector
+        Length   = 0.0,     // -l  [cm]   length of the velocity selector
+        Spacer   = 0.0,     // -d  [cm]   blade thickness
         Freq     = 0.0,     // -s  [Hz]   number of velocity selector rotations per second
         TwistD   = 0.0,     // -c  [deg]  twist of the velocity selector channels
         DistAxle = 0.0,     // -o  [cm]   distance: center of beamline - axle of the velocity selector
         AxlePosY = 0.0,     // -Y  [cm]   horizontal position of the axle (in the co-ordinate system of the beamline)
         AxlePosZ = 0.0;     // -Z  [cm]   vertical position of the axle
 long    nChannels= 1;       // -w   [-]   number of selector channels
-short   bPassOutside=FALSE; // -p   [-]   flag: neutrons can pass outside the selector 
-                                    
+short   bPassOutside=FALSE; // -p   [-]   flag: neutrons can pass outside the selector
+
 // Variables determined from input parameters or trajectory data
-double  BeamDir =0.0,      //     [deg]  direction of the beam seen from the axle of the selector  
+double  BeamDir =0.0,      //     [deg]  direction of the beam seen from the axle of the selector
         BladeAng=0.0,      //     [rad]  angular width of a blade at the origin
         ChnWidth=0.0,      //     [cm]   inner width of a window at the origin
         ChnAngle=0.0,      //     [rad]  angular inner width of a window
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
   Neutron Output;
 
   InitNeutron(&Output);
- 
+
   // initialisation
   // --------------
   _eModule = MCN_VEL_SELECT;
@@ -85,20 +85,20 @@ int main(int argc, char *argv[])
   PrintModuleName(_eModule, "2.0");
   OwnInit(argc, argv);
   MsgInit();
- 
+
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   DECLARE_ABORT
- 
+
   // loop over all trajectories
   // --------------------------
-	while (ReadNeutrons()!= 0)
+  while (ReadNeutrons()!= 0)
   {
     for (i=0; i<NumNeutGot; i++)
     {
-  		CHECK;    
+      CHECK;
 
       // Only write out event if EOB line is found, otherwise process trajectory
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         /* checks entrance position    */
         if (fabs(InputNeutrons[i].Position[1]) > 0.5*WndWidth || fabs(InputNeutrons[i].Position[2]) > 0.5*WndHeight )
         { WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
@@ -114,14 +114,14 @@ int main(int argc, char *argv[])
         }
 
         Velocity = V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
-  
+
         /* checks if neutron hits the area covered by the selector blades in the front */
         Dist = sqrt(sq(InputNeutrons[i].Position[1] - AxlePosY) + sq(InputNeutrons[i].Position[2] - AxlePosZ));
         if (Dist < RadiusI)
         { WriteIAP(&InputNeutrons[i], VT_OUTSIDE);
           goto GetNewNeutron; // CountMessageID(SELECT_NO_BLADES, InputNeutrons[i].ID);
         }
-         
+
         if (Dist > RadiusO)
         { if (bPassOutside==TRUE)
           { CountMessageID(SELECT_OUTSIDE, InputNeutrons[i].ID);
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 
         /* Rotation angle of velsel. corresponding to neutron time */
         RotAngIn = 2.0*M_PI*nRot*InputNeutrons[i].Time;
-  
+
         /* Determine entrance channel */
         bChanIn = DetChannel(&kChanIn, NeutAngIn, RotAngIn);
         if (bChanIn==TRUE)
@@ -147,18 +147,18 @@ int main(int argc, char *argv[])
         { WriteIAP(&InputNeutrons[i], VT_ABSORBED);
           goto GetNewNeutron;
         }
-  
+
         /* time for passing the velsel. */
         ToF = Length/(Velocity*InputNeutrons[i].Vector[0]);
-  
+
         /* new coordinates and new neutron angle and test if cylinder walls absorbed the neutron*/
         Output = InputNeutrons[i];
         Output.Position[0] += Velocity*ToF*Output.Vector[0];
         Output.Position[1] += Velocity*ToF*Output.Vector[1];
         Output.Position[2] += Velocity*ToF*Output.Vector[2];
-  
+
         Output.Time+=ToF;
-  
+
         /* checks exit position    */
         if (fabs(Output.Position[1]) > 0.5*WndWidth || fabs(Output.Position[2]) > 0.5*WndHeight )
         { WriteIAP(&Output, VT_OUT_OF_WND);
@@ -171,14 +171,14 @@ int main(int argc, char *argv[])
         { WriteIAP(&Output, VT_OUTSIDE);
           goto GetNewNeutron; // CountMessageID(SELECT_NO_BLADES, Output.ID);
         }
-            
+
         if (Dist > RadiusO)
         { if (bPassOutside==TRUE)
           { CountMessageID(SELECT_OUTSIDE, Output.ID);
           }
           else
           { WriteIAP(&Output, VT_OUTSIDE);
-            goto GetNewNeutron; 
+            goto GetNewNeutron;
           }
         }
 
@@ -186,50 +186,50 @@ int main(int argc, char *argv[])
 
         /* update TrailingEdge and Leading Edge for the channel under consideration*/
         RotAngOut = RotAngIn + (ToF*2.0*M_PI*nRot) - TwistR;
-  
+
         /* Determine exit channel */
         bChanOut = DetChannel(&kChanOut, NeutAngOut, RotAngOut);
         if (bChanOut==FALSE)
         { WriteIAP(&Output, VT_ABSORBED);
           goto GetNewNeutron;
         }
-  
-        if (kChanIn == kChanOut) 
+
+        if (kChanIn == kChanOut)
           goto Transmission;
         else
           WriteIAP(&Output, VT_ABSORBED);
 
-      GetNewNeutron: 
+      GetNewNeutron:
         continue; /* case of neutron blocked by spacers or absorbed within a channel */
-  
+
       Transmission:
         WriteIAP(&Output, VT_PASSED);
         Output.Position[0]=0.0;
-    
+
         WriteNeutron(&Output);
       }
     }
   }
-  
+
 // Finish: print parameters, write geometry and instrument file, free memory
 // -------------------------------------------------------------------------
 my_exit:
   /* writes to log file */
-  fprintf(LogFilePtr, "%ld channels of  %6.3f deg each\n", nChannels, ChnAngle*180.0/M_PI); 
-  fprintf(LogFilePtr, "Axle position: (%6.3f,%6.3f) cm\n", AxlePosY, AxlePosZ); 
+  fprintf(LogFilePtr, "%ld channels of  %6.3f deg each\n", nChannels, ChnAngle*180.0/M_PI);
+  fprintf(LogFilePtr, "Axle position: (%6.3f,%6.3f) cm\n", AxlePosY, AxlePosZ);
   if (bPassOutside==TRUE)
     fprintf(LogFilePtr, "Neutrons passing outside the rotor are kept\n");
-  
+
   /* print messages that might have occured many times */
   PrintMessage(SELECT_OUTSIDE,   "", ON);
   PrintMessage(SELECT_NO_BLADES, "", ON);
-  
+
   /* write geometry data for visualization */
-  SetGeometry("blue");                       
+  SetGeometry("blue");
 
   /* print intensity, write instrument.inf, free memory */
   Cleanup(Length,0.0,0.0, 0.0,0.0);
-  
+
   return(0);
 }
 
@@ -240,11 +240,11 @@ my_exit:
 void OwnInit(int argc, char *argv[])
 {
   int    i=0;
-  double dist=0.0;    // distance: origin - axle from y and z position of the axle 
+  double dist=0.0;    // distance: origin - axle from y and z position of the axle
 
   for(i=1; i<argc; i++)
   {
-    if(argv[i][0]!='+') 
+    if(argv[i][0]!='+')
     {
       switch(argv[i][1])
       {
@@ -283,7 +283,7 @@ void OwnInit(int argc, char *argv[])
 
         case 'o':
           DistAxle = fabs(atof(&argv[i][2])); /* distance: center of beamline - axle of selector [cm] */
-          break;                                
+          break;
         case 'Y':
           AxlePosY = atof(&argv[i][2]); /* horizontal position of the axle [cm] */
           break;
@@ -302,7 +302,7 @@ void OwnInit(int argc, char *argv[])
       }
     }
   }
-  
+
   /* determine axle distance from axle position */
   if (AxlePosY != 0.0 || AxlePosZ != 0.0)
   {
@@ -349,7 +349,7 @@ void SetGeometry(char* sColor)
 {
   // Visualisation of the velocity selector geometry
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
@@ -388,7 +388,7 @@ void SetGeometry(char* sColor)
       stGeometry.pRectangle[1].vNormal[1] = 0.0;
       stGeometry.pRectangle[1].vNormal[2] = 0.0;
     }
-  }    
+  }
 
   return;
 }
@@ -417,8 +417,8 @@ short DetChannel(int* pChan, const double NeutAng, const double RotAng)
 {
   short  bInside=FALSE;                       // flag: neutron is within a channel
   int    k=0;                                 // channel, in which the neutron is
-  double TrailingEdge=0.0, LeadingEdge=0.0,   // selector orientations of the blades confining the channel 
-         NeutAngP=NeutAng;                      
+  double TrailingEdge=0.0, LeadingEdge=0.0,   // selector orientations of the blades confining the channel
+         NeutAngP=NeutAng;
 
   // shift Neutron angle to range [0, 2pi[
   if (NeutAngP < BeamDir - M_PI)
@@ -430,7 +430,7 @@ short DetChannel(int* pChan, const double NeutAng, const double RotAng)
   // check if neutron is inside the channel, i.e. within the range [TrailingEdge, LeadingEdge]
   TrailingEdge = RotAng + k*(ChnAngle + BladeAng) + BladeAng;
   LeadingEdge = TrailingEdge + ChnAngle;
-  
+
   if (NeutAngP > TrailingEdge && NeutAngP < LeadingEdge)
   { *pChan  = k;
     bInside = TRUE;

@@ -3,7 +3,7 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted                                 */
 /* providing due credit is given to the authors.                                            */
-/* 1.0  Apr 2003  Géza Zsigmond  initial version                                            */
+/* 1.0  Apr 2003  GÃ©za Zsigmond  initial version                                            */
 /* 1.1  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                               */
 /* 1.2  Nov 2013  D. Nekrassov   Visualisation, flexible input file formats introduced      */
 /* 1.3  Apr 2020  K. Lieutenant  tidy up, new central visualization parameters              */
@@ -25,7 +25,7 @@
 #include "intersection.h"
 #include "sample.h"
 
-#define	STRING_BUFFER 200
+#define  STRING_BUFFER 200
 
 
 /******************************/
@@ -35,9 +35,9 @@ void   OwnInit   (int argc, char *argv[]);                    // Reads input par
 void   OwnCleanup();                                          // Does module specific cleanup
 void   SetSamplePar   (SampleType *pSample);                  // Reads sample parameters and combines with input parameters
 void   ReadStructFile ();                                     // Reads the structure factor file
-void   SetGeometry    (char* sColor);                         // Fills the structure stGeometry for visualization 
+void   SetGeometry    (char* sColor);                         // Fills the structure stGeometry for visualization
 double dSpreadLorentzian(double rdelta);                      // Probability of finding a d-spacing in Lorentzian approximation
-double dSpreadGaussian(double rdelta);                        // Probability of finding a d-spacing in Gaussian approximation 
+double dSpreadGaussian(double rdelta);                        // Probability of finding a d-spacing in Gaussian approximation
 void   TransformIn2Smpl(VectorType pos, VectorType dir);      // Co-ordinate transformation from input frame to sample frame
 void   TransformSmpl2In(VectorType pos, VectorType dir);      // Co-ordinate transformation from sample frame to input frame
 void   TransformIn2Out (VectorType pos, VectorType dir);      // Co-ordinate transformation from input frame to output frame
@@ -47,43 +47,43 @@ void   TransformIn2Out (VectorType pos, VectorType dir);      // Co-ordinate tra
 /** Global Variables         **/
 /******************************/
 // Input parameters
-char      *pSmplFileName=NULL,      // -P     [-]   pointer to the name of the sample file  
-          *pStrFileName =NULL;      // -S     [-]   pointer to the name of the structure factor file  
+char      *pSmplFileName=NULL,      // -P     [-]   pointer to the name of the sample file
+          *pStrFileName =NULL;      // -S     [-]   pointer to the name of the structure factor file
 VtDistr    d_spr_option =GAUSSIAN;  // -o     [-]   function describing the d-spread distribution:  LORENTZIAN, GAUSSIAN
-double     d_spr_rel    =0.0001;    // -d     [-]   relative d-spacing spread d_FWHM/d  
+double     d_spr_rel    =0.0001;    // -d     [-]   relative d-spacing spread d_FWHM/d
 
 double     A_recip[3]={0.0,0.0,0.0},// -A -B -C file [1/Ang] reciprocal unit vector A
-           B_recip[3]={0.0,0.0,0.0},// -T -U -V file [1/Ang] reciprocal unit vector A 
+           B_recip[3]={0.0,0.0,0.0},// -T -U -V file [1/Ang] reciprocal unit vector A
            C_recip[3]={0.0,0.0,0.0};// -X -Y -Z file [1/Ang] reciprocal unit vector A
 double     NormFact=1.0,            // -N       file   [-]   normalisation factor
-           AbsorptionC=0.0;         // -m       file  [1/cm] Macroscopic absorption cross section 
-double		 AnglPhi=0.0,             // -p       file  [deg]  rotation angle of sample i.e. the reciprocal unit vectors about the Z-axis (1st rot)
+           AbsorptionC=0.0;         // -m       file  [1/cm] Macroscopic absorption cross section
+double     AnglPhi=0.0,             // -p       file  [deg]  rotation angle of sample i.e. the reciprocal unit vectors about the Z-axis (1st rot)
            AnglChi=0.0,             // -q       file  [deg]  rotation angle of sample i.e. the reciprocal unit vectors about the X-axis (2nd rot)
            AnglOmega=0.0;           // -O       file  [deg]  rotation angle of sample i.e. the reciprocal unit vectors about the Z-axis (3rd rot)
 VtSmplGeom eGeom=VT_NO_GEOM;        // -G       file   [-]   sample shape: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL
 VectorType PosSample={0.0,0.0,0.0}; // -x -y -z file   [cm]  center position of the sample
-double     Diameter = 0.0,          // -t       file  [cm]   thickness or diameter of the sample 
-           Height   = 0.0,          // -h       file  [cm]   height of the sample 
+double     Diameter = 0.0,          // -t       file  [cm]   thickness or diameter of the sample
+           Height   = 0.0,          // -h       file  [cm]   height of the sample
            Width    = 0.0,          // -w       file  [cm]   width of the sample
            AnglOutHoriz=0.0,        // -u       file  [rad]  horizontal angle of the output frame, relative to input orientation
-           AnglOutVert =0.0;        // -v       file  [rad]  vertical angle of the output frame, relative to input orientation    
-short      bColorRefl=FALSE;        // -c              [-]   sets color of the scattered neutron to the number of the reflection 
-extern                               
+           AnglOutVert =0.0;        // -v       file  [rad]  vertical angle of the output frame, relative to input orientation
+short      bColorRefl=FALSE;        // -c              [-]   sets color of the scattered neutron to the number of the reflection
+extern
 int        colh, colk, coll,        // -H -K -L file   [-]   columns where the miller indices (h,k,l) are listed
            colF,                    // -F       file   [-]   column where structure factor F is
            colF2,                   // -Q       file   [-]   column where |F^2| is
            colDW;                   // -W       file   [-]   column where Debye-Waller factor is
-extern                                                       
+extern
 double     scaleF2;                 // -f       file   [-]   normalization factor for structure factor
 
 // Variables determined from input parameters or trajectory data
 SampleType stSample;                     //            [-]   sample geometry
 VectorType DimSample={0.0,0.0,0.0};      //            [cm]  size of the sample
 long       nReflect=1;                   //            [-]   number of reflections found in the structure factor file
-double     *Fhkl2=NULL,                  //            [-]   array of |F|² values of the Bragg reflections
+double     *Fhkl2=NULL,                  //            [-]   array of |F|Â² values of the Bragg reflections
            *hh=NULL,*kk=NULL,*ll=NULL;   //            [-]   array of (h,k.l) numbers of the Bragg reflections
 int        *no=NULL;                     //            [-]   array of sequential numbers of the Bragg reflections
-double		 RotMatrixPhi  [3][3],         //            [-]   rotation angle of the first rotation  (about the Z-axis) 
+double     RotMatrixPhi  [3][3],         //            [-]   rotation angle of the first rotation  (about the Z-axis)
            RotMatrixChi  [3][3],         //            [-]   rotation angle of the second rotation (about the X-axis)
            RotMatrixOmega[3][3],         //            [-]   rotation angle of the third rotation  (about the Z-axis)
            RotMatrixOut  [3][3];         //            [-]   rotation matrix to transfer to the output coordinate system
@@ -98,15 +98,15 @@ int main(int argc, char **argv)
   double     TOF=0.0, WL, Prob=0.0 ;
   double     k_in [3]={0.0,0.0,0.0},    // incoming wavevector
              k_out[3]={0.0,0.0,0.0},    // outgoing wavevector
-             GGact[3]={0.0,0.0,0.0}; 
+             GGact[3]={0.0,0.0,0.0};
   double     MaxPathLength=0.0, PathLength=0.0;
-  VectorType Pos={0.0,0.0,0.0}, 
-             Dir={0.0,0.0,0.0}, 
+  VectorType Pos={0.0,0.0,0.0},
+             Dir={0.0,0.0,0.0},
              GG ={0.0,0.0,0.0},         // reciprocal lattice vector
              Pos_final={0.0,0.0,0.0};
   VectorType Pos1f={0.0,0.0,0.0}, Pos2f={0.0,0.0,0.0},
              Pos1v={0.0,0.0,0.0}, Pos2v={0.0,0.0,0.0};
-  Neutron	   InNeutron, OutNeutron;
+  Neutron     InNeutron, OutNeutron;
 
   // Initialisation
   // --------------
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
   SetSamplePar(&stSample);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp     = TRUE;
 
   /* Reads the structure factor file */
@@ -136,8 +136,8 @@ int main(int argc, char **argv)
   while (ReadNeutrons() != 0)
   {
     for (i=0;i<NumNeutGot ;i++)
-    { 
-  	  CHECK;      
+    {
+      CHECK;
 
       // Only write out event if EOB line is found, otherwise process trajectory
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
         CopyNeutron(&InputNeutrons[i], &InNeutron);
 
@@ -157,27 +157,27 @@ int main(int argc, char **argv)
         /* gives intersection positions with sample */
         if (eGeom==VT_CYL)
         {
-          if(IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ; 
+          if(IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ;
         }
         if (eGeom==VT_CUBE)
         {
-          if(IntersectionWithRectangular(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ; 
+          if(IntersectionWithRectangular(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ;
         }
         if (eGeom==VT_SPHERE)
         {
-          if(IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ; 
+          if(IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) goto getlost ;
         }
-	
+
         for (repet=0; repet < nReflect; repet++)
         {
           CHECK;
           CopyVector(Pos1f, Pos1v) ;
           CopyVector(Pos2f, Pos2v) ;
-									
+
           GG[0] = hh[repet] * A_recip[0] + kk[repet] * B_recip[0] + ll[repet] * C_recip[0];
           GG[1] = hh[repet] * A_recip[1] + kk[repet] * B_recip[1] + ll[repet] * C_recip[1];
           GG[2] = hh[repet] * A_recip[2] + kk[repet] * B_recip[2] + ll[repet] * C_recip[2];
-			
+
           TOF  = InputNeutrons[i].Time ;
           WL   = InputNeutrons[i].Wavelength ;
           Prob = InputNeutrons[i].Probability ;
@@ -185,20 +185,20 @@ int main(int argc, char **argv)
           CopyVector(InputNeutrons[i].Position, Pos);
           CopyVector(InputNeutrons[i].Vector, Dir);
 
-          /* scattering position and TOF until scattering */	
-          SubVector(Pos2v, Pos1v);					          // Pos2v: vector from entry to exit of the path through the sample 
-          MaxPathLength = LengthVector(Pos2v); 
-          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));	// Pos2v now vector from entry into sample to point of scattering
+          /* scattering position and TOF until scattering */
+          SubVector(Pos2v, Pos1v);                    // Pos2v: vector from entry to exit of the path through the sample
+          MaxPathLength = LengthVector(Pos2v);
+          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));  // Pos2v now vector from entry into sample to point of scattering
           PathLength = LengthVector(Pos2v);
-          AddVector(Pos1v, Pos2v);	                  // Pos1v now vector to point of scattering
-					
+          AddVector(Pos1v, Pos2v);                    // Pos1v now vector to point of scattering
+
           TOF += (Pos1v[0] - Pos[0])/ fabs(Dir[0]) / V_FROM_LAMBDA(WL);
 
-          CopyVector(Pos1v, Pos);						/*scattering position */
+          CopyVector(Pos1v, Pos);            /*scattering position */
 
           // wavelength has to be smaller than 2d to have a chance for reflection
           if (WL < 4.0*M_PI/LengthVector(GG))
-          {  
+          {
             /* attenuation untill scattering normalized to maximal path and probability */
             Prob *= exp( - PathLength * AbsorptionC * WL );
 
@@ -216,12 +216,12 @@ int main(int argc, char **argv)
 
               WriteWWP(&ScatNeut, VT_SCATTERED);
             }
-				
+
             // Take into account the number of hkl-entries in the look-up file
             // for correct normalisation.
-            Prob *= MaxPathLength * NormFact * (1./((double) nReflect))* Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ; 
+            Prob *= MaxPathLength * NormFact * (1./((double) nReflect))* Fhkl2[repet] * 4. * M_PI * sq(WL/LengthVector(GG)) ;
 
-            /* scattering: new neutron variables*/ 
+            /* scattering: new neutron variables*/
             CopyVector(Dir, k_in);  MultiplyByScalar(k_in, 2 * M_PI / WL);
             CopyVector(GG, GGact);  MultiplyByScalar(GGact, (-2.* ScalarProduct(GG, k_in)/ScalarProduct(GG,GG)));
 
@@ -229,27 +229,27 @@ int main(int argc, char **argv)
             if(d_spr_option == GAUSSIAN)   Prob *=   dSpreadGaussian((1. - LengthVector(GGact)/LengthVector(GG)));
 
             /* defines now outgoing k direction */
-            CopyVector(k_in, k_out);  AddVector (k_out, GGact); 
+            CopyVector(k_in, k_out);  AddVector (k_out, GGact);
             CopyVector(k_out, Dir);   MultiplyByScalar(Dir, 1./LengthVector(Dir));
 
             /* attenuation succeeding scattering */
             if (eGeom==VT_CYL)
             {
-              if(IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
+              if(IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.;
             }
             if (eGeom==VT_CUBE)
             {
-              if(IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.;  
+              if(IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.;
             }
             if (eGeom==VT_SPHERE)
             {
-              if(IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.; 
+              if(IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) Prob = 0.;
             }
 
             /* path in the sample after scattering */
             CopyVector(Pos2v, Pos_final);
             SubVector(Pos_final, Pos);
-            PathLength = LengthVector(Pos_final);  
+            PathLength = LengthVector(Pos_final);
 
             Prob *= (double) exp( - PathLength * AbsorptionC * WL );
 
@@ -259,7 +259,7 @@ int main(int argc, char **argv)
             TransformIn2Out (Pos2v, Dir);
 
             /* transmit coordinates which were not changed, the rest overwrite below */
-            OutNeutron = InputNeutrons[i]; 
+            OutNeutron = InputNeutrons[i];
 
             OutNeutron.Time = TOF ;
             OutNeutron.Probability = Prob ;
@@ -268,10 +268,10 @@ int main(int argc, char **argv)
             CopyVector(Dir, OutNeutron.Vector);
 
             if (bColorRefl==TRUE)
-              OutNeutron.Color = (short) (no[repet] % 32768); 
+              OutNeutron.Color = (short) (no[repet] % 32768);
 
-            /*	 writes output binary file */
-            if (Prob > wei_min) 
+            /*   writes output binary file */
+            if (Prob > wei_min)
               WriteNeutron(&OutNeutron);
           }
         }/* repet */
@@ -279,19 +279,19 @@ int main(int argc, char **argv)
 
       /* here continues if neutron gets lost */
       getlost:;
-        WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0] - InNeutron.Position[0]); 
+        WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0] - InNeutron.Position[0]);
       }
     } /* i */
   }   /* ReadNeutrons*/
-   
+
   // Finish: write log, geometry and instrument file, free memory
   // ------------------------------------------------------------
  my_exit:
   /* write geometry file */
   SetGeometry("white");
-  
+
   /* Do module specific cleanups */
-  OwnCleanup(); 
+  OwnCleanup();
 
   /* Do the general cleanup */
   Cleanup(PosSample[0], PosSample[1], PosSample[2], AnglOutHoriz, AnglOutVert);
@@ -314,7 +314,7 @@ void OwnInit(int argc, char *argv[])
   colh = -1; colk = -1; coll = -1; colD = -1;
   colF = -1; colF2= -1; colM = -1; colDW= -1;
   scaleF2 = 1.0;
-	
+
   /* Scan all command line parameters */
   for (i=1; i<argc; i++)
   {
@@ -328,7 +328,7 @@ void OwnInit(int argc, char *argv[])
         case 'S':
           pStrFileName=&argv[i][2];
           break;
-		
+
         case 'd':
           sscanf(&argv[i][2], "%lf", &d_spr_rel); /* d-spacing spread, this gives the relative 'thickness' of the Ewald sphere */
           break;
@@ -450,15 +450,15 @@ void OwnInit(int argc, char *argv[])
   }
 }
 
- 
+
 /*******************************************************/
 /** Does module specific cleanup                      **/
 /*******************************************************/
 void OwnCleanup()
 {
-  if (no!=NULL) 
+  if (no!=NULL)
   {
-    free(no); 
+    free(no);
     free(hh);
     free(kk);
     free(ll);
@@ -476,13 +476,13 @@ void SetSamplePar(SampleType* pSample)
 {
   FILE*  pFile=NULL;
   char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="";
-  int    col_h=-1, col_k=-1,  col_l=-1, 
-         col_f=-1, col_f2=-1, col_dw=-1, 
+  int    col_h=-1, col_k=-1,  col_l=-1,
+         col_f=-1, col_f2=-1, col_dw=-1,
          nLen=sizeof(sLine)-1;
-  double Ax  =0.0,  Ay  =0.0, Az  =0.0, 
-         Bx  =0.0,  By  =0.0, Bz  =0.0, 
-         Cx  =0.0,  Cy  =0.0, Cz  =0.0, 
-         x   =0.0,  y   =0.0, z   =0.0, 
+  double Ax  =0.0,  Ay  =0.0, Az  =0.0,
+         Bx  =0.0,  By  =0.0, Bz  =0.0,
+         Cx  =0.0,  Cy  =0.0, Cz  =0.0,
+         x   =0.0,  y   =0.0, z   =0.0,
          phi =0.0,  chi =0.0, omega=0.0,
          outh=0.0,  outv=0.0,
          diamtr=0.0,height=0.0, width=0.0,
@@ -494,19 +494,19 @@ void SetSamplePar(SampleType* pSample)
 
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
-  { 
+  {
     pFile = OpenInputFile(pSmplFileName, FALSE, "rt");
 
     /* Reads the parameters if the file can be opened */
     if (pFile != NULL)
-    { 
+    {
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &Ax, &Ay, &Az);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &Bx, &By, &Bz);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &Cx, &Cy, &Cz);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf"    , &norm, &muAbs); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf"    , &norm, &muAbs);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &phi, &chi, &omega);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &diamtr, &width, &height);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf",     &outh,  &outv);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%d %d %d %d %d %d %lf", &col_h, &col_k, &col_l, &col_f, &col_f2, &col_dw, &scale_f2);
@@ -517,7 +517,7 @@ void SetSamplePar(SampleType* pSample)
       fclose(pFile);
 
       // combines information from input and file, input parameters have priority
-      if (eGeom==VT_NO_GEOM && geom!=VT_NO_GEOM) eGeom = geom; 
+      if (eGeom==VT_NO_GEOM && geom!=VT_NO_GEOM) eGeom = geom;
       if (A_recip[0]  ==0.0 && Ax    !=0.0) A_recip[0]  = Ax;
       if (A_recip[1]  ==0.0 && Ay    !=0.0) A_recip[1]  = Ay;
       if (A_recip[2]  ==0.0 && Az    !=0.0) A_recip[2]  = Az;
@@ -551,7 +551,7 @@ void SetSamplePar(SampleType* pSample)
                             && scale_f2!=1.0) scaleF2   = scale_f2;
     }
     else
-    {	
+    {
       fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n", pSmplFileName);
     }
   }
@@ -563,7 +563,7 @@ void SetSamplePar(SampleType* pSample)
     case VT_SPHERE:                   break;
     default       : Error2("Sample geometry missing or not implemented", sGeom);
   }
-  
+
   /* converts degs in radian etc. */
   AnglOmega   *= M_PI/180.;
   AnglChi     *= M_PI/180.;
@@ -573,12 +573,12 @@ void SetSamplePar(SampleType* pSample)
 
   /* calculates rotation matrices */
   FillRotMatrixZY(RotMatrixOut, AnglOutVert, AnglOutHoriz);
-  FillRotMatrixZY(RotMatrixPhi,   0.0, AnglPhi); 
-  FillRotMatrixXZ(RotMatrixChi,   0.0, AnglChi); 
-  FillRotMatrixZY(RotMatrixOmega, 0.0, AnglOmega); 
+  FillRotMatrixZY(RotMatrixPhi,   0.0, AnglPhi);
+  FillRotMatrixXZ(RotMatrixChi,   0.0, AnglChi);
+  FillRotMatrixZY(RotMatrixOmega, 0.0, AnglOmega);
 
   // fills data structures
-	RotBackVector(RotMatrixOmega, DirSample);
+  RotBackVector(RotMatrixOmega, DirSample);
   RotVector    (RotMatrixChi,   DirSample);
   RotBackVector(RotMatrixPhi,   DirSample);
   FillSample(pSample, eGeom, PosSample[0], PosSample[1], PosSample[2],  DirSample[0], DirSample[1], DirSample[2], Diameter, Height, Width, 0.0);
@@ -590,7 +590,7 @@ void SetSamplePar(SampleType* pSample)
   return;
 }/* End SetSamplePar() */
 
- 
+
 /*******************************************************/
 /** Reads the structure factor file                   **/
 /*******************************************************/
@@ -609,13 +609,13 @@ void ReadStructFile()
 
     nLines = LinesInFile(pStructFile);
     rewind(pStructFile);
-     
+
     no  = (int*) calloc(nLines, sizeof(int));
     hh = (double*) calloc(nLines, sizeof(double));
     kk = (double*) calloc(nLines, sizeof(double));
     ll = (double*) calloc(nLines, sizeof(double));
     Fhkl2 = (double*) calloc(nLines, sizeof(double));
-      
+
     nReflect=0;
     for (count=0; count < nLines; count++)
     {
@@ -623,14 +623,14 @@ void ReadStructFile()
       hh[count] = ReadParF(pStructFile);
       kk[count] = ReadParF(pStructFile);
       ll[count] = ReadParF(pStructFile);
-      Fhkl2[count] = ReadParF(pStructFile); 
+      Fhkl2[count] = ReadParF(pStructFile);
       ReadParComment(pStructFile); */
 
       ReadLine(pStructFile, sLine, sizeof(sLine)-1);
       sscanf(sLine, "%d %lf %lf %lf %lf", &no[nReflect], &hh[nReflect], &kk[nReflect], &ll[nReflect], &Fhkl2[nReflect]);
 
-      if (Fhkl2[nReflect] != 0.0) 
-        nReflect++; 
+      if (Fhkl2[nReflect] != 0.0)
+        nReflect++;
     }
 
     fclose(pStructFile);
@@ -638,7 +638,7 @@ void ReadStructFile()
     fprintf(LogFilePtr, "Structure factors read from file: '%s'\n", pStrFileName) ;
     fprintf(LogFilePtr, "Number of reflections           : %ld\n",  nReflect);
   }
-  else 
+  else
   {
     int jj;
 
@@ -667,7 +667,7 @@ void SetGeometry(char* sColor)
 {
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
@@ -681,9 +681,9 @@ void SetGeometry(char* sColor)
 /* probability of finding a d-spacing in Lorentzian approximation. */
 /* Maximum probability amplitude = 1                               */
 /*******************************************************************/
-double	dSpreadLorentzian(double rdelta)
+double  dSpreadLorentzian(double rdelta)
 {
-  return	sq(d_spr_rel) / ( 4*sq(rdelta) + sq(d_spr_rel) );
+  return  sq(d_spr_rel) / ( 4*sq(rdelta) + sq(d_spr_rel) );
 
 }/* End dSpreadLorentzian */
 
@@ -692,12 +692,12 @@ double	dSpreadLorentzian(double rdelta)
 /* probability of finding a d-spacing in Gaussian approximation.   */
 /* Maximum probability amplitude = 1                               */
 /*******************************************************************/
-double	dSpreadGaussian(double rdelta)
+double  dSpreadGaussian(double rdelta)
 {
   double argd ;
 
   argd = - sq(rdelta / d_spr_rel) * 4. *log(2);
-  if (argd < - 100.) 
+  if (argd < - 100.)
     argd = -100.;
 
   return (double) exp(argd);
@@ -717,7 +717,7 @@ void TransformIn2Smpl(VectorType pos, VectorType dir)
   RotBackVector(RotMatrixOmega, pos);
   RotBackVector(RotMatrixChi,   pos);
   RotBackVector(RotMatrixPhi,   pos);
-	
+
   RotBackVector(RotMatrixOmega, dir);
   RotBackVector(RotMatrixChi,   dir);
   RotBackVector(RotMatrixPhi,   dir);
@@ -728,15 +728,15 @@ void TransformIn2Smpl(VectorType pos, VectorType dir)
 void TransformSmpl2In(VectorType pos, VectorType dir)
 {
   /* computes neutron variables in the initial frame */
-	RotVector(RotMatrixPhi,   dir);
-	RotVector(RotMatrixChi,   dir);
-	RotVector(RotMatrixOmega, dir);
-	
-	RotVector(RotMatrixPhi,   pos);
-	RotVector(RotMatrixChi,   pos);
-	RotVector(RotMatrixOmega, pos);
-  	
-	AddVector(pos, PosSample);
+  RotVector(RotMatrixPhi,   dir);
+  RotVector(RotMatrixChi,   dir);
+  RotVector(RotMatrixOmega, dir);
+
+  RotVector(RotMatrixPhi,   pos);
+  RotVector(RotMatrixChi,   pos);
+  RotVector(RotMatrixOmega, pos);
+
+  AddVector(pos, PosSample);
 
   return;
 }
@@ -749,4 +749,4 @@ void TransformIn2Out(VectorType pos, VectorType dir)
   RotVector(RotMatrixOut, dir) ;
 
   return;
-} 
+}

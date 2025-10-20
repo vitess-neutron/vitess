@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
   /* draw choppers */
   /* ------------- */
   /* loop over choppers */
-  while (ReadChopper(argc, argv))  {	
+  while (ReadChopper(argc, argv))  {
     nNumChop++;
 
     /* determine opening and closing times */
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
     fTclose = fTchop * (fChopPhase+fChopAngle/2.0F)/(360.0F/nNumWnd);
 
     /* save data of WB chopper */
-    if (fChopDist > fWBDist) {	
+    if (fChopDist > fWBDist) {
       if (bSubFrame == FALSE || nNumWnd > 1) {
         /* find first frame */
         while (fTopen <= (nFrameMin-1)*fTchop) {
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
       fTclose = fWBTclose + nFr*fWBTchop;
 
       if (nOption==1) {
-	fVfast  = fWBDist/(fTopen -fTPbeg);
+  fVfast  = fWBDist/(fTopen -fTPbeg);
         fVslow  = fWBDist/(fTclose-fTPend);
         fT0fast = fTPbeg-5*fTrep;
         fT0slow = fTPend-5*fTrep;
@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
       }
 
       cpgsci(4);
-      for (t=fT0fast; t < fTmax; t+=fTrep)	
+      for (t=fT0fast; t < fTmax; t+=fTrep)
         PlotLine(fVfast, t);
 
       for (t=fT0slow; t < fTmax; t+=fTrep)
@@ -229,12 +229,12 @@ void OwnInit   (int argc, char *argv[])
   char  *arg=NULL;
 
   for(i=1; i<argc; i++) {
-    if (argv[i][0] == '+') continue; 
+    if (argv[i][0] == '+') continue;
     arg = &argv[i][2];
     switch (argv[i][1]) {
     case 'D':
       /* distance source - detector [m] */
-      fDetDist = (float) atof(arg);		
+      fDetDist = (float) atof(arg);
       break;
     case 'f':
       /* First desired frame */
@@ -248,11 +248,11 @@ void OwnInit   (int argc, char *argv[])
       break;
     case 'R':
       /* repetition time of pulses [ms] */
-      fTrep = (float) atof(arg);		
+      fTrep = (float) atof(arg);
       break;
     case 'p':
       /* pulse length */
-      fTp = (float) atof(arg);		
+      fTp = (float) atof(arg);
       break;
     case 's':
       sleepsecs = atoi(arg);
@@ -263,7 +263,7 @@ void OwnInit   (int argc, char *argv[])
       break;
     case 't':
       /* Time to be displayed      [ms] */
-      fTmax = (float) atof(arg);			
+      fTmax = (float) atof(arg);
       break;
     case 'T':
       /* Title of the figure */
@@ -297,12 +297,12 @@ short ReadChopper(int argc, char *argv[])
     switch(argv[i][1]) {
     case 'a':
       /* Angle of opening   [deg] */
-      fChopAngle = (float) atof(arg);		
+      fChopAngle = (float) atof(arg);
       bAngle=TRUE;
       break;
     case 'C':
       /*Distance: source - chopper [m] */
-      fChopDist = (float) atof(arg);		
+      fChopDist = (float) atof(arg);
       if (fChopDist==0.0)
         return FALSE;
       bDist=TRUE;
@@ -319,7 +319,7 @@ short ReadChopper(int argc, char *argv[])
       break;
     case 'o':
       /* Chopper phase      [deg] */
-      fChopPhase = (float) atof(arg);			
+      fChopPhase = (float) atof(arg);
       bPhase=TRUE;
       break;
 

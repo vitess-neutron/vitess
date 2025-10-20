@@ -32,10 +32,10 @@
 
 typedef struct
 {
-	long    nLines;
-	double* pTabX;
-	double* pTabFT;
-	double* pTabFC;
+  long    nLines;
+  double* pTabX;
+  double* pTabFT;
+  double* pTabFC;
   double  FluxIntF1, FluxIntS1,
           FluxIntF2, FluxIntS2;
 }
@@ -43,7 +43,7 @@ FctTableM;
 
 FctTableM  stFluxHor;                         // data of horizontal flux distribution
 double     Shift=0.0,                         // Position of border between moderators
-           kappa1_thml=0.0, kappa2_thml=1.0,  // fraction of thermal and cold spectrum in moderator 
+           kappa1_thml=0.0, kappa2_thml=1.0,  // fraction of thermal and cold spectrum in moderator
            kappa1_cold=1.0, kappa2_cold=0.0;  // spectrum 1 (pos < Shift) and spectrum 2 (pos > Shift)
 
 // prototypes
@@ -66,119 +66,119 @@ static double TSC2015_thmly0_BF6cm(const double y0);
 static double HorFlux (const double y, short kMod);
 
 extern short  iDataVsn;          /* version of the data base for the source characteristics */
-             
+
 /**************************************************************/
 /*  static functions                                          */
 /**************************************************************/
 double EssTotFU2015(const double ModHeight, const double ModTemp, const double Power, const double Freq, const double PulseLen)
-/* ModHeight : [cm] moderator height 
+/* ModHeight : [cm] moderator height
    ModTemp   : [K]  moderator temperature
-   Power     : [W]  average source power                             
-   Freq      : [Hz] pulse frequency                             
+   Power     : [W]  average source power
+   Freq      : [Hz] pulse frequency
    PulseLen  : [s]  pulse length                             */
 {
-	double FUAmpl= 0.0,
-	       Epulse,           // [J] energy of 1 pulse          
-	       U0    = 2.5e9,    // [V] accelerator voltage: 2.5 GV 
-	       CurrMax;          // [A] max. current for this set-up     
-	char   sBuffer[256];
+  double FUAmpl= 0.0,
+         Epulse,           // [J] energy of 1 pulse
+         U0    = 2.5e9,    // [V] accelerator voltage: 2.5 GV
+         CurrMax;          // [A] max. current for this set-up
+  char   sBuffer[256];
 
-	Epulse = Power / Freq;
+  Epulse = Power / Freq;
 
-	/* maximal accelerator current */
-	CurrMax   = Epulse / PulseLen / U0;
-	if (CurrMax > 0.05001)
-	{	sprintf(sBuffer,"Maximal accelerator current of %5.1f mA exceeds limit of 50 mA", 1000.0*CurrMax);
-		Warning(sBuffer);
-	}
+  /* maximal accelerator current */
+  CurrMax   = Epulse / PulseLen / U0;
+  if (CurrMax > 0.05001)
+  {  sprintf(sBuffer,"Maximal accelerator current of %5.1f mA exceeds limit of 50 mA", 1000.0*CurrMax);
+    Warning(sBuffer);
+  }
 
-	if ( (ModHeight > 2.9 && ModHeight < 3.1) || (ModHeight > 5.9 && ModHeight < 6.1) ){ 
-	  // integral of TSC2015_[Para/Thermal]Spectra_BF3cm, mean of theta 5-55 deg:
-	  if(fabs(ModTemp-50)<0.1)
-	    FUAmpl = 8.11e13/Freq ; // cold   16.0e14/25=6.4e13
-	  else
-	    FUAmpl = 5.85e13/Freq; // thermal  9.0e14/25=3.6e13
-	}
-	else if (ModHeight > 5.9 && ModHeight < 6.1){
-	  if(fabs(ModTemp-50)<0.1)
-	    FUAmpl = 8.11e13/Freq*0.631;
-	  else
-	    FUAmpl = 5.85e13/Freq*0.689;
-	}	
-	else
-	  {
-	    Error("source_ess.c: ESS moderator data 2015 only implemented for 3 cm and 6 cm moderator height");
-	  }
+  if ( (ModHeight > 2.9 && ModHeight < 3.1) || (ModHeight > 5.9 && ModHeight < 6.1) ){
+    // integral of TSC2015_[Para/Thermal]Spectra_BF3cm, mean of theta 5-55 deg:
+    if(fabs(ModTemp-50)<0.1)
+      FUAmpl = 8.11e13/Freq ; // cold   16.0e14/25=6.4e13
+    else
+      FUAmpl = 5.85e13/Freq; // thermal  9.0e14/25=3.6e13
+  }
+  else if (ModHeight > 5.9 && ModHeight < 6.1){
+    if(fabs(ModTemp-50)<0.1)
+      FUAmpl = 8.11e13/Freq*0.631;
+    else
+      FUAmpl = 5.85e13/Freq*0.689;
+  }
+  else
+    {
+      Error("source_ess.c: ESS moderator data 2015 only implemented for 3 cm and 6 cm moderator height");
+    }
 
-	FUAmpl *= 0.75;          // engineering factor
-	FUAmpl *= Power/5.0e06;  // scaling to an average power different from 5 MW
+  FUAmpl *= 0.75;          // engineering factor
+  FUAmpl *= Power/5.0e06;  // scaling to an average power different from 5 MW
 
-	return(FUAmpl);
+  return(FUAmpl);
 }
 
-double EssTotFU2016(const double ModHeight, const double ModTemp,  const double Power, const double Freq, 
+double EssTotFU2016(const double ModHeight, const double ModTemp,  const double Power, const double Freq,
                     const double PulseLen,  const double PfmcThml, const double PfmcCold)
-/* ModHeight : [cm] moderator height 
+/* ModHeight : [cm] moderator height
    ModTemp   : [K]  moderator temperature
-   Power     : [W]  average source power                             
-   Freq      : [Hz] pulse frequency                             
+   Power     : [W]  average source power
+   Freq      : [Hz] pulse frequency
    PulseLen  : [s]  pulse length                             */
 {
-	double FUAmpl= 0.0,
+  double FUAmpl= 0.0,
          DutyCycle=0.04,
-	       Epulse,           // [J] energy of 1 pulse          
-	       U0    = 2.5e9,    // [V] accelerator voltage: 2.5 GV 
-	       CurrMax;          // [A] max. current for this set-up     
-	char   sBuffer[256];
+         Epulse,           // [J] energy of 1 pulse
+         U0    = 2.5e9,    // [V] accelerator voltage: 2.5 GV
+         CurrMax;          // [A] max. current for this set-up
+  char   sBuffer[256];
 
-	Epulse = Power / Freq;
+  Epulse = Power / Freq;
 
-	/* maximal accelerator current */
-	CurrMax   = Epulse / PulseLen / U0;
-	if (CurrMax > 0.05001)
-	{	sprintf(sBuffer,"Maximal accelerator current of %5.1f mA exceeds limit of 50 mA", 1000.0*CurrMax);
-		Warning(sBuffer);
-	}
+  /* maximal accelerator current */
+  CurrMax   = Epulse / PulseLen / U0;
+  if (CurrMax > 0.05001)
+  {  sprintf(sBuffer,"Maximal accelerator current of %5.1f mA exceeds limit of 50 mA", 1000.0*CurrMax);
+    Warning(sBuffer);
+  }
 
-	if ( (ModHeight > 2.9 && ModHeight < 5.0) )
-  { 
-	  // integral of TSC2015_[Para/Thermal]Spectra_BF3cm, mean of theta 30 -120 deg:
-	  if (ModTemp < 100.0)
-	    FUAmpl = 16.0e14*DutyCycle/Freq*0.816*PfmcCold; // cold 
-	  else
-	    FUAmpl =  9.0e14*DutyCycle/Freq*0.732*PfmcThml; // thermal
-	}
-	else
-	{
-	  Error("source_ess.c: ESS moderator data 2016 are only implemented for 3 cm moderator height");
-	}
+  if ( (ModHeight > 2.9 && ModHeight < 5.0) )
+  {
+    // integral of TSC2015_[Para/Thermal]Spectra_BF3cm, mean of theta 30 -120 deg:
+    if (ModTemp < 100.0)
+      FUAmpl = 16.0e14*DutyCycle/Freq*0.816*PfmcCold; // cold
+    else
+      FUAmpl =  9.0e14*DutyCycle/Freq*0.732*PfmcThml; // thermal
+  }
+  else
+  {
+    Error("source_ess.c: ESS moderator data 2016 are only implemented for 3 cm moderator height");
+  }
 
-	return(FUAmpl);
+  return(FUAmpl);
 }
 
 
-double EssModFU_Butterfly2015(const double ModHeight, const double Power,    const double Freq, const double Declination, const Neutron* pNeutron, 
-                              const double PulseLen,  const double PfmcThml, const double PfmcCold)                     
-/* ModHeight  : [cm]  moderator height 
-   Power      : [W]   average source power                             
-   Declination: [deg] pulse frequency                             
+double EssModFU_Butterfly2015(const double ModHeight, const double Power,    const double Freq, const double Declination, const Neutron* pNeutron,
+                              const double PulseLen,  const double PfmcThml, const double PfmcCold)
+/* ModHeight  : [cm]  moderator height
+   Power      : [W]   average source power
+   Declination: [deg] pulse frequency
    pNeutrom   : [s]   Pointer to data of the neutron trajectory   */
 {
-  double brightness=0.0,    // [n/(cm²s str Ang)]  brightness of neutron beam for given parameters
+  double brightness=0.0,    // [n/(cmÂ²s str Ang)]  brightness of neutron beam for given parameters
          lambda,            // [Ang] neutron wavelength
-         theta,             // [deg] deviation from moderator center = 90° relative proton beam
-                            //       possible values 5°, 15°, 25°, 35°, 45° and 55°
+         theta,             // [deg] deviation from moderator center = 90Â° relative proton beam
+                            //       possible values 5Â°, 15Â°, 25Â°, 35Â°, 45Â° and 55Â°
          x0,                //  [m]  horizontal starting position on moderator (for cold and thermal moderator)
          y0,                //  [m]  vertical starting position on moderator
          time;              //  [s]  starting time at moderator
- 
+
   // calculation of (McStas) parameters used in the analytical functions
   lambda = pNeutron->Wavelength;
   theta  = Declination; //10.0*floor(abs(Declination)/10.0)+5.0;
-  x0     = pNeutron->Position[1]; // [cm] 
-  y0     = pNeutron->Position[2]; // [cm] 
+  x0     = pNeutron->Position[1]; // [cm]
+  y0     = pNeutron->Position[2]; // [cm]
   time   = pNeutron->Time/1000.0;
-  
+
   // mirror x0 to match weird coordinate system in functions
   if(theta > 0.0)
     x0 *= -1.0;
@@ -190,7 +190,7 @@ double EssModFU_Butterfly2015(const double ModHeight, const double Power,    con
     Error("source_ess.c: ESS moderator data 2015 only implemented for declination |theta| <= 55 deg");
 
   if (ModHeight > 2.9 && ModHeight < 3.1)
-  { 
+  {
     brightness = ( TSC2015_ParaSpectra_BF3cm(lambda, fabs(theta))
                   *TSC2015_coldy0_BF3cm(y0)
                   *TSC2015_coldx0_BF3cm(x0, fabs(theta))
@@ -200,60 +200,60 @@ double EssModFU_Butterfly2015(const double ModHeight, const double Power,    con
                   TSC2015_ThermalSpectra_BF3cm(lambda, fabs(theta))
                   *TSC2015_thmly0_BF3cm(y0)
                   *TSC2015_thmlx0_BF3cm(x0, fabs(theta))
-                  *TSC_TimeDist_Final_Thermal(time,lambda,ModHeight, PulseLen) 
+                  *TSC_TimeDist_Final_Thermal(time,lambda,ModHeight, PulseLen)
                   *PfmcThml );                                            // loss due to engineering details not modeled
   }
   else if (ModHeight > 5.9 && ModHeight < 6.1)
-  { 
+  {
     brightness = ( TSC2015_ParaSpectra_BF3cm(lambda, fabs(theta)) * 0.631 // apply factor BF6cm/BF3cm
-		   *TSC2015_coldy0_BF6cm(y0)                                          // parameters calc for 6cm
-		   *TSC2015_coldx0_BF3cm(x0, fabs(theta))                             // same as 3cm
-		   *TSC_TimeDist_Final_Cold(time,lambda,ModHeight, PulseLen)          // same as 3cm
-		   *PfmcCold 
+       *TSC2015_coldy0_BF6cm(y0)                                          // parameters calc for 6cm
+       *TSC2015_coldx0_BF3cm(x0, fabs(theta))                             // same as 3cm
+       *TSC_TimeDist_Final_Cold(time,lambda,ModHeight, PulseLen)          // same as 3cm
+       *PfmcCold
            +
-		   TSC2015_ThermalSpectra_BF3cm(lambda, fabs(theta)) * 0.689
-		   *TSC2015_thmly0_BF6cm(y0)
-		   *TSC2015_thmlx0_BF3cm(x0, fabs(theta))
-		   *TSC_TimeDist_Final_Thermal(time,lambda,ModHeight, PulseLen)
-           *PfmcThml ); 
+       TSC2015_ThermalSpectra_BF3cm(lambda, fabs(theta)) * 0.689
+       *TSC2015_thmly0_BF6cm(y0)
+       *TSC2015_thmlx0_BF3cm(x0, fabs(theta))
+       *TSC_TimeDist_Final_Thermal(time,lambda,ModHeight, PulseLen)
+           *PfmcThml );
   }
   else
   {
     Error("source_ess.c: ESS moderator data 2015 only implemented for 3 cm and 6 cm moderator height");
   }
 
-  brightness /= Freq;   
+  brightness /= Freq;
   brightness *= Power/5.0e06;  // scaling to an average power different from 5 MW
-    
+
   return(brightness);
 }
 
-double EssModFU_Butterfly2016(const double ModTemp,   const double Power,    const double Freq, const double Declination, const Neutron* pNeutron, 
-                              const double PulseLen,  const double PfmcThml, const double PfmcCold)                     
+double EssModFU_Butterfly2016(const double ModTemp,   const double Power,    const double Freq, const double Declination, const Neutron* pNeutron,
+                              const double PulseLen,  const double PfmcThml, const double PfmcCold)
 /* ModTemp    : [cm]  moderator temperature
-   Power      : [W]   average source power                             
+   Power      : [W]   average source power
    Freq       : [Hz]  pulse frequency
-   Declination: [deg] deviation of beamline direction from moderator surface normal                             
+   Declination: [deg] deviation of beamline direction from moderator surface normal
    pNeutron   : [s]   Pointer to data of the neutron trajectory   */
 {
-  double brightness=0.0,        // [n/(cm²s str Ang)]  brightness of neutron beam for given parameters
+  double brightness=0.0,        // [n/(cmÂ²s str Ang)]  brightness of neutron beam for given parameters
          lambda,                // [Ang] neutron wavelength
-         theta,                 // [deg] deviation from moderator normal = 90° relative proton beam
-                                //       possible values -60°, -54°, -48°, ... 60°
+         theta,                 // [deg] deviation from moderator normal = 90Â° relative proton beam
+                                //       possible values -60Â°, -54Â°, -48Â°, ... 60Â°
          x0,                    //  [m]  horizontal starting position on moderator
          y0,                    //  [m]  vertical starting position on moderator
          fxc=0.0, fxt=0.0,      //       factors defining horizontal intensity distribution
          fyc=0.0, fyt=0.0,      //       factors defining vertical intensity distribution
-         kappa_thml, kappa_cold,//       fraction of thermal and cold spectrum in moderator 
+         kappa_thml, kappa_cold,//       fraction of thermal and cold spectrum in moderator
          time;                  //  [s]  starting time at moderator
- 
+
   // calculation of (McStas) parameters used in the analytical functions
   lambda = pNeutron->Wavelength;
-  theta  = Declination;         
-  x0     = pNeutron->Position[1]; // [cm] 
-  y0     = pNeutron->Position[2]; // [cm] 
+  theta  = Declination;
+  x0     = pNeutron->Position[1]; // [cm]
+  y0     = pNeutron->Position[2]; // [cm]
   time   = pNeutron->Time/1000.0; // [s]
-  
+
   if (fabs(theta) > 60.0)
     Error("source_ess.c: ESS moderator data 2016 only implemented for declination |theta| <= 60 deg");
 
@@ -282,12 +282,12 @@ double EssModFU_Butterfly2016(const double ModTemp,   const double Power,    con
               * fxc * fyc * 0.816 * PfmcCold                            // loss due to engineering details not modeled
              +  kappa_thml
               * TSC2015_ThermalSpectra_BF3cm(lambda, fabs(theta))
-              * TSC_TimeDist_Final_Thermal(time,lambda, 3.0, PulseLen) 
+              * TSC_TimeDist_Final_Thermal(time,lambda, 3.0, PulseLen)
               * fxt * fyt * 0.732 * PfmcThml ;                          // loss due to engineering details not modeled
 
-  brightness /= Freq;   
+  brightness /= Freq;
   brightness *= Power/5.0e06;  // scaling to an average power different from 5 MW
-    
+
   return(brightness);
 }
 
@@ -301,14 +301,14 @@ double GetModWidth_ESSbutterfly2015(const double theta, double const ModTemp){
   double Width[6][2]={ {7.1,14.2}, {8.0,14.1}, {8.0,14.2}, {7.9,14.3}, {6.9,15.6}, {7.0,16.0} };  // {cold, thml}
   int i=1;
   short mod = (fabs(ModTemp-50)<0.1) ? 0 : 1;
- 
+
    if(theta<=5){
      return Width[0][mod];
    }
    else{
      for(i=1; i<6; i++){
        if(theta<=5+10*i){
-	 return Width[i][mod]-(Width[i][mod]-Width[i-1][mod])/10*(5+10*i-theta);
+   return Width[i][mod]-(Width[i][mod]-Width[i-1][mod])/10*(5+10*i-theta);
        }
      }
   }
@@ -316,12 +316,12 @@ double GetModWidth_ESSbutterfly2015(const double theta, double const ModTemp){
 }
 
 double GetModWidth_ESSbutterfly2016(const double theta, double const ModTemp)
-{ 
- //          Beamport      11    10     9     8    7    6    5    4    3    2     1      
+{
+ //          Beamport      11    10     9     8    7    6    5    4    3    2     1
   double WidthCold[11] = { 6.9,  8.3,  8.6,  8.7, 8.8, 8.8, 8.7, 8.5, 7.6, 7.25, 5.0},  // eff. widths cold
          WidthThml[11] = {10.5, 10.5, 10.3, 10.0, 9.6, 9.1, 8.5, 7.7, 7.7, 6.80, 5.8},  // eff. widths thermal
          DelTheta      = 6.0,  // distance in deg between neighboring beamports
-         DTheta,               // distance in deg to j-th standard beamline direction 
+         DTheta,               // distance in deg to j-th standard beamline direction
          width=0.0,
          frac, kTheta;
   int    jTheta;
@@ -330,9 +330,9 @@ double GetModWidth_ESSbutterfly2016(const double theta, double const ModTemp)
   jTheta = Round(kTheta);
   DTheta = theta - DelTheta*kTheta;
 
-  if (ModTemp < 100.0) 
+  if (ModTemp < 100.0)
     width = WidthCold[jTheta] + (WidthCold[jTheta+1] - WidthCold[jTheta])/DelTheta * DTheta;
-  else                   
+  else
     width = WidthThml[jTheta] + (WidthThml[jTheta+1] - WidthThml[jTheta])/DelTheta * DTheta;
 
   width /= cos(theta*M_PI/180.0);
@@ -341,11 +341,11 @@ double GetModWidth_ESSbutterfly2016(const double theta, double const ModTemp)
 
 
 double GetShift_ESSbutterfly2016(const double theta)
-{ 
- //          Beamport  11   10    9    8    7    6    5    4     3      2      1      
+{
+ //          Beamport  11   10    9    8    7    6    5    4     3      2      1
   double aShift[11] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.64, -0.48, -0.21},
          shift=0.0;                         // eff. shift of the cross over point between cold and thermal moderator
-  int    iTheta = Round(theta / 6.0); 
+  int    iTheta = Round(theta / 6.0);
 
   shift = aShift[iTheta];
   shift /= cos(theta*M_PI/180.0);
@@ -365,7 +365,7 @@ short GetColour_ESSbutterfly2015(double x0, const double theta)
 
   if( TSC2015_coldx0_BF3cm(x0, fabs(theta)) > TSC2015_thmlx0_BF3cm(x0, fabs(theta)) )
     return 2;
-  else 
+  else
     return 1;
 }
 
@@ -388,22 +388,22 @@ short GetColour_ESSbutterfly2016(const double lambda)
 void LoadHorDistrib(const char* sID)
 {
   long   i;
-  double DelY=0.0, 
+  double DelY=0.0,
          Y1min, Y1max, Y2min, Y2max,
          YR, YL, FTR, FTL, FCR, FCL,
          Decl;
   char   sFileName[20],
-         sBuffer[CHAR_BUF_LENGTH]=""; 
+         sBuffer[CHAR_BUF_LENGTH]="";
   FILE*  pDisFile=NULL;
   short  iBL=0;
   char   cOrient=' ';
 
   // check input
-  if (strlen(sID) > 0) 
+  if (strlen(sID) > 0)
     sscanf(sID, "%c%hd", &cOrient, &iBL);
 
-  // loading file containing horizontal flux distribution 
-  if ((cOrient=='S' || cOrient=='N' || cOrient=='O' || cOrient=='W') && iBL > 0 && iBL < 12) 
+  // loading file containing horizontal flux distribution
+  if ((cOrient=='S' || cOrient=='N' || cOrient=='O' || cOrient=='W') && iBL > 0 && iBL < 12)
   {
     // Determine range of cold and thermal moderator
     Decl=CalcDecl(CalcTheta(sID));
@@ -427,7 +427,7 @@ void LoadHorDistrib(const char* sID)
       kappa2_cold = 1.0;
     }
 
-    Y1min = Shift - Width1; Y1max = Shift; 
+    Y1min = Shift - Width1; Y1max = Shift;
     Y2min = Shift;          Y2max = Shift + Width2;
 
     /* opening distribution file, either from the input directory or from the installation directory */
@@ -435,7 +435,7 @@ void LoadHorDistrib(const char* sID)
     pDisFile = OpenInputFile(sFileName, FALSE, "rt");
     if (pDisFile==NULL)
       pDisFile = OpenPackInpFile(sFileName, "FILES/moderators/ESS/", FALSE);
-    if (pDisFile!=NULL) 
+    if (pDisFile!=NULL)
     {
       /* reading number of lines, allocating memory and reading distribution files */
       stFluxHor.nLines = LinesInFile(pDisFile);
@@ -444,7 +444,7 @@ void LoadHorDistrib(const char* sID)
       stFluxHor.pTabFC = (double*) calloc(stFluxHor.nLines, sizeof(double));
 
       for(i=0; i < stFluxHor.nLines; i++)
-      {  
+      {
         ReadLine(pDisFile, sBuffer, sizeof(sBuffer)-1);
         sscanf  (sBuffer, "%lf %le %le", &stFluxHor.pTabX[i], &stFluxHor.pTabFT[i], &stFluxHor.pTabFC[i]);
       }
@@ -454,7 +454,7 @@ void LoadHorDistrib(const char* sID)
       stFluxHor.FluxIntF2 = 0.0; stFluxHor.FluxIntS2 = 0.0;
 
       for (i=1; i < stFluxHor.nLines; i++)
-      { 
+      {
         if (stFluxHor.pTabX[i] > Y1min && stFluxHor.pTabX[i-1] < Y1max)
         {
           YR   =  Min(stFluxHor.pTabX [i],   Y1max);
@@ -488,18 +488,18 @@ void LoadHorDistrib(const char* sID)
 
       /* if moderators show mixed spectrum
       kappa1_thml = (stFluxHor.FluxIntF1 * FLUX_S_COLD - stFluxHor.FluxIntS1 *FLUX_F_COLD) / (FLUX_F_THML * FLUX_S_COLD - FLUX_S_THML * FLUX_F_COLD);
-      kappa1_cold = (stFluxHor.FluxIntF1 - kappa1_thml * FLUX_F_THML) / FLUX_F_COLD;  
+      kappa1_cold = (stFluxHor.FluxIntF1 - kappa1_thml * FLUX_F_THML) / FLUX_F_COLD;
       kappa2_thml = (stFluxHor.FluxIntF2 * FLUX_S_COLD - stFluxHor.FluxIntS2 *FLUX_F_COLD) / (FLUX_F_THML * FLUX_S_COLD - FLUX_S_THML * FLUX_F_COLD);
-      kappa2_cold = (stFluxHor.FluxIntF2 - kappa2_thml * FLUX_F_THML) / FLUX_F_COLD;  
+      kappa2_cold = (stFluxHor.FluxIntF2 - kappa2_thml * FLUX_F_THML) / FLUX_F_COLD;
       */
-    } 
-    else 
-    { fprintf(LogFilePtr,"ERROR: Can't open file '%s' to read horizontal intensity distribution, neither in the input directory nor in 'InstallDir/FILES/moderators/ESS'\n", 
+    }
+    else
+    { fprintf(LogFilePtr,"ERROR: Can't open file '%s' to read horizontal intensity distribution, neither in the input directory nor in 'InstallDir/FILES/moderators/ESS'\n",
                          sFileName);
       exit (-1);
     }
-  } 
-  else 
+  }
+  else
   { Error("You have to give a valid beam port!\n");
   }
 }
@@ -522,7 +522,7 @@ double CalcTheta(const char* sID)
     case 'S': theta =  90.0 - delTh; break;
     default : Error("wrong ID for the calculation of the beamline orientation");
   }
-  return theta;  
+  return theta;
 }
 
 double CalcDecl(const double theta)
@@ -534,7 +534,7 @@ double CalcDecl(const double theta)
   else
     decl = theta -  90.0;
 
-  return decl;    
+  return decl;
 }
 
 char* GenerBeamport(const double Decl)
@@ -542,9 +542,9 @@ char* GenerBeamport(const double Decl)
   static char sPort[5];
   char   sOrient =' ';
   short  iBP;
-  double DelTheta=6.0;  // distance between neighboring beamports       
+  double DelTheta=6.0;  // distance between neighboring beamports
 
-  iBP = 11 - (int) Round(fabs(Decl) / DelTheta); 
+  iBP = 11 - (int) Round(fabs(Decl) / DelTheta);
 
   if (Decl > 0) sOrient='E';
   else          sOrient='S';
@@ -596,8 +596,8 @@ double TSC2015_ParaSpectra_BF3cm(const double lambda, const double theta){
 }
 
 double TSC2015_ThermalSpectra_BF3cm(const double lambda, const double theta){
-   
-    double i, par0, par2, par3, aOlsqr;    
+
+    double i, par0, par2, par3, aOlsqr;
 
     if(lambda<=0)return 0;
 
@@ -614,7 +614,7 @@ double TSC2015_ThermalSpectra_BF3cm(const double lambda, const double theta){
 double TSC_TimeDist_Final_Thermal(double time,double lambda,double height, double pulse_len)
 {
     double tau;
- 
+
     if (time < 0.0) return 0;
     tau=3.00000e-004*(1.23048e-002*lambda*lambda+1.75628e-001*exp(-1.82452e-001*height)+9.27770e-001)*exp(-3.91090e+001*pow(Max(1e-13,lambda+0.987990),-7.65675));
     if (time < pulse_len) return 1/pulse_len*(1.0-exp(-time/tau));   // corrected exp() -> 1-exp()   (KL, 15.05.15)
@@ -624,7 +624,7 @@ double TSC_TimeDist_Final_Thermal(double time,double lambda,double height, doubl
 double TSC_TimeDist_Final_Cold(double time,double lambda,double height, double pulse_len)
 {
     double tau;
- 
+
     if (time < 0.0) return 0;
     tau=3.00094e-004*(4.15681e-003*lambda*lambda+2.96212e-001*exp(-1.78408e-001*height)+7.77496e-001)*exp(-6.63537e+001*pow(Max(1e-13,lambda+0.9),-8.64455));
     if (time < pulse_len)return 1/pulse_len*(1.0-exp(-time/tau));   // corrected exp() -> 1-exp()   (KL, 15.05.15)
@@ -633,7 +633,7 @@ double TSC_TimeDist_Final_Cold(double time,double lambda,double height, double p
 
 
 double TSC2016_coldx0_BF3cm(const double y, const double lambda)
-{ 
+{
   double F,f;
   short iCol=GetColour_ESSbutterfly2016(lambda);
 
@@ -650,7 +650,7 @@ double TSC2016_coldx0_BF3cm(const double y, const double lambda)
 double TSC2015_coldx0_BF3cm(const double x0, const double theta)
 {
   double i, line, CutLeftCutRight;
-  double par0, par1, par2, par3, par4, par5; 
+  double par0, par1, par2, par3, par4, par5;
 
     i=(theta-5.)/10.;
     par0=0.0146115+0.00797729*i-0.00279541*i*i;
@@ -666,7 +666,7 @@ double TSC2015_coldx0_BF3cm(const double x0, const double theta)
       par1 = 1.11707 - (1.11707-1.01466)*(4-i);
     else if(i<=5)
       par1 = 1.16057 - (1.16057-1.11707)*(5-i);
-        
+
     par2=-4-.75*i;
     if(i<=0)par2=-20;
     else if (i<1)
@@ -702,14 +702,14 @@ double TSC2015_coldy0_BF3cm(const double y0){
 double TSC2015_coldy0_BF6cm(const double y0){
   double par3=7.42571*2;
     double par4=0.295423;
-    long double cosh_ish=exp(par4*y0)+0.822088*exp(-par4*y0); 
+    long double cosh_ish=exp(par4*y0)+0.822088*exp(-par4*y0);
     long double sinh_ish=pow(1+exp(-par3*(y0+6./2.)),-1)*pow(1+exp(par3*(y0-6./2.)),-1);
     return 1.02646/2*(double)((long double)cosh_ish*(long double)sinh_ish);
 }
 
 
 double TSC2016_thmlx0_BF3cm(const double y, const double lambda)
-{ 
+{
   double F,f;
   short iCol=GetColour_ESSbutterfly2016(lambda);
 
@@ -726,7 +726,7 @@ double TSC2016_thmlx0_BF3cm(const double y, const double lambda)
 double TSC2015_thmlx0_BF3cm(const double x0, const double theta)
 {
     double i, soften1, soften2, CutLeftCutRight, line1, line2, line3, add45degbumb;
-    double par0, par1, par2, par3, par4, par5, par6, par7, par8, par9; 
+    double par0, par1, par2, par3, par4, par5, par6, par7, par8, par9;
 
     i=(theta-5.)/10.;
     par0=-5.54775+0.492804*i;
@@ -738,23 +738,23 @@ double TSC2015_thmlx0_BF3cm(const double x0, const double theta)
     if (theta==55) par3=1.23;
     par4=-.035;
     par5=-0.0817358+0.00807125*i;
-        
+
     par6=-8;
     par7=-7.15;
     if(theta>35){
       if(theta<=45)
-	par7 = - ( 8.2 -(8.2-7.15)/10*(45-theta) );
+  par7 = - ( 8.2 -(8.2-7.15)/10*(45-theta) );
       else if(theta<=55)
-	par7 = - ( 7.7 -(7.7-8.2)/10*(55-theta) );
+  par7 = - ( 7.7 -(7.7-8.2)/10*(55-theta) );
     }
 
     par8=-8;
     par9=7.15;
     if(theta>35){
       if(theta<=45)
-	par9 = 7.5 - (7.5-7.15)/10*(45-theta);
+  par9 = 7.5 - (7.5-7.15)/10*(45-theta);
       else if(theta<=55)
-	par9 = 8.2 - (8.2-7.5)/10*(55-theta);
+  par9 = 8.2 - (8.2-7.5)/10*(55-theta);
     }
     soften1=1./(1+exp(8.*(x0-par0)));
     soften2=1./(1+exp(8.*(x0-par1)));
@@ -792,15 +792,15 @@ static double HorFlux(const double y, short kMod)
 {
   double F=0.0,            // factor and flux
          Fn=0.0, Fn1=0.0;  // flux values: corr. to y, n-th and (n+1)the value in table
-	short  n=0;
-  
-  // 
-	while (n+1 < stFluxHor.nLines  &&  stFluxHor.pTabX[n+1] < y)
-	{	n++;
-	}
+  short  n=0;
+
+  //
+  while (n+1 < stFluxHor.nLines  &&  stFluxHor.pTabX[n+1] < y)
+  {  n++;
+  }
 
   if (n+1 < stFluxHor.nLines)
-  {	
+  {
     /* linear  extrapolation */
     if (kMod==MOD_COLD)
     { Fn  = stFluxHor.pTabFC[n];
@@ -811,15 +811,13 @@ static double HorFlux(const double y, short kMod)
       Fn1 = stFluxHor.pTabFT[n+1];
     }
 
-		F   = Fn  +  (Fn1-Fn ) / (stFluxHor.pTabX[n+1] - stFluxHor.pTabX[n])
-		                       * (y                    - stFluxHor.pTabX[n]);
-	}
-	else
-	/* read error: wavelength larger than all values in the distribution file */
-	{	CountMessage(SRC_Y_RANGE_TOO_SMALL);
-	}
+    F   = Fn  +  (Fn1-Fn ) / (stFluxHor.pTabX[n+1] - stFluxHor.pTabX[n])
+                           * (y                    - stFluxHor.pTabX[n]);
+  }
+  else
+  /* read error: wavelength larger than all values in the distribution file */
+  {  CountMessage(SRC_Y_RANGE_TOO_SMALL);
+  }
 
   return F;
 }
-
-

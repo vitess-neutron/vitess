@@ -41,11 +41,11 @@
 void           ChopInit        (int argc, char *argv[]);    // Reads input parameters and sets global variables
 short          WndInit         (int argc, char **argv);     // Reads input parameters and sets global variables of the window data
 void           ReadChopperData ();                          // Reads chopper parameters from file
-void           SetGeometry     (char* sColor);              // Fills the structure stGeometry for visualization 
+void           SetGeometry     (char* sColor);              // Fills the structure stGeometry for visualization
 void           OwnCleanup      ();                          // Does module specific cleanup
 
 unsigned short BlockedByChopper(Neutron* pNeutron);         // Checks if neutron is blocked by the chopper
-double         RedAngle        (double angle, short dir);   // Reduces the angle to [0�, 360�] or [-360�, 0�] (dir = -1)
+double         RedAngle        (double angle, short dir);   // Reduces the angle to [0째, 360째] or [-360째, 0째] (dir = -1)
 double         ModPhase        (double phase, int nSect);   // Reduces the phase from a full circle to a section of a circle
 double         CalcMinTrnd     (void);                      // Calculates a proper value for the lower end of the time interval of the random time of arrival
 void           AllocAndInitWnds(int nWnds);                 // Allocates memory for the given number of chopper windows and initializes them
@@ -55,48 +55,48 @@ void           InitWindow      (ChopperWindow* pWnd);       // Initializes one c
 /** global and static variables   **/
 /***********************************/
 // Input parameters
-char	  *ChopperFileName=NULL;       // -C   [-]    name of the file describing the chopper disc
-double   Rpm=0.0,                    // -s  [1/min] rotation speed 
-         ChopperInitialOffset=0.0,   // -o  [deg]   orientation of the chopper at t=0 
-         Distance=0.0;               // -l   [cm]   distance of the chopper from the end of the previous component 
-VtAbsMat eAbsMaterial = VT_ABS_IDEAL;// -g   [-]    enum: absorption in chopper: 0: ideal  1:Gadolinium  2: Bor 
+char    *ChopperFileName=NULL;       // -C   [-]    name of the file describing the chopper disc
+double   Rpm=0.0,                    // -s  [1/min] rotation speed
+         ChopperInitialOffset=0.0,   // -o  [deg]   orientation of the chopper at t=0
+         Distance=0.0;               // -l   [cm]   distance of the chopper from the end of the previous component
+VtAbsMat eAbsMaterial = VT_ABS_IDEAL;// -g   [-]    enum: absorption in chopper: 0: ideal  1:Gadolinium  2: Bor
 short    bRndTof      = FALSE,       // -r   [-]    flag: time of arrival is set by a random choice within the period of the chopper disc
          bZeroTime    = FALSE,       // -z   [-]    flag: chopper sets neutron time close to zero after the chopper
-         bPassOutside = TRUE,        // -p   [-]    flag: neutrons can pass outside the chopper 
-         bSetColour   = FALSE;       // -c   [-]    flag: chopper sets colour to window number 
-                                         
-// Deactivated in GUI                    
+         bPassOutside = TRUE,        // -p   [-]    flag: neutrons can pass outside the chopper
+         bSetColour   = FALSE;       // -c   [-]    flag: chopper sets colour to window number
+
+// Deactivated in GUI
 int      NumEquWnds   = 1;           // -n   [-]    number of equivalent windows used to generate pulses, deactivated in GUI
-                                             
-// Variables read from file in VITESS 3  
+
+// Variables read from file in VITESS 3
 short    nWindows=0;                 // -N  [-]     number of chopper windows
-double   Radius =0.0;                // -R   [cm]   radius of the chopper  [cm]  
+double   Radius =0.0;                // -R   [cm]   radius of the chopper  [cm]
 double   CenterX=0.0,                //      [cm]   fixed
-         CenterY=0.0,                // -Y   [cm] 
-         CenterZ=0.0;                // -Z   [cm]   centre of the chopper in the coordinate system of the beamline [cm]  
-                                   
-// Chopper window data             
+         CenterY=0.0,                // -Y   [cm]
+         CenterZ=0.0;                // -Z   [cm]   centre of the chopper in the coordinate system of the beamline [cm]
+
+// Chopper window data
 ChopperWindow *stWnd;                // -ip  [deg]  window position   i=0, 1, 2 ...  number of the window
                                      // -ih  [cm]   window height
-                                     // -iw  [deg]  window width 
+                                     // -iw  [deg]  window width
                                      // -il  [deg]  left side deviation of the window
                                      // -ir  [deg]  right side deviation of the window
-                                   
+
 // Variables determined from input parameters or file data
 double   Period   =0.0;              //      [ms]   time for 1 revolution of the disc
-double   Frequency=0.0;              //             rot.freq = 2*pi*60*rpm  
+double   Frequency=0.0;              //             rot.freq = 2*pi*60*rpm
 double   TrndMin  =0.0,              //      [ms]   min. max. value for randomized arrival time
-         TrndMax  =0.0;                   
-double   Angle    =0.0;              //             orientation of the center of beamline in the chopper system 
-FILE	  *ChopperFile=NULL;           //      [-]    pointer to the file describing the chopper disc
-Plane	   Endpoint;                   //      [-]    struture describing the chopper position and orientation
+         TrndMax  =0.0;
+double   Angle    =0.0;              //             orientation of the center of beamline in the chopper system
+FILE    *ChopperFile=NULL;           //      [-]    pointer to the file describing the chopper disc
+Plane     Endpoint;                   //      [-]    struture describing the chopper position and orientation
 
 
 /******************************/
 /** Program                  **/
 /******************************/
 int main(int argc, char *argv[])
-{ 
+{
   long   i=0;
   int    nWndInp=0;      /* number of windows defined in the input file           */
   double mu  =0.0,       /* absorption coeffient of the absorbing material [1/cm] */
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
   double TimeOF=0.0,
          AveTimeOF=0.0,  /* average time of flight to chopper weighted by count rate */
          SumProb =0.0,   /* sum of count rates of all traj. reaching the chopper */
-         CtrBeamX=0.0, 
+         CtrBeamX=0.0,
          CtrBeamY=0.0,
          CtrBeamZ=0.0;   /* center of beam of all traj. reaching the chopper at chopper weighted by count rate */
          Neutron OutNeutron;
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
   ChopInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   /* Reading chopper file, if no windows are defined in the parameter input */
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
   if (nWndInp==0)
     ReadChopperData();
 
-  if (bRndTof) 
+  if (bRndTof)
   { TrndMin = CalcMinTrnd();
     TrndMax = TrndMin+Period;
   }
@@ -148,13 +148,13 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
-        // Submit both the Neutron and the plane to a subroutine and find the intercept 
+      {
+        // Submit both the Neutron and the plane to a subroutine and find the intercept
         // ----------------------------------------------------------------------------
         if (InputNeutrons[i].Position[0] > -Endpoint.D)
         CountMessageID(ALL_BEHIND_COMPONENT, InputNeutrons[i].ID);
 
-        // 	Move neutron to window with gravity effect and calculate Time of Flight (ms)
+        //   Move neutron to window with gravity effect and calculate Time of Flight (ms)
         // -----------------------------------------------------------------------------
         if (keygrav == 1)
         {
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
           /* non perfect absorption */
 
           switch (eAbsMaterial)
-          {	/* ideally absorbing material */
+          {  /* ideally absorbing material */
             case VT_ABS_IDEAL:
               WriteIAP(&InputNeutrons[i], VT_ABSORBED);
               continue;
@@ -196,24 +196,24 @@ int main(int argc, char *argv[])
             /* gadolinium */
             case VT_ABS_GD:
               if (OutNeutron.Wavelength <= 0.35)
-              {	prob = -0.1843*OutNeutron.Wavelength  + 1.0128;
+              {  prob = -0.1843*OutNeutron.Wavelength  + 1.0128;
                 if (prob > 0.961) prob = 0.961;
               }
               else if ( OutNeutron.Wavelength < 6.0)
-              {	double *pLmbdList=NULL, *pMuList=NULL;
+              {  double *pLmbdList=NULL, *pMuList=NULL;
 
                 mu   = Interpolation(OutNeutron.Wavelength, 1, pLmbdList, pMuList, 44);
                 prob = exp(-mu*0.02);  /* typical thickness 2 x 100 um */
               }
               else
-              {	prob = 0.0;
+              {  prob = 0.0;
               }
               break;
 
             /* Bor-10 */
             case VT_ABS_B10:
               if (OutNeutron.Wavelength < 0.29)
-              {	double eV, mcnp;
+              {  double eV, mcnp;
 
                 eV   = 1.0e-06*ENERGY_FROM_LAMBDA(OutNeutron.Wavelength);
                 mcnp = 612.07/sqrt(eV);
@@ -221,13 +221,13 @@ int main(int argc, char *argv[])
                 prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
               }
               else if ( OutNeutron.Wavelength < 6.0)
-              {	double *pLmbdList=NULL, *pMuList=NULL;
+              {  double *pLmbdList=NULL, *pMuList=NULL;
 
                 mu   = Interpolation(OutNeutron.Wavelength, 3, pLmbdList, pMuList, 44);
                 prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
               }
               else
-              {	prob = 0.0;
+              {  prob = 0.0;
               }
               break;
 
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
           continue;
         }
         else
-        {	WriteNeutron(&OutNeutron);
+        {  WriteNeutron(&OutNeutron);
           WriteIAP(&InputNeutrons[i], VT_PASSED);
         }
       }
@@ -272,7 +272,7 @@ my_exit:
 
   SetGeometry("blue");                       // write geometry data for visualization
   OwnCleanup();                              // write messages, free memory
-  Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);     // print intensity, write instrument.inf, 
+  Cleanup(-Endpoint.D,0.0,0.0, 0.0,0.0);     // print intensity, write instrument.inf,
 
   return(0);
 }
@@ -293,7 +293,7 @@ void ChopInit   (int argc, char *argv[])
 
   for(i=1; i<argc; i++)
   {
-    if(argv[i][0]!='+') 
+    if(argv[i][0]!='+')
     {
       switch(argv[i][1])
       {
@@ -307,12 +307,12 @@ void ChopInit   (int argc, char *argv[])
           }
           break;
 
-        case 'o':										/*Offset [deg] */
+        case 'o':                    /*Offset [deg] */
           ChopperInitialOffset = atof(&argv[i][2]);
           ChopperInitialOffset = 2.0*M_PI*ChopperInitialOffset/360.0;
           break;
         case 's':
-          Rpm = atof(&argv[i][2]);			          		/* Rounds per minute  */
+          Rpm = atof(&argv[i][2]);                    /* Rounds per minute  */
           Frequency = 2.0*M_PI*Rpm/60.0;  /* Frequency in rad/s */
           Period = 60.0 * 1000.0 / Rpm;               /* period in ms       */
           break;
@@ -354,21 +354,21 @@ void ChopInit   (int argc, char *argv[])
           break;
 
         // not yet activated
-        case 'N':										/* number of chopper windows */
+        case 'N':                    /* number of chopper windows */
           nWindows = atoi(&argv[i][2]);
           break;
-        case 'R':										/* radius of the chopper */
+        case 'R':                    /* radius of the chopper */
           Radius = atof(&argv[i][2]);
           break;
-        case 'Y':										/* y-component of the centre of the chopper */
+        case 'Y':                    /* y-component of the centre of the chopper */
           CenterY = atof(&argv[i][2]);
           break;
-        case 'Z':										/* z-component of the centre of the chopper */
+        case 'Z':                    /* z-component of the centre of the chopper */
           CenterZ = atof(&argv[i][2]);
           break;
 
         // deactivated
-        case 'n':										/* no of windows for pulse generation */
+        case 'n':                    /* no of windows for pulse generation */
           NumEquWnds = atoi(&argv[i][2]);
           break;
 
@@ -391,22 +391,22 @@ short WndInit(int argc, char **argv)
 {
   int   i=0, iW=0, iMax=-1;
   char* arg=NULL;
-  
+
   // allocates memory for the chopper windows and initializes them
   AllocAndInitWnds(nWindows);
 
   for (i=1; i<argc; i++)
-  {                      
-    if (argv[i][0]!='+')  
-    { 
-      if (isdigit(argv[i][1]))  
-      { 
+  {
+    if (argv[i][0]!='+')
+    {
+      if (isdigit(argv[i][1]))
+      {
         iW = argv[i][1] - 48;
         arg=&argv[i][3];
         if (iW >= nWindows)
           AllocAndInitWnds(iW+1);
-                                             
-        switch(argv[i][2])                             
+
+        switch(argv[i][2])
         {
           case 'p':
             stWnd[iW].Pos = M_PI/180.0 *((double) atof(arg));        //   [deg]    window position
@@ -438,7 +438,7 @@ short WndInit(int argc, char **argv)
 /*******************************************************/
 /** Read chopper file                                 **/
 /*******************************************************/
-void ReadChopperData() 
+void ReadChopperData()
 {
   short  k=0;
   int    iv=0;
@@ -467,9 +467,9 @@ void ReadChopperData()
   fprintf(LogFilePtr, "Chopper open at t=0 (without offset) for a window at %-5.1f deg\n", Angle*180/M_PI);
 
   // data of the windows
-  for (k=0; k < nWindows; k++) 
+  for (k=0; k < nWindows; k++)
   {
-    if (fgets(Buffer, 100, ChopperFile)==NULL) 
+    if (fgets(Buffer, 100, ChopperFile)==NULL)
     {
       fprintf(LogFilePtr,"ERROR: File %s does not contain %d window definitions\n", ChopperFileName, nWindows);
       fclose(ChopperFile);
@@ -478,7 +478,7 @@ void ReadChopperData()
     sscanf(Buffer,"%lf %lf %lf %lf %lf", &stWnd[k].Pos,  &WindowHeight, &stWnd[k].Opening, &stWnd[k].Left, &stWnd[k].Right);
 
     fprintf(LogFilePtr, "Window %d: Position: %7.2f deg   Aperture: %6.2f deg   Height: %6.2f cm\n",
-	                      k+1, stWnd[k].Pos, stWnd[k].Opening, WindowHeight);
+                        k+1, stWnd[k].Pos, stWnd[k].Opening, WindowHeight);
 
     if (stWnd[k].Left > 0.0 || stWnd[k].Right > 0.0)
       fprintf(LogFilePtr, "  Deviation: %6.2f deg left, %6.2f deg right\n", stWnd[k].Left, stWnd[k].Right);
@@ -517,14 +517,14 @@ void SetGeometry(char* sColor)
 
   // Visualisation of the slit geometry
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
     ReadSimData  (&TimeMeas, &LmbdWanted, &Freq, &nTraj, &nBnch);
     if (LmbdWanted > 0.0)
-    {	nModuleNo=ReadInstrData(0, EndPos, &Length, &RotZ, &RotY, sInstrInfIn);
+    {  nModuleNo=ReadInstrData(0, EndPos, &Length, &RotZ, &RotY, sInstrInfIn);
       time = (Length-0.01*Endpoint.D) / (10.0*V_FROM_LAMBDA(LmbdWanted)); /* velocity in m/s instead of cm/ms */
     }
     else
@@ -533,9 +533,9 @@ void SetGeometry(char* sColor)
     dir  = (short) (Frequency < 0.0 ? -1 : 1);
 
     stGeometry.pCircle  = (VtCircle*) calloc(nWindows + 1, sizeof(VtCircle));
-    stGeometry.nCircles = nWindows + 1; 
+    stGeometry.nCircles = nWindows + 1;
     // stGeometry.pLine    = (VtLine*) calloc(2*nWindows, sizeof(VtLine));
-    // stGeometry.nLines   = 2*nWindows; 
+    // stGeometry.nLines   = 2*nWindows;
 
     stGeometry.pCircle[0].vCntr[0]   = -Endpoint.D;
     stGeometry.pCircle[0].vCntr[1]   = BlowUp * CenterY;
@@ -548,8 +548,8 @@ void SetGeometry(char* sColor)
     stGeometry.pCircle[0].vNormal[2] =   0.0;
 
     for (k=0; k < nWindows; k++)
-    { 
-      phi_wnd = -180.0/M_PI * (stWnd[k].Pos + ChopperInitialOffset + Frequency * time) + 90.0; // 0� to left, not to top in vis. tool
+    {
+      phi_wnd = -180.0/M_PI * (stWnd[k].Pos + ChopperInitialOffset + Frequency * time) + 90.0; // 0째 to left, not to top in vis. tool
       phi_red = RedAngle(phi_wnd, dir);
 
       stGeometry.pCircle[k+1].Radius     = BlowUp * Radius;
@@ -567,7 +567,7 @@ void SetGeometry(char* sColor)
       stGeometry.pLine[2*k].vPosBeg[2] = CenterZ + stWnd[k].Bottom * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
       stGeometry.pLine[2*k].vPosEnd[0] = -Endpoint.D;
       stGeometry.pLine[2*k].vPosEnd[1] = CenterY - Radius * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
-      stGeometry.pLine[2*k].vPosEnd[2] = CenterZ + Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);  
+      stGeometry.pLine[2*k].vPosEnd[2] = CenterZ + Radius * sin(M_PI/180.0*stGeometry.pCircle[k+1].AngleBeg);
 
       stGeometry.pLine[2*k+1].vPosBeg[0] = -Endpoint.D;
       stGeometry.pLine[2*k+1].vPosBeg[1] = CenterY - stWnd[k].Bottom * cos(M_PI/180.0*stGeometry.pCircle[k+1].AngleEnd);
@@ -607,7 +607,7 @@ void OwnCleanup()
 unsigned short BlockedByChopper(Neutron* ThisNeutron)
 {
   double ChopperOffset=0.0, ChopperOffsetRed=0.0, OriginNeutronDistance, Time;
-  double Left, Right, WindowAngle=0.0, 
+  double Left, Right, WindowAngle=0.0,
          NeutronAngle,   // angle from chopper axle to point of striking
          NeutronDist,    // distance from chopper axle to point of striking
          dY, dZ;         // point of striking
@@ -657,17 +657,17 @@ unsigned short BlockedByChopper(Neutron* ThisNeutron)
     /***********************************************************************************/
     /* The offset of this window at the time the neutron strikes is calculated.        */
     /***********************************************************************************/
-    Time = ThisNeutron->Time/1000.0;  		/*msec. to sec. */
+    Time = ThisNeutron->Time/1000.0;      /*msec. to sec. */
     ChopperOffset = Time * Frequency  + ChopperInitialOffset;
 
     WindowAngle = ChopperOffset + stWnd[k].Pos;
-    Left        = ChopperOffset + stWnd[k].Pos - stWnd[k].Opening/2.0; 
+    Left        = ChopperOffset + stWnd[k].Pos - stWnd[k].Opening/2.0;
     Right       = ChopperOffset + stWnd[k].Pos + stWnd[k].Opening/2.0;
 
     /* Correction of window width by deviation */
-    if (stWnd[k].Left != 0.0)	
+    if (stWnd[k].Left != 0.0)
     Left  -= stWnd[k].Left  - asin(stWnd[k].Bottom/NeutronDist*sin(stWnd[k].Left));
-    if (stWnd[k].Right != 0.0)	
+    if (stWnd[k].Right != 0.0)
     Right += stWnd[k].Right - asin(stWnd[k].Bottom/NeutronDist*sin(stWnd[k].Right));
 
     /***********************************************************************************/
@@ -720,10 +720,10 @@ unsigned short BlockedByChopper(Neutron* ThisNeutron)
   passed_outside:
   /* depending on criterion: treatment of neutrons outside the chopper or not */
   if (bPassOutside==FALSE)
-  {	return TRUE;    /* treated as blocked though it passed outside the chopper */
+  {  return TRUE;    /* treated as blocked though it passed outside the chopper */
   }
   else
-  {	CountMessageID(CHOP_PASSED_OUTSIDE, ThisNeutron->ID);
+  {  CountMessageID(CHOP_PASSED_OUTSIDE, ThisNeutron->ID);
   }
 
   passed:
@@ -780,9 +780,9 @@ double CalcMinTrnd     (void)
 
   if (nWindows > 1)
   {
-    Phase0 = ChopperInitialOffset + 0.5*(stWnd[0].Pos + stWnd[1].Pos);   
+    Phase0 = ChopperInitialOffset + 0.5*(stWnd[0].Pos + stWnd[1].Pos);
   }
-  else 
+  else
   {
     Phase0 = ChopperInitialOffset + stWnd[0].Pos + Radians(180.0);
   }
@@ -797,22 +797,22 @@ double CalcMinTrnd     (void)
 /* Allocates memory for the chopper windows and initializes them */
 /**************************************************************************************************/
 void AllocAndInitWnds(int kWnd)
-{ 
+{
   int kAnf=0;
   int k;
 
   // no allocation needed, if no windows or current window already in allocated range
-  if (kWnd==0 && nWindows==0  ||  stWnd!=NULL && kWnd <= nWindows) 
+  if (kWnd==0 && nWindows==0  ||  stWnd!=NULL && kWnd <= nWindows)
     return;
 
   // define range needed, if current window exceeds assumed number of windows
   if (kWnd > nWindows)
-  { 
+  {
     kAnf     = nWindows;
     nWindows = kWnd;
   }
 
-  // Allocates memory for the chopper window data 
+  // Allocates memory for the chopper window data
   if (stWnd==NULL)
     stWnd = (ChopperWindow *)malloc(nWindows*sizeof(ChopperWindow));
   else
@@ -821,7 +821,7 @@ void AllocAndInitWnds(int kWnd)
     Error("Out of memory whilst allocating memory for chopper data");
 
   // and initializes the allocated space
-  for (k=kAnf; k < nWindows; k++) 
+  for (k=kAnf; k < nWindows; k++)
   {
     InitWindow(&stWnd[k]);
   }

@@ -23,24 +23,24 @@
 
 
 /********************************************************************/
-/* general definitions for the module crys.c			    */
+/* general definitions for the module crys.c          */
 
-FILE		*AsciiFile, *Par_Crys, *Foc_Crys;
-char		*ParameterFileName, *GeomFileName ;
-int			OrderReflection, NumberCE[2], ParGeomN, d_spr_option, geom_option, mode;
-long		NumOut, BufferIndex, Repetition, repet;
-double		TOF, WL, Prob, d_ran, d_ran_min, d_ran_max, arg, thr, phr, thrmax, phrmax, deltaphr ;
-double		Matrix[3][3], Option, User, ParGeom[PAR_GEOM], IntegralIntensity ;
-double		d_spacing, d_fwhm, d_range, mosaic_range, mosaic_fwhm[2], Reflectivity, absCoeff ;
-double		RotHoriz, RotVert, BraggHoriz, BraggVert, PosCE[3], DimCE[3], Depth[3] ;
-double		TranslFoc[3], TranslFoc_def[3], AnglFocHoriz, AnglFocVert, totalXOffset, rotOffset ;
-double		RotMatrixCE[3][3], RotMatrixBragg[3][3], RotMatrixFoc[3][3], RotMatrixSurf[3][3] ;
-double		RotHoriz_F[CRYS_SIZE][CRYS_SIZE], RotVert_F[CRYS_SIZE][CRYS_SIZE], PosCE_F[3][CRYS_SIZE][CRYS_SIZE], DimCE_F[3][CRYS_SIZE][CRYS_SIZE] ;
-double		RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE] ;
-double      DevH, DevV;              // horizontal and vertical deviation from correct crystal orientation 
-double      GapH, GapV;              // horizontal and vertical distance between crystal elements 
-VectorType	Pos, Dir, Mosaic, Path ;
-Neutron		Neutrons ;
+FILE    *AsciiFile, *Par_Crys, *Foc_Crys;
+char    *ParameterFileName, *GeomFileName ;
+int      OrderReflection, NumberCE[2], ParGeomN, d_spr_option, geom_option, mode;
+long    NumOut, BufferIndex, Repetition, repet;
+double    TOF, WL, Prob, d_ran, d_ran_min, d_ran_max, arg, thr, phr, thrmax, phrmax, deltaphr ;
+double    Matrix[3][3], Option, User, ParGeom[PAR_GEOM], IntegralIntensity ;
+double    d_spacing, d_fwhm, d_range, mosaic_range, mosaic_fwhm[2], Reflectivity, absCoeff ;
+double    RotHoriz, RotVert, BraggHoriz, BraggVert, PosCE[3], DimCE[3], Depth[3] ;
+double    TranslFoc[3], TranslFoc_def[3], AnglFocHoriz, AnglFocVert, totalXOffset, rotOffset ;
+double    RotMatrixCE[3][3], RotMatrixBragg[3][3], RotMatrixFoc[3][3], RotMatrixSurf[3][3] ;
+double    RotHoriz_F[CRYS_SIZE][CRYS_SIZE], RotVert_F[CRYS_SIZE][CRYS_SIZE], PosCE_F[3][CRYS_SIZE][CRYS_SIZE], DimCE_F[3][CRYS_SIZE][CRYS_SIZE] ;
+double    RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE] ;
+double      DevH, DevV;              // horizontal and vertical deviation from correct crystal orientation
+double      GapH, GapV;              // horizontal and vertical distance between crystal elements
+VectorType  Pos, Dir, Mosaic, Path ;
+Neutron    Neutrons ;
 
 
 /******************************/
@@ -48,7 +48,7 @@ Neutron		Neutrons ;
 /******************************/
 int main(int argc, char **argv)
 {
-  double		Index;
+  double    Index;
 
   // initialisation
   // --------------
@@ -59,13 +59,13 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   /* Get the neutrons from the file */
   DECLARE_ABORT;
 
-  while (ReadNeutrons())  
+  while (ReadNeutrons())
   {
     int i;
     /* double startTime; */
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
     /* VectorType startVector; */
 
     CHECK;
-    for (i=0; i<NumNeutGot; i++) 
+    for (i=0; i<NumNeutGot; i++)
     {
       CHECK;
 
@@ -82,47 +82,47 @@ int main(int argc, char **argv)
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
-        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
+      {
+        InputNeutrons[i].Vector[0]  = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
 
-        /* selects CE on which the neutron is reflected and gives global variables in	the frame of CE */
+        /* selects CE on which the neutron is reflected and gives global variables in  the frame of CE */
 
         /* startTime = InputNeutrons[i].Time; */
 
         /* for (ii = 0; ii < 3; ii++) { */
-        /* 	startVector[ii] = InputNeutrons[i].Vector[ii]; */
-        /* 	startPosition[ii] = InputNeutrons[i].Position[ii]; */
+        /*   startVector[ii] = InputNeutrons[i].Vector[ii]; */
+        /*   startPosition[ii] = InputNeutrons[i].Position[ii]; */
         /* } */
 
         SelectCE(&Index, i) ;
 
         if (Index == 0./* no CE was found */) goto getlost ;
 
-	    // if CE was found,  InputNeutrons[i] contains now position and direction of the incoming neutron
-	    // in the frame of the reflecting crystal element.
+      // if CE was found,  InputNeutrons[i] contains now position and direction of the incoming neutron
+      // in the frame of the reflecting crystal element.
 
-	    /* moment of arriving at the crystal plane, new position */   
+      /* moment of arriving at the crystal plane, new position */
         InputNeutrons[i].Time -= InputNeutrons[i].Position[0]  / fabs(InputNeutrons[i].Vector[0]) /V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
 
         CopyVector(InputNeutrons[i].Vector, Path) ;
         MultiplyByScalar(Path, - InputNeutrons[i].Position[0]/ InputNeutrons[i].Vector[0] ) ;
-	    AddVector(InputNeutrons[i].Position, Path) ; /* Path = displacement vector */
+      AddVector(InputNeutrons[i].Position, Path) ; /* Path = displacement vector */
 
-	    // InputNeutrons[i] contains now position and direction of the neutron at the point of reflection
-	    // in the frame of the reflecting crystal element.
+      // InputNeutrons[i] contains now position and direction of the neutron at the point of reflection
+      // in the frame of the reflecting crystal element.
 
         /* for flat option (Option =1) computes neutron direction in the "Bragg" frame keeping frame of CE for the position */
 
         RotBackVector(RotMatrixCE, InputNeutrons[i].Vector) ;  // Vector is now back to the original frame
 
-	    // write intersection point
-	    Neutrons = InputNeutrons[i];
-	    RotBackVector(RotMatrixCE, Neutrons.Position) ;  
-	    AddVector(Neutrons.Position, PosCE);
-	    Neutrons.Probability = InputNeutrons[i].Probability * (1.0 - Reflectivity);
-	    WriteIAP(&Neutrons, VT_REFLECTED);   // Reflectivity fehlt
- 
+      // write intersection point
+      Neutrons = InputNeutrons[i];
+      RotBackVector(RotMatrixCE, Neutrons.Position) ;
+      AddVector(Neutrons.Position, PosCE);
+      Neutrons.Probability = InputNeutrons[i].Probability * (1.0 - Reflectivity);
+      WriteIAP(&Neutrons, VT_REFLECTED);   // Reflectivity fehlt
+
         RotVector(RotMatrixBragg, InputNeutrons[i].Vector) ;   // Vector is now back in the frame of the Bragg refl. plane
 
         for(repet=0;repet<Repetition;repet++) {
@@ -139,9 +139,9 @@ int main(int argc, char **argv)
 
 
           /* start here if no mosaic */
-	  // CAN NEVER OCCUR, mosaic_fwhm[k] is set to 10^-3
+    // CAN NEVER OCCUR, mosaic_fwhm[k] is set to 10^-3
           if ((mosaic_fwhm[0]*mosaic_fwhm[1])==0.){
-	
+
             double theta_Bragg, phi_Bragg, theta_refl, phi_refl, d_sp ;
 
             CartesianToSpherical(Dir, &theta_Bragg, &phi_Bragg);
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
             /** end here if no mosaic **/}
 
           /** start here if mosaic **/
-          if ((mosaic_fwhm[0]*mosaic_fwhm[1])!=0.) 	{
+          if ((mosaic_fwhm[0]*mosaic_fwhm[1])!=0.)   {
 
             /* random d-spacing */
 
@@ -201,7 +201,7 @@ int main(int argc, char **argv)
 
             CartesianToSpherical(Mosaic, &thrmax, &phrmax) ;
 
-            /*	computes random mosaic normal in the frame of neutron close to the maximum probability */
+            /*  computes random mosaic normal in the frame of neutron close to the maximum probability */
 
             deltaphr = mosaic_range * Min(mosaic_fwhm[0], mosaic_fwhm[1]) ;
 
@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 
             IntegralIntensity += Prob ;
 
-            /*	 computes reflected direction in the frame of neutron */
+            /*   computes reflected direction in the frame of neutron */
 
             thr = M_PI - 2 * thr ;
             phr = M_PI + phr ;
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
             /* computes reflected direction in the "Bragg"(Option=1) or CE frame (Option !=1)*/
 
             RotBackVector(Matrix, Dir) ;
-	
+
             /** end here if mosaic **/
           }
 
@@ -311,7 +311,7 @@ int main(int argc, char **argv)
  my_exit:
   /* write geometry file */
   SetGeometry("blue");
-  
+
   /* Do module specific cleanups */
   OwnCleanup();
 
@@ -326,10 +326,10 @@ int main(int argc, char **argv)
 
 /* selects CE on which the neutron is reflected and gives output in frame of CE */
 
-void	SelectCE(double *index, int i)
+void  SelectCE(double *index, int i)
 {
-  int		k, l ;
-  double	pos[3], dir[3] ;
+  int    k, l ;
+  double  pos[3], dir[3] ;
 
   for(k = 0;k<NumberCE[0];k++) {
     for(l = 0;l<NumberCE[1];l++) {
@@ -368,7 +368,7 @@ void	SelectCE(double *index, int i)
 
       /* NOTE: in focusing geometry the Bragg frame and CE frame are coincident*/
       if(Option != 1) { int p, q;
-			
+
         for(p = 0;p<3;p++) for(q = 0;q<3;q++) RotMatrixBragg[p][q] = RotMatrixCE[p][q];
       }
 
@@ -386,7 +386,7 @@ void	SelectCE(double *index, int i)
 
 /* computes mosaic orientation of maximum probability in frame of Bragg */
 
-void	MosaicMaxProb(VectorType Dir, double *th, VectorType Mosaic)
+void  MosaicMaxProb(VectorType Dir, double *th, VectorType Mosaic)
 {
   double thrmax, phrmax ;
 
@@ -425,100 +425,100 @@ void OwnInit(int argc, char *argv[])
   while(argc>1)
     {
       switch(argv[1][1])
-	{
-	case 'P':
-	  if ((Par_Crys = OpenInputFile(&argv[1][2], FALSE, "r"))==NULL)
-	    {
-	      fprintf(LogFilePtr,"\nERROR: parameter file '%s' not found!",&argv[1][2]);
-	      exit(0);
-	    }
-	  ParameterFileName=&argv[1][2];
-	  break;
+  {
+  case 'P':
+    if ((Par_Crys = OpenInputFile(&argv[1][2], FALSE, "r"))==NULL)
+      {
+        fprintf(LogFilePtr,"\nERROR: parameter file '%s' not found!",&argv[1][2]);
+        exit(0);
+      }
+    ParameterFileName=&argv[1][2];
+    break;
 
-	case 'G':
-	  GeomFileName=&argv[1][2];
-	  break;
+  case 'G':
+    GeomFileName=&argv[1][2];
+    break;
 
-	case 'A':
-	  sscanf(&argv[1][2], "%ld", &Repetition) ;
-	  break;
+  case 'A':
+    sscanf(&argv[1][2], "%ld", &Repetition) ;
+    break;
 
-	case 'O':
-	  sscanf(&argv[1][2], "%lf", &Option) ;
-	  break;
+  case 'O':
+    sscanf(&argv[1][2], "%lf", &Option) ;
+    break;
 
-	case 'm':
-	  sscanf(&argv[1][2], "%lf", &mosaic_fwhm[0]) ;
-	  break;
+  case 'm':
+    sscanf(&argv[1][2], "%lf", &mosaic_fwhm[0]) ;
+    break;
 
-	case 'M':
-	  sscanf(&argv[1][2], "%lf", &mosaic_fwhm[1]) ;
-	  break;
+  case 'M':
+    sscanf(&argv[1][2], "%lf", &mosaic_fwhm[1]) ;
+    break;
 
-	case 't':
-	  sscanf(&argv[1][2], "%lf", &DevH) ;
-	  break;
+  case 't':
+    sscanf(&argv[1][2], "%lf", &DevH) ;
+    break;
 
-	case 'T':
-	  sscanf(&argv[1][2], "%lf", &DevV) ;
-	  break;
+  case 'T':
+    sscanf(&argv[1][2], "%lf", &DevV) ;
+    break;
 
-	  /* case 'X': */
-	  /*   sscanf(&argv[1][2], "%d", &mode) ; */
-	  /*   break; */
+    /* case 'X': */
+    /*   sscanf(&argv[1][2], "%d", &mode) ; */
+    /*   break; */
 
-	case 'C':
-	  sscanf(&argv[1][2], "%lf", &absCoeff) ;
-	  break;
+  case 'C':
+    sscanf(&argv[1][2], "%lf", &absCoeff) ;
+    break;
 
-	case 'd':
-	  sscanf(&argv[1][2], "%d", &d_spr_option) ;
-	  break;
+  case 'd':
+    sscanf(&argv[1][2], "%d", &d_spr_option) ;
+    break;
 
-	case 'D':
-	  sscanf(&argv[1][2], "%lf", &d_fwhm) ;
-	  break;
+  case 'D':
+    sscanf(&argv[1][2], "%lf", &d_fwhm) ;
+    break;
 
-	case 'R':
-	  sscanf(&argv[1][2], "%lf", &Reflectivity) ;
-	  break;
-
-
-	case 'g':
-	  sscanf(&argv[1][2], "%d", &geom_option) ;
-	  break;
+  case 'R':
+    sscanf(&argv[1][2], "%lf", &Reflectivity) ;
+    break;
 
 
-	case 'h':
-	  sscanf(&argv[1][2], "%lf", &GapH) ;
-	  break;
-
-	case 'v':
-	  sscanf(&argv[1][2], "%lf", &GapV) ;
-	  break;
+  case 'g':
+    sscanf(&argv[1][2], "%d", &geom_option) ;
+    break;
 
 
-	case 'H':
-	  sscanf(&argv[1][2], "%d", &NumberCE[0]) ;
-	  break;
+  case 'h':
+    sscanf(&argv[1][2], "%lf", &GapH) ;
+    break;
 
-	case 'V':
-	  sscanf(&argv[1][2], "%d", &NumberCE[1]) ;
-	  break;
+  case 'v':
+    sscanf(&argv[1][2], "%lf", &GapV) ;
+    break;
 
-	case 'r':
-	  sscanf(&argv[1][2], "%lf", &ParGeom[0]) ;
-	  break;
 
-	case 'a':
-	  sscanf(&argv[1][2], "%lf", &ParGeom[1]) ;
-	  break;
+  case 'H':
+    sscanf(&argv[1][2], "%d", &NumberCE[0]) ;
+    break;
 
-	case 's':
-	  sscanf(&argv[1][2], "%lf", &ParGeom[2]) ;
-	  break;
+  case 'V':
+    sscanf(&argv[1][2], "%d", &NumberCE[1]) ;
+    break;
 
-	}
+  case 'r':
+    sscanf(&argv[1][2], "%lf", &ParGeom[0]) ;
+    break;
+
+  case 'a':
+    sscanf(&argv[1][2], "%lf", &ParGeom[1]) ;
+    break;
+
+  case 's':
+    sscanf(&argv[1][2], "%lf", &ParGeom[2]) ;
+    break;
+
+  }
       argc--;
       argv++;
     }
@@ -532,38 +532,38 @@ void OwnInit(int argc, char *argv[])
   NumOut=0 ;
 
 
-  fprintf(LogFilePtr,"	mosaic spread horiz, vert	=%9.4f, %9.4f\n	d spread			=   %10.4e\n	reflectivity		=  %9.4f",
-	  mosaic_fwhm[0], mosaic_fwhm[1], d_fwhm, Reflectivity) ;
+  fprintf(LogFilePtr,"  mosaic spread horiz, vert  =%9.4f, %9.4f\n  d spread      =   %10.4e\n  reflectivity    =  %9.4f",
+    mosaic_fwhm[0], mosaic_fwhm[1], d_fwhm, Reflectivity) ;
 
-  fprintf(LogFilePtr,"\n	repetition rate		=   %ld", Repetition) ;
+  fprintf(LogFilePtr,"\n  repetition rate    =   %ld", Repetition) ;
 
 
   /* prints to log file */
 
   fprintf(LogFilePtr,"\ninitialised option: ") ;
 
-  if(Option == 1.) fprintf(LogFilePtr,"	'crystal_flat'") ;
+  if(Option == 1.) fprintf(LogFilePtr,"  'crystal_flat'") ;
 
   if(Option == 2.)
     {
-      fprintf(LogFilePtr,"	'crystal_focus'") ;
+      fprintf(LogFilePtr,"  'crystal_focus'") ;
 
-      fprintf(LogFilePtr,"\n	vertical  : number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg,  min. angle = %.3lf deg",
-	      NumberCE[1], ParGeom[0], GapV, DevV, ParGeom[1]) ;
+      fprintf(LogFilePtr,"\n  vertical  : number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg,  min. angle = %.3lf deg",
+        NumberCE[1], ParGeom[0], GapV, DevV, ParGeom[1]) ;
 
-      fprintf(LogFilePtr,"\n	horizontal: number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg",
-	      NumberCE[0], ParGeom[2], GapH, DevH) ;
+      fprintf(LogFilePtr,"\n  horizontal: number of CE = %2d,  radius = %6.1lf cm,  gap = %4.2lf cm,  var. orient. = %4.2lf deg",
+        NumberCE[0], ParGeom[2], GapH, DevH) ;
 
-      fprintf(LogFilePtr,"\n	focus file: '%s'", GeomFileName) ;
+      fprintf(LogFilePtr,"\n  focus file: '%s'", GeomFileName) ;
     }
 
   if(Option == 3.)
     {
-      fprintf(LogFilePtr,"	'crystal_focus_dat'") ;
+      fprintf(LogFilePtr,"  'crystal_focus_dat'") ;
 
-      fprintf(LogFilePtr,"\n	number of CE		=   %d, %d (h.,v.)", NumberCE[0], NumberCE[1]) ;
+      fprintf(LogFilePtr,"\n  number of CE    =   %d, %d (h.,v.)", NumberCE[0], NumberCE[1]) ;
 
-      fprintf(LogFilePtr,"\n	focus file: '%s'", GeomFileName) ;
+      fprintf(LogFilePtr,"\n  focus file: '%s'", GeomFileName) ;
     }
 
 
@@ -577,23 +577,23 @@ void OwnInit(int argc, char *argv[])
 
   /* converts degs in radian etc. */
 
-  mosaic_fwhm[0]	*= M_PI/180. ;
+  mosaic_fwhm[0]  *= M_PI/180. ;
 
-  mosaic_fwhm[1]	*= M_PI/180. ;
+  mosaic_fwhm[1]  *= M_PI/180. ;
 
-  RotHoriz		*= M_PI/180. ;
+  RotHoriz    *= M_PI/180. ;
 
-  RotVert			*= M_PI/180. ;
+  RotVert      *= M_PI/180. ;
 
-  BraggHoriz		*= M_PI/180. ;
+  BraggHoriz    *= M_PI/180. ;
 
-  BraggVert		*= M_PI/180. ;
+  BraggVert    *= M_PI/180. ;
 
-  AnglFocHoriz	*= M_PI/180. ;
+  AnglFocHoriz  *= M_PI/180. ;
 
-  AnglFocVert		*= M_PI/180. ;
+  AnglFocVert    *= M_PI/180. ;
 
-  d_fwhm			*= d_spacing ;
+  d_fwhm      *= d_spacing ;
 
   IntegralIntensity = 0. ;
 
@@ -622,10 +622,10 @@ void OwnInit(int argc, char *argv[])
       if(geom_option ==4) crys_geomDoubleCyl() ;
 
       if((Foc_Crys = OpenInputFile(GeomFileName, FALSE, "r"))==NULL)
-	{
-	  fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
-	  exit(0);
-	}
+  {
+    fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
+    exit(0);
+  }
 
       ReadFocFile() ;
 
@@ -640,10 +640,10 @@ void OwnInit(int argc, char *argv[])
       NumberCE[0]= NumberCE[1]=0;
 
       if((Foc_Crys = OpenInputFile(GeomFileName, FALSE, "r"))==NULL)
-	{
-	  fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
-	  exit(0);
-	}
+  {
+    fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
+    exit(0);
+  }
 
       ReadFocFile() ;
 
@@ -708,18 +708,18 @@ void ReadParameterFile()
 
   /* check some values */
   {
-    char	hv;
-    int		k;
-    double	m_cut;
+    char  hv;
+    int    k;
+    double  m_cut;
 
     m_cut = 1.e-3;
 
     for(k=0; k<2; k++) {
       hv = k==0 ? 'h' : 'v';
-  	
+
       if (mosaic_fwhm[k] < m_cut) {
-	mosaic_fwhm[k]	= m_cut ;
-	fprintf(LogFilePtr, "\nWARNING: minimum mosaicity %1.1e was set for mosaic spread %c. !", m_cut, hv) ;
+  mosaic_fwhm[k]  = m_cut ;
+  fprintf(LogFilePtr, "\nWARNING: minimum mosaicity %1.1e was set for mosaic spread %c. !", m_cut, hv) ;
       }
     }
   }
@@ -739,19 +739,19 @@ void ReadParameterFile()
 
   /* print parameters to log file for verification */
 
-  fprintf(LogFilePtr,"\n	d-spacing		=%9.4f\n	mosaic range factor	=   %10.4e\n	d range factor		=   %10.4e\n	order of reflection		=   %d",
-	
-	  d_spacing, mosaic_range, d_range, OrderReflection) ;
+  fprintf(LogFilePtr,"\n  d-spacing    =%9.4f\n  mosaic range factor  =   %10.4e\n  d range factor    =   %10.4e\n  order of reflection    =   %d",
 
-  fprintf(LogFilePtr,"\n	main position X, Y, Z	=  %9.4f, %9.4f, %9.4f\n	thickness, width, height	= %9.4f, %9.4f, %9.4f\n	horizontal offset		=  %9.4f\n	vertical offset		= %9.4f\n	horizontal Bragg		=  %9.4f\n	vertical Bragg		= %9.4f\n	cutoff probability		=    %8.1e",
-	
-	  PosCE[0], PosCE[1], PosCE[2], DimCE[0], DimCE[1], DimCE[2], RotHoriz, RotVert, BraggHoriz, BraggVert,wei_min) ;
+    d_spacing, mosaic_range, d_range, OrderReflection) ;
+
+  fprintf(LogFilePtr,"\n  main position X, Y, Z  =  %9.4f, %9.4f, %9.4f\n  thickness, width, height  = %9.4f, %9.4f, %9.4f\n  horizontal offset    =  %9.4f\n  vertical offset    = %9.4f\n  horizontal Bragg    =  %9.4f\n  vertical Bragg    = %9.4f\n  cutoff probability    =    %8.1e",
+
+    PosCE[0], PosCE[1], PosCE[2], DimCE[0], DimCE[1], DimCE[2], RotHoriz, RotVert, BraggHoriz, BraggVert,wei_min) ;
 
   if (User == 1.) fprintf(LogFilePtr,"\nuser defined frame:") ;
   else  fprintf(LogFilePtr,"\nstandard frame generation:") ;
 
-  fprintf(LogFilePtr,"\n	horizontal angle		=  %9.4f\n	vertical angle		= %9.4f\n	X',Y',Z'			=  %9.4f, %9.4f, %9.4f\n\n",
-	  AnglFocHoriz, AnglFocVert, TranslFoc[0], TranslFoc[1], TranslFoc[2]) ;
+  fprintf(LogFilePtr,"\n  horizontal angle    =  %9.4f\n  vertical angle    = %9.4f\n  X',Y',Z'      =  %9.4f, %9.4f, %9.4f\n\n",
+    AnglFocHoriz, AnglFocVert, TranslFoc[0], TranslFoc[1], TranslFoc[2]) ;
 
 }/* End ReadParameterFile */
 
@@ -760,7 +760,7 @@ void ReadParameterFile()
 
 void ReadFocFile()
 {
-  int	i, j, k ;
+  int  i, j, k ;
 
   /* reads from file by using ReadParF() and ReadParComment() */
 
@@ -770,36 +770,36 @@ void ReadFocFile()
   for(i = 0;i<NumberCE[0];i++)
     {
       for(j = 0;j<NumberCE[1];j++)
-	{
+  {
 
-	  PosCE_F[0][i][j]=ReadParF(Foc_Crys) ; PosCE_F[1][i][j]=ReadParF(Foc_Crys) ; PosCE_F[2][i][j]=ReadParF(Foc_Crys) ;
+    PosCE_F[0][i][j]=ReadParF(Foc_Crys) ; PosCE_F[1][i][j]=ReadParF(Foc_Crys) ; PosCE_F[2][i][j]=ReadParF(Foc_Crys) ;
 
-	  DimCE_F[0][i][j]=ReadParF(Foc_Crys) ; DimCE_F[1][i][j]=ReadParF(Foc_Crys) ; DimCE_F[2][i][j]=ReadParF(Foc_Crys) ;
+    DimCE_F[0][i][j]=ReadParF(Foc_Crys) ; DimCE_F[1][i][j]=ReadParF(Foc_Crys) ; DimCE_F[2][i][j]=ReadParF(Foc_Crys) ;
 
-	  RotHoriz_F[i][j]=ReadParF(Foc_Crys) ; RotVert_F[i][j]=ReadParF(Foc_Crys) ;
-
-
-	  /* converts degs in radian etc. */
-
-	  RotHoriz_F[i][j]		*= M_PI/180. ;
-
-	  RotVert_F[i][j]		*= M_PI/180. ;
+    RotHoriz_F[i][j]=ReadParF(Foc_Crys) ; RotVert_F[i][j]=ReadParF(Foc_Crys) ;
 
 
-	  /* ads main parameters */
+    /* converts degs in radian etc. */
 
-	  for(k=0;k<3;k++)
-	    {
-	      PosCE_F[k][i][j]		+= PosCE[k] ;
+    RotHoriz_F[i][j]    *= M_PI/180. ;
 
-	      DimCE_F[k][i][j]		+= DimCE[k] ;
-	    }
+    RotVert_F[i][j]    *= M_PI/180. ;
 
-	  RotHoriz_F[i][j]		+= RotHoriz ;
 
-	  RotVert_F[i][j]			+= RotVert ;
+    /* ads main parameters */
 
-	}
+    for(k=0;k<3;k++)
+      {
+        PosCE_F[k][i][j]    += PosCE[k] ;
+
+        DimCE_F[k][i][j]    += DimCE[k] ;
+      }
+
+    RotHoriz_F[i][j]    += RotHoriz ;
+
+    RotVert_F[i][j]      += RotVert ;
+
+  }
     }
 
 }/* End ReadFocFile */
@@ -813,62 +813,62 @@ void SetGeometry(char* sColor)
 
   /* fills structure for instrument visalization */
   if (bVisInstr)
-  { 
-	  sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
+  {
+    sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  = sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    if (Option == 1) 
+    if (Option == 1)
     {
       // Visualisation of the monochromator geometry
-	    stGeometry.pCuboid  = (VtCuboid*) calloc(1, sizeof(VtCuboid));
-	    stGeometry.nCuboids = 1; 
-	
-	    stGeometry.pCuboid[0].Length    = DimCE[0]; 
-	    stGeometry.pCuboid[0].Width     = DimCE[1];
-	    stGeometry.pCuboid[0].Height    = DimCE[2];
-	    stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
-	    stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
-	    stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
-	    stGeometry.pCuboid[0].vNormal[0]= 1.0;
-	    stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
-	    stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
+      stGeometry.pCuboid  = (VtCuboid*) calloc(1, sizeof(VtCuboid));
+      stGeometry.nCuboids = 1;
+
+      stGeometry.pCuboid[0].Length    = DimCE[0];
+      stGeometry.pCuboid[0].Width     = DimCE[1];
+      stGeometry.pCuboid[0].Height    = DimCE[2];
+      stGeometry.pCuboid[0].vCntr[0]  = PosCE[0];
+      stGeometry.pCuboid[0].vCntr[1]  = PosCE[1];
+      stGeometry.pCuboid[0].vCntr[2]  = PosCE[2];
+      stGeometry.pCuboid[0].vNormal[0]= 1.0;
+      stGeometry.pCuboid[0].vNormal[1]= tan(RotHoriz);
+      stGeometry.pCuboid[0].vNormal[2]= tan(RotVert);
     }
     else
-    {	
+    {
       int i, j;
       k=0;
-	    stGeometry.nCuboids = NumberCE[0]*NumberCE[1];
-	    stGeometry.pCuboid = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
-      
-	    for (i=0; i < NumberCE[0]; i++) 
+      stGeometry.nCuboids = NumberCE[0]*NumberCE[1];
+      stGeometry.pCuboid = (VtCuboid*) calloc(stGeometry.nCuboids, sizeof(VtCuboid));
+
+      for (i=0; i < NumberCE[0]; i++)
       {
-	      for (j=0; j < NumberCE[1]; j++) 
+        for (j=0; j < NumberCE[1]; j++)
         {
-	        VectorType DimCurrCE, PosCurrCE;
-	        double RotMatrixCurrCE[3][3];
-	        VectorType normal={1, 0, 0};
+          VectorType DimCurrCE, PosCurrCE;
+          double RotMatrixCurrCE[3][3];
+          VectorType normal={1, 0, 0};
 
-	        CopyVectorsToVector (i, j, PosCE_F, PosCurrCE) ;
-	        CopyVectorsToVector (i, j, DimCE_F, DimCurrCE) ;
-	        CopyMatricesToMatrix(i, j, RotMatrixCE_F, RotMatrixCurrCE) ;
+          CopyVectorsToVector (i, j, PosCE_F, PosCurrCE) ;
+          CopyVectorsToVector (i, j, DimCE_F, DimCurrCE) ;
+          CopyMatricesToMatrix(i, j, RotMatrixCE_F, RotMatrixCurrCE) ;
 
-	        RotBackVector(RotMatrixCurrCE , normal);
+          RotBackVector(RotMatrixCurrCE , normal);
 
-	        stGeometry.pCuboid[k].Length    = DimCurrCE[0]; 
-	        stGeometry.pCuboid[k].Width     = DimCurrCE[1];
-	        stGeometry.pCuboid[k].Height    = DimCurrCE[2];
-	        stGeometry.pCuboid[k].vCntr[0]  = PosCurrCE[0];
-	        stGeometry.pCuboid[k].vCntr[1]  = PosCurrCE[1];
-	        stGeometry.pCuboid[k].vCntr[2]  = PosCurrCE[2];
-	        stGeometry.pCuboid[k].vNormal[0]= normal[0];
-	        stGeometry.pCuboid[k].vNormal[1]= normal[1];
-	        stGeometry.pCuboid[k].vNormal[2]= normal[2];
+          stGeometry.pCuboid[k].Length    = DimCurrCE[0];
+          stGeometry.pCuboid[k].Width     = DimCurrCE[1];
+          stGeometry.pCuboid[k].Height    = DimCurrCE[2];
+          stGeometry.pCuboid[k].vCntr[0]  = PosCurrCE[0];
+          stGeometry.pCuboid[k].vCntr[1]  = PosCurrCE[1];
+          stGeometry.pCuboid[k].vCntr[2]  = PosCurrCE[2];
+          stGeometry.pCuboid[k].vNormal[0]= normal[0];
+          stGeometry.pCuboid[k].vNormal[1]= normal[1];
+          stGeometry.pCuboid[k].vNormal[2]= normal[2];
 
-	        k++;
-	      }
-	    }
-	  }
+          k++;
+        }
+      }
+    }
   }
   return;
 }
@@ -882,7 +882,7 @@ void AnglesOutputFrame(double RotHoriz, double RotVert, double *AnglFocHoriz, do
 
   FillRotMatrixZY(RotMatrixCE, M_PI/180.*RotVert, M_PI/180.*RotHoriz) ;
 
-  n[0] = 1. ;		n[1] = 0. ;		n[2] = 0. ;
+  n[0] = 1. ;    n[1] = 0. ;    n[2] = 0. ;
 
   RotVector(RotMatrixCE, n) ; /* components of a vector parallel to X in the frame of the CE */
 
@@ -896,15 +896,15 @@ void AnglesOutputFrame(double RotHoriz, double RotVert, double *AnglFocHoriz, do
 
   if(*AnglFocVert == - M_PI) *AnglFocVert = M_PI ;
 
-  *AnglFocHoriz	*= 180./M_PI ;
+  *AnglFocHoriz  *= 180./M_PI ;
 
-  *AnglFocVert	*= 180./M_PI ;
+  *AnglFocVert  *= 180./M_PI ;
 }
 
 
 /* fills the RotMatrixCE_F-s from RotVert_F, RotHoriz_F */
 
-void	FillRotMatrixFoc(double RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE], double RotVert_F[CRYS_SIZE][CRYS_SIZE], double RotHoriz_F[CRYS_SIZE][CRYS_SIZE])
+void  FillRotMatrixFoc(double RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE], double RotVert_F[CRYS_SIZE][CRYS_SIZE], double RotHoriz_F[CRYS_SIZE][CRYS_SIZE])
 {
   int i, j ;
   double RotHoriz, RotVert, RotMatrix[3][3] ;
@@ -912,15 +912,15 @@ void	FillRotMatrixFoc(double RotMatrixCE_F[3][3][CRYS_SIZE][CRYS_SIZE], double R
   for(i = 0;i<NumberCE[0];i++)
     {
       for(j = 0;j<NumberCE[1];j++)
-	{
-	  RotHoriz = RotHoriz_F[i][j] ;
+  {
+    RotHoriz = RotHoriz_F[i][j] ;
 
-	  RotVert	= RotVert_F[i][j] ;
+    RotVert  = RotVert_F[i][j] ;
 
-	  FillRotMatrixZY(RotMatrix, RotVert, RotHoriz) ;
+    FillRotMatrixZY(RotMatrix, RotVert, RotHoriz) ;
 
-	  CopyMatrixToMatrices(i, j, RotMatrix, RotMatrixCE_F) ;
-	}
+    CopyMatrixToMatrices(i, j, RotMatrix, RotMatrixCE_F) ;
+  }
     }
 }
 
@@ -934,17 +934,17 @@ void   CopyMatricesToMatrix(int i, int j, double Matrix[3][3][CRYS_SIZE][CRYS_SI
       Result[k][l] = Matrix[k][l][i][j] ;
 }
 
-void	CopyMatrixToMatrices(int i, int j, double Result[3][3], double Matrix[3][3][CRYS_SIZE][CRYS_SIZE])
+void  CopyMatrixToMatrices(int i, int j, double Result[3][3], double Matrix[3][3][CRYS_SIZE][CRYS_SIZE])
 {
   int k, l ;
 
   for(k = 0;k<3;k++)
     for(l = 0;l<3;l++)
       Matrix[k][l][i][j] = Result[k][l] ;
-	
+
 }
 
-void	CopyVectorsToVector(int i, int j, double Vector[3][CRYS_SIZE][CRYS_SIZE], double Result[3])
+void  CopyVectorsToVector(int i, int j, double Vector[3][CRYS_SIZE][CRYS_SIZE], double Result[3])
 {
   int k ;
 
@@ -952,7 +952,7 @@ void	CopyVectorsToVector(int i, int j, double Vector[3][CRYS_SIZE][CRYS_SIZE], d
       Result[k] = Vector[k][i][j] ;
 }
 
-void	CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_SIZE][CRYS_SIZE])
+void  CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_SIZE][CRYS_SIZE])
 {
   int k ;
 
@@ -963,7 +963,7 @@ void	CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_S
 
 /* void TransmitNeutron(Neutron* n) */
 /* { */
- 
+
 /*   VectorType Pos1, Pos2, dir, pos; */
 /*   double distInCrystal, weightFactor, scalar, ToF; */
 /*   int i = 0; */
@@ -987,11 +987,11 @@ void	CopyVectorToVectors(int i, int j, double Vector[3], double Result[3][CRYS_S
 /*       weightFactor = exp (-1.*distInCrystal*absCoeff); */
 /*       n->Probability *= weightFactor; */
 /*     } */
-  
-  
+
+
 /*   scalar = totalXOffset / n->Vector[0]; */
 /*   for (i = 0; i < 3; i++) n->Position[i] += n->Vector[i]*scalar; */
-  
+
 /*   ToF = totalXOffset/(V_FROM_LAMBDA(n->Wavelength)*n->Vector[0]); */
 /*   if(IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2)) { */
 /*     double distInCrystal, weightFactor; */

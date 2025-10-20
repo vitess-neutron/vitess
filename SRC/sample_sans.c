@@ -34,44 +34,44 @@
 /******************************/
 /**   Global Variables       **/
 /******************************/
-char  *pSmplFileName=NULL;      // -S              pointer to the name of the sample file 
-short  bIncScat =FALSE,         // -I       [-]    shall incoherent scattering be done ?  
-       bTreatAll=FALSE,         // -a vsn4  [-]    shall neutrons not hitting the sample be treated ?  
-       nColor   =NO_COLOR;      // -c vsn4  [-]    colour of the scattered neutrons  
+char  *pSmplFileName=NULL;      // -S              pointer to the name of the sample file
+short  bIncScat =FALSE,         // -I       [-]    shall incoherent scattering be done ?
+       bTreatAll=FALSE,         // -a vsn4  [-]    shall neutrons not hitting the sample be treated ?
+       nColor   =NO_COLOR;      // -c vsn4  [-]    colour of the scattered neutrons
 long   GenNeutrons =1;          // -A              repetitions (how many trajectories to generate per incoming trajectory)
 double ThetaMax = 0.0,          // -M              maximum scattering angle to be considered
        Theta    = M_PI/2.0,     //    calc         these angles determine orientation and solid angles covered by the detector
-       DelTheta = M_PI/2.0,     //    calc            Theta has to be in the range of [0;PI]         
-       Phi      = M_PI,         //    fix             Phi has to be in the range of [0;2*PI] 
+       DelTheta = M_PI/2.0,     //    calc            Theta has to be in the range of [0;PI]
+       Phi      = M_PI,         //    fix             Phi has to be in the range of [0;2*PI]
        DelPhi   = M_PI;         //    fix
-double Xpos     = 0.0,          // -x file  [cm]   position of the center of the sample 
-       Ypos     = 0.0,          // -y file  [cm]  
-       Zpos     = 0.0,          // -z file  [cm]  
-       Diameter = 0.0,          // -t file  [cm]   thickness or diameter of the sample 
-       Height   = 0.0,          // -h file  [cm]   height of the sample 
+double Xpos     = 0.0,          // -x file  [cm]   position of the center of the sample
+       Ypos     = 0.0,          // -y file  [cm]
+       Zpos     = 0.0,          // -z file  [cm]
+       Diameter = 0.0,          // -t file  [cm]   thickness or diameter of the sample
+       Height   = 0.0,          // -h file  [cm]   height of the sample
        Width    = 0.0,          // -w file  [cm]   width of the sample
-       Xdir     = 0.0,          // -X file  [-]    orientation of the sample 
-       Ydir     = 0.0,          // -Y file  [-]  
-       Zdir     = 0.0;          // -Z file  [-]  
+       Xdir     = 0.0,          // -X file  [-]    orientation of the sample
+       Ydir     = 0.0,          // -Y file  [-]
+       Zdir     = 0.0;          // -Z file  [-]
 VtSmplGeom eGeomS= VT_NO_GEOM;  // -G file  [-]    sample shape: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL
-VtPtclGeom eGeomP= VT_NO_PTCL;  /* -O file  [-]    particle shape: 
+VtPtclGeom eGeomP= VT_NO_PTCL;  /* -O file  [-]    particle shape:
                                                    S: spheres,        R  = SizeA
                                                    D: size dstr. sph. Rmin=SizeA, Rmax=SizeB
                                                    E: ellipsoids      Rx = SizeA, Ry = SizeB, Rz = SizeC
                                                    C: cylinders,      Rx = SizeA, Ry = SizeB, L  = SizeC
                                                    P: parallelepiped, a  = SizeA, b  = SizeB, c  = SizeC
-                                                   I: no scattering objects, isotropic scattering */ 
+                                                   I: no scattering objects, isotropic scattering */
 double SizeA   = -1.0,          // -U file  [Ang]  size of the particles
        SizeB   = -1.0,          // -V file           e.g. hard spere radius
-       SizeC   = -1.0,          // -W file           in x-, y-, and z-direction 
-       Rho1    =  0.0,          // -s file         scattering length density of the particles 
-       Rho2    =  0.0,          // -S file         scattering length density of the solvemt 
-       FracPtcl=  0.0;          // -f file         volume fraction of the particles 
-extern                                             
+       SizeC   = -1.0,          // -W file           in x-, y-, and z-direction
+       Rho1    =  0.0,          // -s file         scattering length density of the particles
+       Rho2    =  0.0,          // -S file         scattering length density of the solvemt
+       FracPtcl=  0.0;          // -f file         volume fraction of the particles
+extern
 double MuTot,                   // -T file         macrosc. scattering cross section, defined in 'sample.c'
        MuAbs;                   // -m file         macrosc. absorption cross section, defined in 'sample.c'
-double MuInc   = 0.0;           // -i file         incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm] 
-                                                   
+double MuInc   = 0.0;           // -i file         incoher. macroscopic scattering cross-section (= sigma_inc/UCV) [1/cm]
+
 // Variables determined from input parameters or from file
 SampleType stSample;            //    file         sample geometry and position
 
@@ -87,17 +87,17 @@ void   SetSamplePar(SampleType *pSample);      // sets sample parameters
 void   WritePar    ();                         // writes input parameters to log file
 void   SetGeometry (char* sColor);             // fills the structure stGeometry for visualization    missing
 
-// Functions to calculate form factor         
+// Functions to calculate form factor
 double FormFactorSphere   (double dQ,  double dR);
-double FormFactorEllipsoid(double dQx, double dQy,    double dQz, 
+double FormFactorEllipsoid(double dQx, double dQy,    double dQz,
                            double dRx, double dRy,    double dRz);
-double FormFactorCylinder (double dQx, double dQy,    double dQz, 
+double FormFactorCylinder (double dQx, double dQy,    double dQz,
                            double dRx, double dRy,    double dHeight);
-double FormFactorEpiped   (double dQx, double dQy,    double dQz, 
+double FormFactorEpiped   (double dQx, double dQy,    double dQz,
                            double dLen,double dWidth, double dHeight);
 double FormFactorLayer    (double dQ,  double dThick);
 
-// Help functions to calculate form factor         
+// Help functions to calculate form factor
 double FktA   (double u);
 double FktB   (double u);
 double FktC   (double u);
@@ -114,13 +114,13 @@ int main(int argc, char *argv[])
              fThetaMin=0.0,       /* minimal and maximal values of the           */
              fThetaMax=0.0,       /* scattering angle according to Theta, DelTheta */
              fVolPtkl=0.0,        /* Volume of the particle [cm³] */
-             fFacCtrPtkl=0.0,     /* factor considering contrast and particle size */ 
+             fFacCtrPtkl=0.0,     /* factor considering contrast and particle size */
              fFormFac=0.0,        /* normalized form factor for the partical shape and size */
-             fFac=0.0, 
+             fFac=0.0,
              neutTheta=0.0,
              neutPhi=0.0;
   double     DetFacInc=0.0,       /* care about the detector coverage  */
-             DetFacCoh=0.0,     
+             DetFacCoh=0.0,
              Lbf=0.0;             /* full path length of the neutron in the sample with its initial direction */
   double     Ls=0.0;              /* distance of the neutron in the sample before sc. */
   long       j=0;                 /* counting variable */
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
   InitRotMatrix(RotMatrixNeut);
 
   _eModule = MCN_SMPL_SANS;
-  
+
   Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.11a");
   OwnInit(argc, argv);
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
   SetSamplePar(&stSample);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp     = TRUE;
 
   /* Factor that takes care of the dectector coverage */
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         /* First, shift the origin of the system to the center of the sample */
         CopyNeutron(&InputNeutrons[i], &InNeutron);
         SubVector(InputNeutrons[i].Position, stSample.Position);
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
         {
           if (nisp < 2)
           CountMessageID(SMPL_TRAJ_INSIDE, InputNeutrons[i].ID);
-				
+
           /* the neutron may be scattered between InISP[0] and InISP[1] */
           /* Lfb full path length in the sample before scattering       */
           Lbf=DistVector(InISP[0], InISP[1]);
@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
           Ls = MonteCarlo(0, Lbf);
 
           /* which is the corresponding scattering point     */
-          /* SP = InISP[0] + Ls*InputNeutrons[i].Vector	   */
+          /* SP = InISP[0] + Ls*InputNeutrons[i].Vector     */
           for(j=0; j<3; j++)
             SP[j] = InISP[0][j] + Ls*InputNeutrons[i].Vector[j];
 
@@ -213,33 +213,33 @@ int main(int argc, char *argv[])
           CartesianToSpherical(InputNeutrons[i].Vector, &neutTheta, &neutPhi);
 
           /* Determine the rotation matrix to point the neutron along */
-          /* the +x axis				      		    */
+          /* the +x axis                      */
           RotMatrixX(InputNeutrons[i].Vector,RotMatrixNeut);
 
-          //   First the coherent scattering           
+          //   First the coherent scattering
           //--------------------------------
           if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
             InputNeutrons[i].Color = nColor;
 
-          for (Nth=0; Nth < GenNeutrons; Nth++) 
+          for (Nth=0; Nth < GenNeutrons; Nth++)
           {
             CHECK
 
             fThetaMin = Theta-DelTheta;
             fThetaMax = Theta+DelTheta;
 
-            // Choose the scattering angle and calculate Q-value 
+            // Choose the scattering angle and calculate Q-value
             ScTheta = MonteCarlo(fThetaMin, fThetaMax);
             qValue  = 4.0*M_PI*sin(ScTheta/2.0)/InputNeutrons[i].Wavelength;
 
             // Choose the components along the particle axes
             for (j=0; j<=2; j++)
-            {	
+            {
               dQ[j] = MonteCarlo(-1.0,1.0);
             }
             fFac = sqrt(qValue*qValue/(dQ[0]*dQ[0] + dQ[1]*dQ[1] + dQ[2]*dQ[2]));
             for (j=0; j<=2; j++)
-            {	
+            {
               dQ[j] *= fFac;
             }
 
@@ -252,40 +252,40 @@ int main(int argc, char *argv[])
             /* ScProb corresponds to the sample form factor considering hard sphere scattering */
             switch (eGeomP)
             {
-              case VT_PTCL_SPHERE: 
+              case VT_PTCL_SPHERE:
                 fFormFac = FormFactorSphere(qValue, SizeA);
                 fVolPtkl = 1.0e-24 * 4.0/3.0 * M_PI * pow(SizeA,3);
                 break;
-              case VT_PTCL_POLY_SPH: 
+              case VT_PTCL_POLY_SPH:
                 Radius   = MonteCarlo(SizeA, SizeB);
                 fFormFac = FormFactorSphere(qValue, Radius);
                 fVolPtkl = 1.0e-24 * 4.0/3.0 * M_PI * pow(Radius,3);
                 break;
-              case VT_PTCL_ELLIPS: 
+              case VT_PTCL_ELLIPS:
                 fFormFac = FormFactorEllipsoid(dQ[0], SizeA, dQ[1], SizeB, dQ[2], SizeC);
                 fVolPtkl = 1.0e-24 * 4.0/3.0 * M_PI * SizeA*SizeB*SizeC;
                 break;
-              case VT_PTCL_CYL: 
+              case VT_PTCL_CYL:
                 fFormFac = FormFactorCylinder(dQ[0], SizeA, dQ[1], SizeB, dQ[2], SizeC);
                 fVolPtkl = 1.0e-24 * M_PI * SizeA*SizeB * SizeC;
                 break;
-              case VT_PTCL_EPIPED: 
+              case VT_PTCL_EPIPED:
                 fFormFac = FormFactorEpiped(dQ[0], SizeA, dQ[1], SizeB, dQ[2], SizeC);
                 fVolPtkl = 1.0e-24 * SizeA*SizeB*SizeC;
                 break;
               default:
-                fFormFac = 1.0; 
+                fFormFac = 1.0;
                 break;
             }
 
-            // Determine the scattering probability from the form factor, 
+            // Determine the scattering probability from the form factor,
             // contrast and particle size, the sample size, and the solid angle factor,
             if (eGeomP==VT_ISOTROPIC)
-            {	
+            {
               fFacCtrPtkl = 1.0;
             }
             else
-            {	
+            {
               fFacCtrPtkl = FracPtcl* pow((Rho1-Rho2),2) * fVolPtkl;
             }
 
@@ -296,15 +296,15 @@ int main(int argc, char *argv[])
             if (ScProb > 0.0 && DetFacCoh > 0.0)
               ProcessNeutronToEnd(&(InputNeutrons[i]), SP, Ls, DetFacCoh, ScProb, OutTheta, OutPhi, &stSample, RotMatrixNeut, RotMatrixSmpl);
           }
-				
-          // Second the incoherent scattering 
+
+          // Second the incoherent scattering
           //--------------------------------
           if (bIncScat && MuInc > 0.0)
-          { 
+          {
             if (nColor!=NO_COLOR && nColor!=ANY_COLOR)
               InputNeutrons[i].Color = (short)(nColor+1);
 
-            for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++) 
+            for(NeutCount=0; NeutCount<GenNeutrons; NeutCount++)
             {
               /* Determine the scattering angle */
               OutPhi    = MonteCarlo(Phi  -DelPhi,  Phi  +DelPhi);
@@ -318,7 +318,7 @@ int main(int argc, char *argv[])
           }
         }
         else if (bTreatAll==TRUE)
-        {	
+        {
           WriteNeutron(&InputNeutrons[i]);
         }
         else
@@ -338,7 +338,7 @@ int main(int argc, char *argv[])
 
   /* write geometry file */
   SetGeometry("white");
-  
+
   /* Do module specific cleanups */
   OwnCleanup();
 
@@ -363,13 +363,13 @@ void  OwnInit(int argc, char *argv[])
   /*  -A     Neutron repetition rate on the cone    (default: 1)       */
   /*  -M     Max. Q-value                                              */
   /*********************************************************************/
-	
+
   long i=0;
-	
+
   /* Ok, scan all command line parameters */
   for(i=1; i<argc; i++)
   {
-    if(argv[i][0]!='+') 
+    if(argv[i][0]!='+')
     {
       switch(argv[i][1])
       {
@@ -474,7 +474,7 @@ void  OwnInit(int argc, char *argv[])
   }
 
   /* Theta has to be in the range of [0;PI] */
-  if(Theta+DelTheta > M_PI) 
+  if(Theta+DelTheta > M_PI)
   Error("Theta has to be in the range of [0;PI]");
 }
 
@@ -499,7 +499,7 @@ void  WritePar()
 
   PtclGeom_ID2Txt(sGeomP, eGeomP);
   switch (eGeomP)
-  {	
+  {
     case VT_PTCL_SPHERE  : fprintf(LogFilePtr, "%s: %8.2f Ang radius\n",                    sGeomP, SizeA);               break;
     case VT_PTCL_POLY_SPH: fprintf(LogFilePtr, "%s from %8.2f to %8.2f Ang radius\n",       sGeomP, SizeA, SizeB);        break;
     case VT_PTCL_ELLIPS  : fprintf(LogFilePtr, "%s: radii %8.2f,%8.2f,%8.2f Ang\n",         sGeomP, SizeA, SizeB, SizeC); break;
@@ -520,16 +520,16 @@ void  WritePar()
 void SetSamplePar(SampleType* pSample)
 {
   FILE*  pFile=NULL;
-  char   sLine[CHAR_BUF_SMALL]="", 
+  char   sLine[CHAR_BUF_SMALL]="",
          sGeomS[20]="",             // string: sample shape
          cGeomP    =' ';            // char  : particle shape
   int    nLen=sizeof(sLine)-1;
-  double x     = 0.0, y     = 0.0, z    = 0.0, 
+  double x     = 0.0, y     = 0.0, z    = 0.0,
          xdir  = 0.0, ydir  = 0.0, zdir = 0.0,
          d_par = 0.0, height= 0.0, width= 0.0,
          sizeA =-1.0, sizeB =-1.0, sizeC=-1.0,
          rho1  = 0.0, rho2  = 0.0, frac = 0.0,
-         muInc = 0.0, muTot = 0.0, muAbs= 0.0; 
+         muInc = 0.0, muTot = 0.0, muAbs= 0.0;
   VtSmplGeom geomS;           // enum  sample shape
   VtPtclGeom geomP;           // enum  particle shape
   SampleType sample;          // structure  sample geometry
@@ -539,30 +539,30 @@ void SetSamplePar(SampleType* pSample)
 
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
-  { 
+  {
     pFile = OpenInputFile(pSmplFileName, FALSE, "rt");
 
     /* Reads the parameters if the file can be opened */
     if (pFile != NULL)
-    { 
+    {
       /* First line: sample position     */
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeomS); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%s",          sGeomS);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
       geomS = SmplGeom_Txt2ID (sGeomS);
       if (geomS!=VT_SPHERE)
       { if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);}
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%c %lf %lf %lf", &cGeomP, &sizeA, &sizeB, &sizeC);
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &rho1,  &rho2,  &frac);
-      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muTot, &muAbs); 
+      if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &muInc, &muTot, &muAbs);
 
       geomP = PtclGeom_Char2ID(cGeomP);
 
       fclose(pFile);
 
       // combines information from input and file, input parameters have priority
-      if (eGeomS==VT_NO_GEOM && geomS!=VT_NO_GEOM) eGeomS = geomS; 
-      if (eGeomP==VT_NO_PTCL && geomP!=VT_NO_PTCL) eGeomP = geomP; 
+      if (eGeomS==VT_NO_GEOM && geomS!=VT_NO_GEOM) eGeomS = geomS;
+      if (eGeomP==VT_NO_PTCL && geomP!=VT_NO_PTCL) eGeomP = geomP;
       if (Xpos    == 0.0 && x     != 0.0) Xpos    = x;
       if (Ypos    == 0.0 && y     != 0.0) Ypos    = y;
       if (Zpos    == 0.0 && z     != 0.0) Zpos    = z;
@@ -584,7 +584,7 @@ void SetSamplePar(SampleType* pSample)
       if (MuAbs   == 0.0 && muAbs != 0.0) MuAbs   = muAbs;
     }
     else
-    {	
+    {
       fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n", pSmplFileName);
     }
   }
@@ -597,35 +597,35 @@ void SetSamplePar(SampleType* pSample)
   FillSample(pSample, eGeomS, Xpos, Ypos, Zpos,  Xdir, Ydir, Zdir, Diameter, Height, Width, 0.0);
 
   /* the direction vector should have a positive z component this will make things easier with the rotations later on */
-  if (pSample->Direction[2] < 0) 
+  if (pSample->Direction[2] < 0)
   {
     pSample->Direction[0] = -pSample->Direction[0];
     pSample->Direction[1] = -pSample->Direction[1];
     pSample->Direction[2] = -pSample->Direction[2];
   }
 
-  /*	Allowed char. for geometry parameter: S: spheres  D: distrib. of spheres  E: ellipsoids  C: cylinders  P: epipeds  I: isotropic sample */
+  /*  Allowed char. for geometry parameter: S: spheres  D: distrib. of spheres  E: ellipsoids  C: cylinders  P: epipeds  I: isotropic sample */
   switch (eGeomP)
   {
-    case VT_PTCL_ELLIPS: 
+    case VT_PTCL_ELLIPS:
     case VT_PTCL_CYL   :
-    case VT_PTCL_EPIPED: 
+    case VT_PTCL_EPIPED:
       if (SizeA==-1.0 || SizeB==-1.0 || SizeC==-1.0)
       {
         fprintf(LogFilePtr, "ERROR: Can't read sufficient information about particles in %s", pSmplFileName);
         exit(-1);
       }
       break;
-    case VT_PTCL_POLY_SPH: 
+    case VT_PTCL_POLY_SPH:
       if (SizeA==-1.0 || SizeB==-1.0)
-      {	
+      {
         fprintf(LogFilePtr, "ERROR: Can't read sufficient information about particles in %s", pSmplFileName);
         exit(-1);
       }
       break;
     case VT_PTCL_SPHERE:
       if (SizeA==-1.0)
-      {	
+      {
         fprintf(LogFilePtr, "ERROR: Can't read sufficient information about particles in %s", pSmplFileName);
         exit(-1);
       }
@@ -647,7 +647,7 @@ void SetGeometry(char* sColor)
 {
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
@@ -663,25 +663,25 @@ void SetGeometry(char* sColor)
 double FormFactorSphere(double p_dQ, double p_dR)
 {
   double dSc;
-	
+
   dSc = pow(FktB(p_dQ*p_dR), 2);
 
   return dSc;
 }
 
 
-double FormFactorEllipsoid(double p_dQx, double p_dQy, double p_dQz, 
+double FormFactorEllipsoid(double p_dQx, double p_dQy, double p_dQz,
                            double p_dRx, double p_dRy, double p_dRz)
 {
   double dSc, dU2;
-	
+
   dU2 = pow(p_dQx*p_dRx, 2) + pow(p_dQy*p_dRy, 2) + pow(p_dQz*p_dRz, 2);
   dSc = pow(FktB(sqrt(dU2)), 2);
 
   return dSc;
 }
 
-double FormFactorCylinder(double p_dQx, double p_dQy, double p_dQz, 
+double FormFactorCylinder(double p_dQx, double p_dQy, double p_dQz,
                           double p_dRx, double p_dRy, double p_dHeight)
 {
   double dSc, dRz, dU2;
@@ -693,11 +693,11 @@ double FormFactorCylinder(double p_dQx, double p_dQy, double p_dQz,
   return dSc;
 }
 
-double FormFactorEpiped(double p_dQx, double p_dQy, double p_dQz, 
+double FormFactorEpiped(double p_dQx, double p_dQy, double p_dQz,
                         double p_dLength, double p_dWidth, double p_dHeight)
 {
   double dSc, dRx, dRy, dRz;
-	
+
   dRx = 0.5 * p_dLength;
   dRy = 0.5 * p_dWidth;
   dRz = 0.5 * p_dHeight;
@@ -709,12 +709,12 @@ double FormFactorEpiped(double p_dQx, double p_dQy, double p_dQz,
 /*
 double FormFactorLayer(double p_dQ, double p_dThick)
 {
-	double dSc, dRz;
-	
-	dRz = 0.5 * p_dThick;
-	dSc = pow(FktA(p_dQ*dRz),2);
+  double dSc, dRz;
 
-	return dSc;
+  dRz = 0.5 * p_dThick;
+  dSc = pow(FktA(p_dQ*dRz),2);
+
+  return dSc;
 }
 */
 

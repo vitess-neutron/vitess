@@ -27,9 +27,9 @@ extern "C" {
 /******************************/
 int main(int argc, char *argv[])
 {
-  long	i=0,
+  long  i=0,
         iBnch=0;            // current bunch
-  short bExclusive = FALSE, 
+  short bExclusive = FALSE,
         bRegistered= FALSE;
 
   // This is the class for a generic 1D monitor. It handles 17 parameter at the moment
@@ -38,14 +38,14 @@ int main(int argc, char *argv[])
   // initialisation
   // --------------
   _eModule=templateMonitor.eModule;
-	Init(argc, argv, _eModule);
+  Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.2a");
   templateMonitor.OwnInit(argc, argv);
- 
+
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
-  /* bExclusive = 1: Only neutrons are considered further, 
+  /* bExclusive = 1: Only neutrons are considered further,
      which end up in the monitor without being rejected */
   bExclusive = templateMonitor.exclCounts;
 
@@ -54,12 +54,12 @@ int main(int argc, char *argv[])
   while(ReadNeutrons()!= 0)
   {
     for (i=0; i<NumNeutGot; i++)
-	  {
+    {
       CHECK;
 
       // Update monitor output if EOB line is found
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
-      { 
+      {
         iBnch++;
         templateMonitor.WriteOut(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
@@ -67,10 +67,10 @@ int main(int argc, char *argv[])
       else
       {
         // bRegistered = 1 if neutron was considered in the monitor
-	      bRegistered=templateMonitor.FillMonitorArray(&InputNeutrons[i]);
-	  
-	      if ((bExclusive==0) || (bRegistered==1))
-	        WriteNeutron(&(InputNeutrons[i]));
+        bRegistered=templateMonitor.FillMonitorArray(&InputNeutrons[i]);
+
+        if ((bExclusive==0) || (bRegistered==1))
+          WriteNeutron(&(InputNeutrons[i]));
       }
     }
   }

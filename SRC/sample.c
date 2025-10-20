@@ -14,7 +14,7 @@
 #include "sample.h"
 #include "matrix.h"
 #include "message.h"
-#include "convert.h" 
+#include "convert.h"
 
 
 /******************************/
@@ -23,7 +23,7 @@
 double MuTot=0.0, /* total macroscopic scattering cross-section (= sigma_tot/UCV) [1/cm] */
        MuAbs=0.0; /* macroscopic absorption cross-section       (= sigma_abs/UCV) [1/cm] */
 double scaleF2=1.0;
-int    colD=-1, colF=-1, colF2=-1, colDW=-1, colM=-1, 
+int    colD=-1, colF=-1, colF2=-1, colDW=-1, colM=-1,
        colh=-1, colk=-1, coll =-1;
 
 double* hVal=NULL;
@@ -45,9 +45,9 @@ void InitSample(SampleType* pSample)
   pSample->SG.Cube.width    =0.0;
 }
 
-void FillSample(SampleType* pSample, const VtSmplGeom eGeom, 
-                const double Xpos,   const double Ypos,  const double Zpos, 
-                const double Xdir,   const double Ydir,  const double Zdir, 
+void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
+                const double Xpos,   const double Ypos,  const double Zpos,
+                const double Xdir,   const double Ydir,  const double Zdir,
                 const double SizeD,  const double SizeH, const double SizeW, const double SizeT)
 {
   char  sGeom[20]="";
@@ -62,9 +62,9 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
 
   SmplGeom_ID2Txt(sGeom, eGeom);
   if (SizeT > 0.0)
-    fprintf(LogFilePtr, "Geometry:	'%s'\n", sGeom);        // sample environment uses thickness of cylinder
+    fprintf(LogFilePtr, "Geometry:  '%s'\n", sGeom);        // sample environment uses thickness of cylinder
   else
-    fprintf(LogFilePtr, "Sample geometry:	'%s'\n", sGeom);
+    fprintf(LogFilePtr, "Sample geometry:  '%s'\n", sGeom);
 
   switch (eGeom)
   {
@@ -89,11 +89,11 @@ void FillSample(SampleType* pSample, const VtSmplGeom eGeom,
       pSample->SG.HCyl.r_out = 0.5*SizeD;
       pSample->SG.HCyl.h_out = SizeH;
       if (SizeT > 0.0)
-      { pSample->SG.HCyl.r_in = pSample->SG.HCyl.r_out - SizeT; 
+      { pSample->SG.HCyl.r_in = pSample->SG.HCyl.r_out - SizeT;
         pSample->SG.HCyl.h_in = pSample->SG.HCyl.h_out - 2.0*SizeT;
       }
       else
-      { pSample->SG.HCyl.r_in = 0.5*SizeW; 
+      { pSample->SG.HCyl.r_in = 0.5*SizeW;
         pSample->SG.HCyl.h_in = pSample->SG.HCyl.h_out;
       }
       fprintf(LogFilePtr, "  radius out and in: %9.4f %9.4f cm \n  height out and in: %9.4f %9.4f cm\n",
@@ -118,13 +118,13 @@ void SetSampleGeometry(SampleType *Sample, double CubeRotAngle)
 {
   NormVector(Sample->Direction);
 
-  switch(Sample->Type) 
+  switch(Sample->Type)
   {
     case VT_CUBE:
       stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
-      stGeometry.nCuboids = 1; 
-      
-      stGeometry.pCuboid[0].Length    = BlowUp * Sample->SG.Cube.thickness; 
+      stGeometry.nCuboids = 1;
+
+      stGeometry.pCuboid[0].Length    = BlowUp * Sample->SG.Cube.thickness;
       stGeometry.pCuboid[0].Width     = BlowUp * Sample->SG.Cube.width;
       stGeometry.pCuboid[0].Height    = BlowUp * Sample->SG.Cube.height;
       stGeometry.pCuboid[0].vCntr[0]  = Sample->Position[0];
@@ -135,7 +135,7 @@ void SetSampleGeometry(SampleType *Sample, double CubeRotAngle)
       stGeometry.pCuboid[0].vNormal[2]= Sample->Direction[2];
       stGeometry.pCuboid[0].rotAngle  = CubeRotAngle;
       break;
-      
+
     case VT_CYL:
       stGeometry.pCylinder = calloc(1, sizeof(VtCylinder));
       stGeometry.nCylinders = 1;
@@ -177,9 +177,9 @@ void SetSampleGeometry(SampleType *Sample, double CubeRotAngle)
 
 /*    default:
       stGeometry.pCuboid = calloc(1, sizeof(VtCuboid));
-      stGeometry.nCuboids = 1; 
-      
-      stGeometry.pCuboid[0].Length    = 2.0; 
+      stGeometry.nCuboids = 1;
+
+      stGeometry.pCuboid[0].Length    = 2.0;
       stGeometry.pCuboid[0].Width     = 2.0;
       stGeometry.pCuboid[0].Height    = 2.0;
       stGeometry.pCuboid[0].vCntr[0]  = 1.0;
@@ -219,19 +219,19 @@ int CompPair(const void* p1, const void* p2)
 int ReadTilComment(char* pBuffer, FILE* pSampleFile)
 {
   char* pHelp;
- 
+
   /* read line */
   if(fgets(pBuffer, CHAR_BUF_LENGTH, pSampleFile)!=NULL)
-  {	
-    /* strip any comment 			*/
+  {
+    /* strip any comment       */
     pHelp = strchr(pBuffer, '#');
-    if(pHelp != NULL) 
+    if(pHelp != NULL)
       *pHelp = '\0';
 
     return TRUE;
   }
-  else 
-  {	
+  else
+  {
     return FALSE;
   }
 }
@@ -288,7 +288,7 @@ void ProcessNeutronToEnd(Neutron *pNeut, VectorType SP, double Ls,
 
   /* ok the neutron is at SP and has its new Direction */
   /* find the intersections with the sample walls      */
-  if(NeutronIntersectsSample(&OutNeut, pSample, RotMatrixSmpl, OutISP, &nisp, VT_INSIDE)) 
+  if(NeutronIntersectsSample(&OutNeut, pSample, RotMatrixSmpl, OutISP, &nisp, VT_INSIDE))
   {
     /* Distance between SP and OutISP, Length atfter scattering */
     Las = DistVector(SP, OutISP[1]);
@@ -312,9 +312,9 @@ void ProcessNeutronToEnd(Neutron *pNeut, VectorType SP, double Ls,
     /* write the Neutron to the output file   */
     WriteNeutron(&OutNeut);
     // WriteIAP(&OutNeut, VT_SCATTERED);
-  } 
-  else 
-  { 
+  }
+  else
+  {
     /* Uhh, here is something terribly wrong */
     // Error("(internal): neutron leaves the sample without intersecting its wall");
     CountMessageID(ENV_TRAJ_OUTSIDE, OutNeut.ID);
@@ -339,7 +339,7 @@ void ProcessNeutronToEnd(Neutron *pNeut, VectorType SP, double Ls,
 /****************************************************************/
 long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
                              double SampleRotMatrix[3][3], VectorType ISP[2],
-                             long* pNisp, VtDir eDir) 
+                             long* pNisp, VtDir eDir)
 {
   double t[2];
   VectorType Position, Direction;
@@ -350,14 +350,14 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
 
   /* Rotation of the sample to the neutron's frame  */
   if (pSample->Type != VT_SPHERE)
-  {	
+  {
     RotBackVector(SampleRotMatrix, Position);
     RotBackVector(SampleRotMatrix, Direction);
   }
 
   /* Searching the distances t0 and t1 to the intersection points with the sample */
   switch (pSample->Type)
-  {	
+  {
     case VT_CUBE   : rc=LineIntersectsCube     (Position, Direction, &(pSample->SG.Cube), t); break;
     case VT_CYL    : rc=LineIntersectsCylinder (Position, Direction, &(pSample->SG.Cyl ), t); break;
     case VT_SPHERE : rc=LineIntersectsSphere   (Position, Direction, &(pSample->SG.Ball), t); break;
@@ -365,12 +365,12 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
     default:      Error("Sample type unknown");
   }
 
-  if(rc==TRUE) 
-  {	
-    /*   calculating of the intersection points ISP0 and ISP1 
+  if(rc==TRUE)
+  {
+    /*   calculating of the intersection points ISP0 and ISP1
     t0: entering the sample, t1: leaving the sample        */
     for(j=0; j<3; j++)
-    {	
+    {
       ISP[1][j]=Nin->Position[j]+t[1]*Nin->Vector[j];
       ISP[0][j]=Nin->Position[j]+t[0]*Nin->Vector[j];
     }
@@ -382,7 +382,7 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
     return TRUE;
   }
   else
-  {	
+  {
     return FALSE;
   }
 }
@@ -390,8 +390,8 @@ long NeutronIntersectsSample(const Neutron *Nin, SampleType* pSample,
 
 /************************************************************************************/
 /** Reads structure factor file                                                    **/
-/**   tag 1: returns  d-spacing and |F|²   (for powder sample)                     **/
-/**   tag 2: returns  d, h,k,l, and |F|²   (for single crystal sample)             **/
+/**   tag 1: returns  d-spacing and |F|Â²   (for powder sample)                     **/
+/**   tag 2: returns  d, h,k,l, and |F|Â²   (for single crystal sample)             **/
 /**                                                                                **/
 /** analyzes extension .str .lau and .laz to read parameters from the right column **/
 /************************************************************************************/
@@ -403,14 +403,14 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
   int     lenFilename=0;
   int     maxColumn=0;
   double* parBuffer=NULL;
-  
+
   if (sStrFileName!=NULL && strlen(sStrFileName) > 0)
   {
     /* first open the file, exit if opening fails */
-    pStrucFile = OpenInputFile(sStrFileName, FALSE, "rt"); 
+    pStrucFile = OpenInputFile(sStrFileName, FALSE, "rt");
 
     if (pStrucFile==NULL)
-    { 
+    {
       fprintf(LogFilePtr, "Note: structure factor file '%s' could not be opened", sStrFileName);
     }
     else
@@ -418,39 +418,39 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
       NumLines = LinesInFile(pStrucFile);
 
       /* get memory for StrucFac */
-      if (tag == 1) 
+      if (tag == 1)
       {
         if((*structFactorLookup = (DoublePair*) calloc(NumLines, sizeof(DoublePair)))==NULL)
-        { 
+        {
           fprintf(LogFilePtr,"ERROR: Can't allocate memory for structure factor data\n");
           exit(-1);
         }
       }
-      else if (tag == 2) 
+      else if (tag == 2)
       {
         hVal = (double*) calloc(NumLines, sizeof(double));
         kVal = (double*) calloc(NumLines, sizeof(double));
         lVal = (double*) calloc(NumLines, sizeof(double));
         F2Val = (double*) calloc(NumLines, sizeof(double));
       }
-      else 
-      { 
+      else
+      {
         fprintf(LogFilePtr,"ERROR: Unknown sample type!\n");
         exit(-1);
       }
 
       /* get back to the start of the File */
       rewind(pStrucFile);
-  
+
       lenFilename = strlen(sStrFileName);
 
-      if (strstr(sStrFileName, ".str") == &sStrFileName[lenFilename-4]) 
+      if (strstr(sStrFileName, ".str") == &sStrFileName[lenFilename-4])
       {
         colD = 1;
         colF2 = 2;
         maxColumn = 2;
       }
-      else if (strstr(sStrFileName, ".laz") == &sStrFileName[lenFilename-4]) 
+      else if (strstr(sStrFileName, ".laz") == &sStrFileName[lenFilename-4])
       {
         colh = 1;
         colk = 2;
@@ -460,7 +460,7 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
         colM = 17;
         maxColumn = 18;
       }
-      else if (strstr(sStrFileName, ".lau") == &sStrFileName[lenFilename-4]) 
+      else if (strstr(sStrFileName, ".lau") == &sStrFileName[lenFilename-4])
       {
         colh = 1;
         colk = 2;
@@ -471,11 +471,11 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
         scaleF2 = 1./100.; // conversion from fm^2 to barn
         maxColumn = 7;
       }
-      else if (((colD > 0 && tag==1) || (colh > 0 && colk > 0 && coll > 0 && tag == 2))  && (colF > 0 || colF2 > 0)) 
+      else if (((colD > 0 && tag==1) || (colh > 0 && colk > 0 && coll > 0 && tag == 2))  && (colF > 0 || colF2 > 0))
       {
         maxColumn = Max(Max(Max(Max(Max(colD, colF), colF2), colM), colDW), Max(colh, Max(colk, coll)));
       }
-      else 
+      else
       {
         fprintf(LogFilePtr,"ERROR: Unknown structure file format! Use .dat, .str, .laz, .lau or specify the meaning of the individual columns!\n");
         exit(-1);
@@ -484,28 +484,28 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
       parBuffer = (double*) calloc(maxColumn, sizeof(double));
 
       /* and read the data */
-     
-      for(i=0; i < NumLines; i++)  
-      { 
+
+      for(i=0; i < NumLines; i++)
+      {
         char format[1024] = "%lf ";
         const char* sRemainBuffer;
 
-        ReadLine(pStrucFile, sBuffer, sizeof(sBuffer)-1);        
+        ReadLine(pStrucFile, sBuffer, sizeof(sBuffer)-1);
 
-        sscanf  (sBuffer, format, &parBuffer[0]);    
-        sRemainBuffer = sBuffer;         
+        sscanf  (sBuffer, format, &parBuffer[0]);
+        sRemainBuffer = sBuffer;
 
-        for (j=1; j < maxColumn; j++) 
+        for (j=1; j < maxColumn; j++)
         {
           strncpy(&format[strlen(format)-4], "%*lf ", 6);
           strcat(format, "%lf ");
           sscanf(sRemainBuffer, format, &parBuffer[j]);
         }
-      
-        if (tag == 1) 
+
+        if (tag == 1)
         {
-          (*structFactorLookup)[i][0] = parBuffer[colD-1];      
-          if (colF2 > 0)  
+          (*structFactorLookup)[i][0] = parBuffer[colD-1];
+          if (colF2 > 0)
           {
             (*structFactorLookup)[i][1] = parBuffer[colF2 -1]*scaleF2;
           }
@@ -516,20 +516,20 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
           if (colDW > 0) (*structFactorLookup)[i][1] *= parBuffer[colDW -1];
           // powder sample
           if (colM > 0) (*structFactorLookup)[i][1] *= parBuffer[colM -1];
-      
-          //      for (j=0; j < maxColumn; j++) fprintf(LogFilePtr,"%f ", parBuffer[j]); 
+
+          //      for (j=0; j < maxColumn; j++) fprintf(LogFilePtr,"%f ", parBuffer[j]);
         }
-        else 
+        else
         {
           hVal[i] = parBuffer[colh -1];
           kVal[i] = parBuffer[colk -1];
           lVal[i] = parBuffer[coll -1];
-      
-          if (colF2 > 0) 
+
+          if (colF2 > 0)
             F2Val[i] = parBuffer[colF2 -1]*scaleF2;
-          else 
+          else
             F2Val[i] = sq(parBuffer[colF -1])*scaleF2;
-      
+
           if (colDW > 0) F2Val[i] *= parBuffer[colDW -1];
         }
       }
@@ -538,7 +538,7 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
       fclose(pStrucFile);
       fprintf(LogFilePtr,"Read %ld lines from the structure factor file %s.\n", NumLines, sStrFileName);
 
-      if (tag == 1) 
+      if (tag == 1)
       {
         qsort((void *)*structFactorLookup, (size_t) NumLines, sizeof(DoublePair), CompPair);
         /* Sum up all equal d-spacings */
@@ -548,7 +548,7 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
           { i++;
             (*structFactorLookup)[i][0]=(*structFactorLookup)[j][0];
             (*structFactorLookup)[i][1]=(*structFactorLookup)[j][1];
-          } 
+          }
           else
           { (*structFactorLookup)[i][1]+= (*structFactorLookup)[j][1];
           }
@@ -559,5 +559,3 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
   }
   return NumLines;
 }
-
-

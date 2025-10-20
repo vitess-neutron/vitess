@@ -8,8 +8,8 @@
 #include "init.h"
 
 extern
-double arP[MAX_SIM][NMAX+1], // function F to parameter set P 
-       arF[MAX_SIM][IMAX+1]; // for sets 0 ... nSim-1 
+double arP[MAX_SIM][NMAX+1], // function F to parameter set P
+       arF[MAX_SIM][IMAX+1]; // for sets 0 ... nSim-1
 
 extern char sFomPrg[FN_LEN];
 
@@ -32,7 +32,7 @@ static short AddPathAndExt(char* sCmdName);
 /* Functions to write parameters sets                                */
 /* input : F        : function corresponding to parameter set P      */
 /*         X        : parameter X_1 ... X_anz (e.g. wavelength)      */
-/*         P        : parameter set, for which the fct is calculated */                 
+/*         P        : parameter set, for which the fct is calculated */
 /*         mPts     : number of points in spectrum                   */
 /*         mMin,mMax: indices of first & last function to determine  */
 /*         mPar     : number of parameters per set (P1 ...P_npar)    */
@@ -58,13 +58,13 @@ short  OptFctPc(const double X[IMAX+1], const int nPts, const short mMin, const 
   rcp = system(sPipePrg);
 
   if (rcp > 0)
-  { 
+  {
 #ifdef VT_WINDOWS
     system("Simulations.bat");
 #else
     system("chmod u+x Simulations.sh");
     system("./Simulations.sh");
-#endif 
+#endif
     rcf = system(sFomPrg);
 
     if (rcf)
@@ -80,7 +80,7 @@ short  OptFctGrid(const double X[IMAX+1], const int nPts, const short mMin, cons
   short rc=FALSE, rcf;
 
 #ifdef VT_WINDOWS
-  Error("Optimization on cluster only supported for Unix systems"); 
+  Error("Optimization on cluster only supported for Unix systems");
   return(FALSE);
 #else
   char sGridCmd[120];
@@ -100,9 +100,9 @@ short  OptFctGrid(const double X[IMAX+1], const int nPts, const short mMin, cons
 
   if (rcf)
     rc=ReadAllF("Fcomm.dat", mMin, mMax);
-  
+
   return rc;
-#endif 
+#endif
 }
 
 
@@ -118,33 +118,33 @@ short  OptFctGrid(const double X[IMAX+1], const int nPts, const short mMin, cons
 /********************************************************************/
 static short WriteAllP(const char* sFilename, const short mMin, const short mMax, const short nPar)
 {
-	int   j,m;
-	short rc=FALSE;
-	FILE* pXFile;
-  static 
+  int   j,m;
+  short rc=FALSE;
+  FILE* pXFile;
+  static
   short bPrint=TRUE;  // info for gener_pipe about fist call
 
-	pXFile = fopen(sFilename, "w");
-	if (pXFile)
-	{	
+  pXFile = fopen(sFilename, "w");
+  if (pXFile)
+  {
     fprintf(pXFile, "%d %2d\n", bPrint, mMin);
     for (m=mMin; m<=mMax; m++)
-    { 
+    {
       for (j=1; j<=nPar; j++)
-		  {	fprintf(pXFile, "%15.7e ", arP[m][j]);
-		  }
+      {  fprintf(pXFile, "%15.7e ", arP[m][j]);
+      }
       fprintf(pXFile, "\n");
     }
-		
-		rc=TRUE;
+
+    rc=TRUE;
     bPrint=FALSE;
-		fclose (pXFile);
-	}
+    fclose (pXFile);
+  }
   else
   { printf("Error in calc_sim_fom::WriteAllP: file '%s' could not be opened to write parameter values !\n", sFilename);
     exit(-1);
   }
-	return rc;
+  return rc;
 }
 
 
@@ -157,69 +157,69 @@ static short WriteAllP(const char* sFilename, const short mMin, const short mMax
 /********************************************************************/
 static short ReadAllF(const char* sFilename, const short mMin, const short mMax)
 {
-	FILE* pFFile;
-	short m, n,
+  FILE* pFFile;
+  short m, n,
         rc=FALSE, // return code
-	      nSim=0;   // no of lines = number of simulations performed in this step
-	char  sLine[CHAR_BUF_LARGE+1];
+        nSim=0;   // no of lines = number of simulations performed in this step
+  char  sLine[CHAR_BUF_LARGE+1];
 
-	for (m=mMin; m <= mMax; m++)
-		for (n=0; n<=IMAX; n++)
-			arF[m][n]=0.0;	
+  for (m=mMin; m <= mMax; m++)
+    for (n=0; n<=IMAX; n++)
+      arF[m][n]=0.0;
 
-	pFFile = fopen(sFilename, "r");
-	if (pFFile != NULL)
-	{	
-		nSim = (short) LinesInFile(pFFile);
+  pFFile = fopen(sFilename, "r");
+  if (pFFile != NULL)
+  {
+    nSim = (short) LinesInFile(pFFile);
 
     if (nSim == mMax-mMin+1)
     { rc=TRUE;
-	    for (m=mMin; m <= mMax; m++)
-		  {	ReadLine  (pFFile, sLine, CHAR_BUF_LARGE);
-			  StrgScanLF(sLine, &arF[m][1], IMAX, 0);
-		  }
-	  }
+      for (m=mMin; m <= mMax; m++)
+      {  ReadLine  (pFFile, sLine, CHAR_BUF_LARGE);
+        StrgScanLF(sLine, &arF[m][1], IMAX, 0);
+      }
+    }
     else
     { printf("Error in calc_sim_fom::ReadAllF: number of files created for figure of merit not correct !\n");
     }
-    fclose (pFFile); 
+    fclose (pFFile);
   }
   else
   { printf("Error in calc_sim_fom::ReadAllF: file '%s' could not be opened to read function values !\n", sFilename);
     exit(-1);
   }
-	return rc;
+  return rc;
 }
 
 
 short AddPathAndExt(char* sCmdName)
 {
   FILE* pFile;
-	char *pBlank, *pExt, *pSlash,
-        sPath  [FN_LEN],        
-        sCmd   [31],        
+  char *pBlank, *pExt, *pSlash,
+        sPath  [FN_LEN],
+        sCmd   [31],
         sBuffer[CHAR_BUF_LENGTH];
-	int   kBlank;
+  int   kBlank;
   short rc=FALSE;
 
   // open file
-	pFile = fopen("std_instr.cmd", "r");
-	if (pFile==NULL)
-	  Error("File 'std_instr.cmd' does not exist");
+  pFile = fopen("std_instr.cmd", "r");
+  if (pFile==NULL)
+    Error("File 'std_instr.cmd' does not exist");
 
-  // skip 2 header lines and read first command line 
-	ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
-	ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
-	ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
+  // skip 2 header lines and read first command line
+  ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
+  ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
+  ReadLine(pFile, sBuffer, sizeof(sBuffer)-1);
   fclose(pFile);
 
   strcpy(sCmd, sCmdName);
 
   // search for path and extension of executable
-	pBlank = strchr (sBuffer, ' ');
-	kBlank = pBlank-sBuffer;
+  pBlank = strchr (sBuffer, ' ');
+  kBlank = pBlank-sBuffer;
   StrgCopy(sPath, sBuffer, kBlank);
-	pSlash = strrchr(sPath, '/');
+  pSlash = strrchr(sPath, '/');
 
   pExt = strstr(sPath, "Linux");
   if (pExt==NULL)
@@ -227,7 +227,7 @@ short AddPathAndExt(char* sCmdName)
   if (pExt==NULL)
     pExt = strstr(sPath, "exe");
 
-  memset(pSlash+1, '\0', 1); 
+  memset(pSlash+1, '\0', 1);
 
   // add path and extension to the command name, if the extension is found
   if (pExt!=NULL)
@@ -241,4 +241,3 @@ short AddPathAndExt(char* sCmdName)
 
   return(rc);
 }
-

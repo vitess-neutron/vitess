@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 /********************************************************************/
-/* general definitions for the module random_sampler.c			    */
+/* general definitions for the module random_sampler.c          */
 
 void randomSampleFile(char* inFile, FILE* outFilePtr, int sampleSize);
 

@@ -32,20 +32,20 @@
 // input parameters
 char*       FieldFileName=NULL;         // -P        [-]   name of the file containing the map of the inhomogeneous magnetic field
 long        Option=0;                   // -O        [-]   0: homogenenous   1: inhomogeneous   magnetic field
-double      depth =0.0,                 // -X        [cm]  x-component of the size of the homogeneous magnetic field 
-            width =0.0,                 // -Y        [cm]  y-component of the size of the homogeneous magnetic field 
-            height=0.0;                 // -V        [cm]  z-component of the size of the homogeneous magnetic field 
+double      depth =0.0,                 // -X        [cm]  x-component of the size of the homogeneous magnetic field
+            width =0.0,                 // -Y        [cm]  y-component of the size of the homogeneous magnetic field
+            height=0.0;                 // -V        [cm]  z-component of the size of the homogeneous magnetic field
 double      field_hom[3]={1.0,0.0,0.0}; // -T -G -H  [Gs]  x-, y- and z-component of the homogeneous magnetic field
 double      AnglMainHoriz=0.0,          // -i       [deg]  horizontal (first) rotation angle of the magnetic field map
             AnglMainVert =0.0;          // -j       [deg]  vertical (second) rotation angle of the magnetic field map
-VectorType  PosMain,                    // -k -l -m  [cm]  centre of the magnetic field 
+VectorType  PosMain,                    // -k -l -m  [cm]  centre of the magnetic field
             TranslOut;                  // -p -r -s  [cm]  position of the new origin  (in the co-ordinate of the old origin)
-double      domain_field_F[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], // arrays of strengths, positions and sizes 
+double      domain_field_F[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], // arrays of strengths, positions and sizes
             PosDomain_F   [3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], // of magnetic field elements
             DimDomain_F   [3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z]; // from file
 
 // Variables determined from input parameters or trajectory data
-FILE*  FieldMapFile=NULL;                     //     [-]   pointer to magnetic field map file 
+FILE*  FieldMapFile=NULL;                     //     [-]   pointer to magnetic field map file
 long   ind_x=0, ind_y=0, ind_z=0,             //     [-]   indices of magnetic field elements in x-, y- and z-direction
        ind_x_max=2, ind_y_max=2, ind_z_max=2; //     [-]   max. number of magnetic field elements in x-, y- and z-direction
 double RotMatrixMain[3][3],                   //    [deg]  Matrix to rotate the magnetic field
@@ -58,7 +58,7 @@ double RotMatrixMain[3][3],                   //    [deg]  Matrix to rotate the 
 int main(int argc, char **argv)
 {
   long       NumOut=0, wall_1=0, wall_2=0;
-  double     TOF=0.0, TOF1=0.0, TOF2=0.0, TOF3=0.0, 
+  double     TOF=0.0, TOF1=0.0, TOF2=0.0, TOF3=0.0,
              WL=0.0, Prob=0.0, PhaseShift=0.0, NumberPrecessions=0.0;
   double     IntegralIntensity=0.0;
   VectorType SpinVector, domain_field;
@@ -74,9 +74,9 @@ int main(int argc, char **argv)
   // local variables
   InitVector(Pos);  InitVector(Dir);       InitVector(SpinVector);
   InitVector(Pos1); InitVector(Pos2);      InitVector(domain_field);
-  InitVector(Path); InitVector(PosDomain); InitVector(DimDomain);  
+  InitVector(Path); InitVector(PosDomain); InitVector(DimDomain);
 
-  InitNeutron(&OutNeutron);     InitNeutron(&ScatNeutron); 
+  InitNeutron(&OutNeutron);     InitNeutron(&ScatNeutron);
 
   InitRotMatrix(RotMatrixOut);  InitRotMatrix(RotMatrixField);
   InitRotMatrix(LarmorMatrix);
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp     = TRUE;
 
   DECLARE_ABORT;
@@ -98,16 +98,16 @@ int main(int argc, char **argv)
     int i=0;
 
     for (i=0; i<NumNeutGot; i++)
-    { 
-      CHECK;	
+    {
+      CHECK;
 
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
-        /*InputNeutrons[i].Position[0]	= 0. ;*/
+      {
+        /*InputNeutrons[i].Position[0]  = 0. ;*/
         InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
 
         TOF = InputNeutrons[i].Time ;
@@ -116,16 +116,16 @@ int main(int argc, char **argv)
 
         CopyVector(InputNeutrons[i].Position, Pos) ;
         CopyVector(InputNeutrons[i].Vector, Dir) ;
-        CopyVector(InputNeutrons[i].Spin, SpinVector) ; 
+        CopyVector(InputNeutrons[i].Spin, SpinVector) ;
 
         /* translates into frame of the main field and rotates coordinates  */
         SubVector(Pos, PosMain) ;
 
-        RotVector(RotMatrixMain, Pos ) ; 
-        RotVector(RotMatrixMain, Dir ) ; 
-        RotVector(RotMatrixMain, SpinVector) ; 
+        RotVector(RotMatrixMain, Pos ) ;
+        RotVector(RotMatrixMain, Dir ) ;
+        RotVector(RotMatrixMain, SpinVector) ;
 
-        /* enter position and TOF 	*/
+        /* enter position and TOF   */
         TOF1 = (- depth/2. - Pos[0])/ fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
 
         CopyVector(Dir, Path) ;
@@ -142,38 +142,38 @@ int main(int argc, char **argv)
         ind_z = (long) floor(Pos[2] / DimDomain[2]) + 1 + ind_z_max/2 ;
         if ((ind_z <= 0)||(ind_z > ind_z_max)) goto getlost ;
 
-        ind_x = 1 ; 
+        ind_x = 1 ;
 
         /******************** starts to scan ******************************/
         // NumberPrecessions = 0 ;
 
-        while (ind_x != (ind_x_max +1)) 
+        while (ind_x != (ind_x_max +1))
         {
           CopyVectorsToVector3(ind_x, ind_y, ind_z, PosDomain_F, PosDomain) ;
           CopyVectorsToVector3(ind_x, ind_y, ind_z, DimDomain_F, DimDomain) ;
           CopyVectorsToVector3(ind_x, ind_y, ind_z, domain_field_F, domain_field) ;
 
           /* calculate field matrix */
-          FillRotMatrixZY(RotMatrixField, domain_field[2], domain_field[1]) ; 
+          FillRotMatrixZY(RotMatrixField, domain_field[2], domain_field[1]) ;
 
           /* translates into frame of the field domain */
           SubVector(Pos, PosDomain) ;
 
           /* calculate entrance end exit coordinates of domain*/
-          { 
-            VectorType pos, dir;	CopyVector(Pos, pos) ;	CopyVector(Dir, dir) ;
-	
+          {
+            VectorType pos, dir;  CopyVector(Pos, pos) ;  CopyVector(Dir, dir) ;
+
             /* gives intersection positions with domain */
-            if(IntersectionWithRectangularWallNumber(DimDomain, pos, dir, Pos1, Pos2, &wall_1, &wall_2) == 0) goto getlost ; 
+            if(IntersectionWithRectangularWallNumber(DimDomain, pos, dir, Pos1, Pos2, &wall_1, &wall_2) == 0) goto getlost ;
 
             if(wall_2 == 0) goto getlost ;
 
             /* ordering */
-            if(Pos1[0] > Pos2[0]) 	
-            { VectorType V ;	
-              int wall; 
+            if(Pos1[0] > Pos2[0])
+            { VectorType V ;
+              int wall;
 
-              CopyVector(Pos1, V); CopyVector(Pos2, Pos1); CopyVector(V, Pos2) ; 	
+              CopyVector(Pos1, V); CopyVector(Pos2, Pos1); CopyVector(V, Pos2) ;
               wall = wall_1;       wall_1 = wall_2;        wall_2 = wall ;
             }
           }
@@ -183,7 +183,7 @@ int main(int argc, char **argv)
 
           /* time of precession in the domain field - precession calculated in the field frame */
           TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-          RotVector(RotMatrixField, SpinVector) ; 
+          RotVector(RotMatrixField, SpinVector) ;
           PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]) ;  NumberPrecessions += PhaseShift/2./M_PI ;
 
           FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
@@ -207,9 +207,9 @@ int main(int argc, char **argv)
           if(wall_2 == 6) {ind_z += 1 ;}
 
           /*if(ind_x > ind_x_max) goto exitfield ; */
-          if(ind_y == 0) goto exitfield ; 
-          if(ind_y > ind_y_max) goto exitfield ; 
-          if(ind_z == 0) goto exitfield; 
+          if(ind_y == 0) goto exitfield ;
+          if(ind_y > ind_y_max) goto exitfield ;
+          if(ind_z == 0) goto exitfield;
           if(ind_z > ind_z_max) goto exitfield;
 
           /*goto newdomain ;*/
@@ -222,9 +222,9 @@ int main(int argc, char **argv)
         /* Output matters */
         AddVector(Pos, PosMain) ;
 
-        RotBackVector(RotMatrixMain, Pos ) ; 
-        RotBackVector(RotMatrixMain, Dir ) ; 
-        RotBackVector(RotMatrixMain, SpinVector) ; 
+        RotBackVector(RotMatrixMain, Pos ) ;
+        RotBackVector(RotMatrixMain, Dir ) ;
+        RotBackVector(RotMatrixMain, SpinVector) ;
 
         // write exit point for visualization
         if (bVisTraj==TRUE)
@@ -238,12 +238,12 @@ int main(int argc, char **argv)
         IntegralIntensity += Prob ;
         NumOut++ ;
 
-        /* computes neutron variables in the output frame */ 
+        /* computes neutron variables in the output frame */
         SubVector(Pos, TranslOut) ;
 
         /* translates neutron variables for output - X'=0. */
         TOF3 = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
-	
+
         CopyVector(Dir, Path) ;
         MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
         AddVector(Pos, Path) ;  TOF += TOF3 ;
@@ -251,7 +251,7 @@ int main(int argc, char **argv)
         /*jumpwrite :; goto jumpwrite ;*/
 
         /* transmit coordinates which were not changed, the rest overwrite below */
-        OutNeutron = InputNeutrons[i]; 
+        OutNeutron = InputNeutrons[i];
         OutNeutron.Time = TOF ;
 
         CopyVector(Pos, OutNeutron.Position) ;
@@ -274,24 +274,24 @@ int main(int argc, char **argv)
       }
     }
   }
-   
+
   // Finish: write log, geometry and instrument file, free memory
   // ------------------------------------------------------------
  my_exit:
   /* write to log file */
-  if (NumOut != 0) 
+  if (NumOut != 0)
     fprintf(LogFilePtr,"Average number of precessions  : %10.3lf\n", NumberPrecessions/NumOut) ;
   else
     fprintf(LogFilePtr," \n") ;
 
   /* write geometry file */
   SetGeometry("yellow");
-  
+
   /* Do module specific cleanups */
-  OwnCleanup(); 
+  OwnCleanup();
 
   /* Do the general cleanup */
-  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], 0.0,0.0);	
+  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], 0.0,0.0);
 
   return 0;
 }
@@ -331,7 +331,7 @@ void OwnInit(int argc, char *argv[])
       case 'P':
         FieldFileName = &argv[1][2];
         break;
-			
+
       case 'i':
         sscanf(&argv[1][2], "%lf", &AnglMainHoriz) ;
         break;
@@ -408,7 +408,7 @@ void OwnInit(int argc, char *argv[])
   { fprintf(LogFilePtr, "homogeneous field:  (%9.3lf %9.3lf %9.3lf) Gs\n", field_hom[0], field_hom[1], field_hom[2]) ;
     fprintf(LogFilePtr, "length, width, height: (%9.4f, %9.4f, %9.4f) cm\n", depth, width, height);
   }
-	
+
   if (PosMain[0] < depth/2.) {fprintf(LogFilePtr,"\nERROR: X position must be larger than depth/2 ! \n\n") ; exit (-1);}
 
   if (TranslOut[0] < (PosMain[0] + depth/2.)) {fprintf(LogFilePtr,"\nERROR: output position must be outside of field domain ! \n\n") ; exit (-1);}
@@ -427,9 +427,9 @@ void OwnCleanup()
 /**********************************/
 /** reads the magnetic map file  **/
 /**********************************/
-void readmagneticmap() 
+void readmagneticmap()
 {
-  VectorType Vec; 
+  VectorType Vec;
   double Theta, Phi;
 
   FieldMapFile=OpenInputFile2(FieldFileName, "field map", "r");
@@ -439,11 +439,11 @@ void readmagneticmap()
 
   depth=0.0;
   /* inhomogeneous field */
-  for (ind_x=1; ind_x<(ind_x_max+1); ind_x++) 
-  { 
-    for (ind_y=1; ind_y<(ind_y_max+1); ind_y++) 
-    { 
-      for (ind_z=1; ind_z<(ind_z_max+1); ind_z++) 
+  for (ind_x=1; ind_x<(ind_x_max+1); ind_x++)
+  {
+    for (ind_y=1; ind_y<(ind_y_max+1); ind_y++)
+    {
+      for (ind_z=1; ind_z<(ind_z_max+1); ind_z++)
       {
         /* reads position */
         PosDomain_F[0][ind_x][ind_y][ind_z] = ReadParF(FieldMapFile);
@@ -474,7 +474,7 @@ void readmagneticmap()
         Theta = ReadParF(FieldMapFile);
 
         SphericalToCartesian(Vec, &Theta, &Phi) ;
-        CartesianToEulerZY(Vec, &Theta, &Phi) ; 
+        CartesianToEulerZY(Vec, &Theta, &Phi) ;
 
         domain_field_F[1][ind_x][ind_y][ind_z] = Phi ;
         domain_field_F[2][ind_x][ind_y][ind_z] = Theta ;
@@ -483,7 +483,7 @@ void readmagneticmap()
         ReadParComment(FieldMapFile) ;
       }
     }
-    depth +=  DimDomain_F[0][ind_x][1][1]; 
+    depth +=  DimDomain_F[0][ind_x][1][1];
   }
 
   fclose(FieldMapFile) ;
@@ -494,8 +494,8 @@ void readmagneticmap()
 /**********************************/
 /** writes the magnetic map file **/
 /**********************************/
-void writemagneticmap() 
-{ 
+void writemagneticmap()
+{
   long i_x, i_y, i_z, i_x_max, i_y_max, i_z_max ;
   double Dim[3], Posit[3], fieldsph[3] ;
 
@@ -510,22 +510,22 @@ void writemagneticmap()
   /* inhomogeneous fieldsph */
   for(i_x=1;i_x<(i_x_max+1);i_x++)
   { for(i_y=1;i_y<(i_y_max+1);i_y++)
-    { for(i_z=1;i_z<(i_z_max+1);i_z++) 
+    { for(i_z=1;i_z<(i_z_max+1);i_z++)
       {
         /* generate fieldsph domain size: uniform  */
-        Dim[0] = depth/i_x_max ; 
-        Dim[1] = width/i_y_max ; 
-        Dim[2] = height/i_z_max ; 
+        Dim[0] = depth/i_x_max ;
+        Dim[1] = width/i_y_max ;
+        Dim[2] = height/i_z_max ;
 
         /* generate position */
-        Posit[0] = ((i_x -1)-(i_x_max /2 - 0.5)) * Dim[0] ;		
-        Posit[1] = ((i_y -1)-(i_y_max /2 - 0.5)) * Dim[1] ;		
+        Posit[0] = ((i_x -1)-(i_x_max /2 - 0.5)) * Dim[0] ;
+        Posit[1] = ((i_y -1)-(i_y_max /2 - 0.5)) * Dim[1] ;
         Posit[2] = ((i_z -1)-(i_z_max /2 - 0.5)) * Dim[2] ;
 
         /* generate field vectors in spherical representation */
         fieldsph[0] = LengthVector(field_hom) ;
 
-        { VectorType fieldh; 
+        { VectorType fieldh;
           CopyVector(field_hom, fieldh);
           MultiplyByScalar(fieldh, 1./fieldsph[0]) ;
 
@@ -533,10 +533,10 @@ void writemagneticmap()
         }
 
         /* print out to file */
-        fprintf(FieldMapFile, " %le    %le    %le    %le    %le    %le    %le    %le    %le \n", 
+        fprintf(FieldMapFile, " %le    %le    %le    %le    %le    %le    %le    %le    %le \n",
                               Posit[0], Posit[1], Posit[2],
                               Dim[0], Dim[1], Dim[2],
-                              fieldsph[0], fieldsph[1], fieldsph[2]);		
+                              fieldsph[0], fieldsph[1], fieldsph[2]);
       }
     }
   }
@@ -552,31 +552,31 @@ void SetGeometry(char* sColor)
 {
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     int iX=0, iY=0, iZ=0, iM=0;
     VectorType vOrient={1.0,0.0,0.0}, vCntr={1.0,0.0,0.0};
 
-    RotBackVector(RotMatrixMain, vOrient); 
+    RotBackVector(RotMatrixMain, vOrient);
 
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr   = sVisDescrpt;
     stGeometry.eModule  = _eModule;
 
-    stGeometry.nCuboids = ind_x_max * ind_y_max * ind_z_max; 
+    stGeometry.nCuboids = ind_x_max * ind_y_max * ind_z_max;
     stGeometry.pCuboid  = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
 
     for (iX=1; iX <= ind_x_max; iX++)
-    { 
+    {
       for (iY=1; iY <= ind_y_max; iY++)
-      { 
+      {
         for (iZ=1; iZ <= ind_z_max; iZ++)
-        { 
+        {
           vCntr[0]  = PosDomain_F[0][iX][iY][iZ];
           vCntr[1]  = PosDomain_F[1][iX][iY][iZ];
           vCntr[2]  = PosDomain_F[2][iX][iY][iZ];
-          RotBackVector(RotMatrixMain, vCntr); 
+          RotBackVector(RotMatrixMain, vCntr);
 
-          stGeometry.pCuboid[iM].Length    = DimDomain_F[0][iX][iY][iZ]; 
+          stGeometry.pCuboid[iM].Length    = DimDomain_F[0][iX][iY][iZ];
           stGeometry.pCuboid[iM].Width     = DimDomain_F[1][iX][iY][iZ] * BlowUp;
           stGeometry.pCuboid[iM].Height    = DimDomain_F[2][iX][iY][iZ] * BlowUp;
           stGeometry.pCuboid[iM].vCntr[0]  = PosMain[0] + vCntr[0];
@@ -599,20 +599,20 @@ void SetGeometry(char* sColor)
 void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], double Result[3][3])
 {
   long m, l ;
-	
+
   for(m = 0;m<3;m++)
   {
     for(l = 0;l<3;l++)
     {
-	    Result[m][l] = Matrix[m][l][i][j][k] ;
+      Result[m][l] = Matrix[m][l][i][j][k] ;
     }
   }
 }
 
-void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z])
+void  CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z])
 {
   long m, l ;
-	
+
   for(m = 0;m<3;m++)
   {
     for(l = 0;l<3;l++)
@@ -622,7 +622,7 @@ void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double M
   }
 }
 
-void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], double Result[3])
+void  CopyVectorsToVector3(long i, long j, long k, double Vector[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z], double Result[3])
 {
   long l ;
 
@@ -632,7 +632,7 @@ void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FIELD_SIZE_X]
   }
 }
 
-void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z]) 
+void  CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FIELD_SIZE_X][FIELD_SIZE_Y][FIELD_SIZE_Z])
 {
   long l ;
 
@@ -649,7 +649,7 @@ void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Resul
 long IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2, long *wall_1, long *wall_2)
 {
   VectorType n, pos0, pos1, pos2, pos3, pos4, pos5 ;
-  int			   k ;
+  int         k ;
 
   for (k=0; k<3; k++) Pos1[k] = Pos2[k] = 0. ;
 
@@ -657,12 +657,12 @@ long IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos,
 
   if (PlaneLineIntersect2(Pos, Dir, n, - DimDomain[0]/2, pos0) == TRUE)
   {
-    if(  (fabs(pos0[1]) <= DimDomain[1]/2) && (fabs(pos0[2]) <= DimDomain[2]/2) ) 
+    if(  (fabs(pos0[1]) <= DimDomain[1]/2) && (fabs(pos0[2]) <= DimDomain[2]/2) )
     {
       if(LengthVector(Pos1) == 0.) {CopyVector(pos0, Pos1) ; *wall_1 = 1;}
       else {CopyVector(pos0, Pos2) ; *wall_2 = 1;}
     }
-  } 
+  }
   if (PlaneLineIntersect2(Pos, Dir, n, + DimDomain[0]/2, pos1) == TRUE)
   {
     if(  (fabs(pos1[1]) <= DimDomain[1]/2) && (fabs(pos1[2]) <= DimDomain[2]/2) )
@@ -695,7 +695,7 @@ long IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos,
 
   if (PlaneLineIntersect2(Pos, Dir, n, - DimDomain[2]/2, pos4) == TRUE)
   {
-    if( (fabs(pos4[0]) <= DimDomain[0]/2) && (fabs(pos4[1]) <= DimDomain[1]/2)  ) 
+    if( (fabs(pos4[0]) <= DimDomain[0]/2) && (fabs(pos4[1]) <= DimDomain[1]/2)  )
     {
       if(LengthVector(Pos1) == 0.) {CopyVector(pos4, Pos1) ; *wall_1 = 5;}
       else {CopyVector(pos4, Pos2) ; *wall_2 = 5;}
@@ -703,7 +703,7 @@ long IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos,
   }
   if (PlaneLineIntersect2(Pos, Dir, n, + DimDomain[2]/2, pos5) == TRUE)
   {
-    if( (fabs(pos5[0]) <= DimDomain[0]/2) && (fabs(pos5[1]) <= DimDomain[1]/2)  ) 
+    if( (fabs(pos5[0]) <= DimDomain[0]/2) && (fabs(pos5[1]) <= DimDomain[1]/2)  )
     {
       if(LengthVector(Pos1) == 0.) {CopyVector(pos5, Pos1) ; *wall_1 = 6;}
       else {CopyVector(pos5, Pos2) ; *wall_2 = 6;}
@@ -711,7 +711,7 @@ long IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos,
   }
 
   if ((LengthVector(Pos1) == 0.) || (LengthVector(Pos2) == 0.)) return 0 ;
-	
+
   return 1 ;
 
 }/* End IntersectionWithRectangularWallNumber() */

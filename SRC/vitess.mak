@@ -72,6 +72,7 @@ guide_parallel.exe \
 guide_shape.exe \
 lattice_dist.exe \
 lenses.exe \
+merge.exe \
 merge_spectra.exe \
 mirror_coating.exe \
 mirror_elliptical.exe \
@@ -128,7 +129,7 @@ velselect.exe \
 window.exe \
 writeout.exe
 !ifndef NOG2
-ALL = $(ALL) visual.exe
+ALL = $(ALL) visual.exe dist_time.exe
 !endif
 
 # objects used by multiple modules
