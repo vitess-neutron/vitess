@@ -3,9 +3,9 @@
 /*                                                                                            */
 /* This module simulates a bender of circular or straight channels with channel cross-talk    */
 /*   (bender is horizontally bent, absorption inside channels can be considered               */
-/*    exit width and height can differ from entrance width and height                         */ 
+/*    exit width and height can differ from entrance width and height                         */
 /*    magnetic field is vertical, direction up  )                                             */
-/*									                                                                          */
+/*                                                                                            */
 /* The free non-commercial use of these routines is granted providing due credit is given to  */
 /* the authors.                                                                               */
 /*                                                                                            */
@@ -16,9 +16,9 @@
 /*                                 simpl: all radii identical                                 */
 /*                 M. Fromme       graphics for Windows                                       */
 /* 1.02  Jan 2002  K. Lieutenant   reorganisation, radii centered                             */
-/* 1.03  Mar 2002  S. Manoshin	   Feature: if radius of curvature zero => straight           */
-/*                                 line instead circle for bender surfaces and axis.	        */
-/*                                 Also surfaces radius is negative possible		              */
+/* 1.03  Mar 2002  S. Manoshin     Feature: if radius of curvature zero => straight           */
+/*                                 line instead circle for bender surfaces and axis.          */
+/*                                 Also surfaces radius is negative possible                  */
 /*                                 New option: Spin quantisation (Sx,Sy,Sz) is defined by     */
 /*                                 user -V option; 0,1,2 - axis 0X, OY, OZ;                   */
 /*                                 Some reorganisation of data structure, fixed graphics bugs */
@@ -33,25 +33,25 @@
 /*                                 REORGANISATION, add some comments, abutment length add     */
 /*                                 The module is divided into 3 functions and main program    */
 /*                                 Neutron, which pass via all extreme surfaces - ABSORBING   */
-/*                                 		top, bottom, right, left                                */
+/*                                     top, bottom, right, left                                */
 /*                                 Add materials for neutron flux attenuation between         */
 /*                                 bender channels                                            */
 /* 1.3alpha June 2002 S. Manoshin  Add possibility to read transmission characteristics of    */
-/*			                           materials between channels from file                       */
+/*                                 materials between channels from file                       */
 /*                                 Generation surface part is remove from module              */
 /*                                 Add neutron flux attenuation inside bender channels        */
 /* 1.3beta  Jul 2002  S. Manoshin  Pre-Realization in the VITESS 2.3                          */
-/* 1.4	    Jul 2002  S. Manoshin  Realization in the VITESS 2.3                              */
-/* 1.5	    Mar 2003  S. Manoshin  Fixed bug for gravity, gravity may apply ONLY for first    */
-/*			                           order planes                                               */
+/* 1.4      Jul 2002  S. Manoshin  Realization in the VITESS 2.3                              */
+/* 1.5      Mar 2003  S. Manoshin  Fixed bug for gravity, gravity may apply ONLY for first    */
+/*                                 order planes                                               */
 /*                                 Number of channels (or planes) now defined, not fixed!     */
-/* 1.6	    Oct 2003  S. Manoshin  Corrected some mistakes with output: Interpolation         */
+/* 1.6      Oct 2003  S. Manoshin  Corrected some mistakes with output: Interpolation         */
 /*                                 func. Improve checking of input datas for interpolation    */
-/* 1.7	    Feb 2004  S. Manoshin  Visualise only first 10000 trajectories,                   */
+/* 1.7      Feb 2004  S. Manoshin  Visualise only first 10000 trajectories,                   */
 /*                                 if visualisation was activated                             */
 /*                                 Choose the output device : screen, file or both            */
 /*                                 New external variable gselec                               */
-/* 1.8    Nov 2013  D. Nekrassov   M-values as input 			                                    */
+/* 1.8    Nov 2013  D. Nekrassov   M-values as input                                           */
 /* 1.8a   Feb 2018  K. Lieutenant  silicon data for 0.4 Ang added                             */
 /* 1.9    Feb 2020  K. Lieutenant  tidy up, new reflectivity calculation, new file handling   */
 /**********************************************************************************************/
@@ -68,9 +68,9 @@
   extern int do_visualize;
   int do_visualise; /* default : no visualisation */
   long number_vis_tr=0; /* counter : number of trajectories, which was visualised */
-  long	cancel_vis=0; /* cancel visualisation */
+  long  cancel_vis=0; /* cancel visualisation */
   extern int gselec; /* choose the output 1 - display only, 2 - file only,
-			    3 - both, defined in cpgplot.c */
+          3 - both, defined in cpgplot.c */
 #endif
 
 
@@ -90,7 +90,7 @@ FILE * openNFile (char *name) {return OpenInputFile(name, TRUE, "r");}
 /*************************************************/
 /** Prototypes of 'init' and internal functions **/
 /*************************************************/
-char* FullOutName(const char* filename);                    // adds output dir to file name 
+char* FullOutName(const char* filename);                    // adds output dir to file name
 
 void OwnInit(int argc, char *argv[]);                       // reads input parameters and initializes global variables
 int  LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin);
@@ -99,7 +99,7 @@ void FillReflContainer(double array[1000], double m);
 void CreateVisualisationGeometryCurvedChannels  (double xStart, double xEnd, double yStart, double yEnd, double dYcirc, double radius, double entranceHeight, double dZ);
 void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, double yStart, double yEnd, double entranceHeight, double dZ);
 void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y1Start, double y1End, double dY1circ, double radius1,
-                                          double x2Start, double x2End, double y2Start, double y2End, double dY2circ, double radius2, 
+                                          double x2Start, double x2End, double y2Start, double y2End, double dY2circ, double radius2,
                                           double entranceHeight, double dZ);
 
 void DefineTriangle(VtTriangle* triangle, VectorType v1, VectorType v2, VectorType v3);
@@ -111,7 +111,7 @@ void DefineTriangle(VtTriangle* triangle, VectorType v1, VectorType v2, VectorTy
 const double lengthGeomPiece = 50.; //Length of a geometry element in cm a surface consists of for x3d visualisation
 int   numberRectangles;
 int   numberTriangles;
-long 	NumberOfSurfaces;
+long   NumberOfSurfaces;
 
 long   ntfr=0, ntfl=0, ntfs=0;
 double X2, Y2, COSB, SINB; /* for defining base circle */
@@ -158,33 +158,33 @@ double extdismin, extdismax;
 double disabut=0.0; /* Abutment distance, cm */
 
 
-char		*ReflFileNamelup=NULL;
-char 		*ReflFileNameldo=NULL;
+char    *ReflFileNamelup=NULL;
+char     *ReflFileNameldo=NULL;
 
-char		*TransFileName0=NULL;
-char		*TransFileName1=NULL;
-char		*TransFileName2=NULL;
+char    *TransFileName0=NULL;
+char    *TransFileName1=NULL;
+char    *TransFileName2=NULL;
 
-char		*ReflFileNamerup=NULL;
-char		*ReflFileNamerdo=NULL;
+char    *ReflFileNamerup=NULL;
+char    *ReflFileNamerdo=NULL;
 
-char  	*ReflFileNametbup=NULL;
-char		*ReflFileNametbdo=NULL;
+char    *ReflFileNametbup=NULL;
+char    *ReflFileNametbdo=NULL;
 
-char		*SurfacesFileName=NULL;
-char 		*AsciiFileName=NULL;
+char    *SurfacesFileName=NULL;
+char     *AsciiFileName=NULL;
 
 
-BenderChannel	BenderCh;
+BenderChannel  BenderCh;
 Bender        BenderMy;
 
 Neutron  Output;
 
-FILE	*refl_filelup=NULL; /* file for describing left surfaces of bender, spin up */
+FILE  *refl_filelup=NULL; /* file for describing left surfaces of bender, spin up */
 FILE  *refl_fileldo=NULL; /* file for describing left surface of bender, spin down */
 
-FILE	*trans_file0=NULL; /* file for describing of transmission of material of bender channel  */
-FILE	*trans_file1=NULL; /* file for describing of transmission of bender left surface (see from entrance) */
+FILE  *trans_file0=NULL; /* file for describing of transmission of material of bender channel  */
+FILE  *trans_file1=NULL; /* file for describing of transmission of bender left surface (see from entrance) */
 FILE  *trans_file2=NULL; /* file for describing of transmission of bender right surface(see from entrance) */
 
 FILE  *refl_filerup=NULL; /* file for describing right surfaces of bender, spin up */
@@ -193,7 +193,7 @@ FILE  *refl_filerdo=NULL; /* file for describing right surfaces of bender, spin 
 FILE  *refl_filetbup=NULL; /* file for describing top and bottom planes of bender, spin up */
 FILE  *refl_filetbdo=NULL; /* file for describing top and bottom planes of bender, spin down */
 
-FILE	*surfaces_file=NULL; /* file for describing of surfaces of converging bender*/
+FILE  *surfaces_file=NULL; /* file for describing of surfaces of converging bender*/
 FILE  *AsciiFile=NULL; /* file for output characteristics of bender surfaces */
 
   /* MF: visualisation for Windows and generation of file for the picture */
@@ -213,11 +213,11 @@ int main(int argc, char *argv[])
   /********************************************************************************************/
   /* This module reads in a file of neutron structures, and defines a neutron Bender as a set  */
   /* of five infinite planes with a global critical angle. It outputs the coordinates and time */
-  /* displacement of any neutrons that pass through the Bender without being absorbed.	       */
+  /* displacement of any neutrons that pass through the Bender without being absorbed.         */
   /*                                                                                           */
   /* Anything not directly commented is an InputNeutrons or an output routine.                 */
   /********************************************************************************************/
-  long	i, j, numberch = 0;
+  long  i, j, numberch = 0;
 
   mNumber[0][0] = -1; mNumber[0][1] = -1; mNumber[0][2] = -1;
   mNumber[1][0] = -1; mNumber[1][1] = -1; mNumber[1][2] = -1;
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
   Init(argc, argv,_eModule);
   PrintModuleName(_eModule, "1.9");
   OwnInit(argc, argv);
-  
+
   /* test geometry of bender */
   if (keytest == 1)
     GeometryTestBender(BenderMy, XENR, YENR, XENL, YENL, XEXR, YEXR, XEXL, YEXL,
@@ -251,16 +251,16 @@ int main(int argc, char *argv[])
     fprintf(LogFilePtr,"Inside bender gravity is disabled \n");
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
-  
+
   DECLARE_ABORT
 
   // loop over all trajectories
   // --------------------------
-  while(ReadNeutrons()) 
+  while(ReadNeutrons())
   {
-    for(i=0; i<NumNeutGot; i++) 
+    for(i=0; i<NumNeutGot; i++)
     {
 
   #ifdef VT_GRAPH
@@ -282,10 +282,10 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         TimeOF1 = 0.0;
 
-        /*	InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
+        /*  InputNeutrons[i].Position.X = 0.0;   !!!!!!!! */
         /****************************************************************************************/
         /* Check to see if the neutron is initially in the entrance to the bender...             */
         /****************************************************************************************/
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
         if (fabs(InputNeutrons[i].Position[2])>BenderEntranceHeight/2.0) continue;
 
         /****************choose the channel******************/
-        /* include thickness	*/
+        /* include thickness  */
 
         for (j=1;j<=(NumberOfSurfaces-1);j++)
         {
@@ -306,7 +306,7 @@ int main(int argc, char *argv[])
           }
         }
 
-        //      	fprintf(LogFilePtr,"J end =  %d  %d  \n",j, numberch);
+        //        fprintf(LogFilePtr,"J end =  %d  %d  \n",j, numberch);
 
         if(j==NumberOfSurfaces)
           continue;  /*neutron blocked by spacer*/
@@ -358,7 +358,7 @@ int main(int argc, char *argv[])
 
 
         /****************************************************************************************/
-        /* Transform the coordinates.   					         	      */
+        /* Transform the coordinates.                              */
         /* X must be always renormalized to zero...                                                  */
         /****************************************************************************************/
 
@@ -368,8 +368,8 @@ int main(int argc, char *argv[])
         Output = InputNeutrons[i];
 
         /* KL: correction: transformation: move coordinate system to the center of rotation
-	                      rotate
-    	                      move coordinate system back       */
+                        rotate
+                            move coordinate system back       */
         /*          InputNeutrons[i].Position[1] -= Radius;
         Output.Position[0] =  (InputNeutrons[i].Position[0])*COSB + (InputNeutrons[i].Position[1])*SINB;
         Output.Position[1] = -(InputNeutrons[i].Position[0])*SINB + (InputNeutrons[i].Position[1])*COSB;
@@ -432,46 +432,46 @@ int main(int argc, char *argv[])
 void  OwnInit(int argc, char *argv[])
 {
   long i, count;
-  long	k, counter;
+  long  k, counter;
 #ifdef VT_GRAPH
   double temp1=0.0, temp2=0.0;
 #endif
-  double dX, dZ, 
+  double dX, dZ,
          X1, Y1, xr, yr; /* for defining base circle */
 
   // OwnInit
-  for(i=1; i<argc; i++) 
+  for(i=1; i<argc; i++)
   {
     char *a, *arg;
     a = argv[i];
     if (*a != '-') continue;
     arg = a + 2;
-    switch(a[1]) 
+    switch(a[1])
     {
       case 'b':  /* up, left plane */
-        mNumber[0][0] = atof(&argv[i][2]);  
-        break; 
-      
+        mNumber[0][0] = atof(&argv[i][2]);
+        break;
+
       case 'B':  /* up, right plane */
-        mNumber[0][1] = atof(&argv[i][2]);  
-        break; 
+        mNumber[0][1] = atof(&argv[i][2]);
+        break;
 
        case 'd':  /* up, top/bottom plane */
-        mNumber[0][2] = atof(&argv[i][2]);  
-      
-        break;   
+        mNumber[0][2] = atof(&argv[i][2]);
+
+        break;
 
       case 'e':  /* down, left plane */
-        mNumber[1][0] = atof(&argv[i][2]);  
-        break; 
-      
+        mNumber[1][0] = atof(&argv[i][2]);
+        break;
+
       case 'E':  /* down, right plane */
-        mNumber[1][1] = atof(&argv[i][2]);  
-        break; 
+        mNumber[1][1] = atof(&argv[i][2]);
+        break;
 
        case 'f':  /* down, top/bottom plane */
-        mNumber[1][2] = atof(&argv[i][2]);  
-        break;    
+        mNumber[1][2] = atof(&argv[i][2]);
+        break;
 
       case 'i':
         refl_filelup = openNFile((ReflFileNamelup = arg));
@@ -524,7 +524,7 @@ void  OwnInit(int argc, char *argv[])
         break;
 
       case 'H':
-        BenderExitHeight = atof(arg);	/* in cm */
+        BenderExitHeight = atof(arg);  /* in cm */
         break;
 
       case 'R':
@@ -607,7 +607,7 @@ void  OwnInit(int argc, char *argv[])
 
   if (SurfacesFileName)
   {
- 	  surfaces_file = openNFile(SurfacesFileName);
+     surfaces_file = openNFile(SurfacesFileName);
   }
   else
   {
@@ -618,143 +618,143 @@ void  OwnInit(int argc, char *argv[])
   if (bAbsTransCrit != 0)
   {
     if (keymaterial0 == 0)
-  	{
+    {
       fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Material transmission characteristics reading from file\n");
-  	}
+    }
 
-  	if (keymaterial0 == 1)
-  	{
+    if (keymaterial0 == 1)
+    {
       fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Gadolinium \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary \n");
-  	}
+    }
 
-  	if (keymaterial0 == 2)
-  	{
+    if (keymaterial0 == 2)
+    {
       fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Cadmium \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial0 == 3)
-  	{
+    if (keymaterial0 == 3)
+    {
       fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Bor10 \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial0 == 4)
-  	{
+    if (keymaterial0 == 4)
+    {
       fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Eu \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial0 == 5)
-  	{
+    if (keymaterial0 == 5)
+    {
       fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Silicon \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.5 .. 20 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial0 == 6)
-  	{
+    if (keymaterial0 == 6)
+    {
       fprintf(LogFilePtr,"MATERIAL OF BENDER CHANNES: Vacuum \n");
-  	}
+    }
 
     if ((keymaterial0 != 0)&&(keymaterial0 != 1)&&(keymaterial0 != 2)&&(keymaterial0 != 3)&&(keymaterial0 != 4)&&(keymaterial0 != 5)&&(keymaterial0 != 6))
-  	{
+    {
       fprintf(LogFilePtr,"ERROR: MATERIAL OF BENDER CHANNES: No material: EXIT! Correct -c option \n");
       exit(-1);
-  	}
+    }
 
 
-  	if (keymaterial1 == 0)
-  	{
+    if (keymaterial1 == 0)
+    {
       fprintf(LogFilePtr,"IN LEFT SIDE OF CHANNEL(see from entrance): Material transmission characteristics reading from file\n");
-  	}
+    }
 
-  	if (keymaterial1 == 1)
-  	{
+    if (keymaterial1 == 1)
+    {
       fprintf(LogFilePtr,"IN LEFT SIDE OF CHANNEL(see from entrance): Material between channels: Gadolinium \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary \n");
-  	}
+    }
 
-  	if (keymaterial1 == 2)
-  	{
+    if (keymaterial1 == 2)
+    {
       fprintf(LogFilePtr,"IN LEFT SIDE OF CHANNEL(see from entrance): Material between channels: Cadmium \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial1 == 3)
-  	{
+    if (keymaterial1 == 3)
+    {
       fprintf(LogFilePtr,"IN LEFT SIDE OF CHANNEL(see from entrance): Material between channels: Bor10 \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial1 == 4)
-  	{
+    if (keymaterial1 == 4)
+    {
       fprintf(LogFilePtr,"IN LEFT SIDE OF CHANNEL(see from entrance): Material between channels: Eu \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial1 == 5)
-  	{
+    if (keymaterial1 == 5)
+    {
       fprintf(LogFilePtr,"IN LEFT SIDE OF CHANNEL(see from entrance): Material between channels: Silicon \n");
       fprintf(LogFilePtr,"Wavelength range must be 1 .. 20 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial1 == 6)
-  	{
+    if (keymaterial1 == 6)
+    {
       fprintf(LogFilePtr,"IN LEFT SIDE OF CHANNEL(see from entrance): Material between channels: Vacuum \n");
-  	}
+    }
 
     if ((keymaterial1 != 0)&&(keymaterial1 != 1)&&(keymaterial1 != 2)&&(keymaterial1 != 3)&&(keymaterial1 != 4)&&(keymaterial1 != 5)&&(keymaterial1 != 6))
-  	{
+    {
       fprintf(LogFilePtr,"ERROR: IN LEFT SIDE OF CHANNEL(see from entrance): No material between channels: EXIT! Correct -z option \n");
       exit(-1);
-  	}
+    }
 
-  	if (keymaterial2 == 0)
-  	{
+    if (keymaterial2 == 0)
+    {
       fprintf(LogFilePtr,"IN RIGHT SIDE OF CHANNEL(see from entrance): Material transmission characteristics read from file \n");
-  	}
+    }
 
-  	if (keymaterial2 == 1)
-  	{
+    if (keymaterial2 == 1)
+    {
       fprintf(LogFilePtr,"IN RIGHT SIDE OF CHANNEL(see from entrance): Material between channels: Gadolinium \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary \n");
-  	}
+    }
 
-  	if (keymaterial2 == 2)
-  	{
+    if (keymaterial2 == 2)
+    {
       fprintf(LogFilePtr,"IN RIGHT SIDE OF CHANNEL(see from entrance): Material between channels: Cadmium \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial2 == 3)
-  	{
+    if (keymaterial2 == 3)
+    {
       fprintf(LogFilePtr,"IN RIGHT SIDE OF CHANNEL(see from entrance): Material between channels: Bor10 \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial2 == 4)
-  	{
+    if (keymaterial2 == 4)
+    {
       fprintf(LogFilePtr,"IN RIGHT SIDE OF CHANNEL(see from entrance): Material between channels: Eu \n");
       fprintf(LogFilePtr,"Wavelength range must be 0.3 .. 28 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial2 == 5)
-  	{
+    if (keymaterial2 == 5)
+    {
       fprintf(LogFilePtr,"IN RIGHT SIDE OF CHANNEL(see from entrance): Material between channels: Silicon \n");
       fprintf(LogFilePtr,"Wavelength range must be 1 .. 20 A, please correct if nesessary  \n");
-  	}
+    }
 
-  	if (keymaterial2 == 6)
-  	{
+    if (keymaterial2 == 6)
+    {
       fprintf(LogFilePtr,"IN RIGHT SIDE OF CHANNEL(see from entrance): Material between channels: Vacuum \n");
-  	}
+    }
 
-	if ((keymaterial2 != 0)&&(keymaterial2 != 1)&&(keymaterial2 != 2)&&(keymaterial2 != 3)&&(keymaterial2 != 4)&&(keymaterial2 != 5)&&(keymaterial2 != 6))
-  	{
+  if ((keymaterial2 != 0)&&(keymaterial2 != 1)&&(keymaterial2 != 2)&&(keymaterial2 != 3)&&(keymaterial2 != 4)&&(keymaterial2 != 5)&&(keymaterial2 != 6))
+    {
       fprintf(LogFilePtr,"ERROR: IN RIGHT SIDE OF CHANNEL(see from entrance): No material between channels: EXIT! Correct -w option \n");
       exit(-1);
-  	}
+    }
   }
 
 
@@ -903,9 +903,9 @@ void  OwnInit(int argc, char *argv[])
           }
         }
 
-        //	    fprintf(LogFilePtr,"transmfile for surface count = %d  num = %d \n", count, ntfs);
-        //	    for(i = 1; i <= ntfs; i++)
-        //	    fprintf(LogFilePtr," %f   %f  \n",WAVS[i], MUS[i]);
+        //      fprintf(LogFilePtr,"transmfile for surface count = %d  num = %d \n", count, ntfs);
+        //      for(i = 1; i <= ntfs; i++)
+        //      fprintf(LogFilePtr," %f   %f  \n",WAVS[i], MUS[i]);
         fprintf(LogFilePtr,"Minimal and maximal wavelengths must be %f ... %f \n",WAVS[1], WAVS[ntfs]);
 
       }
@@ -952,13 +952,13 @@ void  OwnInit(int argc, char *argv[])
           }
         }
 
-        //	    fprintf(LogFilePtr,"transmfile for left count = %d  num = %d \n", count, ntfl);
-        //	    for(i = 1; i <= ntfl; i++)
-        //	    fprintf(LogFilePtr," %f   %f  \n",WAVL[i], MUL[i]);
+        //      fprintf(LogFilePtr,"transmfile for left count = %d  num = %d \n", count, ntfl);
+        //      for(i = 1; i <= ntfl; i++)
+        //      fprintf(LogFilePtr," %f   %f  \n",WAVL[i], MUL[i]);
         fprintf(LogFilePtr,"Minimal and maximal wavelengths must be %f ... %f \n",WAVL[1], WAVL[ntfl]);
       }
       else
-      { 
+      {
         fprintf(LogFilePtr,"No file, which description transmission of LEFT bender surface of channel \n");
       }
     }
@@ -1003,9 +1003,9 @@ void  OwnInit(int argc, char *argv[])
           }
         }
 
-        //	    fprintf(LogFilePtr,"transmfile for right count = %d  num = %d \n", count, ntfr);
-        //	    for(i = 1; i <= ntfr; i++)
-        //	    fprintf(LogFilePtr," %f   %f  \n",WAVR[i], MUR[i]);
+        //      fprintf(LogFilePtr,"transmfile for right count = %d  num = %d \n", count, ntfr);
+        //      for(i = 1; i <= ntfr; i++)
+        //      fprintf(LogFilePtr," %f   %f  \n",WAVR[i], MUR[i]);
         fprintf(LogFilePtr,"Minimum and maximum wavelength must be  %f ... %f\n",WAVR[1], WAVR[ntfr]);
       }
       else
@@ -1028,7 +1028,7 @@ void  OwnInit(int argc, char *argv[])
     exit(-1);
   }
 
-  if (AsciiFileName==NULL) 
+  if (AsciiFileName==NULL)
   {
     int len = strlen(SurfacesFileName);
     AsciiFileName = (char*)malloc(len+1);
@@ -1041,7 +1041,7 @@ void  OwnInit(int argc, char *argv[])
 
   NumberOfSurfaces = (long)((counter-1)/3);
 
-  /*	fprintf(LogFilePtr,"Number of in %d \n", (counter-1)); */
+  /*  fprintf(LogFilePtr,"Number of in %d \n", (counter-1)); */
   fprintf(LogFilePtr,"Number of surfaces: %ld\n", NumberOfSurfaces);
 
   k = 1;
@@ -1111,9 +1111,9 @@ void  OwnInit(int argc, char *argv[])
   /****************************************************************************************/
 
   //Number of geometry elements for visualisation
-  numberRectangles = ((int) ((length / lengthGeomPiece)+1.))*NumberOfSurfaces*2; 
+  numberRectangles = ((int) ((length / lengthGeomPiece)+1.))*NumberOfSurfaces*2;
   numberTriangles  = ((int) ((length / lengthGeomPiece)+1 + NumberOfSurfaces)*4);
-  
+
    if (bVisInstr)
    {
      stGeometry.pRectangle = calloc(numberRectangles, sizeof(VtRectangle));
@@ -1232,7 +1232,7 @@ void  OwnInit(int argc, char *argv[])
   {
 
     /* calculating the center of surface on given entrance, exit points and radius
-	      of curvature */
+        of curvature */
     /* calculating poins for circle FOR LEFT SURFACES*/
 
     /* fprintf(LogFilePtr,"Make channel %d \n",i); */
@@ -1253,7 +1253,7 @@ void  OwnInit(int argc, char *argv[])
       XTMPL[i] = 0.0;
       YTMPL[i] = sqrt(RADL[i]*RADL[i]-0.25*(XENL[i]-XEXL[i])*(XENL[i]-XEXL[i])-0.25*(YENL[i]-YEXL[i])*(YENL[i]-YEXL[i]));
 
-      /* feature for radius is negative		*/
+      /* feature for radius is negative    */
 
       YTMPL[i] = YTMPL[i]*RADL[i]/(fabs(RADL[i]));
 
@@ -1281,7 +1281,7 @@ void  OwnInit(int argc, char *argv[])
     }
     else
     {
-      /*	Straight Line  */
+      /*  Straight Line  */
       BenderMy.SurfLeft[i].A = 0.0;
       BenderMy.SurfLeft[i].B = YENL[i] - YEXL[i];
       BenderMy.SurfLeft[i].C = 0.0;
@@ -1314,7 +1314,7 @@ void  OwnInit(int argc, char *argv[])
       XTMPR[i] = 0.0;
       YTMPR[i] = sqrt(RADR[i]*RADR[i]-0.25*(XENR[i]-XEXR[i])*(XENR[i]-XEXR[i])-0.25*(YENR[i]-YEXR[i])*(YENR[i]-YEXR[i]));
 
-      /* feature for radius is negative		*/
+      /* feature for radius is negative    */
 
       YTMPR[i] = YTMPR[i]*RADR[i]/(fabs(RADR[i]));
 
@@ -1369,7 +1369,7 @@ void  OwnInit(int argc, char *argv[])
       if (RADR[i] != 0.0)
         fprintf(LogFilePtr,"\nR DIST CI %e %e %e al = %e",TMP1, TMP2, RADR[i], ALPHAR[i]); */
 
-	/*  Exit surface  */
+  /*  Exit surface  */
 
     BenderMy.SurfExit[i].A = 0.0;
     BenderMy.SurfExit[i].B = cos(beta);
@@ -1386,8 +1386,8 @@ void  OwnInit(int argc, char *argv[])
 
   i = NumberOfSurfaces - 1;
   CreateVisualisationGeometryTopBottom(XENL[i], XEXL[i], YENL[i], YEXL[i], Y2 + YENL[i]*(cos(beta) - 1.), RADL[i],
-				                               XENR[1], XEXR[1], YENR[1], YEXR[1], Y2 + YENR[1]*(cos(beta) - 1.), RADR[1], 
-				                               BenderEntranceHeight, dZ*2.);
+                                       XENR[1], XEXR[1], YENR[1], YEXR[1], Y2 + YENR[1]*(cos(beta) - 1.), RADR[1],
+                                       BenderEntranceHeight, dZ*2.);
 
   if (AsciiFile!=NULL)
   {
@@ -1447,13 +1447,13 @@ void  OwnInit(int argc, char *argv[])
     fprintf(AsciiFile,"==============================================================================\n");
 
 
-    for(i = 1; i <= (NumberOfSurfaces-1); i++) 
+    for(i = 1; i <= (NumberOfSurfaces-1); i++)
     {
       fprintf(AsciiFile,"Center of RIGHT surface %ld X, Y; Radius\n",i);
-      fprintf(AsciiFile,"X = %f cm  Y = %f cm  RAD = %f cm \n",	    XRR[i], YRR[i], RADR[i]);
+      fprintf(AsciiFile,"X = %f cm  Y = %f cm  RAD = %f cm \n",      XRR[i], YRR[i], RADR[i]);
 
       fprintf(AsciiFile,"Center of LEFT surface %ld X, Y; Radius\n",i);
-      fprintf(AsciiFile,"X = %f cm  Y = %f cm  RAD = %f cm \n",	    XRL[i], YRL[i], RADL[i]);
+      fprintf(AsciiFile,"X = %f cm  Y = %f cm  RAD = %f cm \n",      XRL[i], YRL[i], RADL[i]);
 
       fprintf(AsciiFile,"------------------------------------------------------------------------------\n");
 
@@ -1619,7 +1619,7 @@ void  OwnInit(int argc, char *argv[])
       }
       else
       {
-        /*	draw all surfaces lines	 */
+        /*  draw all surfaces lines   */
         cpgsci(4);
         cpgmove(XENL[i],YENL[i]);
         cpgdraw(XEXL[i],YEXL[i]);
@@ -1682,7 +1682,7 @@ void  OwnInit(int argc, char *argv[])
       }
       else
       {
-        /*	draw all right surfaces line	*/
+        /*  draw all right surfaces line  */
 
         cpgsci(5);
         cpgmove(XENR[i],YENR[i]);
@@ -1712,11 +1712,11 @@ int LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* 
   int  nLines, iLine;
   char sBuffer[100];
 
-  if (pReflFile != NULL) 
+  if (pReflFile != NULL)
   {
     nLines = LinesInFile(pReflFile);
 
-    for(iLine=0; iLine < nLines; iLine++) 
+    for(iLine=0; iLine < nLines; iLine++)
     {
       ReadLine(pReflFile, sBuffer, sizeof(sBuffer)-1);
       StrgScanLF(sBuffer, &pData[10*iLine], 10, 0);
@@ -1738,7 +1738,7 @@ void FillReflContainer(double array[1000], double m)
   int i;
   double lambda = 1./THETA_NI;
 
-  if (m < 0) 
+  if (m < 0)
   {
     fprintf(LogFilePtr,"m-Value below 0 is given! Module stops!\n");
     exit(-1);
@@ -1803,15 +1803,15 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
   angleElem = 0.;
   angleNorm = 0.;
 
-  for (i = 0; i < nElements; i++) 
+  for (i = 0; i < nElements; i++)
   {
     double height;
 
     angleElem += 2.*asin(lengthGeomPiece/(2.*radius));
-   
+
     y2 = yStart + radius*(1. - cos(angleElem)) + ((i + 1.)*lengthGeomPiece)*dY/totalLength;
     x2 = sqrt(pow(lengthGeomPiece, 2) - pow(y2 - y1, 2)) + x1; //xStart + radius*sin(angleElem);
-    
+
 
     stGeometry.pRectangle[stGeometry.nRectangles].vCntr[0] = (x1 + x2)/2.0;
     stGeometry.pRectangle[stGeometry.nRectangles].vCntr[1] = (y1 + y2)/2.0*BlowUp;
@@ -1822,10 +1822,10 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
     stGeometry.pRectangle[stGeometry.nRectangles].vNormal[0] = sin(angleNorm);
     stGeometry.pRectangle[stGeometry.nRectangles].vNormal[1] = cos(angleNorm);
     stGeometry.pRectangle[stGeometry.nRectangles].vNormal[2] = 0;
-    
+
     stGeometry.pRectangle[stGeometry.nRectangles].Width = lengthGeomPiece;
 
-    height = entranceHeight + ((1.0*i + 0.5)*lengthGeomPiece)*dZ/totalLength; 
+    height = entranceHeight + ((1.0*i + 0.5)*lengthGeomPiece)*dZ/totalLength;
     stGeometry.pRectangle[stGeometry.nRectangles].Height = height*BlowUp;
     stGeometry.pRectangle[stGeometry.nRectangles].rotAngle = 0.;
 
@@ -1840,23 +1840,23 @@ void CreateVisualisationGeometryCurvedChannels(double xStart, double xEnd, doubl
 
   x2 = xEnd;
   y2 = yEnd;
-  
+
   stGeometry.pRectangle[stGeometry.nRectangles].vCntr[0] = (x1 + x2)/2.;
   stGeometry.pRectangle[stGeometry.nRectangles].vCntr[1] = (y1 + y2)/2.0*BlowUp;
   stGeometry.pRectangle[stGeometry.nRectangles].vCntr[2] = 0;
-    
+
   angleNorm = atan(-(y2 - y1)*BlowUp/(x2 - x1));
-  
+
   stGeometry.pRectangle[stGeometry.nRectangles].vNormal[0] = sin(angleNorm);
   stGeometry.pRectangle[stGeometry.nRectangles].vNormal[1] = cos(angleNorm);
   stGeometry.pRectangle[stGeometry.nRectangles].vNormal[2] = 0;
-  
+
   stGeometry.pRectangle[stGeometry.nRectangles].Width    = totalLength - nElements*lengthGeomPiece;
   stGeometry.pRectangle[stGeometry.nRectangles].Height   = (entranceHeight + dZ)*BlowUp;
   stGeometry.pRectangle[stGeometry.nRectangles].rotAngle = 0.;
 
   stGeometry.nRectangles++;
-  
+
   return;
 
 }
@@ -1870,9 +1870,9 @@ void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, dou
   VectorType v3 = {xEnd,   BlowUp * yEnd,    BlowUp *(entranceHeight + dZ)/2.};
 
   if (!bVisInstr) return;
-  
+
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v1, v2, v3);
-  
+
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][0] = xStart; */
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][1] = yStart; */
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[0][2] = -entranceHeight/2.; */
@@ -1885,7 +1885,7 @@ void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, dou
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][1] = yEnd; */
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][2] = (entranceHeight + dZ)/2.; */
 
-  stGeometry.nTriangles++;  
+  stGeometry.nTriangles++;
 
   v2[0]  = xEnd;
   v2[1]  = yEnd*BlowUp;   // orig.: xEnd
@@ -1903,7 +1903,7 @@ void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, dou
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][0] = xEnd; */
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][1] = yEnd; */
   /* stGeometry.pTriangle[stGeometry.nTriangles].vEdges[2][2] = -(entranceHeight + dZ)/2.; */
-  
+
   stGeometry.nTriangles++;
 
   return;
@@ -1913,8 +1913,8 @@ void CreateVisualisationGeometryStraightChannels(double xStart, double xEnd, dou
 
 
 void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y1Start, double y1End, double dY1circ, double radius1,
-					  double x2Start, double x2End, double y2Start, double y2End, double dY2circ, double radius2, 
-					  double entranceHeight, double dZ)
+            double x2Start, double x2End, double y2Start, double y2End, double dY2circ, double radius2,
+            double entranceHeight, double dZ)
 
 {
 
@@ -1932,7 +1932,7 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   VectorType v[4];
 
   double height11, height12, height21, height22;
- 
+
   if (!bVisInstr) return;
 
   // outer left surface
@@ -1945,11 +1945,11 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   deltaY1 = fabs(y1End - y1Start);
   deltaY2 = fabs(1. - cos(angle1))*radius1;
 
-  if (deltaY1 >= deltaY2) 
+  if (deltaY1 >= deltaY2)
   {
     totalLength1 = sqrt(pow(totalLength1, 2)  + pow(deltaY1 - deltaY2, 2));
   }
-  else 
+  else
   {
     totalLength1 = sqrt(pow(totalLength1, 2)  - pow(deltaY1 - deltaY2, 2));
   }
@@ -1959,16 +1959,16 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   totalLength2 = radius2*angle2;
   nElements2 = (int) (totalLength2/lengthGeomPiece);
   x21 = x2Start;
-  y21 = y2Start; 
+  y21 = y2Start;
 
   deltaY1 = fabs(y2End - y2Start);
   deltaY2 = fabs(1. - cos(angle2))*radius2;
 
-  if (deltaY1 >= deltaY2) 
+  if (deltaY1 >= deltaY2)
   {
     totalLength2 = sqrt(pow(totalLength2, 2)  + pow(deltaY1 - deltaY2, 2));
   }
-  else 
+  else
   {
     totalLength2 = sqrt(pow(totalLength2, 2)  - pow(deltaY1 - deltaY2, 2));
   }
@@ -1980,16 +1980,16 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   angleElem1 = 0.;
   angleElem2 = 0.;
 
-  if (nElements1 <= nElements2) 
+  if (nElements1 <= nElements2)
   {
-	  minElements = nElements1;
-	  maxElements = nElements2;
+    minElements = nElements1;
+    maxElements = nElements2;
   } else {
-	  minElements = nElements2;
-	  maxElements = nElements1;  
+    minElements = nElements2;
+    maxElements = nElements1;
   }
 
-  for (i = 0; i < minElements; i++) 
+  for (i = 0; i < minElements; i++)
   {
     angleElem1 += 2.*asin(lengthGeomPiece/(2.*radius1));
     angleElem2 += 2.*asin(lengthGeomPiece/(2.*radius2));
@@ -2013,7 +2013,7 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
     v[3][0] = x22; v[3][1] = y22*BlowUp; v[3][2] = -height22/2.0*BlowUp;
 
     DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
-    stGeometry.nTriangles++;    
+    stGeometry.nTriangles++;
 
     DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
     stGeometry.nTriangles++;
@@ -2035,30 +2035,30 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
 
   }
 
-  if (minElements != maxElements) 
+  if (minElements != maxElements)
   {
     for (i = minElements; i < maxElements; i++)
-    {       
-      if (nElements1 < nElements2) 
+    {
+      if (nElements1 < nElements2)
       {
         angleElem2 += 2.*asin(lengthGeomPiece/(2.*radius2));
-	
-        //	x22 = x2Start + radius2*sin(angleElem2);
+
+        //  x22 = x2Start + radius2*sin(angleElem2);
         y22 = y2Start + radius2*(1. - cos(angleElem2)) + ((i + 1.)*lengthGeomPiece)*dY2/totalLength2;
         x22 = sqrt(pow(lengthGeomPiece, 2) - pow(y22 - y21, 2)) + x21;
-	
+
         height11 = entranceHeight + 1.0*(nElements1-1)*lengthGeomPiece*dZ/totalLength1;
         height12 = entranceHeight + 1.0*nElements1*lengthGeomPiece*dZ/totalLength1;
         height21 = entranceHeight + 1.0*i*lengthGeomPiece*dZ/totalLength2;
         height22 = entranceHeight + 1.0*(i+1)*lengthGeomPiece*dZ/totalLength2;
-	
+
       }
-      else 
+      else
       {
 
         angleElem1 += 2.*asin(lengthGeomPiece/(2.*radius1));
-	
-        //	x12 = x1Start + radius1*sin(angleElem1);
+
+        //  x12 = x1Start + radius1*sin(angleElem1);
         y12 = y1Start + radius1*(1. - cos(angleElem1)) + ((i + 1.)*lengthGeomPiece)*dY1/totalLength1;
         x12 = sqrt(pow(lengthGeomPiece, 2) - pow(y12 - y11, 2)) + x11;
 
@@ -2076,33 +2076,33 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
 
       //bottom
       DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
-      stGeometry.nTriangles++;    
-      
-      DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);  
       stGeometry.nTriangles++;
-      
-      //top
-      for (j=0; j<4; j++) v[j][2] *= -1.;
-      
-      DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
-      stGeometry.nTriangles++;
-      
+
       DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
       stGeometry.nTriangles++;
-      
-      if (nElements1 < nElements2) 
+
+      //top
+      for (j=0; j<4; j++) v[j][2] *= -1.;
+
+      DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
+      stGeometry.nTriangles++;
+
+      DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
+      stGeometry.nTriangles++;
+
+      if (nElements1 < nElements2)
       {
         x21 = x22;
         y21 = y22;
       }
-      else 
+      else
       {
         x11 = x12;
         y11 = y12;
       }
     }
   }
-  
+
 
   //Last piece (< 50cm)
   x12 = x1End;
@@ -2110,7 +2110,7 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
 
   x22 = x2End;
   y22 = y2End;
-    
+
   height11 = entranceHeight + nElements1*lengthGeomPiece*dZ/totalLength1;
   height12 = entranceHeight + dZ;
   height21 = entranceHeight + nElements2*lengthGeomPiece*dZ/totalLength2;
@@ -2120,27 +2120,27 @@ void CreateVisualisationGeometryTopBottom(double x1Start, double x1End, double y
   v[1][0] = x12; v[1][1] = y12*BlowUp; v[1][2] = -height12/2.0*BlowUp;
   v[2][0] = x21; v[2][1] = y21*BlowUp; v[2][2] = -height21/2.0*BlowUp;
   v[3][0] = x22; v[3][1] = y22*BlowUp; v[3][2] = -height22/2.0*BlowUp;
-  
+
   //bottom
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
-  stGeometry.nTriangles++;    
-  
-  DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);  
   stGeometry.nTriangles++;
-  
+
+  DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
+  stGeometry.nTriangles++;
+
   //top
   for (j=0; j<4; j++) v[j][2] *= -1.;
-  
+
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[0], v[1], v[2]);
   stGeometry.nTriangles++;
-  
+
   DefineTriangle(&(stGeometry.pTriangle[stGeometry.nTriangles]), v[1], v[2], v[3]);
   stGeometry.nTriangles++;
 
   sprintf(sVisDescrpt, "%s:yellow", sModuleName);
   stGeometry.pDescr  =  sVisDescrpt;
   stGeometry.eModule = _eModule;
-  
+
   return;
 
 }

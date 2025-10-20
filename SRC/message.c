@@ -22,7 +22,7 @@ static short LfdNo          (VtMsgID eID);
 static short GetLfdNo       (VtMsgID eID);
 static short ReadMessageText(VtMsgID eID, char* sText, char* cType);
 
-char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name 
+char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name
 
 
 /*********************************/
@@ -67,7 +67,7 @@ void CountMessage(VtMsgID eErrID)
   if (stMessage[n].nNumber==1)
     stMessage[n].eID = eErrID;
 }
-	
+
 void CountMessageID(VtMsgID eErrID, TotalID eTrajID)
 {
   short n=LfdNo(eErrID);
@@ -106,11 +106,11 @@ void PrintMessage(VtMsgID eErrID, const char* pText, short bID)
   char  sText[MSG_LEN+10], cMessType='-';
   short n=GetLfdNo(eErrID);
   int   nTr=0;
-	
+
   if (n <= 0) return;
 
   ReadMessageText(eErrID, sText, &cMessType);
-  switch (cMessType)  
+  switch (cMessType)
   {
     case 'E': snprintf(sMsgText, MSG_LEN, "\nError: %s.\n", sText);   break;
     case 'W': snprintf(sMsgText, MSG_LEN, "\nWarning: %s.\n", sText); break;
@@ -154,10 +154,10 @@ static short ReadMessageText(VtMsgID eID, char* pText, char* pType)
   *pType = '-';
 
   pFile = OpenPackInpFile("ErrorTable.dat","FILES/", FALSE);
-  if (pFile != NULL) 
+  if (pFile != NULL)
   {
-    do 
-    {	
+    do
+    {
       if (ReadLine(pFile, sLine, MSG_LEN))
         sscanf(sLine, "%3d%c%c", &eTabID, &c, pType);
       else
@@ -165,7 +165,7 @@ static short ReadMessageText(VtMsgID eID, char* pText, char* pType)
     }
     while (eID != eTabID);
 
-    if (eID==eTabID) 
+    if (eID==eTabID)
     { strcpy(pText, sLine+6);
       rc=TRUE;
     }

@@ -1,0 +1,17 @@
+BasedOnStyle: LLVM
+IndentWidth: 2
+ColumnLimit: 120
+MaxEmptyLinesToKeep: 2
+IndentAccessModifiers: false
+AlwaysBreakTemplateDeclarations: true
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterStruct: true
+  AfterFunction: true
+  AfterNamespace: true
+  SplitEmptyRecord: false
+  SplitEmptyFunction: false

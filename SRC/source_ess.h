@@ -8,7 +8,7 @@
 /***********************************************/
 
 double EssTotFU2015      (const double ModHeight, const double ModTemp,  const double Power, const double Freq, const double PulseLen);
-double EssTotFU2016      (const double ModHeight, const double ModTemp,  const double Power, const double Freq, 
+double EssTotFU2016      (const double ModHeight, const double ModTemp,  const double Power, const double Freq,
                           const double PulseLen,  const double PfmcThml, const double PfmcCold);
 double EssModFU_Butterfly2015(const double ModHeight, const double Power, const double Freq, const double Declination, const Neutron* pNeutron,
                               const double PulseLen, const double PfmcThml, const double PfmcCold);
@@ -26,4 +26,3 @@ double CalcDecl (const double theta);
 char*  GenerBeamport(const double Decl);
 
 #endif
-

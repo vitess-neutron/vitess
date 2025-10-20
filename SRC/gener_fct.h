@@ -14,18 +14,18 @@
 #define FALSE 0
 
 typedef enum
-{	VT_SYS_NN = 0,
-	VT_WIN_NT = 1,
-	VT_WIN_98 = 2,
-	VT_UNIX   = 3,
-	VT_LINUX  = 4
+{  VT_SYS_NN = 0,
+  VT_WIN_NT = 1,
+  VT_WIN_98 = 2,
+  VT_UNIX   = 3,
+  VT_LINUX  = 4
 }
 VtSystem;
 
 typedef enum
-{	VT_SER_1F = 0,
-	VT_SER_2F = 1,
-	VT_FIT    = 2
+{  VT_SER_1F = 0,
+  VT_SER_2F = 1,
+  VT_FIT    = 2
 }
 VtModus;
 

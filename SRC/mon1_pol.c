@@ -343,4 +343,3 @@ void UpdateMon(long iBnch)
     fclose(pFile);
   }
 }
-

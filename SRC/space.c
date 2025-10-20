@@ -30,8 +30,8 @@ void  OwnInit(int argc, char *argv[]);   // Reads input parameters and sets glob
 double Length=0.0,        // -d   [cm]   /* distance to end of free flight path along x-axis  [cm]   */
        MuScat=0.0,        // -M  [1/cm]  /* macroscopic scattering coeff.                    [1/cm]  */
        MuAbs=0.0;         // -m  [1/cm]  /* macroscopic absorption coeff.                    [1/cm]  */
-                       
-Plane  Endpoint;          //      [cm]   /* plane vertical to x-axis through end of free flight path */  
+
+Plane  Endpoint;          //      [cm]   /* plane vertical to x-axis through end of free flight path */
 
 
 /******************************/
@@ -39,7 +39,7 @@ Plane  Endpoint;          //      [cm]   /* plane vertical to x-axis through end
 /******************************/
 int main(int argc, char *argv[])
 {
-  double VelocityReal=0.0;        // speed of the neutron  [km/s] 
+  double VelocityReal=0.0;        // speed of the neutron  [km/s]
   long  i=0;
 
   double TimeOF=0.0,  AveTimeOF=0.0;
@@ -75,16 +75,16 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
-        // 	Move neutron to end of space and calculate Time of Flight (ms)
+      {
+        //   Move neutron to end of space and calculate Time of Flight (ms)
         // ---------------------------------------------------------------
         if (InputNeutrons[i].Vector[0]  <= 0.0) continue;
         if (InputNeutrons[i].Wavelength <= 0.0) continue;
 
         if (fabs(Length) > 0.0)
-        {	
-          VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
-				
+        {
+          VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
+
           if (keygrav == 1)
           {
             TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
@@ -101,18 +101,18 @@ int main(int argc, char *argv[])
         InputNeutrons[i].Probability*=exp(-(MuScat+MuAbs*InputNeutrons[i].Wavelength/1.798)*Length);
 
         AveTimeOF += InputNeutrons[i].Probability*InputNeutrons[i].Time;
-        CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
-        CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
-        CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
+        CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0];
+        CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1];
+        CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2];
         SumProb   += InputNeutrons[i].Probability;
-			
+
         WriteIAP(&InputNeutrons[i], VT_EXITED);
         InputNeutrons[i].Position[0]=0.0;
 
         WriteNeutron(&InputNeutrons[i]);
       }
     }
-  }	
+  }
 
   // Finish: print parameters, write geometry and instrument file, free memory
   // -------------------------------------------------------------------------
@@ -121,20 +121,20 @@ my_exit:
   if (SumProb != 0.0)
   {
     CenterX   = CenterX/SumProb;
-    CenterY   = CenterY/SumProb; 
-    CenterZ   = CenterZ/SumProb; 
+    CenterY   = CenterY/SumProb;
+    CenterZ   = CenterZ/SumProb;
     AveTimeOF = AveTimeOF/SumProb;
-		
+
     fprintf(LogFilePtr,"Center of beam at exit:  (%8.3f,%7.3f,%7.3f) cm, TOF = %8.4f ms \n\n", CenterX, CenterY, CenterZ, AveTimeOF);
   }
   else
   {
     fprintf(LogFilePtr,"No neutrons at the exit of this module \n\n");
   }
-  
+
   /* Do the general cleanup */
   Cleanup(Length,0.0,0.0, 0.0,0.0);
-	
+
   return(0);
 }
 
@@ -150,13 +150,13 @@ void  OwnInit(int argc, char *argv[])
 
   for(i=1; i<argc; i++)
   {
-    if(argv[i][0]!='+') 
+    if(argv[i][0]!='+')
     {
       switch(argv[i][1])
       {
         case 'd':
           Length = atof(&argv[i][2]); /* distance to fly  */
-          break; 
+          break;
 
         case 'M':
           MuScat = atof(&argv[i][2]); /* macroscopic scattering coeff. in 1/cm */
@@ -164,7 +164,7 @@ void  OwnInit(int argc, char *argv[])
         case 'm':
           MuAbs  = atof(&argv[i][2]); /* macroscopic absorption coeff. in 1/cm */
           break;
-      
+
         default:
           fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
           exit(-1);
@@ -179,17 +179,3 @@ void  OwnInit(int argc, char *argv[])
 
   return;
 }
-
-  
-
-	    
-
-      
- 
-
-
-
-      
-
-
-

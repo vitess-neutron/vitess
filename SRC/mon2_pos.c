@@ -28,7 +28,7 @@
 /** Global and Static Variables **/
 /*********************************/
 // Input parameters
-char*    MonFileName= NULL;     // -O    [-]   Monitor output file containing intensity as a function of y- and z-position   
+char*    MonFileName= NULL;     // -O    [-]   Monitor output file containing intensity as a function of y- and z-position
 short    bProbactiv = TRUE,     // -p    [-]   flag Display  : YES: Probability weight   NO: number of trajectories
          bExclusive = FALSE;    // -e    [-]   flag Exclusion: YES: only neutrons meeting the monitor conditions are written  NO: all are written
 long     nBinsY     = 1,        // -y    [-]   number of bins in horizontal direction
@@ -45,8 +45,8 @@ double   FiltLmbdMin=-1.0,      // -l   [Ang]  filter: lower bound value of the 
 long     nBunches  = 1;         //             number of bunches started
 double*  BinPosY   = NULL;      //             edges of the bins of the first parameter
 double*  BinPosZ   = NULL;      //             edges of the bins of the second parameter
-double** IntYZ     = NULL;      //             intensity within a bin (in 2 dimensions) 
-double** IntYZError= NULL;      //             standard deviation of this intensity 
+double** IntYZ     = NULL;      //             intensity within a bin (in 2 dimensions)
+double** IntYZError= NULL;      //             standard deviation of this intensity
 long  ** nTrajYZ   = NULL;      //             number of trajectories within a bin
 long     nTrajTot=0;            //             total number of traj. within monitor limits
 double   TotInt  =0.0;          //             total intensitiy within monitor limits
@@ -56,7 +56,7 @@ double   TotInt  =0.0;          //             total intensitiy within monitor l
 /** Prototypes               **/
 /******************************/
 void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
-void UpdateMon(long iBnch);             // Updates monitor output file 
+void UpdateMon(long iBnch);             // Updates monitor output file
 
 
 /******************************/
@@ -65,8 +65,8 @@ void UpdateMon(long iBnch);             // Updates monitor output file
 int main(int argc, char *argv[])
 {
   short  bRegistered=0;
-  int	   iY=0, jZ=0;
-  long 	 i=0,
+  int     iY=0, jZ=0;
+  long    i=0,
          iBnch=0;       // current bunch
   double prob   = 0.0;  // Intensitiy of a trajectory
 
@@ -89,67 +89,67 @@ int main(int argc, char *argv[])
 
   for(iY=0; iY < nBinsY; iY++)
   { for(jZ=0; jZ < nBinsZ; jZ++)
-	  {
-	    IntYZ     [iY][jZ] = 0.0;
-	    IntYZError[iY][jZ] = 0.0;
-	    nTrajYZ   [iY][jZ] = 0;
-	  }
+    {
+      IntYZ     [iY][jZ] = 0.0;
+      IntYZError[iY][jZ] = 0.0;
+      nTrajYZ   [iY][jZ] = 0;
+    }
   }
 
   DECLARE_ABORT;
 
-	// loop over trajectories
+  // loop over trajectories
   // ----------------------
   while(ReadNeutrons()!= 0)
   {
-	  for(i=0; i<NumNeutGot; i++)
-	  {
-	    CHECK;
-	    bRegistered=0;
+    for(i=0; i<NumNeutGot; i++)
+    {
+      CHECK;
+      bRegistered=0;
 
       // Update monitor output if EOB line is found
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
-      { 
+      {
         iBnch++;
         UpdateMon(iBnch);
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
       {
-	      if (bExclusive==0) 
-		      WriteNeutron(&(InputNeutrons[i]));
+        if (bExclusive==0)
+          WriteNeutron(&(InputNeutrons[i]));
 
-	      if (FiltLmbdMin >= 0.0 && InputNeutrons[i].Wavelength < FiltLmbdMin) continue;
-	      if (FiltLmbdMax >= 0.0 && InputNeutrons[i].Wavelength > FiltLmbdMax) continue;
+        if (FiltLmbdMin >= 0.0 && InputNeutrons[i].Wavelength < FiltLmbdMin) continue;
+        if (FiltLmbdMax >= 0.0 && InputNeutrons[i].Wavelength > FiltLmbdMax) continue;
 
-	      if (bProbactiv==TRUE) 
+        if (bProbactiv==TRUE)
           prob = InputNeutrons[i].Probability;
-	      else 
+        else
           prob = 1.0;
 
-	      iY = (int)floor(nBinsY*(InputNeutrons[i].Position[1]-WidthMin) /(WidthMax -WidthMin));
-	      jZ = (int)floor(nBinsZ*(InputNeutrons[i].Position[2]-HeightMin)/(HeightMax-HeightMin));
-			
-	      if (((iY>=0)&&(iY<nBinsY))&&((jZ>=0)&&(jZ<nBinsZ)))
-	      {	
-	        nTrajYZ[iY][jZ]++;
+        iY = (int)floor(nBinsY*(InputNeutrons[i].Position[1]-WidthMin) /(WidthMax -WidthMin));
+        jZ = (int)floor(nBinsZ*(InputNeutrons[i].Position[2]-HeightMin)/(HeightMax-HeightMin));
+
+        if (((iY>=0)&&(iY<nBinsY))&&((jZ>=0)&&(jZ<nBinsZ)))
+        {
+          nTrajYZ[iY][jZ]++;
           nTrajTot++;
-	        IntYZ  [iY][jZ]+= prob ;
-	        TotInt         += prob;
-	        bRegistered=1;
-	      }
-	  
-	      if ((bExclusive==1) && (bRegistered==1)) 
-	        WriteNeutron(&(InputNeutrons[i]));
+          IntYZ  [iY][jZ]+= prob ;
+          TotInt         += prob;
+          bRegistered=1;
+        }
+
+        if ((bExclusive==1) && (bRegistered==1))
+          WriteNeutron(&(InputNeutrons[i]));
       }
-	  }
+    }
   }
 
 // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes final monitor output
-  UpdateMon(nBunches);  
+  UpdateMon(nBunches);
 
   // writes to instrument and log file
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
@@ -167,58 +167,58 @@ void  OwnInit(int argc, char *argv[])
 
   for(i=1; i<argc; i++)
   {
-    if(argv[i][0]!='+') 
+    if(argv[i][0]!='+')
     {
-	    switch(argv[i][1])
-	    {
-	      case 'O':
-	        MonFileName=&argv[i][2];
-	        break;
+      switch(argv[i][1])
+      {
+        case 'O':
+          MonFileName=&argv[i][2];
+          break;
 
-	      case 'y':
-	        nBinsY = atol(&argv[i][2]); /* number of bins y-direction */
-	        break;
-	      case 'z':
-	        nBinsZ = atol(&argv[i][2]); /* number of bins, z-direction */
-	        break;
+        case 'y':
+          nBinsY = atol(&argv[i][2]); /* number of bins y-direction */
+          break;
+        case 'z':
+          nBinsZ = atol(&argv[i][2]); /* number of bins, z-direction */
+          break;
 
-	      case 'w':
-	        WidthMin = atof(&argv[i][2]);		/* left edge position window   [cm]*/
-	        break;
-	      case 'W':
-	        WidthMax = atof(&argv[i][2]);		/* right edge position window    [cm]*/
-	        break;
-	      case 'h':
-	        HeightMin =  atof(&argv[i][2]);   /* bottom position window   [cm]*/
-	        break;
-	      case 'H':
-	        HeightMax =  atof(&argv[i][2]);   /* top position window   [cm]*/
-	        break;
+        case 'w':
+          WidthMin = atof(&argv[i][2]);    /* left edge position window   [cm]*/
+          break;
+        case 'W':
+          WidthMax = atof(&argv[i][2]);    /* right edge position window    [cm]*/
+          break;
+        case 'h':
+          HeightMin =  atof(&argv[i][2]);   /* bottom position window   [cm]*/
+          break;
+        case 'H':
+          HeightMax =  atof(&argv[i][2]);   /* top position window   [cm]*/
+          break;
 
-	      case 'p':
-	        bProbactiv = atoi(&argv[i][2]);
-	        /* p=1 means probabilities activated, else neutron weight is set to 1.0 */
-	        break;
-	      case 'e':
-	        if(argv[i][2]=='1')
-	          bExclusive = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
-	        break;
-	  
-	      case 'l':
+        case 'p':
+          bProbactiv = atoi(&argv[i][2]);
+          /* p=1 means probabilities activated, else neutron weight is set to 1.0 */
+          break;
+        case 'e':
+          if(argv[i][2]=='1')
+            bExclusive = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
+          break;
+
+        case 'l':
             FiltLmbdMin = atof(&argv[i][2]);   /* filter lambda, -1 means any */
             break;
         case 'L':
             FiltLmbdMax = atof(&argv[i][2]);   /* filter lambda, -1 means any */
             break;
 
-	      case 'F':
+        case 'F':
             eFormat = (VtFormat2D) atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
             break;
 
-	      default:
-	        fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
-	        exit(-1);
-	    }
+        default:
+          fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
+          exit(-1);
+      }
     }
   }
 
@@ -226,7 +226,7 @@ void  OwnInit(int argc, char *argv[])
   if (MonFileName==NULL)
     Error("You must define a monitor output file");
 
-  if (bProbactiv != TRUE) 
+  if (bProbactiv != TRUE)
     bProbactiv = FALSE;
 
   // Allocate memory for the monitor data
@@ -237,7 +237,7 @@ void  OwnInit(int argc, char *argv[])
   IntYZError = (double**) malloc(nBinsY * sizeof(double*));
   nTrajYZ    =   (long**) malloc(nBinsY * sizeof(long*));
 
-  for (iY=0; iY < nBinsY; iY++) 
+  for (iY=0; iY < nBinsY; iY++)
   {
     IntYZ     [iY] = (double*) malloc(nBinsZ * sizeof(double));
     IntYZError[iY] = (double*) malloc(nBinsZ * sizeof(double));
@@ -267,22 +267,22 @@ void UpdateMon(long iBnch)
       f_norm = (double) nBunches / (double) iBnch;
 
     // calculate standard deviation
-    for (iBinY = 0; iBinY < nBinsY; iBinY++) 
-    { for (jBinZ = 0; jBinZ < nBinsZ; jBinZ++) 
+    for (iBinY = 0; iBinY < nBinsY; iBinY++)
+    { for (jBinZ = 0; jBinZ < nBinsZ; jBinZ++)
       {
-        if (nTrajYZ[iBinY][jBinZ] > 0) 
+        if (nTrajYZ[iBinY][jBinZ] > 0)
           IntYZError[iBinY][jBinZ] = IntYZ[iBinY][jBinZ] / sqrt(nTrajYZ[iBinY][jBinZ]);
-        else 
+        else
           IntYZError[iBinY][jBinZ] = 0.0;
       }
     }
 
     // writes header and data
-    WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,   
-                   nBinsY, "pos_y [cm]", WidthMin,  WidthMax,   
+    WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,
+                   nBinsY, "pos_y [cm]", WidthMin,  WidthMax,
                    nBinsZ, "pos_z [cm]", HeightMin, HeightMax);
 
-    WriteOutput2DB(fMonitor, eFormat, bProbactiv,  
+    WriteOutput2DB(fMonitor, eFormat, bProbactiv,
                    nBinsY, BinPosY,   nBinsZ, BinPosZ,  f_norm,
                    IntYZ, IntYZError, nTrajYZ);
 

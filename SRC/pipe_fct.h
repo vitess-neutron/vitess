@@ -1,11 +1,12 @@
 #ifndef PIPE_FCT_H
 #define PIPE_FCT_H
 
+#include "opt_defs.h"
 #include <stdio.h>
 
 #ifdef _MSC_VER
  #define VT_WINDOWS
-#endif 
+#endif
 
 void  InitArrays   ();
 short ReadSimPar   (char*  pParFct, short* pFileNo);

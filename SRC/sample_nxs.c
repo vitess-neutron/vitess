@@ -65,25 +65,25 @@
 /******************************/
 // Input parameters
 char  *pNxsFileNameI=NULL;       // -s       [-]    pointer to nxs parameter file name (from input parameter)
-char  *pSmplFileName=NULL;       // -S       [-]    name of the sample parameter file      
+char  *pSmplFileName=NULL;       // -S       [-]    name of the sample parameter file
 double Theta    = M_PI/2.0,      // -D      [deg]   these angles determine orientation and solid angles covered by the detector
-       DelTheta = M_PI/2.0,      // -d      [deg]      Theta has to be in the range of [0;PI]         
-       Phi      = M_PI,          // -P      [deg]      Phi has to be in the range of [0;2*PI] 
+       DelTheta = M_PI/2.0,      // -d      [deg]      Theta has to be in the range of [0;PI]
+       Phi      = M_PI,          // -P      [deg]      Phi has to be in the range of [0;2*PI]
        DelPhi   = M_PI;          // -p      [deg]
-short  nColor=NO_COLOR,          // -c       [-]   colour of the scattered neutrons  
-       bIncohScat = FALSE,       // -I       [-]   shall incoherent scattering be done ?             
+short  nColor=NO_COLOR,          // -c       [-]   colour of the scattered neutrons
+       bIncohScat = FALSE,       // -I       [-]   shall incoherent scattering be done ?
        bTreatAll  = FALSE,       // -a       [-]   shall neutrons not hitting the sample be treated ?
        bTransOnly = FALSE;       // -T       [-]   shall only transmission (imaging) be treated (=TRUE)? Or scattering also(=FALSE)?
 long   GenNeutrons=1;            // -A       [-]   how many trajectories to generate per incoming trajectory
-double Xpos     = 0.0,           // -x file  [cm]  position of the center of the sample 
-       Ypos     = 0.0,           // -y file  [cm]  
-       Zpos     = 0.0,           // -z file  [cm]  
-       Diameter = 0.0,           // -t file  [cm]  thickness or radius of the sample 
-       Height   = 0.0,           // -h file  [cm]  height of the sample 
+double Xpos     = 0.0,           // -x file  [cm]  position of the center of the sample
+       Ypos     = 0.0,           // -y file  [cm]
+       Zpos     = 0.0,           // -z file  [cm]
+       Diameter = 0.0,           // -t file  [cm]  thickness or radius of the sample
+       Height   = 0.0,           // -h file  [cm]  height of the sample
        Width    = 0.0,           // -w file  [cm]  width of the sample
-       Xdir     = 0.0,           // -X file  [-]   orientation of the sample 
-       Ydir     = 0.0,           // -Y file  [-]  
-       Zdir     = 0.0;           // -Z file  [-]  
+       Xdir     = 0.0,           // -X file  [-]   orientation of the sample
+       Ydir     = 0.0,           // -Y file  [-]
+       Zdir     = 0.0;           // -Z file  [-]
 VtSmplGeom eGeom= VT_NO_GEOM;    // -G file  [-]   sample shape: VT_NO_GEOM, VT_CUBE, VT_CYL, VT_SPHERE, VT_HOL_CYL
 
 // Variables determined from input parameters or from file
@@ -92,14 +92,14 @@ char *pNxsFileName="not found",     //       [-]   pointer to NXS file name that
       sNxsFileNameF[CHAR_BUF_XS]="";// file  [-]   NXS file name from parameter file
 
 // constants
-short  MAX_HKL = 8;                   //        maximum hkl index value                           
+short  MAX_HKL = 8;                   //        maximum hkl index value
 double OneMatrix[3][3] = {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
 
 
 /******************************/
 /**   Extern Variables       **/
 /******************************/
-extern 
+extern
 double MuTot,    // file  macrosc. scattering cross section, defined in 'sample.c'
        MuAbs;    // file  macrosc. absorption cross section, defined in 'sample.c'
 
@@ -107,9 +107,9 @@ double MuTot,    // file  macrosc. scattering cross section, defined in 'sample.
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit    (int argc, char *argv[]);     // reads input parameters and sets global 
+void  OwnInit    (int argc, char *argv[]);     // reads input parameters and sets global
 void  OwnCleanup (DoublePair *StrucFac);       // Does module specific cleanup
-void SetSamplePar(SampleType *pSample);        // sets sample parameters 
+void SetSamplePar(SampleType *pSample);        // sets sample parameters
 void  SetGeometry(char* sColor);               // fills the structure stGeometry for visualization
 
 char* FullInName (const char* filename);       // path to input directory + file name  (from init.c)
@@ -161,12 +161,12 @@ int main(int argc, char *argv[])
   SetSamplePar(&Sample);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   fprintf(LogFilePtr, "NXS parameter file: %s\n", pNxsFileName);
 
-  /* read unit cell parameters from file 
+  /* read unit cell parameters from file
      try the name from paramter input first, then the name from file */
   uc.atomInfoList = NULL;
   uc.hklList = NULL;
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
     if( numAtoms < 1 )
     {
       NXS_AtomInfo ai;
-    
+
       /* fallback solution: if no file exists, use alpha_iron */
       fprintf(LogFilePtr, "WARNING: nxs parameter file NOT found, neither in %s nor in %s!\n! Using default values...\n", pNxsFileNameI, sNxsFileNameF);
       strncpy(uc.spaceGroup,"229",MAX_CHARS_SPACEGROUP);
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
   else
   { pNxsFileName=pNxsFileNameI;
   }
-  
+
   if( NXS_ERROR_OK != nxs_initUnitCell(&uc) )
   {
     fprintf(LogFilePtr, "WARNING: No nxs parameters set! Sample will be transparent!\n");
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
   {
     unsigned int k;
     uc.temperature = 293.0;
-       
+
     fprintf(LogFilePtr, "NXS unit cell definition is:\n"
           "space group number = %s\n"
           "a = %f \t\t alpha = %f\n"
@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
           "debye_temp = %f\n"
           "# label  b_coherent  sigma_inc  sigma_abs  molar_mass  x  y  z\n",
           uc.spaceGroup, uc.a, uc.alpha, uc.b, uc.beta, uc.c, uc.gamma, uc.debyeTemp);
-          
+
     for( k=0; k<numAtoms; k++ )
     {
       NXS_AtomInfo ai = atomInfoList[k];
@@ -234,10 +234,10 @@ int main(int argc, char *argv[])
 
     uc.maxHKL_index = MAX_HKL;
     nxs_initHKL( &uc );
-    
+
       /* factor for the calculation of the attenuation */
     mu_factor = 1.0 / uc.volume;
-  
+
     nxs_init_success = 1;
   }
 
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         /* First, shift the origin of the system to the middle of the sample   */
         CopyNeutron(&InputNeutrons[i], &InNeutron);
         SubVector(InputNeutrons[i].Position, Sample.Position);
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
             nxs_CoherentInelastic(InputNeutrons[i].Wavelength, &uc );
           xsect_absorption = nxs_Absorption(InputNeutrons[i].Wavelength, &uc );
           xsect_total = xsect_coherent + xsect_incoherent + xsect_absorption;
-  
+
 
           /* Lbf is in [cm] already */
           p_transmit = exp( -xsect_total * mu_factor * Lbf );
@@ -368,7 +368,7 @@ int main(int argc, char *argv[])
                 } /* end of if (ScTheta > Theta-DelTheta && ScTheta < Theta+DelTheta) */
               }
 
-              // SCATTER incoherently 
+              // SCATTER incoherently
               // --------------------
               else if (roulette_ball <= xsect_coherent+xsect_incoherent)
               {
@@ -416,7 +416,7 @@ int main(int argc, char *argv[])
  my_exit:
   /* write geometry file */
   SetGeometry("white");
-  
+
   /* Do module specific cleanups */
   if (atomInfoList != NULL) {
     free(atomInfoList);
@@ -607,7 +607,7 @@ void SetSamplePar(SampleType *pSample)
   FILE  *pSampleFile;
   char   sLine[CHAR_BUF_SMALL]="", sGeom[20]="";
   int    nLen=sizeof(sLine)-1;
-  double x=0.0, y=0.0, z=0.0, 
+  double x=0.0, y=0.0, z=0.0,
          xdir  =0.0, ydir  =0.0, zdir =0.0,
          d_par=0.0, height=0.0, width=0.0;
   VtSmplGeom geom=VT_NO_GEOM;
@@ -618,27 +618,27 @@ void SetSamplePar(SampleType *pSample)
 
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
-  { 
+  {
     pSampleFile = OpenInputFile(pSmplFileName, FALSE, "rt");
 
     /* Reads the parameters if the file can be opened */
     if (pSampleFile != NULL)
-    { 
+    {
       /* First line: sample position     */
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &x, &y, &z);
-      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom); 
+      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sGeom);
       if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &d_par, &height, &width);
       geom = SmplGeom_Txt2ID(sGeom);
       if (geom!=VT_SPHERE)
       { if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &xdir,  &ydir,  &zdir);}
-      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sNxsFileNameF); 
+      if (ReadLine(pSampleFile, sLine, nLen)) sscanf(sLine, "%s",          sNxsFileNameF);
 
       geom = SmplGeom_Txt2ID(sGeom);
 
       fclose(pSampleFile);
 
       // combines information from input and file, input parameters have priority
-      if (eGeom==VT_NO_GEOM && geom!=VT_NO_GEOM) eGeom = geom; 
+      if (eGeom==VT_NO_GEOM && geom!=VT_NO_GEOM) eGeom = geom;
       if (Xpos    ==0.0 && x     !=0.0) Xpos    = x;
       if (Ypos    ==0.0 && y     !=0.0) Ypos    = y;
       if (Zpos    ==0.0 && z     !=0.0) Zpos    = z;
@@ -651,7 +651,7 @@ void SetSamplePar(SampleType *pSample)
       if (Zdir    ==0.0 && zdir  !=0.0) Zdir    = zdir;
     }
     else
-    {	
+    {
       fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n", pSmplFileName);
     }
   }
@@ -679,7 +679,7 @@ void SetGeometry(char* sColor)
 {
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;

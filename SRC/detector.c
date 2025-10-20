@@ -1512,4 +1512,3 @@ void CheckAndAdjustDetectorInput(VtDetType type, VtDetGeom geom)
      Detector.NColumns+=2*(floor(Detector.Resolution[1]/ Detector.PixelWidth[1])+1);
   }
 }
-

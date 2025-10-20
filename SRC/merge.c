@@ -14,7 +14,7 @@ We start with reading an event from f1, which got the ID id, and define
 a trajectory with this event.
 We read on from f1 and add all events, which have the same ID.
 The move on to f2 and read events here.
-If for event e2 from f2 
+If for event e2 from f2
 - id == id2 add this to the trajectory t, and read on from f2
 - id > id2 should be impossible, skip this event, and read on
 - id < id2 move on to f3, keep e2
@@ -45,7 +45,7 @@ int ntraj, // number of trajectories found
 
 t_traj_point traj[MAXTRAJ];
 
-#define MAXRBUF 64 
+#define MAXRBUF 64
 int maxfile; // maximal index of input file
 FILE *outf, *rf[MAXRBUF];
 
@@ -59,7 +59,7 @@ int svg_width = 800;
 int svg_height = 600;
 char *svg_line_color = "#448"; // dark blue
 
-/* 
+/*
    x along neutron beam
    z vertical axis
    y form a horizontal plane with x axis
@@ -122,7 +122,7 @@ int startSVGFile(int width, int height) {
           "<defs>\n"
           "<script type=\"text/javascript\">\n"
           "function meldung(n){alert(\"trajectory \" + n)}\n"
-          "</script>\n", 
+          "</script>\n",
           svg_width, svg_height);
   return rc == 2;
 }
@@ -138,7 +138,7 @@ int finishSVGFile() {
 }
 
 char * pretty(float v, char *s) {
-  // write a float value with without superfluous leading and trailing chars 
+  // write a float value with without superfluous leading and trailing chars
   int i;
   char *q, *p = s;
   sprintf(s, "%12.2f", v);
@@ -169,7 +169,7 @@ void writeSVGTrajectory () {
     fprintf(outf,"%s,%s",
             pretty(pos[0], ba),
             pretty(pos[instrument_view == SIDEVIEW ? 2 : 1], bb));
-    if (i<maxtraj) fputc(',', outf); 
+    if (i<maxtraj) fputc(',', outf);
   }
   fprintf(outf, "\"/></g>\n");
 }
@@ -212,7 +212,7 @@ int main(int argc, char**argv) {
       outfilename = arg;
     }
   }
-     
+
   if (!(outf = fopen(outfilename, "w")))
     myexit("unable to open output file");
 
@@ -252,11 +252,10 @@ int main(int argc, char**argv) {
     else
       writeTextTrajectory();
   }
-  
+
   fclose(outf);
-  for (i=0; i<=maxfile; i++) 
+  for (i=0; i<=maxfile; i++)
     fclose(rf[i]);
-  
+
   return 0;
 }
-

@@ -14,56 +14,56 @@
 /* Structures                                  */
 /***********************************************/
 typedef struct
-{	
-  const char *pSrcName;   //             name of the source   
-  VtSrcName   nSource;    //             enum defining the sourc    
+{
+  const char *pSrcName;   //             name of the source
+  VtSrcName   nSource;    //             enum defining the sourc
   VtSrcKind   eSrcKind;   //             enum: source kind: uses 'SrcKind' (s.a.) to define the source type (Vitess 3)
   VtSrcType   eSrcType;   //             enum: source type: CWS SPSS LPSS    (Vitss 4)
   double  PulseFreq;      //    [Hz]     repetition rate of the pulses in
   double  PulsePeriod;    //    [ms]     period of pulse cycle         in
   double  PulseLength;    //    [s]      LPSS pulse length             in
   double  Power;          //    [W]      average power of the source   in
-}                         
-Source;                   
-                          
-typedef struct            
-{                         
-  double ModTemp;         //     [K]     effective moderator temperature  
+}
+Source;
+
+typedef struct
+{
+  double ModTemp;         //     [K]     effective moderator temperature
   VtModType eModType;     //     [-]     moderator type: coupled, decoupled, ...
-  VtTS   eIsisTS;	        //             Target station 0: no ISIS moderator, 1: TS1, 2: TS2 
+  VtTS   eIsisTS;          //             Target station 0: no ISIS moderator, 1: TS1, 2: TS2
   short  nBackground;     //     [-]     index: order of moderators: higher number is in background
   short  nColour;         //     [-]     neutrons leaving this moderator get this colour
   char   bCircle;         //     [-]     flag: circular moderator
   double CntrX;           //     [cm]    x-component of the center fo the moderator
-  double CntrY;           //     [cm]    y-component of the center fo the moderator           
+  double CntrY;           //     [cm]    y-component of the center fo the moderator
   double CntrZ;           //     [cm]    y-component of the center fo the moderator
   double Diameter;        //     [cm]    diameter of the moderator
-  double Width;           //     [cm]    width of the moderator 
+  double Width;           //     [cm]    width of the moderator
   double Height;          //     [cm]    height of the moderator
-  double Area;            //    [cm²]   area of the moderator*/
-  double DistModWnd;      //     [cm]    distance moderator - propagation window 
+  double Area;            //    [cmÂ²]   area of the moderator*/
+  double DistModWnd;      //     [cm]    distance moderator - propagation window
   double WndFact;         //             factor to normalise divergence distribution defined 'by window'
   double PfmcFact;        //             performance factor considering losses by the technical realization
   char   sLFileName[FNL];
   char   sTFileName[FNL];
   char   sLTFileName[FNL];
   double TauAscMod;       //     [s]     ascent time constant of the moderated neutrons in the pulse
-  double TauDecMod;       //     [s]     decay time constant of the moderated neutrons in the pulse 
-                              
-  double Chi;             //   [1/Ang]   factor for the wavelength dependence of under-moderated neutrons 
+  double TauDecMod;       //     [s]     decay time constant of the moderated neutrons in the pulse
+
+  double Chi;             //   [1/Ang]   factor for the wavelength dependence of under-moderated neutrons
   double Kappa;           //     [1]     scaling factor for the flux of under-moderated neutrons
   double TauAscUM;        //     [s]     ascent time constant of the under-moderated neutrons in the pulse
   double TauDecUM;        //     [s]     decay time constant of the under-moderated neutrons in the pulse
-                               
+
   double Current;         //    [n/s]    mean neutron current leaving the moderator
-  double TotFluxMod,      //  [n/cm²/s]  total CW-flux of the moderated neutrons on the moderator surface    
-         TotFluxUM;       //  [n/cm²/s]  total CW-flux of the under-moderated neutrons on the moderator surface
+  double TotFluxMod,      //  [n/cmÂ²/s]  total CW-flux of the moderated neutrons on the moderator surface
+         TotFluxUM;       //  [n/cmÂ²/s]  total CW-flux of the under-moderated neutrons on the moderator surface
                           //             flux amplitude for moderated und undermoderated neutrons
-  double FUAmpMod,        // [n/s/cm²/sr] - continuous sources: number of neutrons per area per solid angle per second 
-         FUAmpUM;         //  [n/cm²/sr]  - pulsed sources:     number of neutrons per area per solid angle per pulse 
-  double NormTrj,         // [cm²sr Ang] Phase space volume per trajectory 
+  double FUAmpMod,        // [n/s/cmÂ²/sr] - continuous sources: number of neutrons per area per solid angle per second
+         FUAmpUM;         //  [n/cmÂ²/sr]  - pulsed sources:     number of neutrons per area per solid angle per pulse
+  double NormTrj,         // [cmÂ²sr Ang] Phase space volume per trajectory
          NormInt;         //  [n*Ang/s]   mean neutron current per traj. normalized by wavelength
-                          //   [n*Ang]     and for pulsed sources by time interval   (= FUAmp*NormTrj)     
+                          //   [n*Ang]     and for pulsed sources by time interval   (= FUAmp*NormTrj)
 }
 Moderator;
 
@@ -85,7 +85,7 @@ typedef struct
 ModInfo;
 
 
-typedef struct 
+typedef struct
 {
   double I_SD;
   double alpha_SD;
@@ -102,7 +102,7 @@ typedef struct
 EssModChar;
 
 typedef struct
-{	
+{
   double LambdaMin;
   double LambdaMax;
   double MinDivY;
@@ -115,7 +115,7 @@ typedef struct
 TrajParam;
 
 typedef struct
-{	
+{
   double* pTabX;
   double* pTabY;
   double* pTabF;
@@ -137,9 +137,9 @@ void   CopyTrajRange  (const TrajParam* pSrc, TrajParam* pDest);
 
 long   IndLT          (const long   i,       const long   j);
 double TotalFU        (const double Temp,    const VtSrcName eSource, const VtModType eModType,
-					             const double Power,   const double Period,  const double PulseLen);
+                       const double Power,   const double Period,  const double PulseLen);
 double EssModFU       (const double Lambda,  const double Time,    const double Length);
-                      
+
 double Maxwellian     (const double lambda,  const double ModTemp);
 double LeakageFct     (const double lambda,  const ModInfo* pInfo);
 double EmpCorrFact    (double lmbd);
@@ -173,4 +173,3 @@ double WeightDirByWnd(const double WndWidth, const double Dist,      const doubl
 char*  FullModPath    (short eSource);
 
 #endif
-

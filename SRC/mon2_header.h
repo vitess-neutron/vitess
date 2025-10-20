@@ -11,26 +11,26 @@ extern "C" {
 #endif
 
 void WriteHeader1D (FILE* fMonitor, const char *sType, short bWeight, int nBinsX,                      // Writes header for 1D monitor file
-                    const char* sPar, const char* sUnit, double Xmin, double Xmax);   
+                    const char* sPar, const char* sUnit, double Xmin, double Xmax);
 void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sType,                                    // Writes header for 1D monitor file incl. number of proc. bunches
-                    short iCol, long iBnch, long nBnch, int nBinsX, 
-                    double IntMon, long nTrjMon, 
-                    const char* sPar, const char* sUnit, double Xmin, double Xmax);   
+                    short iCol, long iBnch, long nBnch, int nBinsX,
+                    double IntMon, long nTrjMon,
+                    const char* sPar, const char* sUnit, double Xmin, double Xmax);
 void WriteHeader2D (FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight,              // Writes header for 2D monitor file
-                    int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax,  
-                    int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax); 
-void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sType, short bWeight, // Writes header for 2D monitor file incl. number of proc. bunches  
-                    long iBnch, long nBnch, double IntMon, long nTrjMon, 
-                    int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax, 
-                    int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax); 
+                    int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax,
+                    int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax);
+void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sType, short bWeight, // Writes header for 2D monitor file incl. number of proc. bunches
+                    long iBnch, long nBnch, double IntMon, long nTrjMon,
+                    int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax,
+                    int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax);
 int  WriteOutput2D (FILE* fMonitor, VtFormat2D eFormat, short bWeight,                                 // Writes 2D spectrum to monitor file
-                    int nBinsX, double* BinPosX, 
-                    int nBinsY, double* BinPosY, 
-                    double** IntXY, double** IntXYError, long** nTrajXY);  
+                    int nBinsX, double* BinPosX,
+                    int nBinsY, double* BinPosY,
+                    double** IntXY, double** IntXYError, long** nTrajXY);
 int  WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,                                 // Writes 2D spectrum to monitor file
-                    int nBinsX, double* BinPosX, 
+                    int nBinsX, double* BinPosX,
                     int nBinsY, double* BinPosY, double fNorm,
-                    double** IntXY, double** IntXYError, long** nTrajXY);  
+                    double** IntXY, double** IntXYError, long** nTrajXY);
 
 void printFloatItem(double v, FILE*f);                                                   // Writes one float value to the 2D monitor file
 

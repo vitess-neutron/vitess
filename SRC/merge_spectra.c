@@ -286,7 +286,7 @@ static void mergeFormFiles(FILE *fo) {
         values[n+3] = mean * sqrt(1.0 / values[n+4]);
         prettyPrint(fo, 5, values + n);
       }
-    
+
   } else {
     myexit1("unexpected cols %d!", cols);
   }
@@ -354,7 +354,7 @@ static void mergeFiles() {
 
 static char *noslash(char *a) {
   int slen;
-  if (!a) 
+  if (!a)
     return 0;
   slen = strlen(a);
   while (--slen >= 0 && a[slen] == '/')

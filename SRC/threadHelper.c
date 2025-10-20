@@ -17,10 +17,10 @@ static int      outNbufSize, *outNcount;
 static int      MCbufSize, *MCcount;
 static double   *MCbuffer;
 static float    maxmcusage;      // to report max. fill ratio of mc buffers
-static int      doParBarrier;	 // 0 (back) or 1 (start)
+static int      doParBarrier;   // 0 (back) or 1 (start)
 static int      outstanding;     // number of threads not ready yet
 
-static gsl_rng **vit_thread_gsl_rng;    // individual generators for threads 
+static gsl_rng **vit_thread_gsl_rng;    // individual generators for threads
 
 static void doChunk(int thread_i);
 
@@ -63,7 +63,7 @@ static void setDone () {
   if (all_done) {
     // signal work is done to master
     WaitForSingleObject( hDoneMutex, INFINITE );
-    SetEvent(hDone); 
+    SetEvent(hDone);
     ReleaseMutex(hDoneMutex);
   }
 }
@@ -100,7 +100,7 @@ static int initParallel (int nworkers) {
   hEvent1 = CreateEvent(NULL, TRUE, FALSE, NULL);
   hEvent2 = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-  hWorkMutex  = CreateMutex( NULL, FALSE, NULL );  // Cleared, we do not 
+  hWorkMutex  = CreateMutex( NULL, FALSE, NULL );  // Cleared, we do not
   hDoneMutex  = CreateMutex( NULL, FALSE, NULL );  //   request these mutexes here
   hDebugMutex = CreateMutex( NULL, FALSE, NULL );
 
@@ -114,14 +114,14 @@ static void startHelpers () {
 
   // prepare the release at the right barrier
   WaitForSingleObject( hWorkMutex, INFINITE );
-  
+
   // Toggle Barriers
   doParBarrier = !doParBarrier;
 
   outstanding = NThreads;
   ResetEvent(hDone);
   ReleaseMutex(hWorkMutex);
-  
+
   if (doParBarrier) {
     ResetEvent(hEvent2);
     SetEvent(hEvent1);
@@ -140,7 +140,7 @@ static void shutdownParallel() {
   // break all brakes
   SetEvent(hEvent1);
   SetEvent(hEvent2);
-  // wait for termination of all helper threads 
+  // wait for termination of all helper threads
   WaitForMultipleObjects(NThreads, winThread, TRUE, INFINITE);
 }
 
@@ -348,10 +348,10 @@ static int createThreadBuffers() {
     for (n=0; n<NThreads; n++) {
       gsl_rng * g;
       vit_thread_gsl_rng[n] = g = gsl_rng_alloc(gsl_rng_default);
-      if (!g) 
+      if (!g)
         myExit("unable to create individual random number generators!\n");
       gsl_rng_set(g, VRandomSeed+n+1);
-    } 
+    }
   }
   if (MCbufSize <= 0) return 1;
   return
@@ -371,22 +371,22 @@ static void fillMCbuffers() {
       float ratio;
       double *v = MCbuffer + n*MCbufSize + c;
       for (i=c; i<MCbufSize; i++)
-	*v++ = Vran();
+  *v++ = Vran();
       MCcount[n] = MCbufSize;
       if (morefill) {
-	// do statistics on buffer usage, but not at the first call of fillMCbuffers
-	ratio = (float)(MCbufSize - c) / MCbufSize;
-	if (ratio > maxmcusage) maxmcusage = ratio;   
+  // do statistics on buffer usage, but not at the first call of fillMCbuffers
+  ratio = (float)(MCbufSize - c) / MCbufSize;
+  if (ratio > maxmcusage) maxmcusage = ratio;
       }
     }
   morefill = 1;
 }
 
 void printMCStatistic(FILE *f) {
-  if (NThreads <= 0) return; 
-  if (MCbufSize > 0) 
+  if (NThreads <= 0) return;
+  if (MCbufSize > 0)
     fprintf(f, "maximum usage of mc prefetch buffers %8.1f %%, buffer sizes %d, %d helper thread(s)\n",
-	    100*maxmcusage, MCbufSize, NThreads);
+      100*maxmcusage, MCbufSize, NThreads);
   else
     fprintf(f, "used %d helper thread(s)\n", NThreads);
 }
@@ -411,10 +411,10 @@ static void flushParallelOutput() {
     if ((c = outNcount[n])) {
       Neutron *neut = OutNeutronsParallel + n*outNbufSize;
       for (i=0; i<c; i++)
-	WriteNeutron(neut++);
+  WriteNeutron(neut++);
       outNcount[n] = 0;
     }
-}	
+}
 
 
 static void doChunk(int thread_i) {
@@ -430,7 +430,7 @@ static void doChunk(int thread_i) {
 }
 
 void processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int), void (*po)(),
-			  int maxnratio, int maxmc) {
+        int maxnratio, int maxmc) {
   int maxchunksize;
   DECLARE_ABORT;
 
@@ -440,13 +440,13 @@ void processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int), void (*po
       int i;
       CHECK;
       for(i=0; i<NumNeutGot; i++)
-        (*p)(i, 0);    
-      if (po) 
+        (*p)(i, 0);
+      if (po)
         (*po)();
     }
     return;
-  } 
-  
+  }
+
   // parallel execution
 
   NThreads = initParallel(nthreads);
@@ -466,7 +466,7 @@ void processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int), void (*po
   while (ReadNeutrons()) {
     CHECK;
     ChunkSize = 1 + NumNeutGot/(NThreads + 1);
-    if (MCbufSize > 0) 
+    if (MCbufSize > 0)
       fillMCbuffers();
     startHelpers();
     // the main thread does it's share doChunk(0)
@@ -474,7 +474,7 @@ void processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int), void (*po
     doChunk(0);
     waitForHelpers();
     flushParallelOutput();
-    if (po) 
+    if (po)
       (*po)();
   }
   my_exit: ;

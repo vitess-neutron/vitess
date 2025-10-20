@@ -22,17 +22,17 @@
 /******************************/
 void  OwnInit(int argc, char *argv[]);      // reads input parameters and initializes global variables
 void  SetGeometry(char* sColor);            // fills the structure stGeometry for visualization
-void  UpdateMon(long iBnch);                // Updates monitor output file 
+void  UpdateMon(long iBnch);                // Updates monitor output file
 
 
 /******************************/
 /** Global Variables         **/
 /******************************/
 char*  OutFileName=NULL;       // -O   [-]   output file name to store the 2D PSD data
-VtDetGeom  eGeom;              // -G   [-]   geometry 1: cyl     2: flat   
+VtDetGeom  eGeom;              // -G   [-]   geometry 1: cyl     2: flat
 VtFormat2D eFormat = MATRIX;   // -F    [-]   file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
-double Width =0.0,             // -w   [cm]  width of the (rectangular) area 
-       Height=0.0,             // -h   [cm]  height of the area 
+double Width =0.0,             // -w   [cm]  width of the (rectangular) area
+       Height=0.0,             // -h   [cm]  height of the area
        AngleMin=0.0,           // -a  [deg]  min. angle in horizontal plane
        AngleMax=0.0,           // -A  [deg]  max. angle in horizontal plane
        Distance=0.0;           // -D   [cm]  distance between starting point and area
@@ -42,15 +42,15 @@ long   nBinsY  =1,             // -y   [-]   number of bins in horizontal direct
 // Variables that are fixed or determined from input parameters or trajectory data
 short    bProbactiv=TRUE;      //      [-]   flag Display  : YES: Probability weight   NO: number of trajectories
 double   WidthMin  =0.0,       //      [cm]  horizontal range of the screen
-         WidthMax  =0.0,       
+         WidthMax  =0.0,
          HeightMin =0.0,       //      [cm]  vertical range of the screen
-         HeightMax =0.0;        
+         HeightMax =0.0;
 Plane    Endpoint;             //      [cm]  Endpoint.D: distance to end of free flight path along x-axis [cm]
 long     nBunches = 1;         //            number of bunches started
 double*  BinPosY  = NULL;      //            edges of the bins of the first parameter
 double*  BinPosZ  = NULL;      //            edges of the bins of the second parameter
-double** IntYZ    = NULL;      //            intensity within a bin (in 2 dimensions) 
-double** IntYZError= NULL;     //            standard deviation of this intensity 
+double** IntYZ    = NULL;      //            intensity within a bin (in 2 dimensions)
+double** IntYZError= NULL;     //            standard deviation of this intensity
 long  ** nTrajYZ   = NULL;     //            number of trajectories within a bin
 long     nTrajTot =0;          //            total number of traj. within monitor limits
 double   TotInt   =0.0;        //            total intensitiy within monitor limits
@@ -61,36 +61,36 @@ double   TotInt   =0.0;        //            total intensitiy within monitor lim
 /******************************/
 int main(int argc, char *argv[])
 {
-	long   i=0,
+  long   i=0,
          iY=0, jZ=0,                // indices of matrix
          iBnch=0;                   // current bunch
-	double Velocity=0.0,              // velocity of the neutron    
-         TimeOF=0.0,                // time of flight of the neutron to the window 
+  double Velocity=0.0,              // velocity of the neutron
+         TimeOF=0.0,                // time of flight of the neutron to the window
          Angle=0.0;                 // angle of detection
 
   // Initialisation
   // --------------
   _eModule = MCN_SCREEN;
 
-	Init(argc,argv, _eModule);
+  Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.0a");
-	OwnInit(argc, argv);
+  OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   nBunches = ReadNumBnch();
 
-	DECLARE_ABORT
+  DECLARE_ABORT
 
   // Loop over all trajectories
   // --------------------------
-	while (ReadNeutrons()!= 0)
-	{
-		for (i=0; i<NumNeutGot; i++)
-		{
-			CHECK
+  while (ReadNeutrons()!= 0)
+  {
+    for (i=0; i<NumNeutGot; i++)
+    {
+      CHECK
 
       // Only write out event if EOB line is found, otherwise process trajectory
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
@@ -100,47 +100,47 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
-			  // 	Check parameters of the trajectory 
-			  if (InputNeutrons[i].Wavelength == 0.0) continue;
-			  Velocity = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength)); 
-			  if (Velocity <= 0.0) continue;
+      {
+        //   Check parameters of the trajectory
+        if (InputNeutrons[i].Wavelength == 0.0) continue;
+        Velocity = (V_FROM_LAMBDA(InputNeutrons[i].Wavelength));
+        if (Velocity <= 0.0) continue;
 
-			  if (eGeom==VT_DET_FLAT)
+        if (eGeom==VT_DET_FLAT)
         {
-			    // 	Move neutron to end of the area and calculate Time of Flight (ms)
-			    if (keygrav == 1)
-				    TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
-			    else
-				    TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
+          //   Move neutron to end of the area and calculate Time of Flight (ms)
+          if (keygrav == 1)
+            TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
+          else
+            TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
 
-			    // Calculate  and  writeout new data set, if area is hit
-			    if (fabs(InputNeutrons[i].Position[1]) < 0.5*Width  &&  fabs(InputNeutrons[i].Position[2]) < 0.5*Height)
-			    {	
-	          iY = (int)floor(nBinsY*(InputNeutrons[i].Position[1]-WidthMin) /(WidthMax -WidthMin));
-	          jZ = (int)floor(nBinsZ*(InputNeutrons[i].Position[2]-HeightMin)/(HeightMax-HeightMin));
-			
-	          if (iY >= 0 && iY < nBinsY && jZ >= 0 && jZ < nBinsZ)
-	          {	
-	            nTrajYZ[iY][jZ]++;
+          // Calculate  and  writeout new data set, if area is hit
+          if (fabs(InputNeutrons[i].Position[1]) < 0.5*Width  &&  fabs(InputNeutrons[i].Position[2]) < 0.5*Height)
+          {
+            iY = (int)floor(nBinsY*(InputNeutrons[i].Position[1]-WidthMin) /(WidthMax -WidthMin));
+            jZ = (int)floor(nBinsZ*(InputNeutrons[i].Position[2]-HeightMin)/(HeightMax-HeightMin));
+
+            if (iY >= 0 && iY < nBinsY && jZ >= 0 && jZ < nBinsZ)
+            {
+              nTrajYZ[iY][jZ]++;
               nTrajTot++;
-	            IntYZ  [iY][jZ]+= InputNeutrons[i].Probability;
-	            TotInt         += InputNeutrons[i].Probability;
-	          }
-				    InputNeutrons[i].Time += TimeOF;
+              IntYZ  [iY][jZ]+= InputNeutrons[i].Probability;
+              TotInt         += InputNeutrons[i].Probability;
+            }
+            InputNeutrons[i].Time += TimeOF;
             WriteIAP(&InputNeutrons[i], VT_DETECTED);
 
-				    // InputNeutrons[i].Position[0]=0.0;
+            // InputNeutrons[i].Position[0]=0.0;
 
-				    WriteNeutron(&InputNeutrons[i]);
-			    }
+            WriteNeutron(&InputNeutrons[i]);
+          }
           else
           { WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
           }
         }
         else if (eGeom==VT_DET_CYL)
         {
-          VectorType CylDetector={0.0,0.0,0.0}, 
+          VectorType CylDetector={0.0,0.0,0.0},
                      Pos1={0.0,0.0,0.0}, Pos2={0.0,0.0,0.0};
           CylDetector[0] = 2.0*Distance;
           CylDetector[2] = Height;
@@ -150,40 +150,40 @@ int main(int argc, char *argv[])
           TimeOF = DistVector(Pos2, InputNeutrons[i].Position)/Velocity;
           Angle  = Degrees(atan2(Pos2[1], Pos2[0]));
 
-			    // Set as new data set, if cylinder wall is hit
+          // Set as new data set, if cylinder wall is hit
           if (fabs(Pos2[2]) < 0.49999*Height && Angle > AngleMin && Angle < AngleMax)
-          { 
+          {
             CopyVector(Pos2, InputNeutrons[i].Position);
 
-	          iY = (int)floor(nBinsY*(Angle-AngleMin) /(AngleMax -AngleMin));
-	          jZ = (int)floor(nBinsZ*(InputNeutrons[i].Position[2]-HeightMin)/(HeightMax-HeightMin));
-			
-	          if (iY >= 0 && iY < nBinsY && jZ >= 0 && jZ < nBinsZ)
-	          {	
-	            nTrajYZ[iY][jZ]++;
-              nTrajTot++;
-	            IntYZ  [iY][jZ]+= InputNeutrons[i].Probability;
-	            TotInt         += InputNeutrons[i].Probability;
-	          }
+            iY = (int)floor(nBinsY*(Angle-AngleMin) /(AngleMax -AngleMin));
+            jZ = (int)floor(nBinsZ*(InputNeutrons[i].Position[2]-HeightMin)/(HeightMax-HeightMin));
 
-				    InputNeutrons[i].Time += TimeOF;
+            if (iY >= 0 && iY < nBinsY && jZ >= 0 && jZ < nBinsZ)
+            {
+              nTrajYZ[iY][jZ]++;
+              nTrajTot++;
+              IntYZ  [iY][jZ]+= InputNeutrons[i].Probability;
+              TotInt         += InputNeutrons[i].Probability;
+            }
+
+            InputNeutrons[i].Time += TimeOF;
 
             WriteIAP(&InputNeutrons[i], VT_DETECTED);
-				    WriteNeutron(&InputNeutrons[i]);
-			    }
+            WriteNeutron(&InputNeutrons[i]);
+          }
           else
           { WriteIAP(&InputNeutrons[i], VT_OUT_OF_WND);
           }
         }
       }
-		}
-	}	
+    }
+  }
 
 // Finish: print parameters, write geometry and instrument file, free memory
 // -----------------------------------------------------
 my_exit:
   // writes final monitor output
-  UpdateMon(nBunches);  
+  UpdateMon(nBunches);
 
   // write to log file
   if (eGeom==VT_DET_CYL)
@@ -195,11 +195,11 @@ my_exit:
   }
 
   // write geometry data for visualization
-  SetGeometry("cyan");                      
+  SetGeometry("cyan");
 
   // print intensity, write instrument.inf, free memory
-  // the origin of the co-ordinate system remains at the sample  
-  Cleanup(0.0,0.0,0.0, 0.0,0.0);    
+  // the origin of the co-ordinate system remains at the sample
+  Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
   return(0);
 }
@@ -210,16 +210,16 @@ my_exit:
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-	int i=0, 
+  int i=0,
       iY=0, jZ=0;   // indices of matrix
 
   InitPlane(&Endpoint);
 
-	for (i=1; i<argc; i++)
-	{
-		if (argv[i][0]!='+') 
-		{
-			switch(argv[i][1])
+  for (i=1; i<argc; i++)
+  {
+    if (argv[i][0]!='+')
+    {
+      switch(argv[i][1])
       {
         case 'O':
           OutFileName=(&argv[i][2]);
@@ -231,45 +231,45 @@ void  OwnInit(int argc, char *argv[])
           eFormat = (VtFormat2D) atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz, gnuplot readable */
           break;
 
-				case 'w':
-					Width  = atof(&argv[i][2]);
-					break;
-				case 'h':
-					Height = atof(&argv[i][2]);
-					break;
-				case 'a':
-					AngleMin  = atof(&argv[i][2]);
-					break;
-				case 'A':
-					AngleMax  = atof(&argv[i][2]);
-					break;
-				case 'D':
-					Distance = atof(&argv[i][2]);
-					break;
+        case 'w':
+          Width  = atof(&argv[i][2]);
+          break;
+        case 'h':
+          Height = atof(&argv[i][2]);
+          break;
+        case 'a':
+          AngleMin  = atof(&argv[i][2]);
+          break;
+        case 'A':
+          AngleMax  = atof(&argv[i][2]);
+          break;
+        case 'D':
+          Distance = atof(&argv[i][2]);
+          break;
 
-	      case 'y':
-	        nBinsY = atol(&argv[i][2]); /* number of bins y-direction */
-	        break;
-	      case 'z':
-	        nBinsZ = atol(&argv[i][2]); /* number of bins, z-direction */
-	        break;
-      
-				default:
-					fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
-					exit(-1);
-					break;
-			}
-		}
-	}
+        case 'y':
+          nBinsY = atol(&argv[i][2]); /* number of bins y-direction */
+          break;
+        case 'z':
+          nBinsZ = atol(&argv[i][2]); /* number of bins, z-direction */
+          break;
+
+        default:
+          fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
+          exit(-1);
+          break;
+      }
+    }
+  }
 
   // Check geometry
   if (eGeom!=VT_DET_CYL && eGeom!=VT_DET_FLAT)
     Error("Wrong value for geometry of the screen");
 
   // Define plane through flat detector
-	Endpoint.A =  1.0;
-	Endpoint.D = -1.0*Distance;
-  
+  Endpoint.A =  1.0;
+  Endpoint.D = -1.0*Distance;
+
   // Allocate memory for the monitor data
   BinPosY    = (double*)  malloc((nBinsY+1) * sizeof(double));
   BinPosZ    = (double*)  malloc((nBinsZ+1) * sizeof(double));
@@ -277,7 +277,7 @@ void  OwnInit(int argc, char *argv[])
   IntYZError = (double**) malloc(nBinsY * sizeof(double*));
   nTrajYZ    =   (long**) malloc(nBinsY * sizeof(long*));
 
-  for (iY=0; iY < nBinsY; iY++) 
+  for (iY=0; iY < nBinsY; iY++)
   {
     IntYZ     [iY] = (double*) malloc(nBinsZ * sizeof(double));
     IntYZError[iY] = (double*) malloc(nBinsZ * sizeof(double));
@@ -286,28 +286,28 @@ void  OwnInit(int argc, char *argv[])
 
   // initializes arrays
   if (eGeom==VT_DET_CYL)
-  { for (iY=0; iY <= nBinsY; iY++) 
+  { for (iY=0; iY <= nBinsY; iY++)
       BinPosY[iY] = AngleMin  +  (AngleMax-AngleMin)  * iY / (double)nBinsY;
   }
-  else 
-  { WidthMin = -Width/2.0; 
+  else
+  { WidthMin = -Width/2.0;
     WidthMax =  Width/2.0;
     for (iY=0; iY <= nBinsY; iY++)
       BinPosY[iY] = WidthMin  +  (WidthMax-WidthMin)  * iY / (double)nBinsY;
   }
 
-  HeightMin = -Height/2.0; 
+  HeightMin = -Height/2.0;
   HeightMax =  Height/2.0;
-  for (jZ=0; jZ <= nBinsZ; jZ++) 
+  for (jZ=0; jZ <= nBinsZ; jZ++)
     BinPosZ[jZ] = HeightMin + (HeightMax-HeightMin) * jZ / (double)nBinsZ;
 
   for(iY=0; iY < nBinsY; iY++)
   { for(jZ=0; jZ < nBinsZ; jZ++)
-	  {
-	    IntYZ[iY][jZ] = 0.0;
-	    IntYZError[iY][jZ] = 0.0;
-	    nTrajYZ   [iY][jZ] = 0;
-	  }
+    {
+      IntYZ[iY][jZ] = 0.0;
+      IntYZError[iY][jZ] = 0.0;
+      nTrajYZ   [iY][jZ] = 0;
+    }
   }
 
   return;
@@ -327,7 +327,7 @@ void SetGeometry(char* sColor)
     stGeometry.eModule = _eModule;
 
     if (eGeom==VT_DET_FLAT)
-    { 
+    {
       stGeometry.pRectangle = calloc(1, sizeof(VtRectangle));
       stGeometry.nRectangles = 1;
 
@@ -342,11 +342,11 @@ void SetGeometry(char* sColor)
       stGeometry.pRectangle[0].vNormal[2] = 0.0;
     }
     if (eGeom==VT_DET_CYL)
-    { 
-      stGeometry.nCylSlices = 1; 
+    {
+      stGeometry.nCylSlices = 1;
       stGeometry.pCylSlice = (VtCylSlice*) calloc(stGeometry.nCylSlices, sizeof(VtCylSlice));
 
-      stGeometry.pCylSlice[0].Radius     = Distance; 
+      stGeometry.pCylSlice[0].Radius     = Distance;
       stGeometry.pCylSlice[0].Width      = Width;
       stGeometry.pCylSlice[0].Height     = BlowUp * Height;
       stGeometry.pCylSlice[0].Phi        =(AngleMax + AngleMin)/2.0;
@@ -383,27 +383,27 @@ void UpdateMon(long iBnch)
       f_norm = (double) nBunches / (double) iBnch;
 
     // calculate standard deviation
-    for (iBinY = 0; iBinY < nBinsY; iBinY++) 
-    { for (jBinZ = 0; jBinZ < nBinsZ; jBinZ++) 
+    for (iBinY = 0; iBinY < nBinsY; iBinY++)
+    { for (jBinZ = 0; jBinZ < nBinsZ; jBinZ++)
       {
-        if (nTrajYZ[iBinY][jBinZ] > 0) 
+        if (nTrajYZ[iBinY][jBinZ] > 0)
           IntYZError[iBinY][jBinZ] = IntYZ[iBinY][jBinZ] / sqrt(nTrajYZ[iBinY][jBinZ]);
-        else 
+        else
           IntYZError[iBinY][jBinZ] = 0.0;
       }
-    } 
+    }
 
     // writes header and data
     if (eGeom==VT_DET_CYL)
-      WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,   
-                     nBinsY, "scat_angle [deg]", AngleMin,  AngleMax,    
+      WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,
+                     nBinsY, "scat_angle [deg]", AngleMin,  AngleMax,
                      nBinsZ, "pos_z [cm]", HeightMin, HeightMax);
     else
-      WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,   
-                     nBinsY, "pos_y [cm]", WidthMin,  WidthMax,    
+      WriteHeader2DB(fMonitor, FALSE, eFormat, "Intensity", bProbactiv, iBnch, nBunches, TotInt, nTrajTot,
+                     nBinsY, "pos_y [cm]", WidthMin,  WidthMax,
                      nBinsZ, "pos_z [cm]", HeightMin, HeightMax);
 
-    WriteOutput2DB(fMonitor, eFormat, bProbactiv,  
+    WriteOutput2DB(fMonitor, eFormat, bProbactiv,
                    nBinsY, BinPosY,   nBinsZ, BinPosZ,  f_norm,
                    IntYZ, IntYZError, nTrajYZ);
 

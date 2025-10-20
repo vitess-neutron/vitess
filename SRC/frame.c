@@ -352,6 +352,3 @@ void    Mirroring(Neutron* pNeutron)
   if(MirrY == 1) pNeutron->Spin[1] *= - 1.;
   if(MirrZ == 1) pNeutron->Spin[2] *= - 1.;
 }
-
-
-

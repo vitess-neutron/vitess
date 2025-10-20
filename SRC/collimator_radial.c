@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp     = TRUE;
 
   AngCntrAct  = AngCentre;
@@ -99,18 +99,18 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         // Move neutron to the beginning of the collimator and determine position
-        // ----------------------------------------------------------------------			
+        // ----------------------------------------------------------------------
         if (InputNeutrons[i].Wavelength <= 0.0) continue;
-        VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
+        VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
 
         OutNeutron = InputNeutrons[i];
 
-        bHit1 = AdvanceToCylinderSurface(&ToF1, &OutNeutron, Distance, EntrHeight, VelocityReal); 
+        bHit1 = AdvanceToCylinderSurface(&ToF1, &OutNeutron, Distance, EntrHeight, VelocityReal);
 
         if (bHit1)
-        {	
+        {
           if (_eOscColl==VT_RND_PHASE)
           { AngCntrAct = MonteCarlo(AngCentre-0.5*OscWidth, AngCentre+0.5*OscWidth);
             AngMinAct  = AngCntrAct - 0.5*AngWidth;
@@ -118,17 +118,17 @@ int main(int argc, char *argv[])
           NewAngH = 180.0/M_PI*atan2(OutNeutron.Position[1], OutNeutron.Position[0]);
           NewPosZ = OutNeutron.Position[2];
           CopyNeutron(&OutNeutron, &EnterNeutron);
-				
+
           // Follow neutron through the collimator if it enters into one of the channels
-          // ---------------------------------------------------------------------------			
+          // ---------------------------------------------------------------------------
           if (fabs(NewAngH-AngCntrAct) < 0.5*AngWidth  &&  fabs(NewPosZ) < 0.5*EntrHeight)
-          {	
+          {
             // find out entrance channel   (channel = 0 means 'blade position')
             iChanIn = DetermineChannel(NewAngH, AngMinAct, AngSep, Distance);
 
             if (iChanIn > 0 && iChanIn <= nChannels)
-            {	
-              bHit2 = AdvanceToCylinderSurface(&ToF2, &OutNeutron, Distance+Length, ExitHeight, VelocityReal); 
+            {
+              bHit2 = AdvanceToCylinderSurface(&ToF2, &OutNeutron, Distance+Length, ExitHeight, VelocityReal);
 
               if (bHit2)
               {
@@ -136,9 +136,9 @@ int main(int argc, char *argv[])
                 NewPosZ = OutNeutron.Position[2];
 
                 // Writeout new data set, if neutron leaves inside the exit area through the same channel
-                // ----------------------------------------------------------------------			
+                // ----------------------------------------------------------------------
                 if (fabs(NewAngH-AngCntrAct) < 0.5*AngWidth  &&  fabs(NewPosZ) < 0.5*ExitHeight)
-                {	
+                {
                   // find out exit channel   (channel = 0 means 'blade position')
                   iChanOut = DetermineChannel(NewAngH, AngMinAct, AngSep, Distance+Length);
 
@@ -152,10 +152,10 @@ int main(int argc, char *argv[])
                   else
                   { // estimate point inside the collimator for absorption
                     // might be exchanged by the position where it hits the blade (cf. collimator.c 150ff)
-                    // ----------------------------------------------------------------------			
+                    // ----------------------------------------------------------------------
                     double prc;
                     int k,
-                        N2 = 2 * abs(iChanOut - iChanIn); 
+                        N2 = 2 * abs(iChanOut - iChanIn);
                     prc = (double) (N2-1)/N2;
                     for (k=0; k < 3; k++)
                       OutNeutron.Position[k] -= prc*(OutNeutron.Position[k] - EnterNeutron.Position[k]);
@@ -168,13 +168,13 @@ int main(int argc, char *argv[])
         } // bHit1
       }
     }
-  }	
+  }
 
 // Finish: print parameters, write geometry and instrument file, free memory
 // -------------------------------------------------------------------------
  my_exit:
   if (_eOscColl==VT_RND_PHASE)
-	  fprintf(LogFilePtr, "oscillating amplitude %6.2f deg (phase chosen randomly) \n", OscWidth);
+    fprintf(LogFilePtr, "oscillating amplitude %6.2f deg (phase chosen randomly) \n", OscWidth);
   fprintf(LogFilePtr, "%ld channels from %6.2f to %6.2f deg     \n", nChannels, AngMin, AngMax);
   fprintf(LogFilePtr, "%6.2f cm long, %7.2f cm from the sample \n", Length, Distance);
 
@@ -203,40 +203,40 @@ void  OwnInit(int argc, char *argv[])
   int i=0;
   char  *arg=NULL;
 
-  bOldFrame = TRUE;                        // module uses frame of the previous module, i.e. the sample 
+  bOldFrame = TRUE;                        // module uses frame of the previous module, i.e. the sample
 
   for(i=1; i<argc; i++)
   {
-    if(argv[i][0]!='+') 
+    if(argv[i][0]!='+')
     {
       arg=&argv[i][2];
       switch(argv[i][1])
       {
         case 'd':
-          Distance   = atof(arg);      // distance origin - beginning of the collimator in cm 
+          Distance   = atof(arg);      // distance origin - beginning of the collimator in cm
           break;
         case 'l':
           Length     = atof(arg);      // length of the collimator in cm
           break;
 
         case 'h':
-          EntrHeight = atof(arg);      // entrance height of the collimator in deg 
+          EntrHeight = atof(arg);      // entrance height of the collimator in deg
           break;
         case 'H':
-          ExitHeight = atof(arg);      // exit height of the collimator in deg 
+          ExitHeight = atof(arg);      // exit height of the collimator in deg
           break;
 
         case 'a':
-          AngCentre  = atof(arg);      // direction to the center of the collimator in deg 
+          AngCentre  = atof(arg);      // direction to the center of the collimator in deg
           break;
         case 'w':
-          AngWidth   = atof(arg);      // angular width of the collimator in deg 
+          AngWidth   = atof(arg);      // angular width of the collimator in deg
           break;
         case 'n':
-          nChannels  = atol(arg);      // bender: No. of channels 
+          nChannels  = atol(arg);      // bender: No. of channels
           break;
         case 's':
-          BladeWidth =  atof(arg);     // width of bender channel border in cm 
+          BladeWidth =  atof(arg);     // width of bender channel border in cm
           break;
 
         case 'o':
@@ -244,17 +244,17 @@ void  OwnInit(int argc, char *argv[])
           if (OscWidth > 0.0)
             _eOscColl = VT_RND_PHASE;
           break;
-          /* 
-          case 'O':                       //  0: fixed   
-            eOscColl = (short) atol(arg);//  1: oscillating, phase not relevant 
-            break;                       //  2: oscillating, phase considered 
+          /*
+          case 'O':                       //  0: fixed
+            eOscColl = (short) atol(arg);//  1: oscillating, phase not relevant
+            break;                       //  2: oscillating, phase considered
           case 'f':
-            frequency  = atof(arg);      //  frequency in 1/s 
+            frequency  = atof(arg);      //  frequency in 1/s
             break;
-          case 'p':                   
-            phase      = atol(arg);      //  phase in deg at t=0 
+          case 'p':
+            phase      = atol(arg);      //  phase in deg at t=0
             break;   */
-     
+
         default:
           fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
           exit(-1);
@@ -277,7 +277,7 @@ void  OwnInit(int argc, char *argv[])
 void SetGeometry(char* sColor)
 {
  // Geometry data
-	if (bVisInstr)
+  if (bVisInstr)
   {
     int    i;
     double ry, rz,   // [rad]  directions of the incoming beam
@@ -288,9 +288,9 @@ void SetGeometry(char* sColor)
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    stGeometry.nCylSlices = 2; 
+    stGeometry.nCylSlices = 2;
     stGeometry.pCylSlice  = (VtCylSlice*) calloc(stGeometry.nCylSlices, sizeof(VtCylSlice));
-    stGeometry.nHulls     = nChannels+1; 
+    stGeometry.nHulls     = nChannels+1;
     stGeometry.pHull      = (VtHull*) calloc(nChannels+1, sizeof(VtHull));
 
     // get direction to the center of the collimator
@@ -299,8 +299,8 @@ void SetGeometry(char* sColor)
 
     // fprintf(LogFilePtr,"For the radial collimator ry %f, rz %f \n", ry, rz);
     Xi = AngCentre + rz/M_PI*180.0;
-	      
-    stGeometry.pCylSlice[0].Radius     = BlowUp * Distance; 
+
+    stGeometry.pCylSlice[0].Radius     = BlowUp * Distance;
     stGeometry.pCylSlice[0].Width      = BlowUp * Distance*(AngWidth+OscWidth)/180.0*M_PI;
     stGeometry.pCylSlice[0].Height     = BlowUp * EntrHeight;
     stGeometry.pCylSlice[0].vCntr[0]   = 0.0;
@@ -311,8 +311,8 @@ void SetGeometry(char* sColor)
     stGeometry.pCylSlice[0].vSymAxis[2]= 1.0;
     stGeometry.pCylSlice[0].OpenAngle  = AngWidth+OscWidth;
     stGeometry.pCylSlice[0].Phi        = Xi;
-	      
-    stGeometry.pCylSlice[1].Radius     = BlowUp * Distance+Length; 
+
+    stGeometry.pCylSlice[1].Radius     = BlowUp * Distance+Length;
     stGeometry.pCylSlice[1].Width      = BlowUp *(Distance+Length)*(AngWidth+OscWidth)/180.0*M_PI;
     stGeometry.pCylSlice[1].Height     = BlowUp * ExitHeight;
     stGeometry.pCylSlice[1].vCntr[0]   = 0.0;
@@ -325,7 +325,7 @@ void SetGeometry(char* sColor)
     stGeometry.pCylSlice[1].Phi        = Xi;
 
     for (i=0; i <= nChannels; i++)
-    { 
+    {
       phi= (AngMin + i*AngSep)*M_PI/180.0 + rz;
 
       stGeometry.pHull[i].WidthIn   = BladeWidth;
@@ -345,7 +345,7 @@ void SetGeometry(char* sColor)
   }
 }
 
-	    
+
 /***************************************************************************************/
 /* AdvanceToCylinderSurface:                                                           */
 /*  calculates the flight time to entrance or exit wall and the points of intersection */
@@ -353,30 +353,30 @@ void SetGeometry(char* sColor)
 short AdvanceToCylinderSurface(double* pTime, Neutron* pNeutron, double Dist, double Height, double Speed)
 {
   CylinderType stCyl={0.0,0.0};
-  VectorType   vISP ={0.0,0.0,0.0};	// intersection point
+  VectorType   vISP ={0.0,0.0,0.0};  // intersection point
   double       t[2] ={0.0,0.0},     // times to reach the surface
                DistHit,             // distance between point of impact and cylinder axis
                RotMatrix[3][3];     // matrix to convert a cylinder along z-axis to x-axis
-  short        i=0, 
+  short        i=0,
                bHit=FALSE,          // hits cylinder wall
                bHitC=FALSE;         // hits cylinder anywhere
 
   *pTime = 0.0;
-  
+
   stCyl.height = Height;
   stCyl.r      = Dist;
-  
-  /* co-ordinate transformation as cylinder is supposed to lie in x-direction */ 
+
+  /* co-ordinate transformation as cylinder is supposed to lie in x-direction */
   /* entweder
   pNeutron->Position[0] = stNeutron->Position[2]; pNeutron->Position[2] = -stNeutron->Position[0];
   pNeutron->Vector  [0] = stNeutron->Vector  [2]; pNeutron->Vector  [2] = -stNeutron->Vector  [0];
-  pNeutron->Spin    [0] = stNeutron->Spin    [2]; pNeutron->Spin    [2] = -stNeutron->Spin    [0]; 
+  pNeutron->Spin    [0] = stNeutron->Spin    [2]; pNeutron->Spin    [2] = -stNeutron->Spin    [0];
      oder */
   FillRotMatrixY(RotMatrix, M_PI_2);
   RotVector     (RotMatrix, pNeutron->Position);
   RotVector     (RotMatrix, pNeutron->Vector);
   RotVector     (RotMatrix, pNeutron->Spin);
-  
+
   // determines if Cylinder surface is hit
   bHitC = (short) LineIntersectsCylinder(pNeutron->Position, pNeutron->Vector, &stCyl, t);
 
@@ -384,29 +384,29 @@ short AdvanceToCylinderSurface(double* pTime, Neutron* pNeutron, double Dist, do
   if (bHitC)
   {
     for(i=0; i<3; i++)
-    	vISP[i] = pNeutron->Position[i] + t[1]*pNeutron->Vector[i]; // t[1] > t[0] determines the intersection point in flight direction
-    
+      vISP[i] = pNeutron->Position[i] + t[1]*pNeutron->Vector[i]; // t[1] > t[0] determines the intersection point in flight direction
+
     // move if impact is on the surface
     DistHit = sqrt(sq(vISP[1])+sq(vISP[2]));
     if (DistHit > 0.99999 * Dist)
-    { 
+    {
       bHit   = TRUE;
-      *pTime = DistVector(vISP, pNeutron->Position) / Speed; 
+      *pTime = DistVector(vISP, pNeutron->Position) / Speed;
       CopyVector(vISP, pNeutron->Position);
     }
   }
-  
+
   /* back transformation */
   /* entweder
   pNeutron->Position[0] = -stNeutron->Position[2]; pNeutron->Position[2] = stNeutron->Position[0];
   pNeutron->Vector  [0] = -stNeutron->Vector  [2]; pNeutron->Vector  [2] = stNeutron->Vector  [0];
-  pNeutron->Spin    [0] = -stNeutron->Spin    [2]; pNeutron->Spin    [2] = stNeutron->Spin    [0]; 
+  pNeutron->Spin    [0] = -stNeutron->Spin    [2]; pNeutron->Spin    [2] = stNeutron->Spin    [0];
      oder */
   RotBackVector(RotMatrix, pNeutron->Position);
   RotBackVector(RotMatrix, pNeutron->Vector);
   RotBackVector(RotMatrix, pNeutron->Spin);
-  
-  return bHit;   
+
+  return bHit;
 }
 
 
@@ -419,13 +419,12 @@ int DetermineChannel(double angle, double angle_min, double angle_sep, double ra
   int    iChan=0;
   double Channel=0.0,
          ChanDist=0.0;  // distance between 2 channels
-  
+
   ChanDist = radius * angle_sep * M_PI/180.0;
   Channel  = (angle - angle_min) / angle_sep;
-  
+
   if (fabs(Channel - Round(Channel)) >= 0.5*BladeWidth/ChanDist)
     iChan = (int) floor(Channel) + 1;
-  
-  return iChan;
-} 
 
+  return iChan;
+}

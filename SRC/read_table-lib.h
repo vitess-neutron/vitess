@@ -137,7 +137,7 @@
     char    constantstep;  /* true when 1st column/vector data has constant step */
     char    method[32];    /* interpolation method: nearest, linear */
   } t_Table;
- 
+
 /* read_table-lib function prototypes */
 /* ========================================================================= */
 
@@ -174,7 +174,7 @@ double Table_Interp2d(double x, double y, double x1, double y1, double x2, doubl
 /* compilation of gnuplot. The following lines disable most of them.  */
 #pragma warning(disable: 4018 4056 4244 4305 4761 4756 4996)
 #define _CRT_SECURE_NO_WARNINGS
-#endif					  
+#endif
 
 
 #endif

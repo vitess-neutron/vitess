@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   DECLARE_ABORT;
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         bRegistered=ProcessNeutron(&InputNeutrons[i]);
 
         if (bRegistered==TRUE)

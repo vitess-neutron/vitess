@@ -99,7 +99,7 @@ typedef enum {
   GT_OpenRectangle  = 12, // rectangle with spare inner rectangle
   GT_Triangle       = 13, // triangle given by 3 * x,y,z coordinates
   GT_CylSlice       = 14, // slice from a cylinder hull
-  GT_Prism          = 15  // Prism with triangular base  
+  GT_Prism          = 15  // Prism with triangular base
 } GType;
 
 // GTMAX must be highest number of GType
@@ -148,7 +148,7 @@ float normalizeAngle(float a) {
     a += 360;
   while (a > 360)
     a -= 360;
-  return a;  
+  return a;
 }
 
 float toRad(float a) {
@@ -478,10 +478,10 @@ char *shapeString(char *buf, int vtype, char *appearance) {
   default:
     *buf = 0;
   }
- 
+
   if (xtype)
     sprintf(buf, "<Shape><%s/><Appearance>%s</Appearance></Shape>", xtype, appearance);
-    
+
   return buf;
 }
 
@@ -859,8 +859,8 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
   *appearance = lookForDef(q);
 
   // restrict the characters of mods, otherwise we might see funny things / nothing in X3D
-  q =  *mods; 
-  q[-1] = ' '; // always allowed 
+  q =  *mods;
+  q[-1] = ' '; // always allowed
   for (p = q; *p; p++) {
     int c = *p;
     if (c < 32 || c >= 127 ||
@@ -870,7 +870,7 @@ int parseGeomItem(FILE *gf, char *line, float fa[MAXARGS], int *ngeom, char **mo
     *q++ = c;
   }
   *q = 0;
-  
+
   return vtype;
 }
 
@@ -910,7 +910,7 @@ static void vitessToX3Dcoordinates(float *fa, int vtype) {
     if (vtype == GT_CylSlice)
       fa[8] = mirrAng(fa[8]); // mirror direction angle
   }
-        
+
 }
 
 int preTrans (float nx, float ny,  float nz) {
@@ -973,7 +973,7 @@ void geom2X3D(char *fn) {
     // first 3 values give x,y,z position
     sprintf(trans, "%s %s %s",
             sS5(fa[0], b1), sS5(fa[1], b2), sS5(fa[2], b3));
-    
+
     // GT_Rectangle and GT_OpenRectangle use the same shape
     vvtype = vtype == GT_OpenRectangle ? GT_Rectangle : vtype;
 
@@ -999,7 +999,7 @@ void geom2X3D(char *fn) {
       break;
     case GT_OpenRectangle:
       // Construct with default orientation 0 0 1,
-      // draw the open rectangle as four adjacent rectangles in the x,y plane 
+      // draw the open rectangle as four adjacent rectangles in the x,y plane
       { float smallw,smallh, w1,w2, h1,h2, xshift, yshift;
         rotString(0, 0, 1, fa[3], fa[4], fa[5], rots);
         fprintf (outf, "<Transform rotation='%s' translation='%s %s %s'>",
@@ -1118,7 +1118,7 @@ void geom2X3D(char *fn) {
                rots,
                sS5(fa[0], b4), sS5(fa[1], b5), sS5(fa[2], b6) );
       drawEllipsoidShape(fa[9], fa[10]);
-      fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n", 
+      fprintf (outf, "<Appearance>%s</Appearance></Shape></Transform>\n",
                appearance ? appearance : ELLIPSMAT);
       break;
     case GT_CylSlice:
@@ -1171,7 +1171,7 @@ void geom2X3D(char *fn) {
                "<Appearance USE='label_appearance'/>"
                "<Text string='%s'><FontStyle USE='label_font'/></Text></Shape></Billboard></Transform>\n",
                trans, mods);
-    
+
   }
   fclose(gf);
 }
@@ -1261,7 +1261,7 @@ void writeX3D() {
         putc(' ', outf);
         fputs(sS4(z, buf), outf);
         putc(' ', outf);
-        
+
         if (--count <= 0)
           break;
       }
@@ -1570,7 +1570,7 @@ void writeSVG() {
       ++ntraj;
       fprintf(outf, "<g id=\"t%d\"><polyline fill=\"none\" stroke=\"%s\" stroke-width=\"%s\" points=\"",
               ntraj, svg_line_color, strokeWS);
-      
+
       for (p = ph->point; p; p = p->next) {
         float a,b;
         char *pa,*pb;
@@ -1583,7 +1583,7 @@ void writeSVG() {
       }
       fputs("\"/></g>\n", outf);
     }
-  
+
   // finish SVG file
   for (i=1; i<=ntraj; i++)
     fprintf(outf, "<use id=\"uset%d\" xlink:href=\"#t%d\" onclick=\"meldung(%d);\"/>\"\n",

@@ -5,7 +5,7 @@
 #include "init.h"
 #include "random_sampler.h"
 
-#define LSIZ 130 
+#define LSIZ 130
 
 /* Randomly selects a set of nSampleSize neutrons from the trajectory file inFile
  and stores it in an outFilePtr.  */

@@ -29,9 +29,9 @@
 /** Global and Static Variables **/
 /*********************************/
 // Input parameters
-char*    MonFileName= NULL;    // -O    [-]    Monitor output file containing intensity as a function of y- and z-position  
+char*    MonFileName= NULL;    // -O    [-]    Monitor output file containing intensity as a function of y- and z-position
 short    bProbactiv = TRUE,    // -p    [-]    flag Display  : YES: Probability weight   NO: number of trajectories
-         bExclusive = FALSE;   // -e    [-]    flag Exclusion: YES: only neutrons meeting the monitor conditions are written 
+         bExclusive = FALSE;   // -e    [-]    flag Exclusion: YES: only neutrons meeting the monitor conditions are written
 long     nBinsY      = 1,       // -y    [-]    number of bins in horizontal direction (TOF)
          nBinsZ      = 1,       // -z    [-]    number of bins in vertical direction   (lambda)
          format     = MATRIX;  // -F    [-]    file format for output:  MATRIX: 2D matrix  XYZ: xyz  MATR_CMPT: 2D matrix compact  XYZ_CMPT xyz compact
@@ -43,10 +43,10 @@ double   TofMin     = 0.0,     // -w   [ms]    min. time of flight to be monitor
 // Variables determined from input parameters
 FILE*    fMonitor   = NULL;
 
-double*  BinPosY    = NULL;    //              edges of the bins of the first parameter 
-double*  BinPosZ    = NULL;    //              edges of the bins of the second parameter 
-double** IntYZ      = NULL;    //              intensity within a bin (in 2 dimensions) 
-double** IntYZError = NULL;    //              standard deviation of this intensity 
+double*  BinPosY    = NULL;    //              edges of the bins of the first parameter
+double*  BinPosZ    = NULL;    //              edges of the bins of the second parameter
+double** IntYZ      = NULL;    //              intensity within a bin (in 2 dimensions)
+double** IntYZError = NULL;    //              standard deviation of this intensity
 long  ** nTrajYZ    = NULL;    //              number of trajectories within a bin
 
 
@@ -62,11 +62,11 @@ void OwnInit(int argc, char *argv[]);    // Reads input parameters and sets glob
 int main(int argc, char *argv[])
 {
   short  bRegistered=0;
-  int	   dy=0, dz=0;
-  long	 i=0;
-  double prob = 0.0, 
+  int     dy=0, dz=0;
+  long   i=0;
+  double prob = 0.0,
          bintc= 0.0;
-  
+
   // reading of input data and initilisation
   // ---------------------------------------
   _eModule=MCN_MON2_TOFWL;
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.3a");
   OwnInit(argc, argv);
- 
+
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
@@ -85,20 +85,20 @@ int main(int argc, char *argv[])
   for (dy=0; dy < nBinsY; dy++)
   { for (dz=0; dz < nBinsZ; dz++)
     {
-	    IntYZ     [dy][dz] = 0.0;
-	    IntYZError[dy][dz] = 0.0;
-	    nTrajYZ   [dy][dz] = 0;
+      IntYZ     [dy][dz] = 0.0;
+      IntYZError[dy][dz] = 0.0;
+      nTrajYZ   [dy][dz] = 0;
     }
   }
 
   DECLARE_ABORT;
 
-	// loop over trajectories
+  // loop over trajectories
   // ----------------------
   while(ReadNeutrons()!= 0)
   {
     for(i=0; i<NumNeutGot; i++)
-	  {
+    {
       CHECK;
 
       // Only write out event if EOB line is found, otherwise process trajectory
@@ -107,40 +107,40 @@ int main(int argc, char *argv[])
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         bRegistered=0;
-	      if (bProbactiv==1.0) 
+        if (bProbactiv==1.0)
           prob = InputNeutrons[i].Probability;
-	      else 
+        else
           prob=1.0;
 
-	      dy = (int)floor(nBinsY*(InputNeutrons[i].Time-TofMin)/(TofMax-TofMin));
-	      dz = (int)floor(nBinsZ*(InputNeutrons[i].Wavelength-LambdaMin)/(LambdaMax-LambdaMin));
-			
-  	    if (((dy>=0)&&(dy<nBinsY))&&((dz>=0)&&(dz<nBinsZ)))
-	      {	
-	        nTrajYZ[dy][dz]++;
-	        IntYZ  [dy][dz]+= prob;
-	        bintc          += prob;
-	        bRegistered=1;
-	      }
-	  
-  	    if ((bExclusive==0)||(bRegistered==1))
-	        WriteNeutron(&(InputNeutrons[i]));
+        dy = (int)floor(nBinsY*(InputNeutrons[i].Time-TofMin)/(TofMax-TofMin));
+        dz = (int)floor(nBinsZ*(InputNeutrons[i].Wavelength-LambdaMin)/(LambdaMax-LambdaMin));
+
+        if (((dy>=0)&&(dy<nBinsY))&&((dz>=0)&&(dz<nBinsZ)))
+        {
+          nTrajYZ[dy][dz]++;
+          IntYZ  [dy][dz]+= prob;
+          bintc          += prob;
+          bRegistered=1;
+        }
+
+        if ((bExclusive==0)||(bRegistered==1))
+          WriteNeutron(&(InputNeutrons[i]));
       }
-	  }
+    }
   }
 
 // Finish: writes and closes monitor files, writes to log and instrument file, frees memory
 // ----------------------------------------------------------------------------------------
 my_exit:
-  // writes and closes monitor file 
+  // writes and closes monitor file
   WriteHeader2D(fMonitor, format, "Intensity", bProbactiv,
                           nBinsY, "TOF [m]",          TofMin,    TofMax,
                           nBinsZ, "wavelength [Ang]", LambdaMin, LambdaMax);
   // WriteOutput2D(fMonitor, format,           bProbactiv,  nBinsY, BinPosY,           nBinsZ, BinPosZ,  IntYZ, IntYZError, nTrajYZ);
-  WriteOutput2D(fMonitor, format,  bProbactiv,  
-                nBinsY, BinPosY,   nBinsZ, BinPosZ,  
+  WriteOutput2D(fMonitor, format,  bProbactiv,
+                nBinsY, BinPosY,   nBinsZ, BinPosZ,
                 IntYZ, IntYZError, nTrajYZ);
   fclose(fMonitor);
 
@@ -162,49 +162,49 @@ void  OwnInit(int argc, char *argv[])
   {
     if(argv[i][0]!='+')
     {
-	    switch(argv[i][1])
-	    {
-	      case 'O':
-	        MonFileName=&argv[i][2];
-	        break;
+      switch(argv[i][1])
+      {
+        case 'O':
+          MonFileName=&argv[i][2];
+          break;
 
-	      case 'y':
-	        nBinsY = atol(&argv[i][2]); /* number of bins horizontal axis */
-	        break;
-	      case 'z':
-	        nBinsZ = atol(&argv[i][2]); /* number of bins vertical axis */
-	        break;
+        case 'y':
+          nBinsY = atol(&argv[i][2]); /* number of bins horizontal axis */
+          break;
+        case 'z':
+          nBinsZ = atol(&argv[i][2]); /* number of bins vertical axis */
+          break;
 
-	      case 'w':
-	        TofMin = atof(&argv[i][2]);		/* minimal tof-value [ms]*/
-	        break;
-	      case 'W':
-	        TofMax = atof(&argv[i][2]);		/* maximal tof-value [ms]*/
-	        break;
-	      case 'm':
-	        LambdaMin = atof(&argv[i][2]);   /* minimal wavelength [A]*/
-	        break;
-	      case 'M':
-	        LambdaMax = atof(&argv[i][2]);   /* maximal wavelength [A]*/
-	        break;
+        case 'w':
+          TofMin = atof(&argv[i][2]);    /* minimal tof-value [ms]*/
+          break;
+        case 'W':
+          TofMax = atof(&argv[i][2]);    /* maximal tof-value [ms]*/
+          break;
+        case 'm':
+          LambdaMin = atof(&argv[i][2]);   /* minimal wavelength [A]*/
+          break;
+        case 'M':
+          LambdaMax = atof(&argv[i][2]);   /* maximal wavelength [A]*/
+          break;
 
-	      case 'p':
-	        bProbactiv = atof(&argv[i][2]);
-	        /* p=1 means probabilities activated, else neutron weight is set to 1.0 */
-	        break;
+        case 'p':
+          bProbactiv = atof(&argv[i][2]);
+          /* p=1 means probabilities activated, else neutron weight is set to 1.0 */
+          break;
 
-	      case 'e':
-	        if(argv[i][2]=='1')
-	          bExclusive = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
-	        break;
+        case 'e':
+          if(argv[i][2]=='1')
+            bExclusive = 1;   /* if activated, only neutrons meeting the monitor conditions are considered further on */
+          break;
 
-	      case 'F':
+        case 'F':
             format = atoi(&argv[i][2]);   /* file format for output, 0 = old matrix, 1 = new xyz */
             break;
 
-	      default:
-	        fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
-	        exit(-1);
+        default:
+          fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
+          exit(-1);
       }
     }
   }
@@ -218,7 +218,7 @@ void  OwnInit(int argc, char *argv[])
   { fMonitor = OpenOutputFile(MonFileName, TRUE, "wt");
   }
 
-  if (bProbactiv != TRUE) 
+  if (bProbactiv != TRUE)
     bProbactiv = FALSE;
 
   // Allocate memory for the monitor data
@@ -229,7 +229,7 @@ void  OwnInit(int argc, char *argv[])
   IntYZError = (double**) malloc(nBinsY * sizeof(double*));
   nTrajYZ    =   (long**) malloc(nBinsY * sizeof(long*));
 
-  for (iY=0; iY < nBinsY; iY++) 
+  for (iY=0; iY < nBinsY; iY++)
   {
     IntYZ     [iY] = (double*) malloc(nBinsZ * sizeof(double));
     IntYZError[iY] = (double*) malloc(nBinsZ * sizeof(double));

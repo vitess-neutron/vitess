@@ -5,7 +5,7 @@
 
 #include "opt_defs.h"
 
-// External function delivering the F(P; T) 
+// External function delivering the F(P; T)
 // ----------------------------------------
 extern short  FitFctPc  (double F[IMAX+1], const double X[IMAX+1], const double P[NMAX+1], const int nPts, const short nPar);
 extern short  OptFctPc  (const double X[IMAX+1], const int nPts, const short  mMin, const short mMax, const short nPar);

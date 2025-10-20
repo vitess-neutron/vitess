@@ -24,7 +24,7 @@ typedef struct
 /*********************************************/
 static SwarmIndividual ThisBee[MAX_BEES+1];  // the swarm: array of individuals
 static double globalBestPos[NMAX+1]={0};
-static short DebugOutputMode = FALSE;                      
+static short DebugOutputMode = FALSE;
 
 /*********************************************/
 /* prototypes                                */
@@ -43,9 +43,9 @@ short Swarm(char* sIniFile)
   double currentFoM=1e99;               // inverse FoM: Factor/FOM read from Fcomm.dat, current value
   int i,j,k,                            // counting variables
     last_change=0;                      // last iteration step with improvement
-  FILE *fSearchProgress;                // print list for plotting: step, Factor/FoM, Par1...ParN  
-  FILE *fBeeMovement;                   // TMP: print list for plotting: Par1 for bee1...N 
- 
+  FILE *fSearchProgress;                // print list for plotting: step, Factor/FoM, Par1...ParN
+  FILE *fBeeMovement;                   // TMP: print list for plotting: Par1 for bee1...N
+
   /* input parameters with default values */
   double wMin_inertia = 0.4,    // min. inertia weight
     wMax_inertia = 0.9,         // max. inertia weight
@@ -53,31 +53,31 @@ short Swarm(char* sIniFile)
     wMax_local = 2.5,           // max. weight individual best
     wMin_global = 0.5,          // min. weight global best
     wMax_global = 2.5;          // max. weight global best
-  int Nbees = 10,               // number of individual bees 
+  int Nbees = 10,               // number of individual bees
     Nparameters = 1,            // number of parameters
     Nsteps = 150,               // max. number of optimization steps
     Nfinish = 10;               // number of optimization steps without improvement before finishing
-  
+
 
   /* initialize */
   if(DebugOutputMode)
     fprintf(LogFilePtr,"\n\n DEBUG: Starting initialization\n");
-  
-  fBeeMovement=fileOpen("Swarm_BeeMovement_Parameter1.dat","wt"); 
+
+  fBeeMovement=fileOpen("Swarm_BeeMovement_Parameter1.dat","wt");
   ReadIniFile(&Nbees, &Nparameters, &Nsteps, &Nfinish, &wMin_inertia, &wMax_inertia, &wMin_local, &wMax_local, &wMin_global, &wMax_global, &eOut, sIniFile);
 
   if(eOut==3)
     DebugOutputMode=TRUE;
-  
+
   fprintf(LogFilePtr,"\n swarm algorithm 1.0 \n swarm size: %d individuals \n optimization steps: %d \n time dependent weights modified between (w_start,w_end): \n   w0: (%f,%f),  w1: (%f,%f),  w2: (%f,%f) \n\n",Nbees, Nsteps,wMax_inertia, wMin_inertia, wMax_local, wMin_local, wMin_global, wMax_global);
 
- 
+
   fclose(fBeeMovement);
   SetStartingPosition(Nbees);
-  fBeeMovement=fileOpen("Swarm_BeeMovement_Parameter1.dat","at"); 
- 
+  fBeeMovement=fileOpen("Swarm_BeeMovement_Parameter1.dat","at");
 
-  for (j=1; j<=Nbees; j++){    
+
+  for (j=1; j<=Nbees; j++){
 
     currentFoM=arF[j][1];
     ThisBee[j].localBestFoM=currentFoM;
@@ -86,18 +86,18 @@ short Swarm(char* sIniFile)
       globalBestFoM = currentFoM;
       CopyPosition(ThisBee[j].Position,globalBestPos);
     }
-    
+
     if(DebugOutputMode)
-      (j<Nbees) ? fprintf(fBeeMovement,"%10.4f  ",ThisBee[j].Position[1]) : fprintf(fBeeMovement,"%10.4f  \n",ThisBee[j].Position[1]); 
-    
+      (j<Nbees) ? fprintf(fBeeMovement,"%10.4f  ",ThisBee[j].Position[1]) : fprintf(fBeeMovement,"%10.4f  \n",ThisBee[j].Position[1]);
+
   }
- 
+
   fprintf(LogFilePtr,"\n (swarm) start global best (Factor/FoM): %10.4e \n\n",globalBestFoM);
   fSearchProgress=fileOpen("Swarm_GlobalBestValues.dat","wt");
   if(eOut>1){
     fprintf(fSearchProgress,"0  %10.5e   ",globalBestFoM);
     for(k=1; k<=nPar; k++){
-      fprintf(fSearchProgress," %10.3f  ",globalBestPos[k]);  
+      fprintf(fSearchProgress," %10.3f  ",globalBestPos[k]);
     }
   }
 
@@ -114,42 +114,42 @@ short Swarm(char* sIniFile)
     fclose(fSearchProgress);
     fclose(fBeeMovement);
     UpdatePosition(Nbees,wMin_inertia,wMax_inertia,wMin_local,wMax_local,wMin_global,wMax_global,Nsteps,i);
-    fBeeMovement=fileOpen("Swarm_BeeMovement_Parameter1.dat","at"); 
+    fBeeMovement=fileOpen("Swarm_BeeMovement_Parameter1.dat","at");
     fSearchProgress=fileOpen("Swarm_GlobalBestValues.dat","at");
 
     for (j=1; j<=Nbees; j++){
       if(DebugOutputMode){
-	(j<Nbees) ? fprintf(fBeeMovement,"%10.4f  ",ThisBee[j].Position[1]) : fprintf(fBeeMovement,"%10.4f  \n",ThisBee[j].Position[1]); 
+  (j<Nbees) ? fprintf(fBeeMovement,"%10.4f  ",ThisBee[j].Position[1]) : fprintf(fBeeMovement,"%10.4f  \n",ThisBee[j].Position[1]);
       }
-      
+
       currentFoM=arF[j][1];
       if(currentFoM < ThisBee[j].localBestFoM ){
-	ThisBee[j].localBestFoM = currentFoM;
-	CopyPosition(ThisBee[j].Position,ThisBee[j].localBestPos);
-	if(ThisBee[j].localBestFoM < globalBestFoM){
-	  globalBestFoM=ThisBee[j].localBestFoM;
-	  CopyPosition(ThisBee[j].localBestPos,globalBestPos);
-	  last_change=i;
-	  fprintf(LogFilePtr,"\n (swarm) new global best: Factor/FoM: %10.4e in step %d \n\n",globalBestFoM,i);
-	  fprintf(LogFilePtr," found by bee %d: \n",j);
-	  for(k=1; k<=nPar; k++)
-	    fprintf(LogFilePtr,"       global best par. %d: %f \n",k,globalBestPos[k]);
-	  fprintf(LogFilePtr,"\n");
-	}
+  ThisBee[j].localBestFoM = currentFoM;
+  CopyPosition(ThisBee[j].Position,ThisBee[j].localBestPos);
+  if(ThisBee[j].localBestFoM < globalBestFoM){
+    globalBestFoM=ThisBee[j].localBestFoM;
+    CopyPosition(ThisBee[j].localBestPos,globalBestPos);
+    last_change=i;
+    fprintf(LogFilePtr,"\n (swarm) new global best: Factor/FoM: %10.4e in step %d \n\n",globalBestFoM,i);
+    fprintf(LogFilePtr," found by bee %d: \n",j);
+    for(k=1; k<=nPar; k++)
+      fprintf(LogFilePtr,"       global best par. %d: %f \n",k,globalBestPos[k]);
+    fprintf(LogFilePtr,"\n");
+  }
       }
     }
 
     if(eOut>1){
       fprintf(fSearchProgress,"\n %d  %10.5e   ",i,globalBestFoM);
       for(k=1; k<=nPar; k++){
-	fprintf(fSearchProgress," %10.3f  ",globalBestPos[k]);  
+  fprintf(fSearchProgress," %10.3f  ",globalBestPos[k]);
       }
     }
     if(DebugOutputMode){
       fprintf(LogFilePtr,"\n-------------------------\n");
-    }  
+    }
 
-    /* EXIT optimization loop if no improvement in last [Nfinish] steps */  
+    /* EXIT optimization loop if no improvement in last [Nfinish] steps */
     if( i-last_change == Nfinish ){
       fprintf(LogFilePtr,"\n No improvement in last %d steps, finish optimization",Nfinish);
       i++;
@@ -173,13 +173,13 @@ short Swarm(char* sIniFile)
     fprintf(LogFilePtr,"  global best value for parameter %d: %f \n",k,globalBestPos[k]);
     printf("   global best value for parameter %d: %f \n",k,globalBestPos[k]);
   }
-  
+
   return READY;
 }
 
 /*********************************************************************************************/
-/* Function setting start values: 
-   random position in parameter space, only first bee starts at user given start values (P00) 
+/* Function setting start values:
+   random position in parameter space, only first bee starts at user given start values (P00)
    random velocity within +-StepSize (DelP)                                                  */
 /*********************************************************************************************/
 static void SetStartingPosition(int NBees){
@@ -190,20 +190,20 @@ static void SetStartingPosition(int NBees){
     for (h=1; h<=nPar; h++){
 
       if(BeeNo>1)
-	ThisBee[BeeNo].Position[h]=MonteCarlo(Pmin[h],Pmax[h]);
+  ThisBee[BeeNo].Position[h]=MonteCarlo(Pmin[h],Pmax[h]);
       else
-	ThisBee[BeeNo].Position[h]=P00[h];
+  ThisBee[BeeNo].Position[h]=P00[h];
       v_max=DelP[h];
       ThisBee[BeeNo].Velocity[h]=MonteCarlo(-v_max,v_max);
       if(DebugOutputMode)
-	fprintf(LogFilePtr,"\n DEBUG: bee no. %d, starting velocity parameter %d: %f  \n                   starting position parameter %d: %f ",BeeNo,h,ThisBee[BeeNo].Velocity[h],h,ThisBee[BeeNo].Position[h]);
+  fprintf(LogFilePtr,"\n DEBUG: bee no. %d, starting velocity parameter %d: %f  \n                   starting position parameter %d: %f ",BeeNo,h,ThisBee[BeeNo].Velocity[h],h,ThisBee[BeeNo].Position[h]);
     }
 
     for(i=1; i<=NMAX; i++){
       if(i<=nPar)
-	arP[BeeNo][i]=ThisBee[BeeNo].Position[i];
+  arP[BeeNo][i]=ThisBee[BeeNo].Position[i];
       else
-	arP[BeeNo][i]=0;
+  arP[BeeNo][i]=0;
     }
   }
 
@@ -212,11 +212,11 @@ static void SetStartingPosition(int NBees){
 
   if(arF[1][1]>1e20) //fom=0
     fprintf(LogFilePtr,"\n WARNING: figure of merit is 0, check optimization parameter range!");
-  
+
 }
 
 /*******************************************************************************/
-/* Function updating position and velocity values: 
+/* Function updating position and velocity values:
    v_new = w0 v_old + w1 r1 (localBestPos - p_old) + w2 r2 (globalBest - p_old)
      with w0, w1, w2: weights
      r1, r2: random numbers in [0,1]
@@ -237,88 +237,88 @@ static void UpdatePosition(int NBees, const double w0_min, const double w0_max, 
       r2=MonteCarlo(0,1);
       v_old=ThisBee[BeeNo].Velocity[h];
       p_old=ThisBee[BeeNo].Position[h];
-      ThisBee[BeeNo].Velocity[h] = w0_i*v_old + w1_i*r1*(ThisBee[BeeNo].localBestPos[h]-p_old) + w2_i*r2*(globalBestPos[h]-p_old); 
+      ThisBee[BeeNo].Velocity[h] = w0_i*v_old + w1_i*r1*(ThisBee[BeeNo].localBestPos[h]-p_old) + w2_i*r2*(globalBestPos[h]-p_old);
       v_max=0.5*fabs(Pmax[h]-Pmin[h]);
       if( fabs(ThisBee[BeeNo].Velocity[h]) > v_max )
-	ThisBee[BeeNo].Velocity[h] = ((ThisBee[BeeNo].Velocity[h] > 0) ? v_max : -v_max);
+  ThisBee[BeeNo].Velocity[h] = ((ThisBee[BeeNo].Velocity[h] > 0) ? v_max : -v_max);
       ThisBee[BeeNo].Position[h] = p_old + ThisBee[BeeNo].Velocity[h];
 
       /* Set p to threshold if outside range */
       if(ThisBee[BeeNo].Position[h]>Pmax[h])
-	ThisBee[BeeNo].Position[h]=Pmax[h];
+  ThisBee[BeeNo].Position[h]=Pmax[h];
       else if (ThisBee[BeeNo].Position[h] < Pmin[h])
-	ThisBee[BeeNo].Position[h]=Pmin[h];
-      
+  ThisBee[BeeNo].Position[h]=Pmin[h];
+
       if(DebugOutputMode)
-	fprintf(LogFilePtr,"\n DEBUG: bee no. %d, new velocity parameter %d: %f  \n                   new position parameter %d: %f          ",BeeNo,h,ThisBee[BeeNo].Velocity[h],h,ThisBee[BeeNo].Position[h]);
+  fprintf(LogFilePtr,"\n DEBUG: bee no. %d, new velocity parameter %d: %f  \n                   new position parameter %d: %f          ",BeeNo,h,ThisBee[BeeNo].Velocity[h],h,ThisBee[BeeNo].Position[h]);
     }
 
     for(i=1; i<=NMAX; i++){
       if(i<=nPar)
-	arP[BeeNo][i]=ThisBee[BeeNo].Position[i];
+  arP[BeeNo][i]=ThisBee[BeeNo].Position[i];
       else
-	arP[BeeNo][i]=0;
+  arP[BeeNo][i]=0;
     }
   }
 
-  /* Run simulation with parameters arP, 
+  /* Run simulation with parameters arP,
      calculate Factor/FOM and write into arF */
   CalcAllFcts(1,NBees);
 }
 
 
 /************************************************************************************************/
-/* Function to read optimization control parameters from file 
-   Input : sIniFile:  Name of the file 
-   Output: *pNbees       : number of swarm individuals 
+/* Function to read optimization control parameters from file
+   Input : sIniFile:  Name of the file
+   Output: *pNbees       : number of swarm individuals
            *pNparameters : number of parameters
            *pNsteps      : number of optimization steps
            *pNfinish     : number of opt. steps without improvement (finishing condition)
            *pW0          : weight inertia term (w_inertia)
            *pW1          : weight individual best (w_local)
-           *pW2          : weight global best (w_global)                                   
+           *pW2          : weight global best (w_global)
            *pWrite       : output level (1: default, 2: write parameter development, 3: debug)  */
 /************************************************************************************************/
 static short ReadIniFile(int *pNbees, int *pNparameters, int *pNsteps, int *pNfinish, double *pW0min, double *pW0max, double *pW1min, double *pW1max, double *pW2min, double *pW2max, short *pWrite, const char *sIniFile){
   short rc=TRUE,
-        rp=TRUE;             
+        rp=TRUE;
   FILE* pIniFile;
   char  sParameter[BUF_LEN+1], // content of the parameter
     sMessage[100],             // Warning messages
     cId;                       // character defining the parameter
-        
+
   pIniFile = fileOpen(sIniFile, "r");
 
-  if (pIniFile!=NULL) {       
+  if (pIniFile!=NULL) {
     rp = ReadParameter(&cId, sParameter,  pIniFile);
-    while (rp) 
+    while (rp)
       {
-	switch (cId)
-	  {
-	  case 'b': *pNbees  = atoi(sParameter); 
-	    if(*pNbees > MAX_BEES){
-	      *pNbees = MAX_BEES;
-	      fprintf(LogFilePtr, "\n WARNING: swarm size larger than max. size, set to maximum: %d individuals \n", MAX_BEES);
-	    }
-	    break;
-	  case 's': *pNsteps  = atoi(sParameter); break;
-	  case 'f': *pNfinish  = atoi(sParameter); break;
-	  case 'w': *pW0min  = atof(sParameter); break;
-	  case 'W': *pW0max  = atof(sParameter); break;
-	  case 'u': *pW1min  = atof(sParameter); break;
-	  case 'U': *pW1max  = atof(sParameter); break;
-	  case 'v': *pW2min  = atof(sParameter); break;
-	  case 'V': *pW2max  = atof(sParameter); break;
-	  case 'x': *pWrite  = (short) atoi(sParameter); break;
-	  default : sprintf(sMessage, "unknown parameter in '%s'", sIniFile);
-	    Warning(sMessage);
-	  }
-	rp = ReadParameter(&cId, sParameter,  pIniFile);
+  switch (cId)
+    {
+    case 'b': *pNbees  = atoi(sParameter);
+      if(*pNbees > MAX_BEES){
+        *pNbees = MAX_BEES;
+        fprintf(LogFilePtr, "\n WARNING: swarm size larger than max. size, set to maximum: %d individuals \n", MAX_BEES);
+      }
+      break;
+    case 's': *pNsteps  = atoi(sParameter); break;
+    case 'f': *pNfinish  = atoi(sParameter); break;
+    case 'w': *pW0min  = atof(sParameter); break;
+    case 'W': *pW0max  = atof(sParameter); break;
+    case 'u': *pW1min  = atof(sParameter); break;
+    case 'U': *pW1max  = atof(sParameter); break;
+    case 'v': *pW2min  = atof(sParameter); break;
+    case 'V': *pW2max  = atof(sParameter); break;
+    case 'x': *pWrite  = (short) atoi(sParameter); break;
+    default : sprintf(sMessage, "unknown parameter in '%s'", sIniFile);
+      Warning(sMessage);
+    }
+  rp = ReadParameter(&cId, sParameter,  pIniFile);
       }
     fclose(pIniFile);
   }
   else
-    {       
+    {
       Warning("WARNING (swarm): file containing control parameters could not be opened, default values are used");
       rc=FALSE;
     }
@@ -331,7 +331,7 @@ static short ReadIniFile(int *pNbees, int *pNparameters, int *pNsteps, int *pNfi
     fprintf(LogFilePtr,"\n WARNING: w2_min > w2_max  ==>  social part is decreasing with time instead of increasing! \n");
 
   return rc;
-  
+
 }
 
 /*******************************************************************************************/
@@ -341,4 +341,3 @@ void CopyPosition(double PosIn[], double PosOut[]){
     PosOut[k]=PosIn[k];
   }
 }
-

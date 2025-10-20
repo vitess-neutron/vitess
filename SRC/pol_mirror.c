@@ -25,7 +25,7 @@
 /******************************/
 void  OwnInit(int argc, char *argv[]);       // Reads input parameters and sets global parameters
 void  OwnCleanup();                          // Does module specific cleanup
-void  SetGeometry(char* sColor);             // Fills the structure stGeometry for visualization 
+void  SetGeometry(char* sColor);             // Fills the structure stGeometry for visualization
 
 
 
@@ -38,14 +38,14 @@ char       *ReflUpFileName=NULL,      // -U     name of the file containing refl
            *ReflDownFileName=NULL;    // -D     name of the file containing reflectivity data for spin down neutrons
 int        bVertPlane=FALSE;          // -O     flag: 0: mirror is rotated about y-axis (vert. incl.)   1:z-axis (hor. decl.)
 int        bTransm=TRUE,              // -T     flag: mode: 1: transmitted beam treated   0: reflected beam treated
-           nD=0;                      //        co-ordinate to which mirror extends (1 for horizontal mirror, 2 for vertical mirror)           
+           nD=0;                      //        co-ordinate to which mirror extends (1 for horizontal mirror, 2 for vertical mirror)
 double     /* RotMatrixField[3][3], LarmorMatrix[3][3] */
            RotMatrixSM[3][3],         //           rotation matrix to transfer to mirror co-ordinate system
            RotMatrixOut[3][3],        //           rotation matrix to transfer to output system
            RotMatrixAnalysis[3][3];   //           rotation matrix to transfer to quantization direction
 double     Size=0.0,                  // -W        width or height of the mirror
            AngleSMHor =0.0,           // -V        rotation angle of the mirror
-           AngleSMVert=0.0,           //        
+           AngleSMVert=0.0,           //
            AnglOutHor =0.0,           // -h        hor. rotation angle of the output frame
            AnglOutVert=0.0,           // -v        vert. rotation angle of the output frame
            dDistCntr=0;               //           distance to center of mirror */
@@ -54,8 +54,8 @@ double     *aReflUp=NULL,             //           Table of reflectivity data fo
 long       nDataMax=0;                //           number of values in reflectivity tables */
 VectorType analysis_dir={0,0,0},      // -a -b -c  quantization direction
            vMirrNormal ={0,0,0},      //           normal to mirror in co-ordinate system of mirror */
-           PosSM   = {0,0,0},         // -X -Y -Z  centre position of the mirror            
-           DimSM   = {0,0,0},         // -L        size of the mirror in x, y and z direction            
+           PosSM   = {0,0,0},         // -X -Y -Z  centre position of the mirror
+           DimSM   = {0,0,0},         // -L        size of the mirror in x, y and z direction
            TranslOut={0,0,0};         // -x -y -z  centre position of the mirror
 
 
@@ -64,15 +64,15 @@ VectorType analysis_dir={0,0,0},      // -a -b -c  quantization direction
 /******************************/
 int main(int argc, char **argv)
 {
-  short      bIS=FALSE;                 // Boolean: mirror plane hit or not 
+  short      bIS=FALSE;                 // Boolean: mirror plane hit or not
   long       i=0, datanumber=0;
   double     TOFip=0.0, TOFprec=0.0,    // time-of-flight until intersection point and from there to output position
              aUU=1.0, aDD=1.0;          // square root of up- and down-reflectivity resp. to calculate reflectivity for the given spin orientation
-  double     dIncl=0.0,                 // inclination angle on mirror 
+  double     dIncl=0.0,                 // inclination angle on mirror
              phi=0.0, the=0.0,          // spin orientation in spherical co-ordinates
-             ProbRefl=0.0;              // probability of reflection  
+             ProbRefl=0.0;              // probability of reflection
   VectorType Pos={0,0,0}, Dir={0,0,0},  // position, flight direction and
-             Spin={0,0,0},              //   spin of neutron under consideration 
+             Spin={0,0,0},              //   spin of neutron under consideration
              Path={0,0,0},              // displacement vector
              vItsPnt={0,0,0};           // intersection point of trajectory with mirror
   Neutron    OutNeutron,                // outgoing neutron
@@ -82,20 +82,20 @@ int main(int argc, char **argv)
   // --------------
   _eModule=MCN_MIRROR_POL;
 
-	Init(argc,argv, _eModule);
+  Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "1.2a");
-	OwnInit(argc, argv);
+  OwnInit(argc, argv);
 
   bVisInstalled = TRUE;    // needs to be done still
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   InitNeutron(&OutNeutron);
   InitNeutron(&ScatNeut);
   /* transfers guide_field into frame in which guide field is along x-axis */
-  // RotVector(RotMatrixField, guide_field) ; 
+  // RotVector(RotMatrixField, guide_field) ;
 
-	DECLARE_ABORT
+  DECLARE_ABORT
 
   // loop over all trajectories
   // --------------------------
@@ -103,15 +103,15 @@ int main(int argc, char **argv)
   while((ReadNeutrons())!= 0)
   {
     for(i=0;i<NumNeutGot ;i++)
-    { 
-			CHECK
+    {
+      CHECK
 
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         CopyNeutron(&InputNeutrons[i], &OutNeutron);
         CopyVector(OutNeutron.Position, Pos);
         CopyVector(OutNeutron.Vector, Dir);
@@ -127,29 +127,29 @@ int main(int argc, char **argv)
         RotVector(RotMatrixAnalysis, Spin);
         CartesianToSpherical(Spin, &the, &phi);
 
-        /* calculate intersection point with mirror plane, 
+        /* calculate intersection point with mirror plane,
         check if mirror is hit and transfer neutron to intersection point */
         bIS = (short) PlaneLineIntersect(Pos, Dir, vMirrNormal, 0.0, vItsPnt);
-        if (bIS==TRUE && (fabs(vItsPnt[nD]) < DimSM[nD]/2.) 
+        if (bIS==TRUE && (fabs(vItsPnt[nD]) < DimSM[nD]/2.)
                       && (fabs(vItsPnt[ 0]) < DimSM[ 0]/2.) && (Dir[0] > 0.))
         {
           /* calculate inclination angle, reflectivity for spin up and down neutrons */
-          dIncl      = fabs(asin(Dir[3-nD])); 
-          datanumber = (int) floor(dIncl * 180./M_PI * 1000./OutNeutron.Wavelength + 0.5); 
-          if (datanumber > nDataMax) 
-          {	
+          dIncl      = fabs(asin(Dir[3-nD]));
+          datanumber = (int) floor(dIncl * 180./M_PI * 1000./OutNeutron.Wavelength + 0.5);
+          if (datanumber > nDataMax)
+          {
             aUU      = 0.0;
             aDD      = 0.0;
-            ProbRefl = 0.0; 
+            ProbRefl = 0.0;
           }
           else
-          {	
+          {
             aUU = sqrt(aReflUp[datanumber]) ;
             aDD = sqrt(aReflDn[datanumber]) ;
             ProbRefl = sq(aUU * cos(the/2.)) + sq(aDD * sin(the/2.)) ;
           }
 
-          /* TOF until intersection point with mirror,  
+          /* TOF until intersection point with mirror,
           new position, direction, spin orientation, change in count rate */
           TOFip = (vItsPnt[0] - Pos[0]) / fabs(Dir[0]) / V_FROM_LAMBDA(OutNeutron.Wavelength) ;
           CopyVector(vItsPnt, Pos);
@@ -162,14 +162,14 @@ int main(int argc, char **argv)
           }
 
           if (bTransm)
-          {	
+          {
             if (aUU == 1.0 && aDD == 1.0)
-            { 
+            {
               WriteScatIAP(&ScatNeut, VT_ABSORBED, RotMatrixSM, PosSM);
               goto getlost;
             }
-            else	
-            { 
+            else
+            {
               the  =  2.0 * atan2((1.0-aDD)*tan(the/2.0), (1.0-aUU));
               OutNeutron.Probability *= (1.0 - ProbRefl);
               ScatNeut.Probability   *= (1.0 - ProbRefl);
@@ -179,23 +179,23 @@ int main(int argc, char **argv)
           else
           {
             if (aUU == 0.0 && aDD == 0.0)
-            {	
+            {
               WriteScatIAP(&ScatNeut, VT_ABSORBED, RotMatrixSM, PosSM);
               goto getlost;
             }
-            else	
-            {	
-              Dir[3-nD] *= -1.0;			
+            else
+            {
+              Dir[3-nD] *= -1.0;
               the  =  2.0 * atan2(aDD*tan(the/2.0), aUU);
               OutNeutron.Probability *= ProbRefl;
               ScatNeut.Probability   *= (1.0 - ProbRefl);
               WriteScatIAP(&ScatNeut, VT_REFLECTED, RotMatrixSM, PosSM);
             }
           }
-        } 
-        else 
-        {	
-          goto getlost;                      
+        }
+        else
+        {
+          goto getlost;
         }
 
         if (OutNeutron.Probability <= wei_min) goto getlost ;
@@ -220,12 +220,12 @@ int main(int argc, char **argv)
         TOFprec = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(OutNeutron.Wavelength) ;
         CopyVector(Dir, Path) ;
         MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
-        AddVector(Pos, Path) ;  
+        AddVector(Pos, Path) ;
 
         /* precession in the guide field */
         /* transfers into frame in which guide field is along x-axis and calculates phase shift */
-        // RotVector(RotMatrixField, Spin) ; 
-        // PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(guide_field[0]) ;  
+        // RotVector(RotMatrixField, Spin) ;
+        // PhaseShift = TOFprec * FREQUENCY_FROM_FIELD(guide_field[0]) ;
         // NumberPrecessions = PhaseShift/2./M_PI ;
         /* rotates about this x-axis */
         // FillRotMatrixYX(LarmorMatrix, PhaseShift, 0) ;
@@ -249,7 +249,7 @@ int main(int argc, char **argv)
       }
     }
   }
-   
+
 // Finish: print parameters, write geometry and instrument file, free memory
 // -------------------------------------------------------------------------
 my_exit:
@@ -257,10 +257,10 @@ my_exit:
   SetGeometry("orange");
 
   /* Do module specific cleanup */
-  OwnCleanup(); 
+  OwnCleanup();
 
   /* Do the general cleanup */
-  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHor, AnglOutVert);	
+  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHor, AnglOutVert);
 
   return 0;
 }
@@ -281,7 +281,7 @@ void OwnInit(int argc, char *argv[])
   InitRotMatrix(RotMatrixSM);
   InitRotMatrix(RotMatrixOut);
   InitRotMatrix(RotMatrixAnalysis);
-	
+
   while(argc>1)
   {
     switch(argv[1][1])
@@ -289,17 +289,17 @@ void OwnInit(int argc, char *argv[])
       case 'T':
         sscanf(&argv[1][2], "%d", &bTransm) ;  /* 0: reflection   */
         break;                                 /* 1: transmission */
-		
+
       case 'O':
         sscanf(&argv[1][2], "%d", &bVertPlane); /* 0: horizontal mirror */
         if (bVertPlane)                         /* 1: vertical mirror   */
           nD=2;
         else
           nD=1;
-				
+
         vMirrNormal[3-nD]=1.0;
-        break;                                
-		
+        break;
+
       case 'U':
         ReflUpFileName=&argv[1][2];
         pReflUpFile = OpenInputFile2(ReflUpFileName, "reflectivity data for spin-up neutrons", "r");
@@ -363,18 +363,18 @@ void OwnInit(int argc, char *argv[])
   }
 
   if (bVertPlane)
-  {	
+  {
     AngleSMHor = angle;
     AngleSMVert  = 0.0;
   }
   else
-  {	
+  {
     AngleSMHor = 0.0;
     AngleSMVert  = angle;
   }
   DimSM[ nD ] = Size;
   DimSM[3-nD] = 0.0;
-		
+
   /* Allocate memory for reflectivity files and initialize with 0.0 */
   if (pReflUpFile!=NULL)
     nLinesUp = LinesInFile(pReflUpFile);
@@ -397,20 +397,20 @@ void OwnInit(int argc, char *argv[])
   }
 
   /* read reflectivity files for spin up and down neutrons     */
-  /* Read reflectivity data; data are encoded as reflectivities 
+  /* Read reflectivity data; data are encoded as reflectivities
   corresponding to 0.000,0.001, 0.002, ... deg,  reference wavelength 1 A */
   /* spin up */
   if (pReflUpFile != NULL)
-  {	for(count=0; count < nLinesUp; count++)
-    {	ReadLine  (pReflUpFile, sBuffer, sizeof(sBuffer)-1);
+  {  for(count=0; count < nLinesUp; count++)
+    {  ReadLine  (pReflUpFile, sBuffer, sizeof(sBuffer)-1);
       StrgScanLF(sBuffer, &aReflUp[10*count], nDataMax-10*count, 0);
     }
     fclose(pReflUpFile);
   }
   /* spin down */
   if (pReflDownFile != NULL)
-  {	for(count=0; count < nLinesDn; count++)
-    {	ReadLine  (pReflDownFile, sBuffer, sizeof(sBuffer)-1);
+  {  for(count=0; count < nLinesDn; count++)
+    {  ReadLine  (pReflDownFile, sBuffer, sizeof(sBuffer)-1);
       StrgScanLF(sBuffer, &aReflDn[10*count], nDataMax-10*count, 0);
     }
     fclose(pReflDownFile);
@@ -429,7 +429,7 @@ void OwnInit(int argc, char *argv[])
   // fprintf(LogFilePtr, "guide_field         : (%10.4f,%10.4f,%10.4f) Oe\n",  guide_field[0],  guide_field[1], guide_field[2]);
   fprintf(LogFilePtr, "analysis_dir        : (%10.4f,%10.4f,%10.4f)\n",     analysis_dir[0], analysis_dir[1], analysis_dir[2]);
   fprintf(LogFilePtr, "output frame:\n");
-  fprintf(LogFilePtr, " translation        : (%10.4f,%10.4f,%10.4f) cm\n",  TranslOut[0], TranslOut[1], TranslOut[2]); 
+  fprintf(LogFilePtr, " translation        : (%10.4f,%10.4f,%10.4f) cm\n",  TranslOut[0], TranslOut[1], TranslOut[2]);
   fprintf(LogFilePtr, " rotation horizontal:  %10.4f deg, vertical:%10.4f deg\n", AnglOutHor, AnglOutVert) ;
 
   /* converts degs in radian etc. */
@@ -441,11 +441,11 @@ void OwnInit(int argc, char *argv[])
   FillRotMatrixZY(RotMatrixSM,  AngleSMVert, AngleSMHor) ;
   FillRotMatrixZY(RotMatrixOut, AnglOutVert, AnglOutHor) ;
 
-  CartesianToEulerZY(analysis_dir, &roty, &rotz); 
-  FillRotMatrixZY(RotMatrixAnalysis, roty, rotz); 
+  CartesianToEulerZY(analysis_dir, &roty, &rotz);
+  FillRotMatrixZY(RotMatrixAnalysis, roty, rotz);
 
-  // CartesianToEulerZY(guide_field, &roty, &rotz); 
-  // FillRotMatrixZY(RotMatrixField, roty, rotz); 
+  // CartesianToEulerZY(guide_field, &roty, &rotz);
+  // FillRotMatrixZY(RotMatrixField, roty, rotz);
 
 }/* End OwnInit */
 
@@ -470,7 +470,7 @@ void SetGeometry(char* sColor)
 {
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
@@ -479,7 +479,7 @@ void SetGeometry(char* sColor)
     stGeometry.pHull = calloc(stGeometry.nHulls, sizeof(VtHull));
 
     if (nD==1)  // nearly horizontal mirror causing vertical inclination
-    { 
+    {
       stGeometry.pHull[0].vNormal[0] = cos(AngleSMVert);
       stGeometry.pHull[0].vNormal[1] = 0.0;
       stGeometry.pHull[0].vNormal[2] = sin(AngleSMVert);
@@ -488,7 +488,7 @@ void SetGeometry(char* sColor)
       stGeometry.pHull[0].HeightIn   = 0.1;
     }
     else
-    { 
+    {
       stGeometry.pHull[0].vNormal[0] = cos(AngleSMHor);
       stGeometry.pHull[0].vNormal[1] = sin(AngleSMHor);
       stGeometry.pHull[0].vNormal[2] = 0.0;
@@ -504,5 +504,3 @@ void SetGeometry(char* sColor)
     stGeometry.pHull[0].vCntr[2]  = PosSM[2];
   }
 }
-
-

@@ -30,6 +30,8 @@ SPECIAL_EXECUTABLES = [
     "surface_file",
     "sortiap",
     "define_direction",
+    "merge",
+    "dist_time",
 ]
 OLD_MODULE_NAMES = []
 

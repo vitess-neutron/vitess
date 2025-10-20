@@ -675,6 +675,3 @@ void ReadReflFile(char* sFilename, double* pData)
   }
   return;
 }
-
-
-

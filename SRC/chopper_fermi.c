@@ -897,5 +897,3 @@ void WriteOwnIAP(Neutron* pNeutron, VtReason eReason, const VectorType PosLocal)
     WriteWWP(&ScatNeut, eReason);
   }
 }
-
-

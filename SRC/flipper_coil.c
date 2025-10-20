@@ -26,27 +26,27 @@
 /************************************/
 /** Definitions, structures, enums **/
 /************************************/
-#define	STRING_BUFFER 50
-#define	FLD_SIZE_X	 999
-#define	FLD_SIZE_Y	   3
-#define	FLD_SIZE_Z	   3
+#define  STRING_BUFFER 50
+#define  FLD_SIZE_X   999
+#define  FLD_SIZE_Y     3
+#define  FLD_SIZE_Z     3
 
 
 /******************************/
 /** Prototypes               **/
 /******************************/
-void		OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global parameters
-void		OwnCleanup();                      // Does module specific cleanup
-void    SetGeometry(char* sColor);         // Fills the structure stGeometry for visualization 
-void    InitArrays();                      // Initializes the arrays 'domain_field_F' and 'PosDomain_F' 
+void    OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global parameters
+void    OwnCleanup();                      // Does module specific cleanup
+void    SetGeometry(char* sColor);         // Fills the structure stGeometry for visualization
+void    InitArrays();                      // Initializes the arrays 'domain_field_F' and 'PosDomain_F'
 
 /* copy matrix/vector to 3D array of matrices/vectors or back */
-void		CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3][3]) ;
-void		CopyVectorsToVector3 (long i, long j, long k, double Vector[3]   [FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3]) ;
-void		CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z]) ;
-void		CopyVectorToVectors3 (long i, long j, long k, double Vector[3],    double Result[3]   [FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z]) ;
+void    CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3][3]) ;
+void    CopyVectorsToVector3 (long i, long j, long k, double Vector[3]   [FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3]) ;
+void    CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z]) ;
+void    CopyVectorToVectors3 (long i, long j, long k, double Vector[3],    double Result[3]   [FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z]) ;
 /* Intersection with rectangular object */
-long		IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2, long *wall_1, long *wall_2) ;
+long    IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2, long *wall_1, long *wall_2) ;
 
 
 /******************************/
@@ -57,8 +57,8 @@ VectorType  PosMain;                    // -k -l -m  [cm]  centre of the coil
 long        coildir=1;                  // -y        [-]   orientation of the coil axis (1:Y, 2:Z)
 double      AnglMainHoriz=0.0,          // -i       [deg]  horizontal (first) rotation angle of the coil axis
             AnglMainVert=0.0;           // -j       [deg]  vertical (second) rotation angle of the coil axis
-double      depth= 0.0,                 // -X        [cm]  x-component of the size of the coil 
-            width= 0.0,                 // -Y        [cm]  y-component of the size of the coil 
+double      depth= 0.0,                 // -X        [cm]  x-component of the size of the coil
+            width= 0.0,                 // -Y        [cm]  y-component of the size of the coil
             height=0.0;                 // -V        [cm]  z-component of the size of the coil
 double      field_guide[3],             // -G        [Oe]  strength of the guide magnetic field which is considered parallel to the beam axis
             field_coil=0.0,             // -H        [Oe]  strength of the coil magnetic field which is considered parallel to the coil axis
@@ -70,9 +70,9 @@ VectorType  TranslOut;                  // -p -r -s  [cm]  position of the new o
 long        ind_x=0, ind_y=0,   ind_z=0,                           //  [-]   indices of magnetic field elements in x-, y- and z-direction
                      ind_y_max, ind_z_max;                         //  [-]   max. number of magnetic field elements in x-, y- and z-direction
 VectorType  SizeDomain;
-double      domain_field_F[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //        arrays of strengths, positions and sizes 
+double      domain_field_F[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //        arrays of strengths, positions and sizes
             PosDomain_F   [3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], //         of magnetic field elements
-            RotMatrixOut  [3][3],                                  //  [-]   rotation matrix to tranform into the output frame (not used here) 
+            RotMatrixOut  [3][3],                                  //  [-]   rotation matrix to tranform into the output frame (not used here)
             RotMatrixMain [3][3];                                  // [deg]  Matrix to rotate the magnetic field
 
 
@@ -85,19 +85,19 @@ int main(int argc, char **argv)
   long   NumOut=0,
          wall_1=0, wall_2=0;
   double IntegralIntensity=0.0,
-         RotMatrixField[3][3], 
-         LarmorMatrix  [3][3], 
-         TotNumPrec1=0.0, NumPrec1=0.0, 
-         TotNumPrec2=0.0, NumPrec2=0.0, 
+         RotMatrixField[3][3],
+         LarmorMatrix  [3][3],
+         TotNumPrec1=0.0, NumPrec1=0.0,
+         TotNumPrec2=0.0, NumPrec2=0.0,
          TotNumPrec3=0.0, NumPrec3=0.0;
-  double TOF, WL, Prob, 
-         TOF1=0.0, TOF2=0.0, TOF3=0.0, 
+  double TOF, WL, Prob,
+         TOF1=0.0, TOF2=0.0, TOF3=0.0,
          PhaseShift=0.0;
-  VectorType Pos, Dir, SpinVector, 
+  VectorType Pos, Dir, SpinVector,
              Path,                 /* displacement vector*/
-             Pos1, Pos2, 
+             Pos1, Pos2,
              PosDomain, domain_field;
-  Neutron		 OutNeutron, ScatNeutron;
+  Neutron     OutNeutron, ScatNeutron;
 
   // initialisation
   // --------------
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
   InitNeutron(&ScatNeutron);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp     = TRUE;
 
   DECLARE_ABORT;
@@ -137,8 +137,8 @@ int main(int argc, char **argv)
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
-        /*InputNeutrons[i].Position[0]	= 0.0 ;*/
+      {
+        /*InputNeutrons[i].Position[0]  = 0.0 ;*/
         InputNeutrons[i].Vector[0] = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2])) ;
 
         TOF  = InputNeutrons[i].Time;
@@ -154,11 +154,11 @@ int main(int argc, char **argv)
         RotVector(RotMatrixMain, Pos ) ;
         RotVector(RotMatrixMain, Dir ) ;
 
-        /* enter position and TOF 	*/
+        /* enter position and TOF   */
         TOF1 = (- depth/2. - Pos[0])/ fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
 
         /* precession calculated  */
-        PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  
+        PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));
         NumPrec1 = PhaseShift/2./M_PI ;
         TotNumPrec1 += NumPrec1;
 
@@ -196,18 +196,18 @@ int main(int argc, char **argv)
 
           /* calculate entrance end exit coordinates of domain*/
           {
-            VectorType pos, dir;	
-            CopyVector(Pos, pos) ;	CopyVector(Dir, dir) ;
-	
+            VectorType pos, dir;
+            CopyVector(Pos, pos) ;  CopyVector(Dir, dir) ;
+
             /* gives intersection positions with domain */
             if (IntersectionWithRectangularWallNumber(SizeDomain, pos, dir, Pos1, Pos2, &wall_1, &wall_2) == 0) goto getlost ;
 
             if (wall_2 == 0) goto getlost ;
 
             /* ordering */
-            if(Pos1[0] > Pos2[0]) 	
-            { VectorType V ;	int wall; CopyVector(Pos1, V) ;	CopyVector(Pos2, Pos1) ; CopyVector(V, Pos2) ; 	
-		
+            if(Pos1[0] > Pos2[0])
+            { VectorType V ;  int wall; CopyVector(Pos1, V) ;  CopyVector(Pos2, Pos1) ; CopyVector(V, Pos2) ;
+
               wall = wall_1 ; wall_1 = wall_2 ; wall_2 = wall ;
             }
           }
@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 
           RotVector(RotMatrixField, SpinVector) ;
 
-          PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]) ;  
+          PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(domain_field[0]) ;
           NumPrec2 += PhaseShift/2./M_PI ;
 
           FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
           /* translates back into main frame */
           AddVector(Pos, PosDomain) ;
 
-          /* searching new domain */ 
+          /* searching new domain */
           if (wall_2 == 1) goto getlost;
           if (wall_2 == 2) {ind_x += 1 ; }
           if (wall_2 == 3) {ind_y += -1 ; }
@@ -281,13 +281,13 @@ int main(int argc, char **argv)
         TOF3 = - Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL) ;
 
         /* precession calculated  */
-        PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  
+        PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));
         NumPrec3   = PhaseShift/2./M_PI ;
         TotNumPrec3 += NumPrec3;
 
         FillRotMatrixYX(LarmorMatrix, -PhaseShift, 0) ;
         RotVector(LarmorMatrix, SpinVector) ;
-	
+
         CopyVector(Dir, Path) ;
         MultiplyByScalar(Path, - Pos[0]/ Dir[0] ) ;
         AddVector(Pos, Path) ;  TOF += TOF3 ;
@@ -315,21 +315,21 @@ int main(int argc, char **argv)
   // ------------------------------------------------------------
 my_exit:
   /* write to log file */
-	if (NumOut > 0) 
+  if (NumOut > 0)
   { fprintf(LogFilePtr,"Average number of precessions in guide field : %10.3lf\n", TotNumPrec1/NumOut);
-	  fprintf(LogFilePtr,"Average Number of precessions in flipper coil: %10.3lf\n", TotNumPrec2/NumOut);
-	  fprintf(LogFilePtr,"Average Number of precessions in guide field : %10.3lf\n", TotNumPrec3/NumOut);
+    fprintf(LogFilePtr,"Average Number of precessions in flipper coil: %10.3lf\n", TotNumPrec2/NumOut);
+    fprintf(LogFilePtr,"Average Number of precessions in guide field : %10.3lf\n", TotNumPrec3/NumOut);
   }
   fprintf(LogFilePtr," \n") ;
 
   /* write geometry file */
   SetGeometry("orange");
-  
+
   /* Do module specific cleanups */
-  OwnCleanup(); 
+  OwnCleanup();
 
   /* Do the general cleanup */
-  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], 0.0,0.0);	
+  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], 0.0,0.0);
 
   return 0;
 }
@@ -351,7 +351,7 @@ void OwnInit(int argc, char *argv[])
   Init3x3Matrix(RotMatrixMain);
 
   /* Flipper */
-  ind_x_max = FLD_SIZE_X-1; 
+  ind_x_max = FLD_SIZE_X-1;
   ind_y_max = FLD_SIZE_Y-1;
   ind_z_max = FLD_SIZE_Z-1;
 
@@ -396,11 +396,11 @@ void OwnInit(int argc, char *argv[])
         { sprintf(sBuffer, "number of domains too large.  Input: %ld   Maximmum is %d", ind_x_max, FLD_SIZE_X-1);
           Error(sBuffer);
         }
-        if ((ind_x_max/2. - floor(ind_x_max/2.)) > 0.) 
-        {	ind_x_max += 1 ; 
+        if ((ind_x_max/2. - floor(ind_x_max/2.)) > 0.)
+        {  ind_x_max += 1 ;
           fprintf(LogFilePtr,"\nWARNING: Number of domains must be even! Set to %ld. \n", ind_x_max) ;
         }
-        if(ind_x_max > 100) {	ind_x_max = 100 ; fprintf(LogFilePtr,"\nWARNING: Number of domains must be < 102 ! Set %ld. \n", ind_x_max) ;}
+        if(ind_x_max > 100) {  ind_x_max = 100 ; fprintf(LogFilePtr,"\nWARNING: Number of domains must be < 102 ! Set %ld. \n", ind_x_max) ;}
         break;
 
       case 'X':
@@ -431,54 +431,54 @@ void OwnInit(int argc, char *argv[])
     argv++;
   }
 
-	if(PosMain[0] < depth/2.) {fprintf(LogFilePtr,"\nERROR: X position must be larger than depth/2 ! \n\n") ; exit (-1);}
-	if(TranslOut[0] < (PosMain[0] + depth/2.)) {fprintf(LogFilePtr,"\nERROR: output position must be outside of flipper ! \n\n") ; exit (-1);}
-	
-	FillRotMatrixZY(RotMatrixMain, AnglMainVert, AnglMainHoriz) ;
+  if(PosMain[0] < depth/2.) {fprintf(LogFilePtr,"\nERROR: X position must be larger than depth/2 ! \n\n") ; exit (-1);}
+  if(TranslOut[0] < (PosMain[0] + depth/2.)) {fprintf(LogFilePtr,"\nERROR: output position must be outside of flipper ! \n\n") ; exit (-1);}
 
-	SizeDomain[0] = depth/ind_x_max ;
-	SizeDomain[1] = width/ind_y_max ;
-	SizeDomain[2] = height/ind_z_max ;
+  FillRotMatrixZY(RotMatrixMain, AnglMainVert, AnglMainHoriz) ;
 
-	/* inhomogeneous field */
-	for(ind_x=1;ind_x<(ind_x_max+1);ind_x++) 
-  { for(ind_y=1;ind_y<(ind_y_max+1);ind_y++) 
-    { for(ind_z=1;ind_z<(ind_z_max+1);ind_z++) 
+  SizeDomain[0] = depth/ind_x_max ;
+  SizeDomain[1] = width/ind_y_max ;
+  SizeDomain[2] = height/ind_z_max ;
+
+  /* inhomogeneous field */
+  for(ind_x=1;ind_x<(ind_x_max+1);ind_x++)
+  { for(ind_y=1;ind_y<(ind_y_max+1);ind_y++)
+    { for(ind_z=1;ind_z<(ind_z_max+1);ind_z++)
       {
-			  PosDomain_F[0][ind_x][ind_y][ind_z] = ((ind_x -1L)-(ind_x_max /2 - 0.5)) * SizeDomain[0] ;
-			  PosDomain_F[1][ind_x][ind_y][ind_z] = ((ind_y -1L)-(ind_y_max /2 - 0.5)) * SizeDomain[1] ;
-			  PosDomain_F[2][ind_x][ind_y][ind_z] = ((ind_z -1L)-(ind_z_max /2 - 0.5)) * SizeDomain[2] ;
+        PosDomain_F[0][ind_x][ind_y][ind_z] = ((ind_x -1L)-(ind_x_max /2 - 0.5)) * SizeDomain[0] ;
+        PosDomain_F[1][ind_x][ind_y][ind_z] = ((ind_y -1L)-(ind_y_max /2 - 0.5)) * SizeDomain[1] ;
+        PosDomain_F[2][ind_x][ind_y][ind_z] = ((ind_z -1L)-(ind_z_max /2 - 0.5)) * SizeDomain[2] ;
 
-			  /* Flipper  */
-			  if (PosDomain_F[0][ind_x][ind_y][ind_z] < (double) (- (ind_x_max/2 * SizeDomain[0] - wall_thickness)))
-			  {
-				  field_cart[0] = 0. ;
-				  field_cart[1] = 0. ;
-				  field_cart[2] = field_coil/wall_thickness * (PosDomain_F[0][ind_x][ind_y][ind_z]  + ind_x_max/2 * SizeDomain[0]) ;
-			  }
-			  else if (PosDomain_F[0][ind_x][ind_y][ind_z] > (double) (ind_x_max/2 * SizeDomain[0] - wall_thickness))
-			  {
-				  field_cart[0] = 0. ;
-				  field_cart[1] = 0. ;
-				  field_cart[2] =  field_coil * (1. - (PosDomain_F[0][ind_x][ind_y][ind_z]  - (ind_x_max/2 * SizeDomain[0] - wall_thickness))/wall_thickness ) ;
-			  }
-			  else
-			  {
-				  field_cart[0] = 0. ; field_cart[1] = 0 ; field_cart[2] = field_coil  ;
-			  }					
+        /* Flipper  */
+        if (PosDomain_F[0][ind_x][ind_y][ind_z] < (double) (- (ind_x_max/2 * SizeDomain[0] - wall_thickness)))
+        {
+          field_cart[0] = 0. ;
+          field_cart[1] = 0. ;
+          field_cart[2] = field_coil/wall_thickness * (PosDomain_F[0][ind_x][ind_y][ind_z]  + ind_x_max/2 * SizeDomain[0]) ;
+        }
+        else if (PosDomain_F[0][ind_x][ind_y][ind_z] > (double) (ind_x_max/2 * SizeDomain[0] - wall_thickness))
+        {
+          field_cart[0] = 0. ;
+          field_cart[1] = 0. ;
+          field_cart[2] =  field_coil * (1. - (PosDomain_F[0][ind_x][ind_y][ind_z]  - (ind_x_max/2 * SizeDomain[0] - wall_thickness))/wall_thickness ) ;
+        }
+        else
+        {
+          field_cart[0] = 0. ; field_cart[1] = 0 ; field_cart[2] = field_coil  ;
+        }
 
-			  if(coildir != 1)
-			  {
-  			  field_cart[1] = field_cart[2] ; field_cart[2] = 0.;
-			  }
+        if(coildir != 1)
+        {
+          field_cart[1] = field_cart[2] ; field_cart[2] = 0.;
+        }
 
-			  RotVector(RotMatrixMain, field_guide ) ;
-			  AddVector(field_cart, field_guide) ;
+        RotVector(RotMatrixMain, field_guide ) ;
+        AddVector(field_cart, field_guide) ;
 
-			  CartesianToEulerZY(field_cart, &domain_field_F[2][ind_x][ind_y][ind_z], &domain_field_F[1][ind_x][ind_y][ind_z]) ;	
-			
-			  domain_field_F[0][ind_x][ind_y][ind_z] = LengthVector(field_cart) ;
-		  }
+        CartesianToEulerZY(field_cart, &domain_field_F[2][ind_x][ind_y][ind_z], &domain_field_F[1][ind_x][ind_y][ind_z]) ;
+
+        domain_field_F[0][ind_x][ind_y][ind_z] = LengthVector(field_cart) ;
+      }
     }
   }
 
@@ -503,17 +503,17 @@ void SetGeometry(char* sColor)
 
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
 
-    stGeometry.nCuboids = ind_x_max; 
+    stGeometry.nCuboids = ind_x_max;
     stGeometry.pCuboid  = calloc(stGeometry.nCuboids, sizeof(VtCuboid));
 
     for (iX=1; iX <= ind_x_max; iX++)
-    { 
-      stGeometry.pCuboid[iX-1].Length    = depth/ind_x_max; 
+    {
+      stGeometry.pCuboid[iX-1].Length    = depth/ind_x_max;
       stGeometry.pCuboid[iX-1].Width     = BlowUp * width;
       stGeometry.pCuboid[iX-1].Height    = BlowUp * height;
       stGeometry.pCuboid[iX-1].vCntr[0]  = PosMain[0] + PosDomain_F[0][iX][1][1];
@@ -530,7 +530,7 @@ void SetGeometry(char* sColor)
 /***************************************************************/
 /** Initializes the arrays 'domain_field_F' and 'PosDomain_F' **/
 /***************************************************************/
-void InitArrays() 
+void InitArrays()
 {
   int i,j,k,l;
 
@@ -538,8 +538,8 @@ void InitArrays()
   { for (j=0; j < FLD_SIZE_X; j++)
     { for (k=0; k < FLD_SIZE_Y; k++)
       { for (l=0; l < FLD_SIZE_Z; l++)
-        { domain_field_F[i][j][k][l] = 0.0;  
-          PosDomain_F   [i][j][k][l] = 0.0;  
+        { domain_field_F[i][j][k][l] = 0.0;
+          PosDomain_F   [i][j][k][l] = 0.0;
         }
       }
     }
@@ -555,7 +555,7 @@ void InitArrays()
 void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3][3])
 {
   long m, l ;
-	
+
   for(m = 0;m<3;m++)
   {
     for(l = 0;l<3;l++)
@@ -565,10 +565,10 @@ void  CopyMatricesToMatrix3(long i, long j, long k, double Matrix[3][3][FLD_SIZE
   }
 }
 
-void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z])
+void  CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double Matrix[3][3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z])
 {
   long m, l ;
-	
+
   for(m = 0;m<3;m++)
   {
     for(l = 0;l<3;l++)
@@ -578,7 +578,7 @@ void	CopyMatrixToMatrices3(long i, long j, long k, double Result[3][3], double M
   }
 }
 
-void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3])
+void  CopyVectorsToVector3(long i, long j, long k, double Vector[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z], double Result[3])
 {
   long l ;
 
@@ -588,7 +588,7 @@ void	CopyVectorsToVector3(long i, long j, long k, double Vector[3][FLD_SIZE_X][F
   }
 }
 
-void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z])
+void  CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Result[3][FLD_SIZE_X][FLD_SIZE_Y][FLD_SIZE_Z])
 {
   long l ;
 
@@ -604,13 +604,13 @@ void	CopyVectorToVectors3(long i, long j, long k, double Vector[3], double Resul
 /******************************************/
 long IntersectionWithRectangularWallNumber(VectorType DimDomain, VectorType Pos, VectorType Dir, VectorType Pos1, VectorType Pos2, long *wall_1, long *wall_2)
 {
-  VectorType	n, pos0, pos1, pos2, pos3, pos4, pos5 ;
-  int			k ;
+  VectorType  n, pos0, pos1, pos2, pos3, pos4, pos5 ;
+  int      k ;
 
-  for (k=0; k<3; k++) 
+  for (k=0; k<3; k++)
     Pos1[k] = Pos2[k] = 0.0;
 
-  n[0] = 1.0; n[1] = n[2] = 0.0; 
+  n[0] = 1.0; n[1] = n[2] = 0.0;
   *wall_1 = *wall_2 = 0 ;
 
   if (PlaneLineIntersect2(Pos, Dir, n, - DimDomain[0]/2, pos0) == TRUE)
