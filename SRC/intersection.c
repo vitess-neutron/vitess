@@ -4,8 +4,8 @@
 /*                                                                                          */
 /* The free non-commercial use of these routines is granted providing due credit is given   */
 /* to the authors:                                                                          */
-/* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler,                                     */
-/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */ 
+/* Friedrich Streffer, GÃ©za Zsigmond, Dietmar Wechsler,                                     */
+/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin                                        */
 /*                                                                                          */
 /* Change: K. Lieutenant  Jan 2002 and May 2023 reorganized routines                        */
 /********************************************************************************************/
@@ -72,7 +72,7 @@ short FindWWP(VectorType* pWWP, Neutron* pNeutronIn, const VectorType Center, co
 
   // write event, if a reason is given and the first wall is hit before the end of the component
   if (kMin > -1 && NeutT[kMin].Position[0] < Center[0]+0.5*Length && NeutT[kMin].Position[0] > Center[0]-0.5*Length)
-  { 
+  {
     rc = TRUE;
     CopyVector(NeutT[kMin].Position, *pWWP);
     if (eReason!=VT_NO_REASON)
@@ -91,16 +91,16 @@ short FindWWP(VectorType* pWWP, Neutron* pNeutronIn, const VectorType Center, co
 double NeutronPlaneIntersection1(Neutron *ThisNeutron, const Plane ThisPlane)
 {
   double  Time, BB, VelocityReal, v;
-		
+
   // Velocity cm/ms, Time ms, Position cm
   // Calculating real velocity
-		
+
   VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength));
 
   BB = ThisPlane.A * ThisNeutron->Vector[0]
     +  ThisPlane.B * ThisNeutron->Vector[1]
     +  ThisPlane.C * ThisNeutron->Vector[2];
-		
+
   BB *= VelocityReal;
 
   // Time BB*Time + CC = 0 */
@@ -117,14 +117,14 @@ double NeutronPlaneIntersection1(Neutron *ThisNeutron, const Plane ThisPlane)
 
   if (fabs(Time) < 1e-12)
     Time = 0.0;
-		
+
   // This part moves the neutron
 
   v = VelocityReal*Time;
   ThisNeutron->Position[0] += v * ThisNeutron->Vector[0];
   ThisNeutron->Position[1] += v * ThisNeutron->Vector[1];
   ThisNeutron->Position[2] += v * ThisNeutron->Vector[2];
-  
+
   /* return Time in ms */
 
   return Time;
@@ -140,13 +140,13 @@ double NeutronPlaneIntersectionGrav(Neutron *ThisNeutron, const Plane ThisPlane)
   // Calculate the time of flight of a neutron INCLUDING gravity with the plane.
 
   double  Time, AA, BB, CC, v, VelocityReal;
-		
+
   //	compute the coefficients of a quadratic equation
   //	G = 9.8 m/c**2, we need to cm/ms**2 (100/1000/1000)
   //	Velocity cm/ms, Time ms, Position cm
-  
+
   // Calculate the real velocity
-		
+
   VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength));
 
   AA = -0.5*(G*1.0e-4)*ThisPlane.C;
@@ -154,7 +154,7 @@ double NeutronPlaneIntersectionGrav(Neutron *ThisNeutron, const Plane ThisPlane)
   BB = ThisPlane.A * ThisNeutron->Vector[0]
      + ThisPlane.B * ThisNeutron->Vector[1]
      + ThisPlane.C * ThisNeutron->Vector[2];
-		
+
   BB *= VelocityReal;
 
   CC = ThisPlane.A * ThisNeutron->Position[0]
@@ -166,7 +166,7 @@ double NeutronPlaneIntersectionGrav(Neutron *ThisNeutron, const Plane ThisPlane)
   // AA*Time*Time + BB*Time + CC = 0
 
   Time = SolveQuadraticEq(AA,BB,CC);
-		
+
   // Move the neutron in time including a gravity effect
   v = VelocityReal*Time;
   ThisNeutron->Position[0] += v * ThisNeutron->Vector[0];
@@ -175,8 +175,8 @@ double NeutronPlaneIntersectionGrav(Neutron *ThisNeutron, const Plane ThisPlane)
 
   // Include gravity
   ThisNeutron->Position[2] -= 0.5*(G*1.0e-4)*Time*Time;
-  ThisNeutron->Vector[2]   -= (G*1.0e-4)*Time/VelocityReal;	
-		
+  ThisNeutron->Vector[2]   -= (G*1.0e-4)*Time/VelocityReal;
+
   // return Time in ms
 
   return Time;
@@ -187,7 +187,7 @@ double NeutronPlaneIntersectionGrav(Neutron *ThisNeutron, const Plane ThisPlane)
 /***********************************************************************************/
 /* This subroutine calculates the angle between a directed line and a plane. The   */
 /* formulae used can be found in any good mathematical handbook.                   */
-/* (Modified by Manoshin Sergey for module of velocity not equal 1)                */	
+/* (Modified by Manoshin Sergey for module of velocity not equal 1)                */
 /***********************************************************************************/
 double	NeutronPlaneAngle2(const Neutron *ThisNeutron, const double AP, const double BP, const double CP)
 {
@@ -196,17 +196,17 @@ double	NeutronPlaneAngle2(const Neutron *ThisNeutron, const double AP, const dou
   double SinGamma=0.0;
   double Velmod;
   double ABC;
-		
+
   Velmod = sqrt(ThisNeutron->Vector[0]*ThisNeutron->Vector[0]+
 		ThisNeutron->Vector[1]*ThisNeutron->Vector[1] +
 		ThisNeutron->Vector[2]*ThisNeutron->Vector[2]);
-		
+
   ABC = sqrt(AP*AP + BP*BP + CP*CP);
 
   if (ABC != 0.0)
     SinGamma = (AP*ThisNeutron->Vector[0] + BP*ThisNeutron->Vector[1] + CP*ThisNeutron->Vector[2])/ABC;
-		
-					
+
+
   if (Velmod != 0.0)
     SinGamma = SinGamma/Velmod;
 
@@ -227,32 +227,32 @@ double NeutronSurfaceSecIntersectionGr(Neutron *ThisNeutron, const SurfaceSecond
 
   double  Time, AA, BB, CC, VelocityReal;
   double  VX, VY, VZ, X, Y, Z;
-		
+
   /*	Make the koefficients of quadratic equation    */
   /*	G = 9.8 m/c**2, we need to cm/ms**2 (100/1000/1000)  */
   /*	Velocity cm/ms, Time ms, Position cm	*/
 
   /*	Calculating real velocity, cm/ms  */
-		
+
   VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength));
-		
+
   /*	Components of velocity, projections, and position coordinats */
   /*	Local copy */
-		
+
   X = ThisNeutron->Position[0];
   Y = ThisNeutron->Position[1];
   Z = ThisNeutron->Position[2];
-		
+
   VX = VelocityReal*ThisNeutron->Vector[0];
   VY = VelocityReal*ThisNeutron->Vector[1];
   VZ = VelocityReal*ThisNeutron->Vector[2];
-		
-  /*	Find the coefficients of the quadratic equation */	
-		
+
+  /*	Find the coefficients of the quadratic equation */
+
   if (keygrav == 1)
     {
-	
-      /* Corrected: Marz 03 */	
+
+      /* Corrected: Marz 03 */
 
       AA = -0.5*(G*1.0e-4)*ThisSurfaceSecond.F;
     }
@@ -271,7 +271,7 @@ double NeutronSurfaceSecIntersectionGr(Neutron *ThisNeutron, const SurfaceSecond
     ThisSurfaceSecond.P*(X*VY+Y*VX) +
     ThisSurfaceSecond.Q*(Y*VZ+Z*VY) +
     ThisSurfaceSecond.R*(X*VZ+Z*VX);
-	
+
 
   CC = ThisSurfaceSecond.A*X*X + ThisSurfaceSecond.B*X+
     ThisSurfaceSecond.C*Y*Y + ThisSurfaceSecond.D*Y+
@@ -285,7 +285,7 @@ double NeutronSurfaceSecIntersectionGr(Neutron *ThisNeutron, const SurfaceSecond
   /***********************************************************************************/
 
   Time = SolveQuadraticEq(AA,BB,CC);
-		
+
   /***********************************************************************************/
   /* This part make move neutron in the time include gravity effect  */
   /***********************************************************************************/
@@ -296,9 +296,9 @@ double NeutronSurfaceSecIntersectionGr(Neutron *ThisNeutron, const SurfaceSecond
 
   /* Include gravity */
   if (keygrav == 1)
-    {	
+    {
       ThisNeutron->Position[2] = ThisNeutron->Position[2] - 0.5*(G*1.0e-4)*Time*Time;
-      ThisNeutron->Vector[2] = ThisNeutron->Vector[2] - ((G*1.0e-4)*Time/VelocityReal);	
+      ThisNeutron->Vector[2] = ThisNeutron->Vector[2] - ((G*1.0e-4)*Time/VelocityReal);
     }
   /* return Time; ms */
 
@@ -331,13 +331,13 @@ long LineIntersectsCube(const VectorType Offset, const VectorType Direction, con
 {
 	long i,j,k;
 	double     PDist[6];
-	VectorType ISP[2], TestV; 
+	VectorType ISP[2], TestV;
 
 	PDist[0] = 0.5*Cube->thickness;
 	PDist[1] = 0.5*Cube->thickness;
-	PDist[2] = 0.5*Cube->width;    
+	PDist[2] = 0.5*Cube->width;
 	PDist[3] = 0.5*Cube->width;
-	PDist[4] = 0.5*Cube->height,    
+	PDist[4] = 0.5*Cube->height,
 	PDist[5] = 0.5*Cube->height;
 
 	TestV[0] = 0.500000000001*Cube->thickness;   /* not equal 0.5*... to prevent rounding errors */
@@ -347,19 +347,20 @@ long LineIntersectsCube(const VectorType Offset, const VectorType Direction, con
 	k=0;
 	i=MAXV(Direction);
 
-	for(j=0;k<2 && j<6; j++) 
+	for(j=0;k<2 && j<6; j++)
 	{
-		PlaneLineIntersect(Offset, Direction, PVector[j], PDist[j], ISP[k]);
-		if((fabs(ISP[k][0])<TestV[0]) &&
+    int res;
+		res = PlaneLineIntersect(Offset, Direction, PVector[j], PDist[j], ISP[k]);
+		if(res && (fabs(ISP[k][0])<TestV[0]) &&
 		   (fabs(ISP[k][1])<TestV[1]) &&
-		   (fabs(ISP[k][2])<TestV[2])) 
+		   (fabs(ISP[k][2])<TestV[2]))
 		{
 			t[k]=(ISP[k][i]-Offset[i])/Direction[i];
 			k++;
 		}
 	}
 	/* Ordering: t1 > t0 */
-	if(k>1) 
+	if(k>1)
 	{	if (t[0] > t[1])
 			Exchange(&t[0], &t[1]);
 		return TRUE;
@@ -389,11 +390,11 @@ long LineIntersectsHollowCyl (const VectorType Offset, const VectorType Directio
 	if (LineIntersectsCylinder(Offset, Direction, &stCyl, t_cyl))
 	{
 		// t1 is reached first, t4 last
-		if (t_cyl[0] < t_cyl[1]) 
+		if (t_cyl[0] < t_cyl[1])
 		{	t1 = t_cyl[0];
 			t4 = t_cyl[1];
 		}
-		else               
+		else
 		{	t1 = t_cyl[1];
 			t4 = t_cyl[0];
 		}
@@ -410,11 +411,11 @@ long LineIntersectsHollowCyl (const VectorType Offset, const VectorType Directio
 			if (LineIntersectsCylinder(Offset, Direction, &stCyl, t_cyl))
 			{
 				// t2 is reached before t3
-				if (t_cyl[0] < t_cyl[1]) 
+				if (t_cyl[0] < t_cyl[1])
 				{	t2 = t_cyl[0];
 					t3 = t_cyl[1];
 				}
-				else               
+				else
 				{	t2 = t_cyl[1];
 					t3 = t_cyl[0];
 				}
@@ -423,14 +424,14 @@ long LineIntersectsHollowCyl (const VectorType Offset, const VectorType Directio
 					case VT_IN :  t[0]=t1; t[1]=t2; break;
 					case VT_OUT:  t[0]=t3; t[1]=t4; break;
 					// look for t=0 crossing for neutrons already inside
-					default: if  (t1*t2 < 0.0) 
-									 {t[0]=t1; t[1]=t2;} 
-								else{t[0]=t3; t[1]=t4;} 
+					default: if  (t1*t2 < 0.0)
+									 {t[0]=t1; t[1]=t2;}
+								else{t[0]=t3; t[1]=t4;}
 				}
 			}
-			else 
+			else
 			{	t[0]=t1;
-				t[1]=t4; 
+				t[1]=t4;
 			}
 		}
 	}
@@ -454,18 +455,18 @@ long LineIntersectsCylinder(const VectorType Offset, const VectorType Direction,
 	/* determine the intersection of the line with an infinite cylinder */
 	h   = Cyl->height/2.0;
 	spq = Direction[1]*Direction[1] + Direction[2]*Direction[2];
-	if(spq > 0.0) 
+	if(spq > 0.0)
 	{
 		p = (Offset[1]*Direction[1] + Offset[2]*Direction[2]) / spq;
 		q = (Offset[1]*Offset[1] + Offset[2]*Offset[2] - Cyl->r*Cyl->r) / spq;
 		sp = p*p-q;
-	} 
-	else 
+	}
+	else
 	{
 		sp = 0.0;
 	}
 
-	if(sp > 0.0) 
+	if(sp > 0.0)
 	{
 		/*Ok, the neutron intersects the infinite cylinder */
 		spr=sqrt(sp);
@@ -473,38 +474,38 @@ long LineIntersectsCylinder(const VectorType Offset, const VectorType Direction,
 		t[1]=-p+spr;
 
 		/* Give the t's an order so its easier later on */
-		if(t[0] > t[1]) 
+		if(t[0] > t[1])
 		  Exchange(&t[0], &t[1]);
 
 		/* checks, where the line enters and leaves the cylinder */
 		/* X[i] = ISP[i][0] (see intersection.h) */
-		X(0) = Offset[0]+t[0]*Direction[0]; 
+		X(0) = Offset[0]+t[0]*Direction[0];
 		X(1) = Offset[0]+t[1]*Direction[0];
 		if (Direction[0] > 0.0) iDir = 1;
 		else                    iDir = 0;
 		i=MAXV(Direction);
 
 		/* A) line enters and leaves through the cylinder wall */
-		if     (fabs(X(0)) < h  &&  fabs(X(1)) < h) 
+		if     (fabs(X(0)) < h  &&  fabs(X(1)) < h)
 		{
 			result=TRUE;
 		}
 		/* B) line enters through the cylinder wall and leaves through one of the cylinder disks */
-		else if(fabs(X(0)) < h  &&  fabs(X(1)) >= h) 
+		else if(fabs(X(0)) < h  &&  fabs(X(1)) >= h)
 		{
 			PlaneLineIntersect(Offset, Direction, PVector[1-iDir], h, ISP[1]);
 			t[1] = (ISP[1][i]-Offset[i])/Direction[i];
 			result=TRUE;
-		} 
+		}
 		/* C) lines enters through a cylinder disk and leaves through the cylinder wall */
-		else if(fabs(X(0)) >= h  &&  fabs(X(1)) < h) 
+		else if(fabs(X(0)) >= h  &&  fabs(X(1)) < h)
 		{
 			PlaneLineIntersect(Offset, Direction, PVector[iDir], h, ISP[0]);
 			t[0] = (ISP[0][i]-Offset[i])/Direction[i];
 			result=TRUE;
-		} 
+		}
 		/* D) line enters through one of the cylinder disks and leaves through the other one */
-		else if( (X(0) < -h  &&  X(1) > h) || (X(0) > h  &&  X(1) < -h) ) 
+		else if( (X(0) < -h  &&  X(1) > h) || (X(0) > h  &&  X(1) < -h) )
 		{
 			PlaneLineIntersect(Offset, Direction, PVector[1-iDir], h, ISP[1]);
 			PlaneLineIntersect(Offset, Direction, PVector[iDir],   h, ISP[0]);
@@ -512,12 +513,12 @@ long LineIntersectsCylinder(const VectorType Offset, const VectorType Direction,
 			t[1] = (ISP[1][i]-Offset[i])/Direction[i];
 			result=TRUE;
 		}
-		else 
+		else
 		{
 			result=FALSE;
 		}
-	} 
-	else 
+	}
+	else
 	{	/* Hmm, just missed, but wait one chance remains */
 		result=FALSE;
 		if(spq==0.0 && (Offset[1]*Offset[1] + Offset[2]*Offset[2] < Cyl->r*Cyl->r))
@@ -552,7 +553,7 @@ long LineIntersectsSphere(const VectorType Offset, const VectorType Direction,
 
 	p = ScalarProduct(Direction,Offset);
 	spq= p*p-(ScalarProduct(Offset,Offset)-Sphere->r*Sphere->r);
-	if(spq > 0.0) 
+	if(spq > 0.0)
 	{
 		spq=sqrt(spq);
 		t[0]=-p-spq;
@@ -562,7 +563,7 @@ long LineIntersectsSphere(const VectorType Offset, const VectorType Direction,
 		if (t[0] > t[1])
 			Exchange(&t[0], &t[1]);
 		return TRUE;
-	} 
+	}
 	else
 	{	/* Also if spq is 0.0, i.e. the entrance and exit is the same point */
 		/* the neutron is considered to have missed the sample */
@@ -641,7 +642,7 @@ long IntersectionWithRectangular(const VectorType DimSample, const VectorType Po
 	if((LengthVector(Pos1) == 0.) || (LengthVector(Pos2) == 0.)) return 0 ;
 
 	/*ordering intersection positions */
-	
+
 	OrderPositions(Dir, Pos1, Pos2);
 
 	return 1 ;
@@ -686,13 +687,13 @@ long IntersectionWithCylinder(const VectorType DimSample, const VectorType Pos, 
   if(IntersectionWithInfiniteCylinder(DimSample[0], Pos, Dir, Pos1, Pos2) == 0) return 0 ;
 
   /* ordering intersection positions */
-	
-  OrderPositions(Dir, Pos1, Pos2);	
+
+  OrderPositions(Dir, Pos1, Pos2);
 
   if((Pos1[2] > DimSample[2]/2.) && (Pos2[2] > DimSample[2]/2.)) return 0 ;
   if((Pos1[2] < - DimSample[2]/2.) && (Pos2[2] < - DimSample[2]/2.)) return 0 ;
   if((fabs(Pos1[2]) <= DimSample[2]/2.) && (fabs(Pos2[2]) <= DimSample[2]/2.)) return 1 ;/* both through cylinder walls */
-		
+
   if( (Pos2[2] <= DimSample[2]/2.) && (Pos2[2] >= - DimSample[2]/2.) ) /* exit cylinder wall */
     {
       if(Pos1[2] >= DimSample[2]/2.)   /* entrance top */
@@ -748,27 +749,27 @@ long IntersectionWithCylinder(const VectorType DimSample, const VectorType Pos, 
 long IntersectionWithHorCyl(const double length, const double diameter, const VectorType Pos, const VectorType Dir,
 			                      VectorType Pos1, VectorType Pos2)
 {
-  long       rc=FALSE;                  
+  long       rc=FALSE;
   VectorType DimSmplV={0.0,0.0,0.0},
              PosV= {0.0,0.0,0.0},
              DirV= {0.0,0.0,0.0},
              Pos1V={0.0,0.0,0.0},
              Pos2V={0.0,0.0,0.0};
 
-  // fill structure defining size 
+  // fill structure defining size
   DimSmplV[0] = diameter;
   DimSmplV[2] = length;
 
-  // rotate position and direction 90° about y-axis
-  PosV[0] = -Pos[2]; PosV[1] = Pos[1]; PosV[2] = Pos[0]; 
-  DirV[0] = -Dir[2]; DirV[1] = Dir[1]; DirV[2] = Dir[0]; 
+  // rotate position and direction 90Â° about y-axis
+  PosV[0] = -Pos[2]; PosV[1] = Pos[1]; PosV[2] = Pos[0];
+  DirV[0] = -Dir[2]; DirV[1] = Dir[1]; DirV[2] = Dir[0];
 
-  // call function for vertical cylinder 
+  // call function for vertical cylinder
   rc=IntersectionWithCylinder(DimSmplV, PosV, DirV, Pos1V, Pos2V);
 
-  // rotate back intersection positions (-90° about y-axis)
-  Pos1[0] = Pos1V[2]; Pos1[1] = Pos1V[1]; Pos1[2] = -Pos1V[0]; 
-  Pos2[0] = Pos2V[2]; Pos2[1] = Pos2V[1]; Pos2[2] = -Pos2V[0]; 
+  // rotate back intersection positions (-90Â° about y-axis)
+  Pos1[0] = Pos1V[2]; Pos1[1] = Pos1V[1]; Pos1[2] = -Pos1V[0];
+  Pos2[0] = Pos2V[2]; Pos2[1] = Pos2V[1]; Pos2[2] = -Pos2V[0];
 
   return rc;
 }
@@ -801,8 +802,8 @@ double b, c, delta, khi1, khi2 ;
 		AddVector(Pos2, Pos) ;
 
 		/*ordering intersection positions */
-	
-		OrderPositions(Dir, Pos1, Pos2);	
+
+		OrderPositions(Dir, Pos1, Pos2);
 
 		return 1 ;
 	}
@@ -909,13 +910,13 @@ long IntersectionWithHorizontalPlane(const double Z , const VectorType PosVect, 
 /*******************************************************************/
 
 double SolveQuadraticEq(double AA, double BB, double CC)
-{	
+{
 	double X1=0.0, X2=0.0;
 	double DD, TEMP;
 	double Time=0.0;
 
 	/*	ignore a - very small or eq zero , to solve bx+c=0 */
-		
+
 	if ((fabs(AA)*1.0e12) <= fabs(BB)||(AA == 0.0))
 	{
 		if (BB != 0.0)
@@ -977,7 +978,7 @@ double SolveQuadraticEq(double AA, double BB, double CC)
 		X2 = -1.0e4;
 		goto ok15;
 	}
-		
+
 	DD = sqrt(DD);
 	if (DD == 0.0)
 	{
@@ -985,43 +986,43 @@ double SolveQuadraticEq(double AA, double BB, double CC)
 		X2=X1;
 		goto ok15;
 	}
-		
-		
+
+
 	if (BB > 0.0)
 	{
 		X1 = (-BB-DD)/(2.0*AA);
 		X2 = (2.0*CC)/(-BB-DD);
 		goto ok15;
 	}
-		
+
 	if (BB < 0.0)
 	{
 		X2 = (-BB+DD)/(2.0*AA);
 		X1 = (2.0*CC)/(-BB+DD);
 		goto ok15;
 	}
-		
+
 	ok15:
 	/*	printf("squares= %e  %e \n",X1,X2);	*/
 	/* Now find smallest root and copy this in Time  */
 
-	if (fabs(X1) < 4e-10) 
+	if (fabs(X1) < 4e-10)
 		X1=0.0;
-	if (fabs(X2) < 4e-10) 
+	if (fabs(X2) < 4e-10)
 		X2=0.0;
 
 	if ((X1 > 0.0) && (X2 > 0.0))
 	{
 		Time = Min(X1, X2);
-	}	
+	}
 	else
 	{
 		Time = Max(X1, X2);
 	}
-		
+
 	return Time;
-}	
- 	
+}
+
 #else
 
 #define NZero(a) (fabs(a) < 4e-10 ? 0.0 : a)
@@ -1030,19 +1031,19 @@ double SolveQuadraticEq(double AA, double BB, double CC)
 double SolveQuadraticEq (double A, double B, double C) {
 
   // solve A*x^2 + B*x + C = 0
-  
+
   double x1, x2, d;
-  
+
   if (A == 0.0 || fabs(A) * 1.0e12 <= fabs(B)) {
     // A almost zero, solve Bx+C=0
     if (B != 0.0) {
       d = -C/B;
       return NZero(d);
     }
-    
+
     return C == 0.0 ? 0.0 : -1.0e4;  // no solution if B==0 and C!=0
   }
-  
+
   if (C == 0) {
     // Axx + Bx = 0 -> x*(x+B/A) = 0, two solutions x1=0, x2=-B/A
     x1 = 0.0;
@@ -1059,19 +1060,19 @@ double SolveQuadraticEq (double A, double B, double C) {
 	return 0.0;
       return sqrt(d);
     }
-  
+
     // full quadratic equation Axx+Bx+C=0
     d = B*B - 4*A*C;
     if (d < 0.0)
       return -1.0e4; // no real solution
-    
+
     if (d == 0.0) {
       d = -B/(2*A);
       return NZero(d);
     }
 
-    d = sqrt(d);		
-		     
+    d = sqrt(d);
+
     x1 = (-B + d) / (2*A);
     x2 = (-B - d) / (2*A);
   }
@@ -1081,7 +1082,7 @@ double SolveQuadraticEq (double A, double B, double C) {
   makeNZero(x1);
   makeNZero(x2);
   return (x1 > 0.0 && x2 > 0.0) ? Min(x1, x2) : Max(x1, x2);
-}	
+}
 
 #endif
 
@@ -1094,7 +1095,7 @@ double SolveQuadraticEq (double A, double B, double C) {
 /***********************************************************************************/
 /* ordering points on a trajectory so that Dir shows from Pos1 to Pos2 */
 /***********************************************************************************/
-int OrderPositions(const VectorType Dir, VectorType Pos1, VectorType Pos2) 
+int OrderPositions(const VectorType Dir, VectorType Pos1, VectorType Pos2)
 {
   VectorType propag, V;
 
