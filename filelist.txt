@@ -19,4 +19,4 @@ filelist.txt
 gridrun
 install-unix.txt
 install-windows.txt
-license.txt
+LICENSE.txt
