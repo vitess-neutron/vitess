@@ -1,0 +1,101 @@
+#TODO: We should also add contact information as well, and links to issue
+#trackers etc.
+
+DummyPlugin:
+  github_repo_key: "mctools/ncrystal"
+  repo_subdir: "examples/plugin"
+  description: |
+    A (silly) example from the NCrystal source repository, serving as a template
+    for other plugins. This example shows how to create a plugin which actually
+    modifies scattering physics.
+
+DummyDataPlugin:
+  github_repo_key: "mctools/ncrystal"
+  repo_subdir: "examples/plugin_dataonly"
+  description: |
+    A (silly) example from the NCrystal source repository, serving as a template
+    for other plugins. This example shows how to create a plugin which only
+    provides a static set of NCMAT files.
+
+CrysText:
+  github_repo_key: "highness-eu/ncplugin-CrysText"
+  description: |
+    A plugin providing texture models. Note that this plugin is slow for shorter
+    wavelengths.
+
+SANSND:
+  github_repo_key: "highness-eu/ncplugin-SANSND"
+  description: |
+    A plugin to provide small angle neutron scattering for nanodiamonds.
+
+    Models and benchmarking are described in
+    N. Rizzi, et al. (https://doi.org/10.1080/00295639.2023.2196926).
+
+CrysExtn:
+  github_repo_key: "XuShuqi7/ncplugin-CrysExtn"
+  description: |
+    A plugin providing extinction models for polycrystalline matherials. Both
+    Sabine's and Becker and Coppens' (BC) extinction models are implemented.
+
+nxslib:
+  github_repo_key: "mctools/ncplugin_nxslib"
+  description: |
+    NCrystal plugin for loading .nxs files. Also includes a small database of
+    .nxs files.
+
+WaterData:
+  is_on_pypi: true
+  github_repo_key: "mctools/ncrystal-extra"
+  repo_subdir: "pypkgs/ncrystal-plugin-WaterData"
+  description: |
+    Extra NCMAT data files for light and heavy water, covering a wider range of
+    temperatures compared to what is found in the NCrystal standard library.
+
+    The data files were based on ENDF/B-VIII.0 CAB scattering kernels by
+    J.I. Márquez Damián, et. al. (https://doi.org/10.1016/j.anucene.2013.11.014).
+
+UraniumOxideData:
+  is_on_pypi: true
+  github_repo_key: "mctools/ncrystal-extra"
+  repo_subdir: "pypkgs/ncrystal-plugin-UraniumOxideData"
+  description: |
+    Extra NCMAT data files for Uranium Oxide (UO2), with phonon densities
+    optimised for various temperatures.
+
+    Phonon density curves in the files are taken from: G. Noguere, et al., 2020
+    (https://doi.org/10.1103/PhysRevB.102.134312).
+
+BzScope:
+  github_repo_key: "mctools/ncrystal-plugin-BzScope"
+  description: |
+    A plugin allowing coherent inelastic kernels for isotropic materials, thus
+    foregoing the incoherent approximation. The actual upstream location of this
+    plugin is https://code.ihep.ac.cn/cinema-developers/ncplugin-bzscope but we
+    also keep a mirror at the provided GitHub location in order to reduce
+    network latency issues.
+
+GraphiticData:
+  is_on_pypi: true
+  github_repo_key: "highness-eu/ncmat-graphitic"
+  description: |
+    NCMAT data files for graphite oxides and fullerite (C60).
+
+ClathrateHydrateData:
+  github_repo_key: "highness-eu/ncmat-clathrates"
+  description: |
+    NCMAT data files of various clathrate hydrates, including paramagnetic
+    effects of scattering on enclathrated O2 via the MagScat plugin.
+
+MagScat:
+  github_repo_key: "highness-eu/ncplugin-MagScat"
+  description: |
+    A plugin providing paramagnetic scattering in O2-clathrates, based on
+    formulas by O. Zimmer (https://doi.org/10.1103/PhysRevC.93.035503).
+
+LiquidHeliumData:
+  github_repo_key: "dddijulio/ncrystal-plugin-LiquidHelium"
+  description: |
+    A plugin providing super critical helium near 1K, based on
+    https://doi.org/10.1016/j.nima.2023.168284 (for details refer to comments on
+    https://github.com/mctools/ncrystal/issues/279 and
+    https://github.com/dddijulio/ncrystal-plugin-LiquidHelium).

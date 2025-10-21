@@ -3,7 +3,7 @@
 /*                                                                            */
 /*  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   */
 /*                                                                            */
-/*  Copyright 2015-2024 NCrystal developers                                   */
+/*  Copyright 2015-2025 NCrystal developers                                   */
 /*                                                                            */
 /*  Licensed under the Apache License, Version 2.0 (the "License");           */
 /*  you may not use this file except in compliance with the License.          */
@@ -20,7 +20,7 @@
 /******************************************************************************/
 
 /* Include NCrystal C-interface: */
-#include "NCrystal/ncrystal.h"
+#include "NCrystal/cinterface/ncrystal.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,0 +1,12 @@
+name: ncrystal_endf
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - c-compiler
+  - cmake
+  - cxx-compiler
+  - make
+  - pip
+  - python
+  - endf-parserpy >=0.14.3

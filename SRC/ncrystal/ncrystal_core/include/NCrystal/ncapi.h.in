@@ -1,0 +1,218 @@
+
+/******************************************************************************/
+/*                                                                            */
+/*  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   */
+/*                                                                            */
+/*  Copyright 2015-2025 NCrystal developers                                   */
+/*                                                                            */
+/*  Licensed under the Apache License, Version 2.0 (the "License");           */
+/*  you may not use this file except in compliance with the License.          */
+/*  You may obtain a copy of the License at                                   */
+/*                                                                            */
+/*      http://www.apache.org/licenses/LICENSE-2.0                            */
+/*                                                                            */
+/*  Unless required by applicable law or agreed to in writing, software       */
+/*  distributed under the License is distributed on an "AS IS" BASIS,         */
+/*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  */
+/*  See the License for the specific language governing permissions and       */
+/*  limitations under the License.                                            */
+/*                                                                            */
+/******************************************************************************/
+
+#ifndef ncrystal_api_h
+#define ncrystal_api_h
+
+/******************************************************************************/
+/* Namespace and API macros for NCrystal, used to mark classes and functions  */
+/* exported to API clients. This is needed to support Windows DLL builds as   */
+/* well as Unix builds with -fvisibility-hidden. Macros inspired by sugges-   */
+/* tions found at https://gcc.gnu.org/wiki/Visibility                         */
+/*                                                                            */
+/* On windows, the NCrystal_EXPORTS macro must be defined during compilation  */
+/* of the NCrystal library (dll), but not when client applications and libra- */
+/* ries are being compiled. If using CMake and the CMakeLists.txt distributed */
+/* with NCrystal, this should be taken care of automatically.                 */
+/******************************************************************************/
+
+
+/* First ensure the NCRYSTAL_NAMESPACE_PROTECTION and version numbers are     */
+/* always hardwired in this file, and never set via a compiler flag:          */
+
+#ifdef NCRYSTAL_NAMESPACE_PROTECTION
+#  undef NCRYSTAL_NAMESPACE_PROTECTION
+#endif
+#ifdef NCRYSTAL_VERSION_MAJOR
+#  undef NCRYSTAL_VERSION_MAJOR
+#endif
+#ifdef NCRYSTAL_VERSION_MINOR
+#  undef NCRYSTAL_VERSION_MINOR
+#endif
+#ifdef NCRYSTAL_VERSION_PATCH
+#  undef NCRYSTAL_VERSION_PATCH
+#endif
+#ifdef NCRYSTAL_VERSION
+#  undef NCRYSTAL_VERSION
+#endif
+#ifdef NCRYSTAL_VERSION_STR
+#  undef NCRYSTAL_VERSION_STR
+#endif
+
+/* Next, the configuration system will set version numbers, a namespace if    */
+/* any, along with any other settings needing hardwiring here:                */
+
+/* @NCRYSTAL_HOOK_FOR_ADDING_DEFINES@ */
+
+/* Fall-back, in case of unusual pre-processing: */
+#ifndef NCRYSTAL_VERSION_MAJOR
+#  define NCRYSTAL_VERSION_MAJOR 999
+#endif
+#ifndef NCRYSTAL_VERSION_MINOR
+#  define NCRYSTAL_VERSION_MINOR 999
+#endif
+#ifndef NCRYSTAL_VERSION_PATCH
+#  define NCRYSTAL_VERSION_PATCH 999
+#endif
+#ifndef NCRYSTAL_VERSION
+#  define NCRYSTAL_VERSION 999999999
+#endif
+#ifndef NCRYSTAL_VERSION_STR
+#  define NCRYSTAL_VERSION_STR "999.999.999"
+#endif
+
+#ifdef NCRYSTAL_API
+#  undef NCRYSTAL_API
+#endif
+#ifdef NCRYSTAL_LOCAL
+#  undef NCRYSTAL_LOCAL
+#endif
+#if defined (_WIN32) || defined (__CYGWIN__) || defined (WIN32)
+#  ifndef NCRYSTAL_PREVENT_WINDLLEXPORT
+#    ifdef NCrystal_EXPORTS
+#      define NCRYSTAL_API __declspec(dllexport)
+#    else
+#      define NCRYSTAL_API __declspec(dllimport)
+#    endif
+#  else
+#    define NCRYSTAL_API
+#  endif
+#  define NCRYSTAL_LOCAL
+#else
+#  if ( defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)
+#    define NCRYSTAL_API    __attribute__ ((visibility ("default")))
+#    define NCRYSTAL_LOCAL  __attribute__ ((visibility ("hidden")))
+#  else
+#    define NCRYSTAL_API
+#    define NCRYSTAL_LOCAL
+#  endif
+#endif
+
+#ifdef ncrystal_join
+#  undef ncrystal_join
+#endif
+#ifdef ncrystal_xjoin
+#  undef ncrystal_xjoin
+#endif
+#define ncrystal_join( symbol1, symbol2 ) ncrystal_xjoin( symbol1, symbol2 )
+#define ncrystal_xjoin( symbol1, symbol2 ) symbol1##symbol2
+
+#ifdef NCRYSTAL_NAMESPACE
+#  undef NCRYSTAL_NAMESPACE
+#endif
+#ifdef NCRYSTAL_APPLY_C_NAMESPACE
+#  undef NCRYSTAL_APPLY_C_NAMESPACE
+#endif
+#ifdef NCRYSTAL_C_NAMESPACE
+#  undef NCRYSTAL_C_NAMESPACE
+#endif
+#ifdef NCRYSTAL_NAMESPACE_PROTECTION
+#  define NCRYSTAL_NAMESPACE ncrystal_join(NCrystal,NCRYSTAL_NAMESPACE_PROTECTION )
+#  define NCRYSTAL_C_NAMESPACE ncrystal_join(ncrystal_join(ncrystal,NCRYSTAL_NAMESPACE_PROTECTION),_)
+#else
+#  define NCRYSTAL_NAMESPACE NCrystal
+#  define NCRYSTAL_C_NAMESPACE ncrystal_
+#endif
+
+#define NCRYSTAL_APPLY_C_NAMESPACE(x) ncrystal_join(NCRYSTAL_C_NAMESPACE,x)
+
+#ifdef __cplusplus
+namespace NCRYSTAL_NAMESPACE {}
+#  ifdef NCRYSTAL_NAMESPACE_PROTECTION
+namespace NCrystal = NCRYSTAL_NAMESPACE;
+#  endif
+#endif
+
+#ifdef nc_cplusplus
+#  undef nc_cplusplus
+#endif
+
+#ifdef __cplusplus
+/* First we provide nc_cplusplus as a more robust alternative to __cplusplus. */
+#  if defined(_MSC_VER) && __cplusplus == 199711L
+/* https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus */
+/* tells us that vscode sets __cplusplus to a misleading 199711L unless          */
+/* compiling with certain flags.. However _MSVC_LANG is set correctly if         */
+/* defined, and otherwise 201402L is most likely the safest fallback.            */
+#    ifdef _MSVC_LANG
+#      define nc_cplusplus _MSVC_LANG
+#    else
+#      define nc_cplusplus 201402L
+#    endif
+#  else
+#    define nc_cplusplus __cplusplus
+#  endif
+/* For decorating with constexpr only in C++17 and later, or noexcept only in */
+/* non-dbg builds:                                                            */
+#  ifdef ncconstexpr17
+#    undef ncconstexpr17
+#  endif
+#  if nc_cplusplus >= 201703L
+#    define ncconstexpr17 constexpr
+#  else
+#    define ncconstexpr17
+#  endif
+#  ifdef ncnoexceptndebug
+#    undef ncnoexceptndebug
+#  endif
+#  ifndef NDEBUG
+#    define ncnoexceptndebug
+#  else
+#    define ncnoexceptndebug noexcept
+#  endif
+#  ifdef ncnodiscard17
+#    undef ncnodiscard17
+#  endif
+#  if nc_cplusplus >= 201703L
+#    define ncnodiscard17 [[nodiscard]]
+#  else
+#    define ncnodiscard17
+#  endif
+#  ifdef nclikely
+#    undef nclikely
+#  endif
+#  if nc_cplusplus >= 202002L
+#    define nclikely [[likely]]
+#  else
+#    define nclikely
+#  endif
+#  ifdef ncunlikely
+#    undef ncunlikely
+#  endif
+#  if nc_cplusplus >= 202002L
+#    define ncunlikely [[unlikely]]
+#  else
+#    define ncunlikely
+#  endif
+
+/* "restrict" for C++ if available (https://en.wikipedia.org/wiki/Restrict): */
+#ifdef ncrestrict
+#  undef ncrestrict
+#endif
+#if defined(__GNUC__) | defined(__clang__) || defined(_MSC_VER)
+#  define ncrestrict __restrict
+#else
+#  define ncrestrict
+#endif
+
+#endif
+
+#endif
