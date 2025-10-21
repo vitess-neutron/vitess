@@ -28,6 +28,7 @@
 #endif
 
 #include "general.h"
+#include <math.h>
 
 
 double gsl_ran_gaussian (const gsl_rng * r, const double sigma);
@@ -99,6 +100,19 @@ double QbyRefl(const double lambda, const double thetaD)  // [Ang], [deg] -> [1/
   double Q = 4.0*M_PI * sin(Radians(thetaD))/lambda;
 
   return(Q);
+}
+
+double GetKComponent(const double vec[3], double wavelength, VtAxis axis)
+{
+    if (!vec || wavelength <= 0.0) return 0.0;
+    double k = 2.0 * M_PI / wavelength;
+
+    switch (axis) {
+        case X_AXIS: return k * vec[0]; // kx
+        case Y_AXIS: return k * vec[1]; // ky
+        case Z_AXIS: return k * vec[2]; // kz
+        default: return 0.0;
+    }
 }
 
 /****************************************************************************************/

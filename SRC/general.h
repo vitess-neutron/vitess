@@ -124,6 +124,7 @@ void   MultiplyByScalar(VectorType Vector, const double Scalar);
 void   InitPlane       (Plane*         pPlane);
 void   InitSurface     (SurfaceSecond* pSurface);
 
+double GetKComponent(const double vec[3], double wavelength, VtAxis axis);
 
 /* Basic matrix operation */
 void   Init3x3Matrix     (double Matrix   [3][3]);
