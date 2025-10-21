@@ -338,9 +338,6 @@ double Mon2D::DetermineParameter(VtMonPar id, Neutron* pNeutr)
   MathVector neutronPositionProjYZ(pNeutr->Position[1], pNeutr->Position[2], 0);
   MathVector neutronPositionProjXY(pNeutr->Position[0], pNeutr->Position[1], 0);
 
-  double divy = 0;
-  double divz = 0;
-
   switch (id)
   {
     case NO_PAR:
@@ -376,12 +373,10 @@ double Mon2D::DetermineParameter(VtMonPar id, Neutron* pNeutr)
       break;
 
     case K_Y:
-      divy = neutronVector.DivY();
-      paramValue = divy * 2. * M_PI / pNeutr->Wavelength;  // ky: y component of the wave vector
+      paramValue = GetKComponent(pNeutr->Vector, pNeutr->Wavelength, Y_AXIS);
       break;
     case K_Z:
-      divz = neutronVector.DivZ();
-      paramValue = divz * 2. * M_PI / pNeutr->Wavelength;  // kz: z component of the wave vector
+      paramValue = GetKComponent(pNeutr->Vector, pNeutr->Wavelength, Z_AXIS);
       break;
 
     case POS_R:

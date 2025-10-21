@@ -210,7 +210,7 @@ int CheckFilter(Neutron* pNeutron)
                       else
                         rc=TRUE;
                       break;
-    case AND_OR_AND:  if (bPass[0]==TRUE && bPass[1]==TRUE  ||  bPass[2]==TRUE  && bPass[3]==TRUE)
+    case AND_OR_AND:  if ((bPass[0]==TRUE && bPass[1]==TRUE) ||  (bPass[2]==TRUE  && bPass[3]==TRUE))
                         rc=TRUE;
                       else
                         rc=FALSE;
@@ -228,8 +228,6 @@ int CheckFilter(Neutron* pNeutron)
 double DetermineParameter(int id, Neutron* pNeut)
 {
   double paramValue = 0;
-  double divy = 0;
-  double divz = 0;
 
   MathVector neutronVector        (pNeut->Vector[0],   pNeut->Vector[1],   pNeut->Vector[2]);
   MathVector neutronPosition      (pNeut->Position[0], pNeut->Position[1], pNeut->Position[2]);
@@ -265,14 +263,10 @@ double DetermineParameter(int id, Neutron* pNeut)
       break;
 
     case K_Y:
-      divy = neutronVector.Phi();
-      paramValue = divy * 2. * M_PI / pNeut->Wavelength; // ky: y component of the wave vector
+      paramValue = GetKComponent(pNeut->Vector, pNeut->Wavelength, Y_AXIS); // ky: y component of the wave vector
       break;
     case K_Z:
-      neutronVector.x[1] = 0;
-      if (neutronVector.x[2] > 0) divz = M_PI/2. - neutronVector.Theta();
-      else divz = M_PI/2. - (neutronVector.Theta() + M_PI);
-      paramValue = divz * 2. * M_PI / pNeut->Wavelength;  // kz: z component of the wave vector
+      paramValue = GetKComponent(pNeut->Vector, pNeut->Wavelength, Z_AXIS);  // kz: z component of the wave vector
       break;
 
     case POS_R:
