@@ -1,0 +1,607 @@
+Conversion: NC.ekin2wl(0.5) = 0.4044853757686
+Conversion: NC.ekin2wl(1.0) = 0.28601435209676
+Conversion: NC.ekin2wl(2.0) = 0.2022426878843
+Conversion: NC.ekin2wl(0.0) = inf
+Conversion: NC.ekin2wl(inf) = 0
+Conversion: NC.wl2ekin(0.5) = 0.32721683842132
+Conversion: NC.wl2ekin(1.0) = 0.081804209605331
+Conversion: NC.wl2ekin(2.0) = 0.020451052401333
+Conversion: NC.wl2ekin(0.0) = inf
+Conversion: NC.wl2ekin(inf) = 0
+Conversion: NC.ekin2ksq(0.5) = 241.29820332489
+Conversion: NC.ekin2ksq(1.0) = 482.59640664977
+Conversion: NC.ekin2ksq(2.0) = 965.19281329954
+Conversion: NC.ekin2ksq(0.0) = 0
+Conversion: NC.ekin2ksq(inf) = inf
+Conversion: NC.wl2k(0.5) = 12.566370614359
+Conversion: NC.wl2k(1.0) = 6.2831853071796
+Conversion: NC.wl2k(2.0) = 3.1415926535898
+Conversion: NC.wl2k(0.0) = inf
+Conversion: NC.wl2k(inf) = 0
+Conversion: NC.wl2ksq(0.5) = 157.91367041743
+Conversion: NC.wl2ksq(1.0) = 39.478417604357
+Conversion: NC.wl2ksq(2.0) = 9.8696044010894
+Conversion: NC.wl2ksq(0.0) = inf
+Conversion: NC.wl2ksq(inf) = 0
+Temperature : 293.15
+DebyeTemp : yes
+XSectAbsorp : 0.231
+XSectFree : 1.39667
+Density : 2.69865
+Structure : a=4.04958, alpha=90, b=4.04958, beta=90, c=4.04958, gamma=90, n_atoms=4, spacegroup=225, volume=66.4094599932
+Aluminium PowderBragg diffraction cross-section @ 4.0Aa: 1.63244 barn
+Aluminium PowderBragg diffraction cross-section @ [1, 2, 3, 4]Aa: [0.72722, 1.09644, 0.918245, 1.63244] barn
+Aluminium Bkgd cross-section @ 4.0Aa: 0.136214 barn
+Aluminium Bkgd+PowderBragg cross-section @ 4.0Aa: 1.76865 barn
+Aluminium absorption cross-section @ 4.0Aa: 0.513848 barn
+Germanium ScatFactSC cross-section @ 4.0Aa and (1.0, 0.15, 0.7): 0.600084 barn
+... same with xsect method: 0.600084 barn
+... same with xsect method2: 0.600084 barn
+... same with xsect method3: 0.600084 barn
+A few generated scattering angles using the full 3d vector interface:
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 51.645 deg and delta-E 0.00989444 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 118.134 deg and delta-E 0.0101006 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 138.229 deg and delta-E 0.00868527 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 111.826 deg and delta-E 0.0295808 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 141.599 deg and delta-E 0.00792446 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 161.686 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 70.6069 deg and delta-E 0.00212344 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 49.6149 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 148.299 deg and delta-E 0.0100042 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 73.763 deg and delta-E 0.0356094 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 124.261 deg and delta-E 0.0118106 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 144.272 deg and delta-E 0.0345347 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 147.675 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 131.756 deg and delta-E 0.0123363 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 53.4004 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 76.0056 deg and delta-E 0.0126526 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 165.539 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 84.5102 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 123.68 deg and delta-E 0.00629103 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 43.5993 deg and delta-E 0.0120409 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 89.075 deg and delta-E 0.0107011 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 167.352 deg and delta-E 0.00623719 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 85.9428 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 106.848 deg and delta-E 0.0100747 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 87.8472 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 111.132 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 157.993 deg and delta-E 0.0136959 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 113.388 deg and delta-E 0.022029 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 98.2781 deg and delta-E 0.011974 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 69.5869 deg and delta-E 0.0127569 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 143.377 deg and delta-E 0.0127753 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 153.659 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 141.426 deg and delta-E 0.00883977 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 103.016 deg and delta-E 0.00979397 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 161.127 deg and delta-E 0.011916 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 58.5273 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 66.983 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 51.5278 deg and delta-E 0.0351566 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 57.3823 deg and delta-E 0 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 139.715 deg and delta-E 0.0324799 eV
+[ 52.297088  89.897538  101.06963 ... 142.61339  98.834939  118.11986 ]
+[ 23.12594  17.095977  30.847726 ... 38.098487  41.056472  35.149399 ]
+[ 107.22105  76.487457  85.689983 ... 49.431218  112.86565  162.93751 ]
+[ 35.470951  26.40059  23.936595 ... 24.686244  18.116696  23.562792 ]
+===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0":
+    xs@1Aa : 1.20448
+    xs@5Aa : 0.429629
+    mean scat@1Aa : 1.9 rad, de=-0.016eV
+===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0;inelas=0;incoh_elas=0":
+    xs@1Aa : 0
+    xs@5Aa : 0
+    mean scat@1Aa : 0 rad, de=0eV
+===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0;coh_elas=0":
+    xs@1Aa : 1.20448
+    xs@5Aa : 0.429629
+    mean scat@1Aa : 1.9 rad, de=-0.016eV
+===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0":
+    xs@1Aa : 0.645793
+    xs@5Aa : 0.143287
+    mean scat@1Aa : 1.9 rad, de=-0.0043eV
+===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0;inelas=0;incoh_elas=0":
+    xs@1Aa : 0
+    xs@5Aa : 0
+    mean scat@1Aa : 0 rad, de=0eV
+===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0;coh_elas=0":
+    xs@1Aa : 0.645793
+    xs@5Aa : 0.143287
+    mean scat@1Aa : 1.9 rad, de=-0.0045eV
+===> Testing exceptions
+Caught NCException!:
+  Type    :  NCFileNotFound
+  Message :  Could not find data: "nosuchfile.ncmat"
+Caught NCFileNotFound!:
+  Type    :  NCFileNotFound
+  Message :  Could not find data: "nosuchfile.ncmat"
+Did not catch exception! (as expected)
+wl2ekin:
+0.00511276310033
+inf
+0.0
+[ 0.0051127631  inf  0 ]
+ekin2wl:
+1.80891359225
+inf
+0.0
+[ 1.8089136  inf  0 ]
+::NCrystalTest:: starting standard Python-API testing
+::NCrystalTest:: Trying to createInfo("stdlib::Al_sg225.ncmat;dcutoff=1.4")
+::NCrystalTest:: Verifying loaded Info object
+::NCrystalTest:: Trying to createScatter("stdlib::Al_sg225.ncmat;dcutoff=1.4;incoh_elas=0;inelas=0")
+::NCrystalTest:: Verifying loaded Scatter object
+::NCrystalTest:: Trying to createScatterIndependentRNG("stdlib::Ni_sg225.ncmat;dcutoff=0.6;vdoslux=2",2543577)
+::NCrystalTest:: Verifying loaded Scatter object
+::NCrystalTest:: Trying to createScatterIndependentRNG("stdlib::Ge_sg227.ncmat;dcutoff=0.5;mos=40.0arcsec;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0",3453455)
+::NCrystalTest:: Verifying loaded Scatter object
+::NCrystalTest:: standard Python-API testing done
+Tests completed succesfully
+
+---> testing fast Bragg threshold detection:
+  Fast Bragg threshold(1) 6.512627
+  Full init bragg threshold(1) 6.512627
+
+Test loading of :>>>unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.ncmat<<<
+Test loading of :>>>unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.ncmat;inelas=test䔀abc<<<
+Caught expected NCBadInput!: Forbidden character "\x0-28" in configuration string! Problem found in string: unicodedir_test䔀abc/Al_sg225.ncmat;inelas=test䔀abc
+Test loading of :>>>phases<1.0*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.ncmat><<<
+Test loading of :>>>phases<1.0*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.ncmat><<<
+Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.ncmat&0.9*void.ncmat><<<
+  debyeIsotropicMSD( TDebye=5, T=1, mass=1.007 ) = 9.080584874
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=1, mass=1.007 ) = 0.09032536977
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=1, mass=1.007 ) = 0.003612866453
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+  debyeIsotropicMSD( TDebye=5, T=1, mass=10 ) = 0.9144148969
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=1, mass=10 ) = 0.009095764735
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=1, mass=10 ) = 0.0003638156518
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+  debyeIsotropicMSD( TDebye=5, T=1, mass=300 ) = 0.03048049656
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=1, mass=300 ) = 0.0003031921578
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=1, mass=300 ) = 1.212718839e-05
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+  debyeIsotropicMSD( TDebye=5, T=300, mass=1.007 ) = 1734.189165
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=300, mass=1.007 ) = 0.2841150205
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=300, mass=1.007 ) = 0.003634260754
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+  debyeIsotropicMSD( TDebye=5, T=300, mass=10 ) = 174.632849
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=300, mass=10 ) = 0.02861038257
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=300, mass=10 ) = 0.0003659700579
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+  debyeIsotropicMSD( TDebye=5, T=300, mass=300 ) = 5.821094965
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=300, mass=300 ) = 0.000953679419
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=300, mass=300 ) = 1.219900193e-05
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+  debyeIsotropicMSD( TDebye=5, T=10000, mass=1.007 ) = 57805.85988
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=10000, mass=1.007 ) = 9.032566967
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=10000, mass=1.007 ) = 0.01484894712
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+  debyeIsotropicMSD( TDebye=5, T=10000, mass=10 ) = 5821.05009
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=10000, mass=10 ) = 0.9095794936
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=10000, mass=10 ) = 0.001495288975
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+  debyeIsotropicMSD( TDebye=5, T=10000, mass=300 ) = 194.035003
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=5
+  debyeIsotropicMSD( TDebye=400, T=10000, mass=300 ) = 0.03031931645
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=400
+  debyeIsotropicMSD( TDebye=10000, T=10000, mass=300 ) = 4.984296584e-05
+  ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
+[{'group_description': 'Base parameters',
+  'parameters': [{'allowed_input_units': None,
+                  'default_value': '',
+                  'default_value_str': '',
+                  'description': 'Modify atomic definitions if supported (in '
+                                 'practice this is unlikely to be supported by '
+                                 'anything except NCMAT data). The string must '
+                                 'follow a syntax identical to that used in '
+                                 '@ATOMDB sections of NCMAT file (cf. '
+                                 'https://github.com/mctools/ncrystal/wiki/NCMAT-format), '
+                                 'with a few exceptions explained here: First '
+                                 "of all, colons (':') are interpreted as "
+                                 'whitespace characters, which might '
+                                 'occasionally be useful (e.g. on the command '
+                                 "line). Next, '@' characters play the role of "
+                                 'line separators. Finally, when used with an '
+                                 'NCMAT file that already includes an internal '
+                                 '@ATOMDB section, the effect will essentially '
+                                 'be to combine the two sections by appending '
+                                 'the atomdb lines from this cfg parameter to '
+                                 'the lines already present in the input data. '
+                                 'The exception is the case where the cfg '
+                                 'parameter contains an initial line with the '
+                                 'single word "nodefaults" the effect of which '
+                                 'will always be the same as if it was placed '
+                                 'on the very first line in the @ATOMDB '
+                                 "section (i.e. NCrystal's internal database "
+                                 'of elements and isotopes will be ignored).',
+                  'name': 'atomdb',
+                  'type': 'string'},
+                 {'allowed_input_units': 'Aa [default], nm, mu, mm, cm, m',
+                  'default_value': 0.0,
+                  'default_value_str': '0',
+                  'description': 'Crystal planes with d-spacing below this '
+                                 'value will be ignored. The special value of '
+                                 '0 implies an automatic selection of this '
+                                 'threshold. Note that for backwards '
+                                 'compatibility -1 is treated as 0 (for now).',
+                  'name': 'dcutoff',
+                  'type': 'floating point number',
+                  'unit': 'Aa'},
+                 {'allowed_input_units': 'Aa [default], nm, mu, mm, cm, m',
+                  'default_value': inf,
+                  'default_value_str': 'inf',
+                  'description': 'Crystal planes with d-spacing above this '
+                                 'value will be ignored.',
+                  'name': 'dcutoffup',
+                  'type': 'floating point number',
+                  'unit': 'Aa'},
+                 {'allowed_input_units': None,
+                  'default_value': '',
+                  'default_value_str': '',
+                  'description': 'This parameter can be used by experts to '
+                                 'bypass the usual factory selection logic for '
+                                 'material Info objects. A factory can be '
+                                 'selected by providing its name, or excluded '
+                                 'by prefixing the name with "!". Multiple '
+                                 'entries must be separated by an "@" sign '
+                                 '(obviously at most one non-excluded entry '
+                                 'can appear).',
+                  'name': 'infofactory',
+                  'type': 'string'},
+                 {'allowed_input_units': 'K [default], C, F',
+                  'default_value': -1.0,
+                  'default_value_str': '-1',
+                  'description': 'Temperature of material in Kelvin. The '
+                                 'special value of -1.0 implies 293.15K unless '
+                                 'input data is only valid at a specific '
+                                 'temperature, in which case that temperature '
+                                 'is used instead.',
+                  'name': 'temp',
+                  'type': 'floating point number',
+                  'unit': 'K'}]},
+ {'group_description': 'Basic parameters related to scattering processes',
+  'parameters': [{'allowed_input_units': None,
+                  'default_value': True,
+                  'default_value_str': '1',
+                  'description': 'If enabled, coherent elastic components will '
+                                 'be included for solid materials. In the case '
+                                 'of crystalline materials this is essentially '
+                                 'Bragg diffraction.',
+                  'name': 'coh_elas',
+                  'type': 'boolean'},
+                 {'allowed_input_units': None,
+                  'default_value': True,
+                  'default_value_str': '1',
+                  'description': 'If enabled, incoherent elastic scattering '
+                                 'components will be included for solid '
+                                 'materials.',
+                  'name': 'incoh_elas',
+                  'type': 'boolean'},
+                 {'allowed_input_units': None,
+                  'default_value': 'auto',
+                  'default_value_str': 'auto',
+                  'description': 'Influence choice of inelastic scattering '
+                                 'models. The default value of "auto" leaves '
+                                 'the choice to the code, and values of '
+                                 '"none", "0", "false", or "sterile", all '
+                                 'disable inelastic scattering. The standard '
+                                 'scatter plugin currently supports additional '
+                                 'values: "external", "dyninfo", "vdosdebye", '
+                                 'and "freegas", and internally the "auto" '
+                                 'mode will simply select the first possible '
+                                 'of those in the listed order (falling back '
+                                 'to "none" when nothing is possible). Note '
+                                 'that "external" is only currently supported '
+                                 'by .nxs files. The "dyninfo" mode will '
+                                 'simply base modelling on whatever dynamic '
+                                 'information is available for each element in '
+                                 'the input data. The "vdosdebye" and '
+                                 '"freegas" modes overrides this, and force '
+                                 'those models for all elements if possible '
+                                 '(thus "inelas=freegas;elas=0" can be used to '
+                                 'force a pure free-gas scattering model). The '
+                                 '"external" mode implies usage of an '
+                                 'externally provided cross-section curve with '
+                                 'an isotropic-elastic scattering model.',
+                  'name': 'inelas',
+                  'type': 'string'},
+                 {'allowed_input_units': None,
+                  'default_value': True,
+                  'default_value_str': '1',
+                  'description': 'Control presence of SANS models.  Note that '
+                                 'this parameter is primarily added to support '
+                                 'future developments.',
+                  'name': 'sans',
+                  'type': 'boolean'},
+                 {'allowed_input_units': None,
+                  'default_value': '',
+                  'default_value_str': '',
+                  'description': 'This parameter can be used by experts to '
+                                 'bypass the usual factory selection logic for '
+                                 'Scatter objects. A factory can be selected '
+                                 'by providing its name, or excluded by '
+                                 'prefixing the name with "!". Multiple '
+                                 'entries must be separated by an "@" sign '
+                                 '(obviously at most one non-excluded entry '
+                                 'can appear).',
+                  'name': 'scatfactory',
+                  'type': 'string'},
+                 {'allowed_input_units': None,
+                  'default_value': 3,
+                  'default_value_str': '3',
+                  'description': 'Setting affecting "luxury" level when '
+                                 'expanding phonon spectrums (VDOS) into '
+                                 'scattering kernels. This primarily impacts '
+                                 'the granularity of the kernel and the upper '
+                                 'neutron energy (Emax) beyond which free-gas '
+                                 'extrapolation is used, with implication for '
+                                 'memory usage and initialisation time. '
+                                 'Allowed values are: 0 (Extremely crude, '
+                                 '100x50 grid, Emax=0.5eV, 0.1MB, 0.02s init), '
+                                 '1 (Crude, 200x100 grid, Emax=1eV, 0.5MB, '
+                                 '0.02s init), 2 (Decent, 400x200 grid, '
+                                 'Emax=3eV, 2MB, 0.08s init), 3 (Good, 800x400 '
+                                 'grid, Emax=5eV, 8MB, 0.2s init), 4 (Very '
+                                 'good, 1600x800 grid, Emax=8eV, 30MB, 0.8s '
+                                 'init), 5 (Overkill, 3200x1600 grid, '
+                                 'Emax=12eV, 125MB, 5s init). Note that when '
+                                 'no actual VDOS input curve is available and '
+                                 'one is approximated from a Debye '
+                                 'temperature, the vdoslux level actually used '
+                                 'will be 3 less than the one specified in '
+                                 'this parameter (but at least 0).',
+                  'name': 'vdoslux',
+                  'type': 'integer'},
+                 {'description': 'Obsolete parameter which can be used to '
+                                 'disable all physics processes except bragg '
+                                 'diffraction. It only accepts "bkgd=0" or '
+                                 '"bkgd=none", and is equivalent to '
+                                 '"inelas=0;incoh_elas=0;sans=0".',
+                  'name': 'bkgd',
+                  'type': 'pseudo'},
+                 {'description': 'This is simply an alias for the "coh_elas" '
+                                 'parameter (although the name does not '
+                                 'strictly make sense for non-crystalline '
+                                 'solids).',
+                  'name': 'bragg',
+                  'type': 'pseudo'},
+                 {'description': 'Convenience parameter which can be used to '
+                                 'disable everything except  the specified '
+                                 'components. Note that this crucially does '
+                                 'not re-enable the listed components if they '
+                                 'have already been disabled. Components are '
+                                 'listed as a comma separated list, and '
+                                 'recognised component names are: "elas", '
+                                 '"incoh_elas", "coh_elas", "bragg", "inelas", '
+                                 'and "sans".',
+                  'name': 'comp',
+                  'type': 'pseudo'},
+                 {'description': 'Convenience parameter which can be used to '
+                                 'assign values to all of the  "coh_elas", '
+                                 '"incoh_elas", and "sans" parameters at once. '
+                                 'Thus, "elas=0" is a convenient way of '
+                                 'disabling elastic scattering processes and '
+                                 'is equivalent to '
+                                 '"coh_elas=0;incoh_elas=0;sans=0".',
+                  'name': 'elas',
+                  'type': 'pseudo'}]},
+ {'group_description': 'Advanced parameters related to scattering processes '
+                       '(single crystals)',
+  'parameters': [{'allowed_input_units': None,
+                  'default_value': None,
+                  'default_value_str': None,
+                  'description': 'Primary orientation axis of a single '
+                                 'crystal. This is specified by indicating the '
+                                 'direction of given axis in both the crystal '
+                                 '(c1,c2,c2) and lab frames (l1,l2,l3), using '
+                                 'the format "@crys:c1,c2,c3@lab:l1,l2,l3". '
+                                 'The direction in the crystal frame can '
+                                 'alternatively be provided in HKL space '
+                                 '(indicating the normal of a given HKL '
+                                 'plane), by using "@crys_hkl:" instead of '
+                                 '"@crys:": '
+                                 '"dir1=@crys_hkl:c1,c2,c3@lab:l1,l2,l3". When '
+                                 'this parameter is set, the parameters mos '
+                                 'and dir2 must also be provided.',
+                  'name': 'dir1',
+                  'type': 'crystal axis orientation'},
+                 {'allowed_input_units': None,
+                  'default_value': None,
+                  'default_value_str': None,
+                  'description': 'Secondary orientation axis of a single '
+                                 'crystal. This is specified using the same '
+                                 'syntax as for the dir1 parameter. In general '
+                                 'the opening angle between the dir1 and dir2 '
+                                 'vectors must be nonzero and identical in the '
+                                 'crystal and lab frames, but a discrepancy up '
+                                 'to the value of the dirtol parameter is '
+                                 'allowed. In any case, the components of the '
+                                 'dir2 vectors parallel to the dir1 vectors '
+                                 'are ignored. When this parameter is set, the '
+                                 'parameters mos and dir1 must also be '
+                                 'provided.',
+                  'name': 'dir2',
+                  'type': 'crystal axis orientation'},
+                 {'allowed_input_units': 'rad [default], deg, arcmin, arcsec',
+                  'default_value': 0.0001,
+                  'default_value_str': '0.0001',
+                  'description': 'Tolerance parameter for the secondary '
+                                 'direction of the single crystal orientation '
+                                 '(see the dir2 parameter description for more '
+                                 'information). A value of 180deg can be used '
+                                 'to easily set up a single crystal '
+                                 'monochromator where one is only interested '
+                                 'in the primary direction. When this '
+                                 'parameter is set, the parameters mos, dir1, '
+                                 'and dir2 must also be provided.',
+                  'name': 'dirtol',
+                  'type': 'floating point number',
+                  'unit': 'rad'},
+                 {'allowed_input_units': None,
+                  'default_value': None,
+                  'default_value_str': None,
+                  'description': 'Symmetry axis of anisotropic layered '
+                                 'crystals with a layout similar to pyrolytic '
+                                 'graphite (PG). The axis must be provided in '
+                                 'direct lattice coordinates using a format '
+                                 'like "0,0,1". Specifying this parameter '
+                                 'along with an orientation (see dir1 and dir2 '
+                                 'parameters) will result in the appropriate '
+                                 'anisotropic single crystal scatter model '
+                                 'being used for Bragg diffraction.',
+                  'name': 'lcaxis',
+                  'type': 'vector (3D)'},
+                 {'allowed_input_units': None,
+                  'default_value': 0,
+                  'default_value_str': '0',
+                  'description': 'Choose which modelling is used for layered '
+                                 'crystals like PG (ignored unless the lcaxis, '
+                                 'dir1, and dir2 parameters are set). The '
+                                 'default value 0 enables the recommended '
+                                 'model, which is both fast and accurate. A '
+                                 'positive value N triggers a very slow but '
+                                 'simple reference model, in which N '
+                                 'crystallite orientations are sampled '
+                                 'internally (the model is accurate only when '
+                                 'N is very high). A negative value -N '
+                                 'triggers a different (and multi-thread '
+                                 'unsafe!) model in which each crossSection '
+                                 'call triggers a new selection of N randomly '
+                                 'oriented crystallites.',
+                  'name': 'lcmode',
+                  'type': 'integer'},
+                 {'allowed_input_units': 'rad [default], deg, arcmin, arcsec',
+                  'default_value': None,
+                  'default_value_str': None,
+                  'description': 'Mosaic FWHM spread in mosaic single '
+                                 'crystals. When this parameter is set, the '
+                                 'parameters dir1 and dir2 must also be '
+                                 'provided.',
+                  'name': 'mos',
+                  'type': 'floating point number',
+                  'unit': 'rad'},
+                 {'allowed_input_units': None,
+                  'default_value': 0.001,
+                  'default_value_str': '0.001',
+                  'description': 'Approximate relative numerical precision in '
+                                 'implementation of mosaic model in single '
+                                 'crystals.',
+                  'name': 'mosprec',
+                  'type': 'floating point number'},
+                 {'allowed_input_units': 'Aa [default], nm, mu, mm, cm, m',
+                  'default_value': 0.4,
+                  'default_value_str': '0.4',
+                  'description': 'Single-crystal modelling cutoff. Crystal '
+                                 'planes with d-spacing below this value will '
+                                 'be approximated as having infinite mosaicity '
+                                 '(as in a powder). A value of 0 naturally '
+                                 'disables this approximation entirely.',
+                  'name': 'sccutoff',
+                  'type': 'floating point number',
+                  'unit': 'Aa'},
+                 {'allowed_input_units': None,
+                  'default_value': '',
+                  'default_value_str': '',
+                  'description': 'Modify how UCN (ultra cold neutron) '
+                                 'production is handled in inelastic models. '
+                                 'The value "refine" simply improves the '
+                                 'modelling by replacing the usual scattering '
+                                 'kernel treatment near the kinematic '
+                                 'endpoint, where the neutron ends with less '
+                                 'than 300neV, with a different model. The '
+                                 'values "only" and "remove" performs the same '
+                                 'split of the modelling, but then leaves out '
+                                 'either all non-UCN or all UCN processes, '
+                                 'respectively, from the inelastic cross '
+                                 'sections. Finally, the threshold value of '
+                                 '300neV can be modified by appending the '
+                                 'desired value to the first keyword, '
+                                 'separated by a ":" character. The default '
+                                 'unit is eV, but meV and neV are supported as '
+                                 'well, so "ucnmode=refine:200neV", '
+                                 '"ucnmode=remove:2e-7eV", '
+                                 '"ucnmode=remove:2e-7", and '
+                                 '"ucnmode=only:0.0002meV" all specify the '
+                                 'same threshold. In addition to simply '
+                                 'refining the UCN model, the primary intended '
+                                 'purpose of the ucnmode parameter is to allow '
+                                 'one to split out the UCN process from the '
+                                 'rest, in order to perform biased Monte Carlo '
+                                 'simulations of UCN production in moderators.',
+                  'name': 'ucnmode',
+                  'type': 'string'}]},
+ {'group_description': 'Parameters related to absorption processes',
+  'parameters': [{'allowed_input_units': None,
+                  'default_value': '',
+                  'default_value_str': '',
+                  'description': 'This parameter can be used by experts to '
+                                 'bypass the usual factory selection logic for '
+                                 'Absorption objects. A factory can be '
+                                 'selected by providing its name, or excluded '
+                                 'by prefixing the name with "!". Multiple '
+                                 'entries must be separated by an "@" sign '
+                                 '(obviously at most one non-excluded entry '
+                                 'can appear).',
+                  'name': 'absnfactory',
+                  'type': 'string'}]},
+ {'group_description': 'Special parameters',
+  'parameters': [{'allowed_input_units': 'gcm3 kgm3 perAa3 x',
+                  'description': 'Modify the density state, which can be a '
+                                 'scale factor (specified with the unit "x"), '
+                                 'or an absolute value (using units "gcm3" for '
+                                 'g/cm^3, "kgm3" for kg/m^3, or "perAa3" for '
+                                 'atoms/angstrom^3). When an absolute value is '
+                                 'specified, that value is simply used. '
+                                 'However, when a scale factor is specified '
+                                 '(e.g. density=1.2x), then the previous value '
+                                 'is instead scaled by that value. Thus, '
+                                 'appending ";density=1.2x" to a cfg-string '
+                                 'will always increase the resulting material '
+                                 'density by 20%. If unspecified, the density '
+                                 'state will be "1x" (i.e. material densities '
+                                 'are left as they are). Note that since it '
+                                 'could easily lead to undesired behaviour, '
+                                 'scale factor density assignments are not '
+                                 'allowed for usage when cfg strings are '
+                                 'embedded in input data (but absolute density '
+                                 'values are always allowed).',
+                  'name': 'density',
+                  'type': 'special'},
+                 {'description': 'Specific material sub-phases can be selected '
+                                 'by assigning an index value to this '
+                                 'pseudo-parameter. More precisely, the '
+                                 'parameter picks out child phases in LOADED '
+                                 'materials, not at the configuration level. '
+                                 'This is an important distinction since a '
+                                 'single entry at the cfg-level might actually '
+                                 'result in multiple phases being loaded. As '
+                                 'an example, one would typically expect that '
+                                 'loading a file called "my_sans_sample.ncmat" '
+                                 'would result in a multiphase material with '
+                                 'two phases. Specifying '
+                                 '"my_sans_sample.ncmat;phasechoice=0" would '
+                                 'then pick out one of these phases, and '
+                                 '"my_sans_sample.ncmat;phasechoice=1" the '
+                                 'other. When multi-phase materials are '
+                                 'defined recursively with some child-phases '
+                                 'themselves being multi-phased, the '
+                                 'phasechoice parameter can be specified more '
+                                 'than once to navigate deeper into the '
+                                 'sub-phase tree.',
+                  'name': 'phasechoice',
+                  'type': 'special'}]}]

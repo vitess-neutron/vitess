@@ -63,7 +63,7 @@ compile-rocky8:
     LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
   before_script:
     - dnf install -y epel-release
-    - dnf install -y make gcc-toolset-12 libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - dnf install -y make gcc-toolset-12 libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3.12
     - . /opt/rh/gcc-toolset-12/enable
     - *linux_before_script
 
@@ -76,7 +76,7 @@ compile-rocky9:
     OS: Rocky9
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3
     - *linux_before_script
 
 compile-centos7:
@@ -91,7 +91,7 @@ compile-centos7:
     - sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS*.repo
     - sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS*.repo
     - sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS*.repo
-    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip libxml2-devel
+    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip libxml2-devel python3
     - *linux_before_script
     - cd vitess-data
     - ./cmake-3.28.5-linux-x86_64.sh --skip-license --prefix=/usr/local
@@ -105,7 +105,7 @@ compile-ubuntu:
     ARCH: x86_64
   before_script:
     - apt-get update
-    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev python3
     - *linux_before_script
 
 compile-fedora40:
@@ -115,7 +115,7 @@ compile-fedora40:
     OS: Fedora40
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3
     - *linux_before_script
 
 compile-debian:
@@ -126,7 +126,7 @@ compile-debian:
     ARCH: x86_64
   before_script:
     - apt-get update
-    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev python3
     - *linux_before_script
 
 compile-darwin:

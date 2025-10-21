@@ -9,7 +9,7 @@ MODULES_DIR = ../MODULES
 GSLPATH = ./rng
 G2PATH = ./g2-0.72
 NCRYSTALPATH = ./ncrystal
-KDSOURCEPATH := ./kdsource
+KDSOURCEPATH = ./kdsource
 
 SYS := $(shell uname -s)
 ARCH := $(shell uname -m)

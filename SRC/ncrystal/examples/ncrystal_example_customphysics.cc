@@ -2,7 +2,7 @@
 //                                                                            //
 //  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   //
 //                                                                            //
-//  Copyright 2015-2024 NCrystal developers                                   //
+//  Copyright 2015-2025 NCrystal developers                                   //
 //                                                                            //
 //  Licensed under the Apache License, Version 2.0 (the "License");           //
 //  you may not use this file except in compliance with the License.          //
@@ -55,10 +55,10 @@
 //guarantee any form of long-term API stability for these internal files (we
 //simply do not have the manpower to do so):
 
-#include "NCrystal/internal/NCRandUtils.hh"
+#include "NCrystal/internal/utils/NCRandUtils.hh"
 
 //We also use NCrystal::str2dbl from:
-#include "NCrystal/internal/NCString.hh"
+#include "NCrystal/internal/utils/NCString.hh"
 
 #include <iostream>
 

@@ -1,0 +1,16 @@
+atomdb
+dump
+dyninfoutils
+extd_utils
+factories
+infobld
+interfaces
+minimc
+misc
+ncmat
+phys_utils
+plugins
+sab
+threads
+utils
+vdos
