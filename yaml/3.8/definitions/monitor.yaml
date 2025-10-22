@@ -1,0 +1,218 @@
+monitor_eMonPar: &monitor_eMonPar
+  name: "eMonPar"
+  hidden: true
+  label: "variable parameter"
+  tooltip: "parameter, as a function of which the intensity is shown"
+  <<: *VtMon1Par
+  options: ["MON_LAMBDA","MON_TIME","MON_DIV_Y","MON_DIV_Z","MON_Y","MON_Z","MON_ENERGY","MON_DIV_YZ"]
+  prefix: "-k"
+
+monitor_sMonFile: &monitor_sMonFile
+  name: "sMonFile"
+  type: "file"
+  plottable: true
+  editable: false
+  label: "monitor file"
+  tooltip: "monitor output file"
+  default: "monitor.dat"
+  prefix: "-O"
+  required: true
+monitor_sRefFile: &monitor_sRefFile
+  name: "sRefFile"
+  type: "file"
+  plottable: false
+  editable: false
+  label: "reference file"
+  tooltip: "Reference input file containing data to normalize the monitored data"
+  prefix: "-R"
+  required: false
+
+monitor_Title_Range: &monitor_Title_Range
+  name: "Title_Range"
+  type: "title"
+  label: "Range"
+monitor_Title_Ranges: &monitor_Title_Ranges
+  name: "Title_Ranges"
+  type: "title"
+  label: "Ranges"
+
+monitor_nBins: &monitor_nBins
+  name: "nBins"
+  type: "int"
+  label: "number of bins"
+  tooltip: "number of monitor channels"
+  default: 100
+  min: 1
+  column: 2
+  prefix: "-n"
+  required: true
+monitor_nBinsY: &monitor_nBinsY
+  name: "nBinsY"
+  type: "int"
+  label: "number of y-bins"
+  tooltip: "number of monitor channels in horizontal direction"
+  default: 50
+  min: 1
+  column: 2
+  prefix: "-y"
+  required: true
+monitor_nBinsZ: &monitor_nBinsZ
+  name: "nBinsZ"
+  type: "int"
+  label: "number of z-bins"
+  tooltip: "number of monitor channels in vertical direction"
+  default: 50
+  min: 1
+  column: 2
+  prefix: "-z"
+  required: true
+
+monitor_Title_Opt: &monitor_Title_Opt
+  name: "Title_Opt"
+  type: "title"
+  label: "Options"
+monitor_iColor: &monitor_iColor
+  name: "iColor"
+  type: "int"
+  tooltip: "excludes all neutrons with diff. color from monitoring, except when bAllFile==TRUE"
+  label: "color"
+  min: -1
+  default: -1
+  column: 0
+  prefix: "-C"
+  required: false
+monitor_bAllFile: &monitor_bAllFile
+  name: "bAllFile"
+  type: "bool"
+  label: "all files"
+  tooltip: "generates additional files for colour: 0, 1, ..., iColor"
+  default: no
+  column: 1
+  prefix: "-c"
+  required: false
+
+monitor_bProbWeight: &monitor_bProbWeight
+  name: "bProbWeight"
+  type: "bool"
+  label: "probability weight"
+  tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+  default: yes
+  column: 0
+  prefix: "-p"
+  required: false
+monitor_bExcl: &monitor_bExcl
+  name: "bExcl"
+  type: "bool"
+  label: "exclusive counts"
+  tooltip: "yes: only trajectories meeting the monitor conditions are written no: all are written"
+  default: no
+  column: 1
+  prefix: "-e"
+  required: false
+monitor_eMonNorm: &monitor_eMonNorm
+  name: "eMonNorm"
+  label: "normalization"
+  tooltip: "none: intensities of the neutron trajctories are distributed unchanged into channels bin size: intensities are normalized to the channel width reference file: intensities are divided by those in the reference file"
+  <<: *VtMonNorm
+  options: ["NO_NORM","NORM_BIN_SIZE","NORM_REF_FILE"]
+  default: "NO_NORM"
+  column: 2
+  prefix: "-f"
+  required: false
+monitor_eFormat: &monitor_eFormat
+  name: "eFormat"
+  label: "file format"
+  tooltip: "file format for output: matrix: 2D matrix   xyz: 3 columns x, y, f(x,y);  compact: only 1 line of header, minimal number of digits.  integer: integer numbers rounded from calculated intensity"
+  <<: *VtFormat2D
+  options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+  default: "XYZ"
+  column: 2
+  prefix: "-F"
+  required: true
+
+monitor_Title_Filter: &monitor_Title_Filter
+  name: "Title_Filter"
+  type: "title"
+  label: "Filter selection"
+monitor_FilterMinTime: &monitor_FilterMinTime
+  name: "FilterMinTime"
+  type: "float"
+  label: "time interval begin"
+  unit: "ms"
+  tooltip: "minimal TOF to be taken into account"
+  column: 0
+  prefix: "-t"
+  required: false
+monitor_FilterMaxTime: &monitor_FilterMaxTime
+  name: "FilterMaxTime"
+  type: "float"
+  label: "time interval end"
+  unit: "ms"
+  tooltip: "maximal TOF to be taken into account"
+  column: 1
+  prefix: "-T"
+  required: false
+monitor_FilterMinLambda: &monitor_FilterMinLambda
+  name: "FilterMinLambda"
+  type: "float"
+  label: "filter lambda min"
+  unit: "Ang"
+  tooltip: "minimal wavelength to be taken into account"
+  column: 0
+  prefix: "-l"
+monitor_FilterMaxLambda: &monitor_FilterMaxLambda
+  name: "FilterMaxLambda"
+  type: "float"
+  label: "filter lambda min"
+  unit: "Ang"
+  tooltip: "maximal wavelength to be taken into account"
+  column: 1
+  prefix: "-L"
+monitor_FilterMinY: &monitor_FilterMinY
+  name: "FilterMinY"
+  type: "float"
+  label: "filter y pos. min"
+  unit: "cm"
+  tooltip: "minimal horizontal position to be taken into account"
+  column: 0
+  prefix: "-y"
+  required: false
+monitor_FilterMaxY: &monitor_FilterMaxY
+  name: "FilterMaxY"
+  type: "float"
+  label: "filter y pos. max"
+  unit: "cm"
+  tooltip: "maximal horizontal position to be taken into account"
+  column: 1
+  prefix: "-Y"
+  required: false
+monitor_FilterMinZ: &monitor_FilterMinZ
+  name: "FilterMinZ"
+  type: "float"
+  label: "filter z pos. min"
+  unit: "cm"
+  tooltip: "minimal vertical position to be taken into account"
+  column: 0
+  prefix: "-z"
+  required: false
+monitor_FilterMaxZ: &monitor_FilterMaxZ
+  name: "FilterMaxZ"
+  type: "float"
+  label: "filter z pos. max"
+  unit: "cm"
+  tooltip: "maximal vertical position to be taken into account"
+  column: 1
+  prefix: "-Z"
+  required: false
+monitor_FilterMinY_2D: &monitor_FilterMinY_2D
+  <<: *monitor_FilterMinY
+  prefix: "-u"
+monitor_FilterMaxY_2D: &monitor_FilterMaxY_2D
+  <<: *monitor_FilterMaxY
+  prefix: "-U"
+monitor_FilterMinZ_2D: &monitor_FilterMinZ_2D
+  <<: *monitor_FilterMinZ
+  prefix: "-v"
+monitor_FilterMaxZ_2D: &monitor_FilterMaxZ_2D
+  <<: *monitor_FilterMaxZ
+  prefix: "-V"

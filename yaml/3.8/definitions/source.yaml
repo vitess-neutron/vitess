@@ -1,0 +1,343 @@
+source_eSrcKind: &source_eSrcKind
+  <<: *VtSrcKind
+  name: "eSrcKind"
+  hidden: true
+  options: ["SRC_SIMPLE", "SRC_CWS", "SRC_PULSED", "SRC_ISIS", "SRC_ESS"]
+  prefix: "-K"
+  required: true
+source_eSrcType: &source_eSrcType
+  <<: *VtSrcType
+  name: "eSrcType"
+  tooltip: "parameter describing the time dependence of the proton beam: continuous (CWS), short pulses (SPSS) or long pulses (LPSS)"
+  options: ["NO_TYPE", "CWS", "LPSS", "SPSS"]
+  prefix: "-S"
+  required: true
+source_eSrcName: &source_eSrcName
+  <<: *VtSrcName
+  name: "eSrcName"
+  tooltip: "name of the source, (needed for analytical calculations of source characteristics)"
+  prefix: "-N"
+  required: true
+source_Title_Sim: &source_Title_Sim
+  name: "Title_Sim"
+  type: "title"
+  label: "Simulation parameters"
+source_nBunches: &source_nBunches
+  name: "nBunches"
+  type: "int"
+  label: "number of bundels"
+  tooltip: "number of packages into which the whole simulation is separated"
+  default: 5
+  column: 0
+  prefix: "-l"
+  required: true
+source_nTraj: &source_nTraj
+  name: "nTraj"
+  type: "float"
+  label: "number of traj. per bundle"
+  unit: ""
+  tooltip: "number of neutron trajectories (events) created in each bundle"
+  default: 1000000
+  column: 1
+  prefix: "-n"
+  required: true
+source_sSimName: &source_sSimName
+  name: "sSimName"
+  type: "string"
+  label: "simulation name"
+  tooltip: "name or ID of the simulation given by the user (only for indexing)"
+  column: 2
+  prefix: "-I"
+  required: false
+source_MinLambda: &source_MinLambda
+  name: "MinLambda"
+  type: "float"
+  label: "min. wavelength"
+  unit: "Ang"
+  tooltip: "minimum of the wavelength range"
+  min: 0.0
+  default: 1.0
+  column: 0
+  prefix: "-m"
+  required: true
+source_MaxLambda: &source_MaxLambda
+  name: "MaxLambda"
+  type: "float"
+  label: "max. wavelength"
+  unit: "Ang"
+  tooltip: "maximum of the wavelength range"
+  default: 5.0
+  column: 0
+  prefix: "-M"
+  required: true
+source_MinTime: &source_MinTime
+  name: "MinTime"
+  type: "float"
+  label: "min. time"
+  unit: "ms"
+  tooltip: "minimum of the time frame to start neutrons"
+  min: 0.0
+  default: 0.0
+  column: 1
+  prefix: "-t"
+  required: true
+source_MaxTime: &source_MaxTime
+  name: "MaxTime"
+  type: "float"
+  label: "max. time"
+  unit: "ms"
+  tooltip: "maximum of the time frame to start neutrons"
+  default: 2.0
+  column: 1
+  prefix: "-T"
+  required: true
+
+source_Freq: &source_Freq
+  name: "Freq"
+  type: "float"
+  label: "frequency"
+  unit: "Hz"
+  tooltip: "pulse repetition rate"
+  default: 50
+  column: 0
+  prefix: "-R"
+  required: true
+source_PulseLen: &source_PulseLen
+  name: "PulseLen"
+  type: "float"
+  label: "proton pulse length"
+  unit: "ms"
+  tooltip: "proton pulse length"
+  default: 1.0
+  column: 1
+  prefix: "-p"
+  required: true
+source_SrcPower: &source_SrcPower
+  name: "SrcPower"
+  type: "float"
+  label: "source power"
+  unit: "MW"
+  tooltip: "average source power"
+  default: 2.0
+  column: 1
+  prefix: "-L"
+  required: false
+source_ModDecl: &source_ModDecl
+  name: "ModDecl"
+  type: "float"
+  label: "declination"
+  unit: "deg"
+  tooltip: "declination between moderator surface normal and propagation window"
+  default: 0.0
+  column: 2
+  prefix: "-i"
+  required: false
+
+source_sModFile: &source_sModFile
+  name: "sModFile"
+  type: "file"
+  plottable: false
+  editable: true
+  label: "moderator file"
+  tooltip: "name of the file containing the parameters of all moderators. This old way of reading the moderator parameters is kept for compatibility reasons. They are only used if they are not given as direct input parameters."
+  prefix: "-a"
+  required: false
+
+source_Title_Prop: &source_Title_Prop
+  name: "Title_Prop"
+  type: "title"
+  label: "Flight direction and propagation"
+source_eDirMode: &source_eDirMode
+  name: "eDirMode"
+  label: "direction defined"
+  tooltip: "mode to determine neutron directions 'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propageted to the window"
+  <<: *VtDirect
+  options: ["VT_DIVERGENCE", "VT_REAL_WND", "VT_VIRT_WND"]
+  default: "VT_REAL_WND"
+  column: 0
+  prefix: "-d"
+  required: true
+source_MinDivY: &source_MinDivY
+  name: "MinDivY"
+  type: "float"
+  label: "min. divergence x <-> y"
+  unit: "deg"
+  tooltip: "minimum horizontal divergence (absolute value)"
+  column: 0
+  prefix: "-b"
+  required: false
+source_MaxDivY: &source_MaxDivY
+  name: "MaxDivY"
+  type: "float"
+  label: "max. divergence x <-> y"
+  unit: "deg"
+  tooltip: "maximum horizontal divergence (absolute value)"
+  column: 0
+  prefix: "-y"
+  required: false
+source_MinDivZ: &source_MinDivZ
+  name: "MinDivZ"
+  type: "float"
+  label: "min. divergence x <-> z"
+  unit: "deg"
+  tooltip: "minimum vertical divergence (absolute value)"
+  column: 1
+  prefix: "-c"
+  required: false
+source_MaxDivZ: &source_MaxDivZ
+  name: "MaxDivZ"
+  type: "float"
+  label: "max. divergence x <-> z"
+  unit: "deg"
+  tooltip: "maximum vertical divergence (absolute value)"
+  column: 1
+  prefix: "-z"
+  required: false
+source_TargetDist: &source_TargetDist
+  name: "TargetDist"
+  type: "float"
+  label: "distance to window"
+  unit: "cm"
+  tooltip: "distance moderator - target window"
+  min: 0.0
+  default: 100.0
+  column: 0
+  prefix: "-D"
+  required: false
+source_TargetWidth: &source_TargetWidth
+  name: "TargetWidth"
+  type: "float"
+  label: "window width"
+  unit: "cm"
+  tooltip: "width of the target window"
+  min: 0.0
+  default: 3.0
+  column: 1
+  prefix: "-w"
+  required: false
+source_TargetHeight: &source_TargetHeight
+  name: "TargetHeight"
+  type: "float"
+  label: "window height"
+  unit: "cm"
+  tooltip: "height of the target window"
+  min: 0.0
+  default: 3.0
+  column: 2
+  prefix: "-h"
+  required: false
+
+source_Title_Time: &source_Title_Time
+  name: "Title_Time"
+  type: "title"
+  label: "Time window"
+source_TofDist: &source_TofDist
+  name: "TofDist"
+  type: "float"
+  label: "distance to time window"
+  unit: "cm"
+  tooltip: "distance moderator - position of time window"
+  column: 0
+  prefix: "-s"
+  required: false
+source_TofMin: &source_TofMin
+  name: "TofMin"
+  type: "float"
+  label: "min. TOF to time window"
+  unit: "ms"
+  tooltip: "min TOF allowed in time window"
+  column: 1
+  prefix: "-f"
+  required: false
+source_TofMax: &source_TofMax
+  name: "TofMax"
+  type: "float"
+  label: "max. TOF to time window"
+  unit: "ms"
+  tooltip: "max TOF allowed in time window"
+  column: 2
+  prefix: "-F"
+  required: false
+
+source_Title_Pol: &source_Title_Pol
+  name: "Title_Pol"
+  type: "title"
+  label: "Polarization"
+source_PolDirX: &source_PolDirX
+  name: "PolDirX"
+  type: "float"
+  label: "polarisation direction X"
+  unit: ""
+  tooltip: "x-component of the polarisation"
+  column: 0
+  prefix: "-X"
+  required: false
+source_PolDirY: &source_PolDirY
+  name: "PolDirY"
+  type: "float"
+  label: "Y"
+  unit: ""
+  tooltip: "y-component of the polarisation"
+  column: 1
+  prefix: "-Y"
+  required: false
+source_PolDirZ: &source_PolDirZ
+  name: "PolDirZ"
+  type: "float"
+  label: "Z"
+  unit: ""
+  tooltip: "z-component of the polarisation"
+  column: 2
+  prefix: "-V"
+  required: false
+source_PolDeg: &source_PolDeg
+  name: "PolDeg"
+  type: "float"
+  label: "degree of polarization"
+  unit: "%"
+  tooltip: "degree of polarization"
+  column: 0
+  prefix: "-P"
+  required: false
+
+source_Title_Special: &source_Title_Special
+  name: "Title_Special"
+  type: "title"
+  label: "Special simulation parameters"
+source_TimeMeas: &source_TimeMeas
+  name: "TimeMeas"
+  type: "float"
+  label: "time of measurement"
+  unit: "s"
+  tooltip: "time of measurement in second (used for detector counts)"
+  column: 0
+  prefix: "-A"
+  required: false
+source_LambdaWant: &source_LambdaWant
+  name: "LambdaWant"
+  type: "float"
+  label: "desired wavelength"
+  unit: "Ang"
+  tooltip: "desired wavelength (can be used for chopper phasing)"
+  column: 1
+  prefix: "-W"
+  required: false
+source_eTraceMode: &source_eTraceMode
+  name: "eTraceMode"
+  label: "raytracing mode"
+  tooltip: "write trace files: writes a file for each trajectries of interest only trace trajectories: simulation only started for trajectories of interest"
+  <<: *VtTrace
+  options: ["NO_TRACING", "WRITE_TRC_FILES", "ONLY_TRC_TRAJ"]
+  default: "NO_TRACING"
+  column: 0
+  prefix: "-k"
+  required: false
+source_sTraceFile: &source_sTraceFile
+  name: "sTraceFile"
+  type: "file"
+  plottable: false
+  editable: false
+  label: "raytracing file"
+  tooltip: "name of the file containing the IDs for tracing"
+  prefix: "-r"
+  required: false

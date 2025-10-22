@@ -1,0 +1,67 @@
+mon2_div:
+  executable: "mon2_div"
+  label: "mon2_div"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_sMonFile
+    tooltip: "monitor output file containing intensity as a function of y- and z-position"
+    default: "monitor.div"
+
+  - *monitor_Title_Ranges
+  - name: "MinDivY"
+    type: "float"
+    label: "min. y-value"
+    unit: "deg"
+    tooltip: "minimal horizontal divergence to be monitored"
+    default: -5.0
+    column: 0
+    prefix: "-w"
+    required: true
+  - name: "MaxDivY"
+    type: "float"
+    label: "max. y-value"
+    unit: "deg"
+    tooltip: "maximal horizontal divergence to be monitored"
+    default: 5.0
+    column: 1
+    prefix: "-W"
+    required: true
+  - <<: *monitor_nBinsY
+    # TODO name mismatch
+    name: "nBinsDivY"
+
+  - name: "MinDivZ"
+    type: "float"
+    label: "min. z-value"
+    unit: "deg"
+    tooltip: "minimal vertical divergence to be monitored"
+    default: -5.0
+    column: 0
+    prefix: "-h"
+    required: true
+  - name: "MaxDivZ"
+    type: "float"
+    label: "max. z-value"
+    unit: "deg"
+    tooltip: "maximal vertical divergence to be monitored"
+    default: 5.0
+    column: 1
+    prefix: "-H"
+    required: true
+  - <<: *monitor_nBinsZ
+    # TODO name mismatch
+    name: "nBinsDivZ"
+
+  - *monitor_Title_Opt
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eFormat
+
+  - *monitor_Title_Filter
+  - *monitor_FilterMinLambda
+  - *monitor_FilterMaxLambda
+  - *monitor_FilterMinY_2D
+  - *monitor_FilterMaxY_2D
+  - *monitor_FilterMinZ_2D
+  - *monitor_FilterMaxZ_2D

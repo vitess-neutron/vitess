@@ -1,0 +1,128 @@
+velselect:
+  executable: "velselect"
+  label: "velselect"
+
+  parameters:
+  - name: "Title_Geom"
+    type: "title"
+    label: "Geometry"
+  - name: "WndWidth"
+    type: "float"
+    label: "window width"
+    unit: "cm"
+    tooltip: "Width of entrance and exit window of the selector"
+    column: 0
+    min: 0.00001
+    default: 5.0
+    prefix: "-W"
+    required: true
+  - name: "WndHeight"
+    type: "float"
+    label: "window height"
+    unit: "cm"
+    tooltip: "Height of entrance and exit window of the selector"
+    column: 1
+    min: 0.00001
+    default: 5.0
+    prefix: "-H"
+    required: true
+  - name: "Length"
+    type: "float"
+    label: "length of velselect"
+    unit: "cm"
+    tooltip: "Length of velocity selector"
+    column: 0
+    min: 0.00001
+    default: 25.0
+    prefix: "-l"
+    required: true
+  - name: "RadiusOut"
+    type: "float"
+    label: "outer radius"
+    unit: "cm"
+    tooltip: "Outer radius of the velocity selector"
+    column: 1
+    min: 0.00001
+    default: 14.5
+    prefix: "-r"
+    required: true
+  - name: "RadiusIn"
+    type: "float"
+    label: "inner radius"
+    unit: "cm"
+    tooltip: "Radius of the part of the rotor without absorbing blades"
+    column: 2
+    min: 0.00001
+    default: 8.5
+    prefix: "-i"
+    required: true
+  - name: "AxlePosY"
+    type: "float"
+    label: "horizontal axle position"
+    unit: "cm"
+    tooltip: "Horizontal position of the selector axle (in the co-ordinate system of the beamline)"
+    column: 0
+    default: 0.0
+    prefix: "-Y"
+    required: true
+  - name: "AxlePosZ"
+    type: "float"
+    label: "vertical axle position"
+    unit: "cm"
+    tooltip: "Vertical position of the selector axle (in the co-ordinate system of the beamline)"
+    column: 1
+    default: -11.5
+    prefix: "-Z"
+    required: true
+
+  - name: "Title_Rot"
+    type: "title"
+    label: "Channels and rotation"
+  - name: "Freq"
+    type: "float"
+    label: "rotations per sec."
+    unit: "Hz"
+    tooltip: "Number of rotations per second"
+    column: 0
+    default: 250.0
+    prefix: "-s"
+    required: true
+  - name: "nChannels"
+    type: "int"
+    label: "number of channels"
+    tooltip: "Number of velocity selector channels"
+    column: 1
+    min: 1
+    default: 72
+    prefix: "-w"
+    required: true
+  - name: "Twist"
+    type: "float"
+    label: "twist"
+    unit: "deg"
+    tooltip: "Twist of velocity selector channels "
+    column: 2
+    default: 48.3
+    prefix: "-c"
+    required: true
+  - name: "BladeThickn"
+    type: "float"
+    label: "blade thickness"
+    unit: "cm"
+    tooltip: "Thickness of the blades separating the channels of the velocity selector"
+    column: 0
+    default: 0.04
+    prefix: "-d"
+    required: true
+
+  - name: "Title_Opt"
+    type: "title"
+    label: "Options"
+  - name: "bPass"
+    type: "bool"
+    label: "treat neutrons passing by"
+    tooltip: "no: neutrons passing outside the rotor are removed yes: neutrons passing outside the rotor disc are kept. Warning is given"
+    default: no
+    column: 0
+    prefix: "-p"
+    required: false

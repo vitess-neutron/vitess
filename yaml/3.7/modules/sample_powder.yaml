@@ -1,0 +1,265 @@
+sample_powder:
+  executable: "sample_powder"
+  label: "sample_powder"
+  category: "sample"
+
+  parameters:
+  - name: "sParFile"
+    type: "file"
+    plottable: false
+    editable: false
+    label: "parameter file"
+    tooltip: "File containing parameters of the powder sample These parameters are only used if they are not given as direct input parameters."
+    prefix: "-S"
+  - name: "sStructFile"
+    type: "file"
+    plottable: false
+    editable: false
+    label: "structure factor file"
+    tooltip: "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program."
+    prefix: "-s"
+
+  - name: "bIncohScat"
+    type: "bool"
+    label: "incoherent scattering"
+    tooltip: "yes: activates calculation of incoherent scattering no: no incoherent scattering"
+    column: 0
+    default: no
+    prefix: "-I"
+  - name: "nRep"
+    type: "int"
+    label: "repetition"
+    tooltip: "repetitions (number of trajectories generated per incoming trajectory)"
+    column: 1
+    min: 1
+    default: 1
+    prefix: "-A"
+  - name: "iColor"
+    type: "int"
+    label: "colour"
+    tooltip: "Colour of the neutrons scattered by the powder sample"
+    column: 0
+    min: 0
+    prefix: "-c"
+  - name: "bTreatAll"
+    type: "bool"
+    label: "treat all neutrons"
+    tooltip: "no: only neutrons hitting the sample are treated yes: neutrons passing by are also treated"
+    default: no
+    column: 1
+    prefix: "-a"
+
+  - name: "ScatHor"
+    type: "float"
+    label: "angle horiz final"
+    unit: "deg"
+    tooltip: "horizontal rotation defining the (hoizontal) center of the scattering range (usually the center of the detector)"
+    column: 0
+    default: 90.0
+    prefix: "-D"
+  - name: "ScatVert"
+    type: "float"
+    label: "angle vert final"
+    unit: "deg"
+    tooltip: "vertical rotation defining the (vertical) center of the scattering range (usually the center of the detector)"
+    column: 1
+    default: 180.0
+    prefix: "-P"
+  - name: "DelScatHor"
+    type: "float"
+    label: "delta angle horiz"
+    unit: "deg"
+    tooltip: "variation DeltaTheta determining the hor. scattering range [Theta-DeltaTheta, Theta+DeltaTheta]  0 deg: left, 180 deg: right"
+    column: 0
+    default: 70.0
+    prefix: "-d"
+  - name: "DelScatVert"
+    type: "float"
+    label: "delta angle vert"
+    unit: "deg"
+    tooltip: "variation DeltaPhi determining the vert. scatering range [Phi-DeltaPhi, Phi+DeltaPhi]."
+    column: 1
+    default: 10.0
+    prefix: "-p"
+
+  - name: "Title_Sample"
+    type: "title"
+    label: "Sample"
+  - name: "PosSmplX"
+    type: "float"
+    label: "X"
+    unit: "cm"
+    tooltip: "Center position X of the powder sample"
+    column: 0
+    default: 30.0
+    prefix: "-x"
+  - name: "PosSmplY"
+    type: "float"
+    label: "Y"
+    unit: "cm"
+    tooltip: "Center position Y of the powder sample"
+    column: 1
+    default: 0.0
+    prefix: "-y"
+  - name: "PosSmplZ"
+    type: "float"
+    label: "Z"
+    unit: "cm"
+    tooltip: "center position Z of the powder sample"
+    column: 2
+    default: 0.0
+    prefix: "-z"
+
+  - name: "eSmplGeom"
+    <<: *VtSmplGeom
+    label: "sample geometry"
+    tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
+    column: 0
+    options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+    default: "VT_CYL"
+    prefix: "-G"
+
+  - name: "Diameter"
+    type: "float"
+    label: "thickness or diameter"
+    unit: "cm"
+    tooltip: "Thickness of a cubic sample, or diameter of sphere of cylinder."
+    column: 0
+    min: 0.0001
+    default: 0.5
+    prefix: "-t"
+  - name: "Height"
+    type: "float"
+    label: "height"
+    unit: "cm"
+    tooltip: Height of the powder sample (not needed for spherical shape)"
+    column: 1
+    min: 0.0
+    default: 2.0
+    prefix: "-h"
+  - name: "Width"
+    type: "float"
+    label: "diameter"
+    unit: "cm"
+    tooltip: "Width of a cubic powder sample"
+    column: 2
+    min: 0.0
+    default: 0.0
+    prefix: "-w"
+  - name: "DirSmplX"
+    type: "float"
+    label: "x direction"
+    unit: "cm"
+    tooltip: "x-component of the sample orientation"
+    column: 0
+    default: 0.0
+    prefix: "-X"
+  - name: "DirSmplY"
+    type: "float"
+    label: "y direction"
+    unit: "cm"
+    tooltip: "y-component of the sample orientation"
+    column: 1
+    default: 0.0
+    prefix: "-Y"
+  - name: "DirSmplZ"
+    type: "float"
+    label: "z direction"
+    unit: "cm"
+    tooltip: "z-component of the sample orientation"
+    column: 2
+    default: 0.0
+    prefix: "-Z"
+
+  - name: "Title_Scattering"
+    type: "title"
+    label: "Scattering"
+  - name: "MuScatIncoh"
+    type: "float"
+    label: "incoherent scattering"
+    unit: "1/cm"
+    tooltip: "Macroscopic incoherent scattering cross section of the powder sample material. Needed if 'Incoherent scattering' is chosen."
+    column: 0
+    min: 0.0
+    default: 0.0
+    prefix: "-i"
+  - name: "MuScatTotal"
+    type: "float"
+    label: "total scattering"
+    unit: "1/cm"
+    tooltip: "Macroscopic total scattering cross section of the powder sample material (used for attenuation)"
+    column: 1
+    default: 0.5
+    min: 0.0
+    prefix: "-T"
+  - name: "MuAbsorb"
+    type: "float"
+    label: "absorption"
+    unit: "1/cm"
+    tooltip: "Macroscopic absorption cross section of the powder sample material for 1.798 Ang (used for attenuation)"
+    column: 2
+    min: 0.1
+    default: 20.0
+    prefix: "-m"
+  - name: "UCV"
+    type: "float"
+    label: "unit cell volume"
+    unit: "Ang^3"
+    tooltip: "Unit cell volume of the powder sample material"
+    column: 0
+    min: 0.0001
+    default: 20.0
+    prefix: "-U"
+
+  - name: "Title_Structure"
+    type: "title"
+    label: "Structure factor file format"
+  - name: "ColumnDspc"
+    type: "int"
+    label: "d-spacing column"
+    tooltip: "column of the structure factor file, where the d-spacing is See also HelpFile 'sample.html'"
+    column: 0
+    min: 0
+    default: 0
+    prefix: "-C"
+  - name: "ColumnStructFact"
+    type: "int"
+    label: "F column"
+    tooltip: "column of the structure factor file, where the structure factor F is See also HelpFile 'sample.html'"
+    column: 1
+    min: 0
+    default: 0
+    prefix: "-F"
+  - name: "ColumnStructFactSq"
+    type: "int"
+    label: "|F|² column"
+    tooltip: "column of the structure factor file, where the square of the structure factor F² is See also HelpFile 'sample.html'"
+    column: 2
+    min: 0
+    default: 0
+    prefix: "-Q"
+  - name: "ColumnMult"
+    type: "int"
+    label: "Multiplicity column"
+    tooltip: "column of the structure factor file, where the muliplicity M is See also HelpFile 'sample.html'"
+    column: 0
+    min: 0
+    default: 0
+    prefix: "-M"
+  - name: "ColumnDW"
+    type: "int"
+    label: "Debye-Waller column"
+    tooltip: "column of the structure factor file, where the Debye-Waller factor is See also HelpFile 'sample.html'"
+    column: 1
+    min: 0
+    default: 0
+    prefix: "-W"
+  - name: "ScaleFact"
+    type: "float"
+    label: "Scale factor"
+    unit: ""
+    tooltip: "Normalization factor for the structure factor See also HelpFile 'sample.html'"
+    column: 2
+    min: 0.000001
+    default: 1.0
+    prefix: "-f"

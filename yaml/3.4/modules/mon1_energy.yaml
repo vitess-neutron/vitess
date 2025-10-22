@@ -1,0 +1,135 @@
+mon1_energy:
+  executable: "monitor1"
+  label: "mon1_energy"
+  category: "monitor"
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    label: "monitor file"
+    tooltip: "monitor output file containing intensity as a function of of the neutron energy [meV]"
+    default: "monitor.dat"
+    prefix: "-O"
+  - name: "sRefFile"
+    type: "file"
+    plottable: false
+    label: "reference file"
+    tooltip: "Reference input file containing data to normalize the monitored energy spectrum"
+    prefix: "-R"
+
+  - name: "Title_Par"
+    type: "title"
+    label: "Range"
+  - name: "eMonPar"
+    hidden: true
+    label: "variable parameter"
+    tooltip: "parameter, as a function of which the intensity is shown"
+    <<: *VtMon1Par
+    options: ["MON_LAMBDA","MON_TIME","MON_DIV_Y","MON_DIV_Z","MON_Y","MON_Z","MON_ENERGY","MON_DIV_YZ"]
+    default: "MON_ENERGY"
+    prefix: "-k"
+
+  - name: "MinE"
+    type: "float"
+    label: "min. energy [meV]"
+    tooltip: "lower bound value of the monitored energy range"
+    default: 0.0
+    column: 0
+    prefix: "-m"
+  - name: "MaxE"
+    type: "float"
+    label: "max. energy [meV]"
+    tooltip: "upper bound value of the monitored energy range"
+    column: 1
+    default: 10.0
+    prefix: "-M"
+  - name: "nBins"
+    type: "int"
+    label: "number of bins"
+    tooltip: "number of monitor channels"
+    default: 100
+    min: 1
+    column: 2
+    prefix: "-n"
+
+  - name: "Title_Opt"
+    type: "title"
+    label: "Options"
+  - name: "iColor"
+    type: "int"
+    tooltip: "bAllFile=FALSE excludes all neutrons with diff. color from monitoring, if iColor >= 0 bAllFile=TRUE  max. color to which additional monitor files are generated"
+    label: "color"
+    min: -1
+    column: 0
+    prefix: "-C"
+  - name: "bAllFile"
+    type: "bool"
+    label: "all files"
+    tooltip: "yes: generates additional files for colour: 0, 1, ..., iColor"
+    default: no
+    column: 1
+    prefix: "-c"
+
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajectories meeting the monitor conditions are written no: all are written"
+    default: no
+    column: 1
+    prefix: "-e"
+  - name: "eMonNorm"
+    label: "normalization"
+    tooltip: "none: intensities of the neutron trajctories are distributed unchanged into channels bin size: intensities are normalized to the channel width reference file: intensities are divided by those in the reference file"
+    <<: *VtMonNorm
+    options: ["NO_NORM","NORM_BIN_SIZE","NORM_REF_FILE"]
+    default: "NO_NORM"
+    column: 2
+    prefix: "-f"
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "FilterMinTime"
+    type: "float"
+    label: "time interval begin [ms]"
+    tooltip: "minimal TOF to be taken into account"
+    column: 0
+    prefix: "-t"
+  - name: "FilterMinY"
+    type: "float"
+    label: "filter y pos. min [cm]"
+    tooltip: "minimal horizontal position to be taken into account"
+    column: 1
+    prefix: "-y"
+  - name: "FilterMinZ"
+    type: "float"
+    label: "filter z pos. min [cm]"
+    tooltip: "minimal vertical position to be taken into account"
+    column: 2
+    prefix: "-z"
+  - name: "FilterMaxTime"
+    type: "float"
+    label: "time interval end [ms]"
+    tooltip: "maximal TOF to be taken into account"
+    column: 0
+    prefix: "-T"
+  - name: "FilterMaxY"
+    type: "float"
+    label: "filter y pos. max [cm]"
+    tooltip: "maximal horizontal position to be taken into account"
+    column: 1
+    prefix: "-Y"
+  - name: "FilterMaxZ"
+    type: "float"
+    label: "filter z pos. max [cm]"
+    tooltip: "maximal vertical position to be taken into account"
+    column: 2
+    prefix: "-Z"

@@ -1,0 +1,197 @@
+monitor2D:
+  executable: "monitor2D"
+  label: "monitor2D"
+  category: "monitor"
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "monitor file"
+    tooltip: "name of the 2D monitor output file"
+    default: "monitor2D.dat"
+    prefix: "-O"
+
+  - name: "ePar1"
+    label: "1st parameter on x-axis"
+    tooltip: "x-axis parameter for the 2D monitor file"
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-X"
+  - name: "ePar2"
+    label: "2nd parameter on y-axis"
+    tooltip: "x-axis parameter for the 2D monitor file"
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 1
+    prefix: "-Y"
+
+  - name: "MinPar1"
+    type: "float"
+    label: "min. x value 1st par."
+    tooltip: "minimal x value for the 2D monitor file"
+    default: 0.0
+    column: 0
+    prefix: "-w"
+  - name: "MinPar2"
+    type: "float"
+    label: "min. x value 2nd par."
+    tooltip: "minimal y value for the 2D monitor file"
+    default: 0.0
+    column: 1
+    prefix: "-h"
+
+  - name: "MaxPar1"
+    type: "float"
+    label: "max. x value 1st par."
+    tooltip: "maximal x value for the 2D monitor file"
+    default: 10.0
+    column: 0
+    prefix: "-W"
+  - name: "MaxPar2"
+    type: "float"
+    label: "max. x value 1st par."
+    tooltip: "maximal y value for the 2D monitor file"
+    default: 10.0
+    column: 1
+    prefix: "-H"
+
+  - name: "nBinPar1"
+    type: "int"
+    label: "number of bins 1st par."
+    tooltip: "number of x channels for the 2D monitor file"
+    default: 100
+    min: 1
+    column: 0
+    prefix: "-x"
+  - name: "nBinPar2"
+    type: "int"
+    label: "number of bins 2nd par."
+    tooltip: "number of y channels for the 2D monitor file"
+    default: 100
+    min: 1
+    column: 1
+    prefix: "-y"
+
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajectories meeting the monitor conditions are written  no: all trajectories are written"
+    default: no
+    column: 1
+    prefix: "-e"
+  - name: "eFormat"
+    label: "file format"
+    tooltip: "file format for output: matrix: 2D matrix   xyz: 3 columns x, y, f(x,y);  compact: only 1 line of header, minimal number of digits.  integer: integer numbers rounded from calculated intensity"
+    <<: *VtFormat2D
+    options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+    default: "MATRIX"
+    column: 2
+    prefix: "-F"
+
+  - name: "title_FilSelect"
+    type: "title"
+    label: "Filter selection"
+  - name: "LambdaMin"
+    type: "float"
+    label: "lambda min [Ang]"
+    tooltip: "minimum wavelength to be taken into account [Ang]"
+    column: 1
+    prefix: "-l"
+  - name: "LambdaMax"
+    type: "float"
+    label: "lambda max [A]"
+    tooltip: "maximum wavelength to be taken into account [Ang]"
+    column: 2
+    prefix: "-L"
+
+  - name: "eFilterPar1"
+    label: "filter parameter 1"
+    tooltip: "filter parameter 1"
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-I"
+  - name: "MinFilterVal1"
+    type: "float"
+    label: "filter 1 min value"
+    tooltip: "minimum value of filter parameter 1 to be taken into account"
+    column: 1
+    prefix: "-u"
+  - name: "MaxFilterVal1"
+    type: "float"
+    label: "filter 1 max value"
+    column: 2
+    prefix: "-U"
+
+  - name: "eFilterCombi"
+    label: "filter combination"
+    tooltip: "filter 1 and 2 combined with AND or OR"
+    <<: *VtFiltComb
+    options: ["AND_AND_AND", "OR_OR_OR"]
+    default: "AND_AND_AND"
+    column: 0
+    prefix: "-C"
+
+  - name: "eFilterPar2"
+    label: "filter parameter 2"
+    tooltip: "filter parameter 2"
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-J"
+  - name: "MinFilterVal2"
+    type: "float"
+    label: "filter 2 min value"
+    tooltip: "minimum value of parameter 2 to be taken into account"
+    column: 1
+    prefix: "-v"
+  - name: "MaxFilterVal2"
+    type: "float"
+    tooltip: "maximum value of parameter 2 to be taken into account"
+    label: "filter 2 max value"
+    column: 2
+    prefix: "-V"
+
+  - name: "title_Pol"
+    type: "title"
+    label: "Polarisation analysis"
+  - name: "bPolAnalysis"
+    type: "bool"
+    label: "Polarisation analysis"
+    tooltip: "yes: polarisation is monitored  no: intensity is monitored"
+    default: no
+    column: 0
+    prefix: "-P"
+
+  - name: "PolDirX"
+    type: "float"
+    label: "direction X"
+    tooltip: "x-component of the vector defining the quantization direction"
+    column: 0
+    prefix: "-r"
+  - name: "PolDirY"
+    type: "float"
+    label: "direction Y"
+    tooltip: "y-component of the vector defining the quantization direction"
+    column: 1
+    prefix: "-s"
+  - name: "PolDirZ"
+    type: "float"
+    label: "direction Z"
+    tooltip: "z-component of the vector defining the quantization direction"
+    column: 2
+    prefix: "-t"

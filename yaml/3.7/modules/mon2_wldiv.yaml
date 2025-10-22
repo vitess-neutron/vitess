@@ -1,0 +1,75 @@
+mon2_wldiv:
+  executable: "mon2_wldiv"
+  label: "mon2_wldiv"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_sMonFile
+    tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+    default: "rdiv.dat"
+
+  - name: "min_y"
+    # TODO name mismatch
+    # name: "MinY"
+    type: "float"
+    label: "minimal radius"
+    unit: "cm"
+    tooltip: ""
+    default: 0.0
+    column: 0
+    prefix: "-w"
+    min: 0
+    required: true
+  - name: "max_y"
+    # TODO name mismatch
+    # name: "MaxY"
+    type: "float"
+    label: "maximal radius"
+    unit: "cm"
+    tooltip: ""
+    default: 2.0
+    column: 1
+    prefix: "-W"
+    min: 0
+    required: true
+  - <<: *monitor_nBinsY
+    # TODO name mismatch
+    name: "number_ybins"
+    label: "number of r-bins"
+    tooltip: "number of bins within the  radius range, max. 1000"
+    default: 100
+    max: 1000
+
+  - name: "min_z"
+    # TODO name mismatch
+    # name: "MinZ"
+    type: "float"
+    label: "minimal rdiv-value"
+    unit: "deg"
+    tooltip: ""
+    default: 0.0
+    column: 0
+    prefix: "-h"
+    required: true
+  - name: "max_z"
+    # TODO name mismatch
+    # name: "MaxZ"
+    type: "float"
+    label: "maximal rdiv-value"
+    unit: "deg"
+    tooltip: ""
+    default: 1.0
+    column: 1
+    prefix: "-H"
+    required: true
+  - <<: *monitor_nBinsZ
+    # TODO name mismatch
+    name: "number_zbins"
+    label: "number of rdiv-bins"
+    tooltip: "number of bins within the radial divergence range, max. 1000"
+    default: 100
+    max: 1000
+
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eFormat

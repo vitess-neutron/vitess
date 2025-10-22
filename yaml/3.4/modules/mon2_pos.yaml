@@ -1,0 +1,104 @@
+mon2_pos:
+  executable: "mon2_pos"
+  label: "mon2_pos"
+  category: "monitor"
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    label: "monitor file"
+    tooltip: "monitor output file containing intensity as a function of y- and z-position"
+    default: "sample.pos"
+    prefix: "-O"
+
+  - name: "Title_Par"
+    type: "title"
+    label: "Ranges"
+  - name: "MinY"
+    type: "float"
+    label: "min. y-value [cm]"
+    tooltip: "left edge position of the monitored area"
+    default: -5.0
+    column: 0
+    prefix: "-w"
+  - name: "MaxY"
+    type: "float"
+    label: "max. y-value [cm]"
+    tooltip: "right edge position of the monitored area"
+    default: 5.0
+    column: 1
+    prefix: "-W"
+  - name: "nBinsY"
+    type: "int"
+    label: "number of y-bins"
+    tooltip: "number of monitor channels in horizontal direction"
+    default: 50
+    min: 1
+    column: 2
+    prefix: "-y"
+
+  - name: "MinZ"
+    type: "float"
+    label: "min. z-value [cm]"
+    tooltip: "bottom position of the monitored area"
+    default: -5.0
+    column: 0
+    prefix: "-h"
+  - name: "MaxZ"
+    type: "float"
+    label: "max. z-value [cm]"
+    tooltip: "top position of the monitored area"
+    default: 5.0
+    column: 1
+    prefix: "-H"
+  - name: "nBinsZ"
+    type: "int"
+    label: "number of z-bins"
+    tooltip: "number of monitor channels in vertical direction"
+    default: 50
+    min: 1
+    column: 2
+    prefix: "-z"
+
+  - name: "Title_Opt"
+    type: "title"
+    label: "Options"
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajctories meeting the monitor conditions are written  no: all trajctories are written"
+    default: no
+    column: 1
+    prefix: "-e"
+  - name: "eFormat"
+    label: "file format"
+    tooltip: "file format for output: matrix: 2D matrix   xyz: 3 columns x, y, f(x,y);  compact: only 1 line of header, minimal number of digits.  integer: integer numbers rounded from calculated intensity"
+    <<: *VtFormat2D
+    options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT"]
+    default: "MATRIX"
+    column: 2
+    prefix: "-F"
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "FilterMinLambda"
+    type: "float"
+    label: "filter lambda min [Ang]"
+    tooltip: "minimal wavelength to be taken into account"
+    column: 0
+    prefix: "-l"
+  - name: "FilterMaxLambda"
+    type: "float"
+    label: "filter lambda max [Ang]"
+    tooltip: "maximal wavelength to be taken into account"
+    column: 1
+    prefix: "-L"

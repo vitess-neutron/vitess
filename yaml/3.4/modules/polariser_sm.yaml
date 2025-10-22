@@ -1,0 +1,169 @@
+polariser_sm:
+  executable: "polariser_sm"
+  label: "polariser_sm"
+  parameters:
+  - name: "Title_Files"
+    type: "title"
+    label: "Reflectivity files"
+  - name: "sReflUpFile"
+    type: "file"
+    plottable: false
+    label: "Spin-up file"
+    tooltip: "reflectivity file for the spin-up neutrons"
+    prefix: "-U"
+  - name: "sReflDownFile"
+    type: "file"
+    plottable: false
+    label: "spin-down file"
+    tooltip: "reflectivity file for the spin-down neutrons"
+    prefix: "-D"
+
+  - name: "Title_Pos"
+    type: "title"
+    label: "Center position and orientation"
+  - name: "CntrPosX"
+    type: "float"
+    label: "position X [cm]"
+    column: 0
+    tooltip: "x-position of the center of the polarizer"
+    prefix: "-a"
+  - name: "CntrPosY"
+    type: "float"
+    label: "position Y [cm]"
+    column: 1
+    tooltip: "y-position of the center of the polarizer"
+    prefix: "-b"
+  - name: "CntrPosZ"
+    type: "float"
+    label: "position Z [cm]"
+    column: 2
+    tooltip: "z-position of the center of the polarizer"
+    prefix: "-c"
+
+  - name: "AngleVert"
+    type: "float"
+    label: "vertical offset [deg]"
+    default: 1.0
+    column: 1
+    tooltip: "vertical (second) rotation angle of the polarizer"
+    prefix: "-V"
+
+  - name: "Title_Out"
+    type: "title"
+    label: "Output frame"
+  - name: "FrameOutX"
+    type: "float"
+    label: "output X [cm]"
+    default: 100.0
+    column: 0
+    tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
+    prefix: "-R"
+  - name: "FrameOutY"
+    type: "int"
+    label: "output Y [cm]"
+    default: 0
+    column: 1
+    tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
+    prefix: "-E"
+  - name: "FrameOutZ"
+    type: "int"
+    label: "output Z [cm]"
+    default: 0
+    column: 2
+    tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
+    prefix: "-G"
+  - name: "FrameOutHor"
+    type: "float"
+    label: "horiz. rotation angle [deg]"
+    column: 0
+    tooltip: "horizontal angle of the output frame, relative to input orientation"
+    prefix: "-h"
+  - name: "FrameOutVert"
+    type: "float"
+    label: "vert. rotation angle [deg]"
+    column: 1
+    tooltip: "vertical angle of the output frame, relative to input orientation"
+    prefix: "-v"
+
+  - name: "Title_Geom"
+    type: "title"
+    label: "Size and Geometry of the polariser"
+  - name: "Depth"
+    type: "float"
+    label: "dimension X [cm]"
+    tooltip: "x-component of the size of the polarizer"
+    min: 0.001
+    prefix: "-d"
+    column: 0
+  - name: "Width"
+    type: "float"
+    label: "dimension Y [cm]"
+    tooltip: "y-component of the size of the polarizer"
+    min: 0.001
+    prefix: "-w"
+    column: 1
+  - name: "Height"
+    type: "float"
+    label: "dimension Z [cm]"
+    tooltip: "z-component of the size of the polarizer"
+    min: 0.001
+    column: 2
+    prefix: "-h"
+  - name: "nChannels"
+    type: "int"
+    label: "number of channels"
+    tooltip: "number of channels"
+    min: 1
+    prefix: "-n"
+    column: 0
+  - name: "Thickness"
+    type: "float"
+    label: "wall width [cm]"
+    tooltip: "thickness of the blades dividing the channels"
+    min: 0.001
+    prefix: "-T"
+    column: 1
+
+  - name: "Title_Field"
+    type: "title"
+    label: "Guide field"
+  - name: "GuideFieldX"
+    type: "float"
+    label: "guide field X [Oe]"
+    tooltip: "strength of the magnetic guide field"
+    prefix: "-x"
+    column: 0
+  - name: "GuideFieldY"
+    type: "float"
+    label: "guide field Y [Oe]"
+    tooltip: "strength of the magnetic guide field"
+    prefix: "-y"
+    column: 1
+  - name: "GuideFieldZ"
+    type: "float"
+    label: "guide field Z [Oe]"
+    tooltip: "strength of the magnetic guide field"
+    prefix: "-z"
+    column: 2
+
+  - name: "Title_Dir"
+    type: "title"
+    label: "Analysis direction"
+  - name: "AnalysisDirX"
+    type: "float"
+    label: "analysis dir. X"
+    tooltip: "analysis direction of the polarizer"
+    prefix: "-X"
+    column: 0
+  - name: "AnalysisDirY"
+    type: "float"
+    label: "analysis dir. Y"
+    tooltip: "analysis direction of the polarizer"
+    prefix: "-Y"
+    column: 1
+  - name: "AnalysisDirZ"
+    type: "float"
+    label: "analysis dir. Z"
+    tooltip: "analysis direction of the polarizer"
+    prefix: "-Z"
+    column: 2

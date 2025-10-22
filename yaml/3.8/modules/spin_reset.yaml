@@ -1,0 +1,56 @@
+spin_reset:
+  executable: "spin_reset"
+  label: "spin_reset"
+  category: "event_handling"
+
+  parameters:
+    # TODO parameter names
+  - name: "scpoldeg"
+    type: "float"
+    label: "% polarization"
+    unit: "%"
+    tooltip: "percentage of polarisation"
+    column: 0
+    min: 0.0
+    default: 0.0
+    prefix: "-P"
+    required: true
+  - name: "scpolx"
+    type: "float"
+    label: "polarisation X direction"
+    unit: ""
+    tooltip: "X-component of the polarisation direction"
+    column: 0
+    default: 0.0
+    prefix: "-X"
+    required: true
+  - name: "scpoly"
+    type: "float"
+    label: "Y"
+    unit: ""
+    tooltip: "Y-component of the polarisation direction"
+    column: 1
+    default: 0.0
+    prefix: "-Y"
+    required: true
+  - name: "scpolz"
+    type: "float"
+    label: "Z"
+    unit: ""
+    tooltip: "Z-component of the polarisation direction"
+    column: 2
+    default: 1.0
+    prefix: "-Z"
+    required: true
+
+  - name: "Title_param"
+    type: "title"
+    label: "Color Reset"
+  - name: "sccolor"
+    type: "int"
+    label: "number of colours"
+    tooltip: "if greater zero, the colour of the trajectories will be reset (to a value between 1 and this number)"
+    column: 0
+    default: 0
+    prefix: "-c"
+    required: false

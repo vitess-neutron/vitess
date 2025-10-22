@@ -1,0 +1,237 @@
+mono_option: &mono_option
+  # TODO mapping/enum
+  name: "option"
+  type: int
+  label: "Type of crystal simulation"
+  tooltip: "1: Crystal_flat, 2: Crystal_focus, 3: Crystal_focus_dat"
+  hidden: true
+  min: 1
+  max: 3
+  prefix: "-O"
+  required: true
+mono_parfile: &mono_parfile
+  name: "parfile"
+  type: "file"
+  plottable: false
+  editable: true
+  label: "parameter file"
+  default: "crys.par"
+  tooltip: "This files contains parameters describing a crystal element (CE)"
+  prefix: "-P"
+  required: true
+mono_mode: &mono_mode
+  <<: *VtMonoType
+  name: "mode"
+  label: "Geometry"
+  tooltip: "Choose between 'reflection' and 'transmission' geometry of the monochromator"
+  column: 0
+  options: ["REFL_MONO", "TRANSM_MONO"]
+  default: "REFL_MONO"
+  prefix: "-X"
+  required: true
+mono_trns: &mono_trns
+  name: "trns"
+  type: "bool"
+  label: "transmission"
+  tooltip: "Select if the neutrons that are not reflected by the crystals shall be treated. Note that in both cases the 'standard frame generation' rotates the co-ordinate to the reflected beam."
+  column: 1
+  default: false
+  prefix: "-B"
+  required: true
+mono_dist: &mono_dist
+  <<: *VtDistr
+  name: "dist"
+  label: "d-distribution"
+  tooltip: "defines the d-spacing distribution function"
+  column: 2
+  options: ["LORENTZIAN", "GAUSSIAN"]
+  default: "LORENTZIAN"
+  prefix: "-d"
+  required: true
+
+mono_Title_Crystal: &mono_Title_Crystal
+  name: "Title_Crystal"
+  type: "title"
+  label: "Crystal Parameters"
+mono_shoriz: &mono_shoriz
+  name: "shoriz"
+  type: "float"
+  label: "mosaic spread horiz"
+  unit: "deg"
+  tooltip: "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution"
+  column: 0
+  min: 0
+  default: 0.8
+  prefix: "-m"
+  required: true
+mono_svert: &mono_svert
+  name: "svert"
+  type: "float"
+  label: "mosaic spread vert"
+  unit: "deg"
+  tooltip: "Vertical fwhm component of the 2-dimensional Gaussian mosaic distribution"
+  column: 1
+  min: 0
+  default: 0.8
+  prefix: "-M"
+  required: true
+mono_dspread: &mono_dspread
+  name: "dspread"
+  type: "float"
+  label: "d spread"
+  unit: ""
+  tooltip: "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal."
+  column: 2
+  min: 0.0
+  default: 0.00005
+  prefix: "-D"
+  required: true
+mono_refl: &mono_refl
+  name: "refl"
+  type: "float"
+  label: "peak reflectivity"
+  unit: ""
+  tooltip: "(Experimentally determined) peak reflectivity of this monochromator."
+  default: 1
+  column: 0
+  prefix: "-R"
+  min: 1.0e-6
+  required: true
+
+mono_Title_Rotation: &mono_Title_Rotation
+  name: "Title_Rotation"
+  type: "title"
+  label: "Rotation and Oscillation"
+mono_mo_move: &mono_mo_move
+  <<: *VtMonoMove
+  name: "mo_move"
+  label: "movement"
+  tooltip: "Type of movement of the monochromator crystal(s)"
+  column: 0
+  options: ["VT_MONO_FIX", "VT_MONO_ROT", "VT_MONO_PST", "VT_MONO_OSC"]
+  default: "VT_MONO_FIX"
+  prefix: "-b"
+  required: true
+mono_mo_rndt: &mono_mo_rndt
+  name: "mo_rndt"
+  type: "bool"
+  label: "randomize TOF"
+  tooltip: "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored. Useful for a PST on a continuous source"
+  column: 1
+  default: false
+  prefix: "-K"
+  required: false
+mono_mo_freq: &mono_mo_freq
+  name: "mo_freq"
+  type: "float"
+  label: "frequency"
+  unit: "Hz"
+  tooltip: "Frequency of the monochromator rotation/oscillation"
+  column: 0
+  default: 0
+  prefix: "-f"
+  required: false
+mono_mo_phas: &mono_mo_phas
+  name: "mo_phas"
+  type: "float"
+  label: "initial phase"
+  unit: "deg"
+  tooltip: "Phase of the monochromator at t=0 phase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection"
+  column: 1
+  default: 0
+  prefix: "-p"
+  required: false
+mono_mo_ampl: &mono_mo_ampl
+  name: "mo_ampl"
+  type: "float"
+  label: "drive amplitude"
+  unit: "cm"
+  tooltip: "For Doppler drive only: Amplitude of the Doppler drive along the x axis"
+  column: 2
+  default: 0
+  prefix: "-Q"
+  required: false
+mono_mo_nwnd: &mono_mo_nwnd
+  # TODO: integer?
+  name: "mo_nwnd"
+  type: "float"
+  label: "number of areas"
+  unit: ""
+  tooltip: "For PST only: number of identical areas, where the monochromator is mounted on the chopper"
+  column: 0
+  default: 0
+  prefix: "-n"
+  required: false
+mono_mo_wdth: &mono_mo_wdth
+  name: "mo_wdth"
+  type: "float"
+  label: "area width"
+  unit: "deg"
+  tooltip: "For PST only: angular range of each area, where the monochromator is mounted on the chopper"
+  column: 1
+  default: 0
+  prefix: "-q"
+  required: false
+mono_mo_rad: &mono_mo_rad
+  name: "mo_rad"
+  type: "float"
+  label: "chopper radius"
+  unit: "cm"
+  tooltip: "For PST only: distance from the chopper axle to the center of the monochromator"
+  column: 2
+  default: 0
+  prefix: "-w"
+  required: false
+
+mono_Title_Attenuation: &mono_Title_Attenuation
+  name: "Title_Attenuation"
+  type: "title"
+  label: "Attenuation and repetition"
+mono_mo_scat: &mono_mo_scat
+  name: "mo_scat"
+  type: "float"
+  label: "total scattering"
+  unit: "1/cm"
+  tooltip: "macroscopic total scattering cross-section of the crystal"
+  column: 0
+  min: 0
+  default: 0
+  prefix: "-c"
+  required: false
+mono_mo_abs: &mono_mo_abs
+  name: "mo_abs"
+  type: "float"
+  label: "absorption"
+  unit: "1/cm"
+  tooltip: "macroscopic absorption cross-section of the crystal for 1.798 Ang"
+  column: 1
+  min: 0
+  default: 0
+  prefix: "-C"
+  required: false
+mono_reprate: &mono_reprate
+  name: "reprate"
+  type: "int"
+  label: "repetition"
+  tooltip: "If this integer > 1, the trajectory is used multiple times for better statistics."
+  min: 1
+  max: 1000
+  column: 2
+  default: 1
+  prefix: "-A"
+  required: false
+
+mono_Title_Focusing: &mono_Title_Focusing
+  name: "Title_Focusing"
+  type: "title"
+  label: "Focusing"
+mono_focus_file: &mono_focus_file
+  name: "focus_file"
+  type: "file"
+  plottable: false
+  editable: true
+  label: "focus file"
+  default: "lamb_foc.dat"
+  tooltip: "External focus geometry file (must be provided to consider a crystal element-geometry which differs from the arrangement which can be automatically generated by using the module ma_focus)."
+  prefix: "-G"
+  required: true

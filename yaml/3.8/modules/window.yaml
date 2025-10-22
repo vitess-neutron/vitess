@@ -1,0 +1,189 @@
+window:
+  executable: "window"
+  label: "window"
+  category: "spacewindow"
+
+  parameters:
+  - name: "Title_Geom"
+    type: "title"
+    label: "Geometry"
+  - name: "Distance"
+    type: "float"
+    label: "distance to window"
+    unit: "cm"
+    tooltip: "distance from origin to the center of the window (along the x-axis)"
+    column: 0
+    min: 0.0
+    default: 0.0
+    prefix: "-l"
+    required: true
+  - name: "eShape"
+    <<: *VtShape
+    label: "window shape"
+    tooltip: "shape of the aperture"
+    column: 1
+    options: ["VT_SQUARE", "VT_CIRCLE"]
+    default: "VT_SQUARE"
+    prefix: "-R"
+    required: true
+
+  - name: "Title_Cir"
+    type: "title"
+    label: "Circular window coordinates"
+  - name: "Radius"
+    type: "float"
+    label: "radius"
+    unit: "cm"
+    tooltip: "radius of circular window"
+    min: 0.0
+    column: 0
+    prefix: "-r"
+  - name: "CntrY"
+    type: "float"
+    label: "center y"
+    unit: "cm"
+    tooltip: "y coordinate: center of window"
+    default: 0.0
+    column: 1
+    prefix: "-y"
+  - name: "CntrZ"
+    type: "float"
+    label: "center z"
+    unit: "cm"
+    tooltip: "z coordinate: center of window"
+    default: 0.0
+    column: 2
+    prefix: "-z"
+
+  - name: "Title_Rect"
+    type: "title"
+    label: "Rectangular window coordinates"
+  - name: "MinY"
+    type: "float"
+    label: "min. y"
+    unit: "cm"
+    tooltip: "y-coordinate: lower bound of a rectangular window (on the right side)"
+    column: 0
+    prefix: "-w"
+  - name: "MaxY"
+    type: "float"
+    label: "max. y"
+    unit: "cm"
+    tooltip: "y-coordinate: Upper bound of a rectangular window (on the left side)"
+    column: 1
+    prefix: "-W"
+  - name: "MinZ"
+    type: "float"
+    label: "min. z"
+    unit: "cm"
+    tooltip: "z-coordinate: bottom of a rectangular window"
+    column: 0
+    prefix: "-h"
+  - name: "MaxZ"
+    type: "float"
+    label: "max. z"
+    unit: "cm"
+    tooltip: "z-coordinate: top of a rectangular window"
+    column: 1
+    prefix: "-H"
+  - name: "RotAngle"
+    type: "float"
+    label: "rot. angle"
+    unit: "deg"
+    tooltip: "Rotation angle of the rectangular window (see Help file for details)"
+    column: 2
+    prefix: "-A"
+
+  - name: "Title_Opt"
+    type: "title"
+    label: "Options"
+  - name: "bBeamstop"
+    type: "bool"
+    label: "used as beamstop"
+    tooltip: "yes: negative window: absorption inside and transmission outside  no: normal window: transmission inside and absorption outside (default)"
+    column: 0
+    default: no
+    prefix: "-S"
+    requred: false
+  - name: "bOldFrame"
+    type: "bool"
+    label: "used previous frame"
+    tooltip: "yes: the co-ordinate system of the previous module is kept no: the co-ordinate system is shifted to the window exit as usual (default)"
+    column: 1
+    default: no
+    prefix: "-F"
+    requred: false
+
+  - name: "Title_Out"
+    type: "title"
+    label: "Outer Material"
+  - name: "eMatOut"
+    <<: *VtWndAbs
+    label: "frame material"
+    tooltip: "Material used for the absorbing window frame"
+    column: 1
+    options: ["VT_WABS_FILE", "VT_WABS_GD", "VT_WABS_CD", "VT_WABS_B10", "VT_WABS_EU", "VT_WABS_SI", "VT_WABS_IDEAL"]
+    default: "VT_WABS_IDEAL"
+    prefix: "-c"
+    required: true
+  - name: "ThicknOut"
+    type: "float"
+    label: "thickness of frame"
+    unit: "cm"
+    tooltip: "Thickness of the material used for the absorbing window frame"
+    column: 0
+    min: 0.0
+    prefix: "-t"
+    required: false
+  - name: "sFileOut"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "transmission file"
+    tooltip: "File containing the wavelength dependent attenuation inside the window frame (see Help file for details)"
+    prefix: "-C"
+    required: false
+
+  - name: "Title_In"
+    type: "title"
+    label: "Inner Material"
+  - name: "ThicknIn"
+    type: "float"
+    label: "thickness of window"
+    unit: "cm"
+    tooltip: "Thickness of the material used for the window pane"
+    column: 0
+    min: 0.0
+    prefix: "-T"
+    required: false
+  - name: "sFileIn"
+    type: "file"
+    plottable: true
+    editable: true
+    label: "transmission  file"
+    tooltip: "File containing the wavelength dependent attenuation inside the window pane (see Help file for details)"
+    prefix: "-m"
+    required: false
+
+  views:
+    eShape:
+      VT_SQUARE:
+        enable:
+          - "MinY"
+          - "MaxY"
+          - "MinZ"
+          - "MaxZ"
+        disable:
+          - "Radius"
+          - "CntrY"
+          - "CntrZ"
+      VT_CIRCLE:
+        enable:
+          - "Radius"
+          - "CntrY"
+          - "CntrZ"
+        disable:
+          - "MinY"
+          - "MaxY"
+          - "MinZ"
+          - "MaxZ"

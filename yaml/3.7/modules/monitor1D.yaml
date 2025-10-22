@@ -1,0 +1,153 @@
+monitor1D:
+  executable: "monitor1D"
+  label: "monitor1D"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_sMonFile
+    tooltip: "name of the 1D monitor output file"
+    default: "monitor1D.dat"
+
+  - name: "Title_Par"
+    type: "title"
+    label: "Parameter and range"
+  - name: "ePar"
+    label: "1st parameter on x-axis"
+    tooltip: "x-axis parameter for the first 1D monitor file"
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-X"
+    required: true
+  - name: "MinPar"
+    type: "float"
+    label: "min. x value 1st par."
+    tooltip: "minimal x value for the first 1D monitor file"
+    default: 0.0
+    column: 0
+    prefix: "-w"
+    required: true
+  - name: "MaxPar"
+    type: "float"
+    label: "max. x value 1st par."
+    tooltip: "maximal x value for the first 1D monitor file"
+    default: 10.0
+    column: 0
+    prefix: "-W"
+    required: true
+  - name: "nBinPar"
+    type: "int"
+    label: "number of bins 1st par."
+    tooltip: "number of x channels for the first 1D monitor file"
+    default: 100
+    min: 1
+    column: 0
+    prefix: "-x"
+    required: true
+
+  - *monitor_Title_Opt
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+
+  - *monitor_Title_Filter
+  - <<: *monitor_FilterMinLambda
+    # TODO name mismatch
+    name: "LambdaMin"
+  - <<: *monitor_FilterMaxLambda
+    # TODO name mismatch
+    name: "LambdaMax"
+
+  - name: "eFilterPar1"
+    label: "filter parameter 1"
+    tooltip: "filter parameter 1"
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-I"
+    required: false
+  - name: "MinFilterValue1"
+    type: "float"
+    label: "filter 1 min value"
+    tooltip: "minimum value of filter parameter 1 to be taken into account"
+    column: 1
+    prefix: "-u"
+    required: false
+  - name: "MaxFilterValue1"
+    type: "float"
+    label: "filter 1 max value"
+    column: 2
+    prefix: "-U"
+    required: false
+
+  - name: "eFilterCombi"
+    label: "filter combination"
+    tooltip: "filter 1 and 2 combined with AND or OR"
+    <<: *VtFiltComb
+    options: ["AND_AND_AND", "OR_OR_OR"]
+    default: "AND_AND_AND"
+    column: 0
+    prefix: "-C"
+    required: false
+
+  - name: "eFilterPar2"
+    label: "filter parameter 2"
+    tooltip: "filter parameter 2"
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-J"
+    required: false
+  - name: "MinFilterValue2"
+    type: "float"
+    label: "filter 2 min value"
+    tooltip: "minimum value of parameter 2 to be taken into account"
+    column: 1
+    prefix: "-v"
+    required: false
+  - name: "MaxFilterValue2"
+    type: "float"
+    tooltip: "maximum value of parameter 2 to be taken into account"
+    label: "filter 2 max value"
+    column: 2
+    prefix: "-V"
+    required: false
+
+  - name: "title_Pol"
+    type: "title"
+    label: "Polarisation analysis"
+  - name: "bPolAnalysis"
+    type: "bool"
+    label: "Polarisation analysis"
+    tooltip: "yes: polarisation is monitored  no: intensity is monitored"
+    default: no
+    column: 0
+    prefix: "-P"
+    required: false
+
+  - name: "PolDirX"
+    type: "float"
+    label: "direction X"
+    unit: ""
+    tooltip: "x-component of the vector defining the quantization direction"
+    column: 0
+    prefix: "-r"
+    required: false
+  - name: "PolDirY"
+    type: "float"
+    label: "direction Y"
+    unit: ""
+    tooltip: "y-component of the vector defining the quantization direction"
+    column: 1
+    prefix: "-s"
+    required: false
+  - name: "PolDirZ"
+    type: "float"
+    label: "direction Z"
+    unit: ""
+    tooltip: "z-component of the vector defining the quantization direction"
+    column: 2
+    prefix: "-t"
+    required: false

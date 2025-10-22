@@ -1,0 +1,60 @@
+moderator_isis: &moderator_isis
+  type: "array"
+  min: 1
+  max: 10
+  label: "moderator_isis"
+  parameters:
+  - name: "sModName"
+    label: "name"
+    type: "string"
+    column: 0
+
+  - name: "eTS"
+    label: "target station"
+    tooltip: "target station"
+    <<: *VtTS
+    options: ["VT_TS_1","VT_TS_2"]
+    default: "VT_TS_1"
+    column: 0
+    prefix: "-S"
+  - name: "ModWidth"
+    type: "float"
+    label: "width [cm]"
+    tooltip: "width of the moderator"
+    column: 1
+    prefix: "-w"
+  - name: "ModHeight"
+    type: "float"
+    label: "height [cm]"
+    tooltip: "height of the moderator"
+    column: 2
+    prefix: "-h"
+
+  - name: "ModCntrX"
+    type: "float"
+    label: "center x [cm]"
+    tooltip: "x coordinate of the center of the moderator"
+    default: 0.0
+    column: 0
+    prefix: "-X"
+  - name: "ModCntrY"
+    type: "float"
+    label: "center y [cm]"
+    tooltip: "y coordinate of the center of the moderator"
+    default: 0.0
+    column: 1
+    prefix: "-Y"
+  - name: "ModCntrZ"
+    type: "float"
+    label: "center z [cm]"
+    tooltip: "z coordinate of the center of the moderator"
+    default: 0.0
+    column: 2
+    prefix: "-Z"
+
+  - name: "L_T_File"
+    type: "file"
+    plottable: true
+    label: "wavelength-time distr file"
+    tooltip: "File containing the wavelength-time distribution function"
+    prefix: "-U"

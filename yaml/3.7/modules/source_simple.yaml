@@ -1,0 +1,41 @@
+source_simple:
+  executable: "source"
+  label: "source_simple"
+  category: "source"
+  parameters:
+  - <<: *source_eSrcKind
+    default: "SRC_SIMPLE"
+  - <<: *source_eSrcType
+    hidden: true
+    default: "CWS"
+
+  - *source_Title_Sim
+  - *source_nBunches
+  - *source_nTraj
+  - *source_sSimName
+  - *source_MinLambda
+  - *source_MaxLambda
+
+  - name: "Titel_Mod"
+    type: "title"
+    label: "Moderator parameters"
+  - name: "wModWnd"
+    label: "moderator window"
+    tooltip: "parameters describing the moderator geometry and characteristics"
+    max: 1
+    column: 0
+    required: false
+    <<: *moderator_simple
+  - *source_sModFile
+
+  - *source_Title_Prop
+  - *source_eDirMode
+
+  - *source_MinDivY
+  - *source_MaxDivY
+  - *source_MinDivZ
+  - *source_MaxDivZ
+
+  - *source_TargetDist
+  - *source_TargetWidth
+  - *source_TargetHeight

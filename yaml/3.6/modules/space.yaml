@@ -1,0 +1,29 @@
+space:
+  executable: "space"
+  label: "space"
+  category: "spacewindow"
+  parameters:
+  - name: "Distance"
+    type: "float"
+    label: "distance [cm]"
+    tooltip: "length of the free flight path (along the x-axis)"
+    default: 0.0
+    min: 0.0
+    column: 0
+    prefix: "-d"
+  - name: "MuScatTotal"
+    type: "float"
+    label: "total scattering [1/cm]"
+    tooltip: "macroscopic total scattering coefficient"
+    default: 0.0
+    min: 0.0
+    column: 1
+    prefix: "-M"
+  - name: "MuAbsorb"
+    type: "float"
+    label: "absorption [1/cm]"
+    tooltip: "macroscopic absorption cross-section for 1.798 Ang"
+    default: 0.0
+    min: 0.0
+    column: 2
+    prefix: "-m"

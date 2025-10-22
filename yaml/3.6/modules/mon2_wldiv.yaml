@@ -1,0 +1,91 @@
+mon2_wldiv:
+  executable: "mon2_wldiv"
+  label: "mon2_wldiv"
+  category: "monitor"
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "monitor file"
+    tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+    default: "rdiv.dat"
+    prefix: "-O"
+
+  - name: "min_y"
+    type: "float"
+    label: "minimal radius [cm]"
+    tooltip: ""
+    default: 0.0
+    column: 0
+    prefix: "-w"
+    min: 0
+
+  - name: "min_z"
+    type: "float"
+    label: "minimal rdiv-value[deg]"
+    tooltip: ""
+    default: 0.0
+    column: 1
+    prefix: "-h"
+
+  - name: "max_y"
+    type: "float"
+    label: "maximal radius [cm]"
+    tooltip: ""
+    default: 2.0
+    column: 0
+    prefix: "-W"
+    min: 0
+
+  - name: "max_z"
+    type: "float"
+    label: "maximal rdiv-value[deg]"
+    tooltip: ""
+    default: 1.0
+    column: 1
+    prefix: "-H"
+
+  - name: "number_ybins"
+    type: "int"
+    label: "number of r-bins"
+    tooltip: "number of bins within the  radius range, max. 1000"
+    default: 100
+    column: 0
+    prefix: "-y"
+    min: 1
+    max: 1000
+
+  - name: "number_zbins"
+    type: "int"
+    label: "number of rdiv-bins"
+    tooltip: "number of bins within the radial divergence range, max. 1000"
+    default: 100
+    column: 1
+    prefix: "-z"
+    min: 1
+    max: 1000
+
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajectories meeting the monitor conditions are written no: all are written"
+    default: no
+    column: 1
+    prefix: "-e"
+  - name: "eFormat"
+    label: "file format"
+    tooltip: "file format for output: matrix: 2D matrix   xyz: 3 columns x, y, f(x,y);  compact: only 1 line of header, minimal number of digits.  integer: integer numbers rounded from calculated intensity"
+    <<: *VtFormat2D
+    options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+    default: "MATRIX"
+    column: 2
+    prefix: "-F"

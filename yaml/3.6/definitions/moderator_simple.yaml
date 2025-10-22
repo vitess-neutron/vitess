@@ -1,0 +1,63 @@
+moderator_simple: &moderator_simple
+  type: "array"
+  min: 1
+  max: 10
+  label: "moderator_simple"
+  parameters:
+  - name: "sModName"
+    label: "name"
+    type: "string"
+    column: 0
+
+  - name: "eModShape"
+    label: "shape"
+    tooltip: "moderator shape"
+    <<: *VtModShape
+    options: ["VT_MOD_SQUARE", "VT_MOD_CIRCLE"]
+    default: "VT_MOD_CIRCLE"
+    column: 0
+    prefix: "-s"
+
+  - name: "ModDiam"
+    type: "float"
+    label: "diameter [cm]"
+    tooltip: "diameter of a cricular moderator"
+    default: 2.0
+    column: 0
+    prefix: "-r"
+  - name: "ModWidth"
+    type: "float"
+    label: "width [cm]"
+    tooltip: "width of a rectangular moderator"
+    column: 1
+    prefix: "-w"
+  - name: "ModHeight"
+    type: "float"
+    label: "height [cm]"
+    tooltip: "height of a rectangular moderator"
+    column: 2
+    prefix: "-h"
+
+  - name: "AvrgFlux"
+    type: "float"
+    label: "total flux mod. [n/cm²/s]"
+    tooltip: "Time averaged flux of the moderated neutrons on moderator surface into 2*pi integrated over wavelength"
+    min: 0.0
+    default: 1.0e+13
+    column: 0
+    prefix: "-F"
+  - name: "ModTemp"
+    type: "float"
+    label: "temperature [K]"
+    tooltip: "Temperature of a Maxwellian distribution"
+    min: 0.1
+    default: 50.0
+    column: 1
+    prefix: "-T"
+
+  - name: "sLambdaFile"
+    type: "file"
+    plottable: true
+    label: "wavelength dist file"
+    tooltip: "File containing the wavelength distribution function"
+    prefix: "-W"

@@ -1,0 +1,65 @@
+mon2_kdiv:
+  executable: "mon2_kdiv"
+  label: "mon2_kdiv"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_sMonFile
+    tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+    default: "kdiv.dat"
+
+  - name: "min_ky"
+    # TODO name mismatch
+    # name: "MinKY"
+    type: "float"
+    label: "minimal ky-value"
+    tooltip: ""
+    default: -0.1
+    column: 0
+    prefix: "-w"
+    required: true
+  - name: "max_ky"
+    # TODO name mismatch
+    # name: "MaxKY"
+    type: "float"
+    label: "maximal ky-value"
+    tooltip: ""
+    default: 0.1
+    column: 1
+    prefix: "-W"
+    required: true
+  - <<: *monitor_nBinsY
+    # TODO name mismatch
+    name: "number_ybins"
+    default: 100
+    max: 1000
+
+  - name: "min_kz"
+    # TODO name mismatch
+    # name: "MinKZ"
+    type: "float"
+    label: "minimal kz-value"
+    tooltip: ""
+    default: -0.1
+    column: 0
+    prefix: "-h"
+    required: true
+  - name: "max_kz"
+    # TODO name mismatch
+    # name: "MaxKZ"
+    type: "float"
+    label: "maximal kz-value"
+    tooltip: ""
+    default: 0.1
+    column: 1
+    prefix: "-H"
+    required: true
+  - <<: *monitor_nBinsZ
+    # TODO name mismatch
+    name: "number_zbins"
+    default: 100
+    max: 1000
+
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eFormat

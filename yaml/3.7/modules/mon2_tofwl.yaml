@@ -1,0 +1,75 @@
+mon2_tofwl:
+  executable: "mon2_tofwl"
+  label: "mon2_tofwl"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_sMonFile
+    tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+    default: "tof_wl.dat"
+
+  - name: "min_tof"
+    # TODO name mismatch
+    # name: "MinTof"
+    type: "float"
+    label: "minimal tof-value"
+    unit: "ms"
+    tooltip: ""
+    default: 0
+    column: 0
+    prefix: "-w"
+    required: true
+  - name: "max_tof"
+    # TODO name mismatch
+    # name: "MaxTof"
+    type: "float"
+    label: "maximal tof-value"
+    unit: "ms"
+    tooltip: ""
+    default: 20
+    column: 1
+    prefix: "-W"
+    required: true
+  - <<: *monitor_nBinsY
+    # TODO name mismatch
+    name: "number_ybins"
+    label: "number of TOF-bins"
+    tooltip: "number of bins within the TOF range, max. 1000"
+    default: 100
+    max: 1000
+
+  - name: "min_wl"
+    # TODO name mismatch
+    # name: "MinWl"
+    type: "float"
+    label: "minimal wavelength"
+    unit: "Ang"
+    tooltip: "lower bound of the monitored interval"
+    default: 0.1
+    column: 0
+    prefix: "-m"
+    min: 0
+    required: true
+  - name: "max_wl"
+    # TODO name mismatch
+    # name: "MaxWl"
+    type: "float"
+    label: "maximal wavelength"
+    unit: "Ang"
+    tooltip: "upper bound of the monitored interval"
+    default: 10
+    column: 1
+    prefix: "-M"
+    min: 1.0e-6
+    required: true
+  - <<: *monitor_nBinsZ
+    # TODO name mismatch
+    name: "number_zbins"
+    label: "number of wavelength-bins"
+    tooltip: "number of bins within the lambda range, max. 1000"
+    default: 100
+    max: 1000
+
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eFormat

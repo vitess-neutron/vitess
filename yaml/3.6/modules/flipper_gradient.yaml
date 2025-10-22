@@ -1,0 +1,349 @@
+flipper_gradient:
+  executable: "flipper_gradient"
+  label: "flipper_gradient"
+  category: "flipper"
+
+  parameters:
+  - name: "Title_param"
+    type: "title"
+    label: "Geometry description of the common field"
+
+  - name: "px"
+    type: "float"
+    label: "position center X [cm]"
+    tooltip: "Center position of the flipper"
+    default: 5
+    column: 0
+    prefix: "-k"
+
+  - name: "py"
+    type: "float"
+    label: "position center Y [cm]"
+    tooltip: "Center position of the flipper"
+    default: 0
+    column: 1
+    prefix: "-l"
+
+  - name: "pz"
+    type: "float"
+    label: "position center Z [cm]"
+    tooltip: "Center position of the flipper"
+    default: 0
+    column: 2
+    prefix: "-m"
+
+  - name: "fx"
+    type: "float"
+    label: "size field X [cm]"
+    tooltip: "Length of the cuboidel of the flipper"
+    default: 10
+    column: 0
+    prefix: "-X"
+    min: 1.0e-6
+
+  - name: "fy"
+    type: "float"
+    label: "size field Y [cm]"
+    tooltip: "Width of the cuboidel of the flipper"
+    default: 10
+    column: 1
+    prefix: "-Y"
+    min: 1.0e-6
+
+  - name: "fz"
+    type: "float"
+    label: "size field Z [cm]"
+    tooltip: "Height of the cuboidel of the flipper"
+    default: 10
+    column: 2
+    prefix: "-V"
+    min: 1.0e-6
+
+  - name: "Title_param"
+    type: "title"
+    label: "Number of domains"
+
+  - name: "nx"
+    type: "int"
+    label: "in X direction"
+    tooltip: "Number of domains in the X direction"
+    default: 4
+    column: 0
+    prefix: "-C"
+    min: 1
+
+  - name: "ny"
+    type: "int"
+    label: "in Y direction"
+    tooltip: "Number of domains in the Y direction"
+    default: 2
+    column: 1
+    prefix: "-D"
+    min: 1
+
+  - name: "nz"
+    type: "int"
+    label: "in Z direction"
+    tooltip: "Number of domains in the Z direction"
+    default: 2
+    column: 2
+    prefix: "-E"
+    min: 1
+
+  - name: "Title_param"
+    type: "title"
+    label: "Rotation of Precession Volume"
+
+  - name: "rotproc"
+    type: "float"
+    label: "horizontal offset [deg]"
+    tooltip: "Horizontal (around axis OZ) angle of the field volume"
+    default: 0
+    column: 0
+    prefix: "-i"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Output Frame"
+
+  - name: "ox"
+    type: "float"
+    label: "output frame X [cm]"
+    tooltip: "Position of the output frame (in the input frame)"
+    default: 10
+    column: 0
+    prefix: "-p"
+
+  - name: "oy"
+    type: "float"
+    label: "output frame Y [cm]"
+    tooltip: "Position of the output frame (in the input frame)"
+    default: 0
+    column: 1
+    prefix: "-r"
+
+  - name: "oz"
+    type: "float"
+    label: "output frame Z [cm]"
+    tooltip: "Position of the output frame (in the input frame)"
+    default: 0
+    column: 2
+    prefix: "-s"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Rotating Magnetic Field"
+
+  - name: "mf"
+    type: "float"
+    label: "magnetic field amplitude [Gs]"
+    tooltip: "Amplitude of the rotating magnetic field in Gauss"
+    default: 5000
+    column: 0
+    prefix: "-d"
+    min: 0
+
+  - name: "rf"
+    type: "float"
+    label: "rotation frequency [Hz]"
+    tooltip: "Rotation frequency of the magnetic field"
+    default: 300000
+    column: 1
+    prefix: "-w"
+
+  - name: "bp"
+    type: "float"
+    label: "begin phase [deg] "
+    tooltip: "Initial phase for the rotating field"
+    default: 0
+    column: 2
+    prefix: "-z"
+
+  - name: "rax"
+    type: "int"
+    label: "rotating field axis"
+    tooltip: "Direction about which the field rotates: x-, y-, z-axis (values 0, 1, 2 resp.)"
+    min: 0
+    max: 2
+    default: 0
+    column: 0
+    prefix: "-M"
+
+  - name: "chgampl"
+    type: "int"
+    label: "amplitude changing by"
+    tooltip: "Function of the variation of the rotating field amplitude: SINUS, PERMANENT, SOLENOID (values 0, 1, 2 resp.)"
+    min: 0
+    max: 2
+    default: 0
+    column: 1
+    prefix: "-h"
+
+  - name: "raxx"
+    type: "int"
+    label: "amplitude changing along axis"
+    tooltip: "Direction of changing of the rotating field amplitude: x-, y-, z-axis (values 0, 1, 2 resp.)"
+    min: 0
+    max: 2
+    default: 0
+    column: 2
+    prefix: "-y"
+
+  - name: "mfd"
+    type: "float"
+    label: "deviation of amplitude [%]"
+    tooltip: "Deviation of amplitude of the rotating magnetic field in percent"
+    default: 0
+    column: 0
+    prefix: "-a"
+    min: 0
+
+  - name: "rfd"
+    type: "float"
+    label: "deviation of frequency [%]"
+    tooltip: "Deviation of Rotation frequency of the magnetic field in percent"
+    default: 0
+    column: 1
+    prefix: "-b"
+    min: 0
+
+  - name: "distra"
+    type: "int"
+    label: "amplitude distribution"
+    tooltip: "Distribution of the amplitude of the rotating field: 0: Normal (default), 1: Uniform"
+    min: 0
+    max: 1
+    default: 0
+    column: 0
+    prefix: "-e"
+
+  - name: "distrf"
+    type: "int"
+    label: "Frequency distribution"
+    tooltip: "Distribution of the frequency of the rotating field: 0: Normal (default), 1: Uniform"
+    min: 0
+    max: 1
+    default: 0
+    column: 1
+    prefix: "-v"
+
+  - name: "tofprec"
+    type: "bool"
+    label: "TOF from prec. module"
+    tooltip: "Use of TOF for the rotating field phase 'yes': TOF from preceding modules 'no' TOF = 0.0"
+    default: true
+    column: 2
+    prefix: "-n"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Guide Magnetic Field"
+
+  - name: "pmx"
+    type: "float"
+    label: "perm. / initial component X [Gs]"
+    tooltip: "Permanent (for cosine amd permanent laws) or initial (for linear law) value of the X component (projection in the axis 0X) of the guide magnetic field, Gs=Gauss"
+    default: 0
+    column: 0
+    prefix: "-I"
+
+  - name: "pmy"
+    type: "float"
+    label: "perm. / initial component Y [Gs]"
+    tooltip: "Permanent (for cosine and permanent laws) or initial (for linear law) value of the Y component (projection in the axis 0Y) of the guide magnetic field, Gs=Gauss"
+    default: 0
+    column: 2
+    prefix: "-A"
+
+  - name: "pmz"
+    type: "float"
+    label: "perm. / initial component Z [Gs]"
+    tooltip: "Permanent (for cosine and permanent laws) or initial (for linear law) value of the Z component (projection in the axis 0Z) of the guide magnetic field, Gs=Gauss"
+    default: 0
+    column: 0
+    prefix: "-K"
+
+  - name: "plmx"
+    type: "float"
+    label: "amplitude or final X [Gs]"
+    tooltip: "Amplitude (for cosine law) or final value (for linear law) of the X component (projection in the axis 0X) of the guide magnetic field, Gs=Gauss"
+    default: 0
+    column: 0
+    prefix: "-P"
+
+  - name: "plmy"
+    type: "float"
+    label: "amplitude or final Y [Gs]"
+    tooltip: "Amplitude (for cosine law) or final value (for linear law) of the Y component (projection in the axis 0Y) of the guide magnetic field, Gs=Gauss"
+    default: 0
+    column: 1
+    prefix: "-Q"
+
+  - name: "plmz"
+    type: "float"
+    label: "amplitude or final Z [Gs]"
+    tooltip: "Amplitude (for cosine law) or final value (for linear law) of the Z component (projection in the axis 0Z) of the guide magnetic field, Gs=Gauss"
+    default: 0
+    column: 2
+    prefix: "-R"
+
+  - name: "pmde"
+    type: "float"
+    label: "additional random magnetic field, [Gs]"
+    tooltip: "Amplitude of the additional random magnetic field"
+    default: 0
+    column: 0
+    prefix: "-q"
+    min: 0
+
+  - name: "chgamplgui"
+    type: "int"
+    label: "law of changing"
+    tooltip: "Function of the variation of the guide field amplitude: COSINUS, LINEAR, PERMANENT, (values 0, 1, 2 resp.)"
+    min: 0
+    max: 2
+    default: 0
+    column: 0
+    prefix: "-u"
+
+  - name: "chguidedch"
+    type: "int"
+    label: "amplitude changing along axis"
+    tooltip: "Direction of changing of the guide field amplitude: x-, y-, z-axis (values 0, 1, 2 resp.)"
+    min: 0
+    max: 2
+    default: 0
+    column: 1
+    prefix: "-t"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Addition options"
+
+  - name: "bfp"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "output file: polarisation"
+    tooltip: "Name of the file for results: polarisation"
+    default: "revp.dat"
+    column: 0
+    prefix: "-O"
+
+  - name: "bff"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "output file: magneticfield"
+    tooltip: "Name of the file for results: magnetic field"
+    default: "revm.dat"
+    column: 0
+    prefix: "-N"
+
+  - name: "outkey"
+    type: "bool"
+    label: "output results"
+    tooltip: "Output of intermediate simulation results in a file"
+    default: false
+    column: 0
+    prefix: "-S"

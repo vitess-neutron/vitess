@@ -1,0 +1,49 @@
+mon1_y:
+  executable: "monitor1"
+  label: "mon1_y"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_eMonPar
+    default: "MON_Y"
+  - <<: *monitor_sMonFile
+    tooltip: "monitor output file containing intensity as a function of the horizontal neutron position"
+  - <<: *monitor_sRefFile
+    tooltip: "Reference input file containing data to normalize the monitored position spectrum"
+
+  - *monitor_Title_Range
+  - name: "MinY"
+    type: "float"
+    label: "min. hor. positon"
+    unit: "cm"
+    tooltip: "lower bound value of the monitored horizontal position negative values: on the right, positive values: on the left"
+    default: 0.0
+    column: 0
+    prefix: "-m"
+    required: true
+  - name: "MaxY"
+    type: "float"
+    label: "max. hor. positon"
+    unit: "cm"
+    tooltip: "upper bound value of the monitored horizontal position negative values: on the right, positive values: on the left"
+    column: 1
+    default: 10.0
+    prefix: "-M"
+    required: true
+  - *monitor_nBins
+
+  - *monitor_Title_Opt
+  - *monitor_iColor
+  - *monitor_bAllFile
+
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eMonNorm
+
+  - *monitor_Title_Filter
+  - *monitor_FilterMinLambda
+  - *monitor_FilterMaxLambda
+  - *monitor_FilterMinTime
+  - *monitor_FilterMaxTime
+  - *monitor_FilterMaxZ
+  - *monitor_FilterMinZ

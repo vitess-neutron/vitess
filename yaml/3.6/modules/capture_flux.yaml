@@ -1,0 +1,79 @@
+capture_flux:
+  executable: "capture_flux"
+  label: "capture_flux"
+  category: "evaluation"
+  parameters:
+  - name: "RefLambda"
+    type: "float"
+    label: "reference wavelength [Ang]"
+    tooltip: "reference wavelength in the capture flux definition, usually 1.798 Ang. If 0.0 is given, no reference wavelength is used"
+    min: 0.0
+    default: 1.798
+    prefix: "-R"
+  - name: "WndType"
+    type: int
+    label: "shape of the illuminated gold foil area"
+    tooltip: "0: No restrictions, 1: circular, 2: rectangular"
+    min: 0
+    max: 2
+    default: 2
+    prefix: "-t"
+  - name: "WndCntrY"
+    type: "float"
+    label: "center y [cm]"
+    tooltip: "y coordinate: center of circular window [cm]"
+    column: 0
+    prefix: "-y"
+  - name: "WndCntrZ"
+    type: "float"
+    label: "center z [cm]"
+    tooltip: "z coordinate: center of circular window [cm]"
+    column: 1
+    prefix: "-z"
+  - name: "WndRadius"
+    type: "float"
+    label: "radius [cm]"
+    tooltip: "radius of circular gold foil [cm]"
+    column: 2
+    min: 0.0
+    prefix: "-r"
+  - name: "WidthMin"
+    type: "float"
+    label: "min. y [cm]"
+    tooltip: "lower frame value of rectangular window [cm]"
+    column: 0
+    default: -1.0
+    prefix: "-w"
+  - name: "WidthMax"
+    type: "float"
+    label: "max. y [cm]"
+    tooltip: "higher frame value of rectangular window [cm]"
+    column: 1
+    default: 1.0
+    prefix: "-W"
+  - name: "HeightMin"
+    type: "float"
+    label: "min. z [cm]"
+    tooltip: "bottom of rectangular window [cm]"
+    column: 0
+    default: -1.0
+    prefix: "-h"
+  - name: "HeightMax"
+    type: "float"
+    label: "max. z [cm]"
+    tooltip: "top of rectangular window [cm]"
+    column: 1
+    default: 1.0
+    prefix: "-H"
+  - name: "LambdaMin"
+    type: "float"
+    label: "min. lambda [Ang]"
+    tooltip: "Minimum lambda for flux count [Ang]"
+    column: 0
+    prefix: "-l"
+  - name: "LambdaMax"
+    type: "float"
+    label: "max. lambda [Ang]"
+    tooltip: "Maximum lambda for flux count [Ang]"
+    column: 1
+    prefix: "-L"

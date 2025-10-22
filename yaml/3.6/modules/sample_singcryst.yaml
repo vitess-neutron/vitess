@@ -1,0 +1,282 @@
+sample_singcryst:
+  executable: "sample_singcryst"
+  label: "sample_singcryst"
+  category: "sample"
+
+  parameters:
+  - name: "sParFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "parameter file"
+    tooltip: "File containing parameters of the single crystal sample These parameters are only used if they are not given as direct input parameters."
+    prefix: "-P"
+  - name: "sStructFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "structure factor file"
+    tooltip: "This file contains information to determine the scattering probability for each reflection. It can be in .str (VITESS), .laz, .lau or in another format. In the latter case the individual columns must be specified by the 'Structure file format' parameters, otherwise they are set by the program."
+    prefix: "-S"
+  - name: "d_Spread"
+    type: "float"
+    label: "d-spacing spread [-]"
+    tooltip: "d_fwhm/d, the relative 'thickness' of the Ewald sphere"
+    default: 0.0
+    min: 0.0
+    prefix: "-d"
+    column: 0
+  - name: "eDistr"
+    label: "d-spacing distribution"
+    tooltip: "function describing the d-spread distribution: LORENTZIAN, GAUSSIAN"
+    <<: *VtDistr
+    options: ["LORENTZIAN", "GAUSSIAN"]
+    default: "GAUSSIAN"
+    prefix: "-o"
+    column: 0
+
+  - name: "Title"
+    type: "title"
+    label: "Reciprocal Unit Cell Vectors"
+  - name: "RcpUCVectAX"
+    type: "float"
+    label: "Vector A X [1/Ang]"
+    tooltip: "x component of the reciprocal unit cell vector A (defined in the sample frame)"
+    default: 1.0
+    column: 0
+    prefix: "-A"
+  - name: "RcpUCVectAY"
+    type: "float"
+    label: "Vector A Y [1/Ang]"
+    tooltip: "y component of the reciprocal unit cell vector A (defined in the sample frame)"
+    default: 0.0
+    column: 0
+    prefix: "-B"
+  - name: "RcpUCVectAZ"
+    type: "float"
+    label: "Vector A Z [1/Ang]"
+    tooltip: "z component of the reciprocal unit cell vector A (defined in the sample frame)"
+    default: 0.0
+    column: 0
+    prefix: "-C"
+  - name: "RcpUCVectBX"
+    type: "float"
+    label: "Vector B X [1/Ang]"
+    tooltip: "x component of the reciprocal unit cell vector B (defined in the sample frame)"
+    default: 1.0
+    column: 0
+    prefix: "-T"
+  - name: "RcpUCVectBY"
+    type: "float"
+    label: "Vector B Y [1/Ang]"
+    tooltip: "y component of the reciprocal unit cell vector B (defined in the sample frame)"
+    default: 0.0
+    column: 0
+    prefix: "-U"
+  - name: "RcpUCVectBZ"
+    type: "float"
+    label: "Vector B Z [1/Ang]"
+    tooltip: "z component of the reciprocal unit cell vector B (defined in the sample frame)"
+    default: 0.0
+    column: 0
+    prefix: "-V"
+  - name: "RcpUCVectCX"
+    type: "float"
+    label: "Vector C X [1/Ang]"
+    tooltip: "x component of the reciprocal unit cell vector C (defined in the sample frame)"
+    default: 1.0
+    column: 0
+    prefix: "-X"
+  - name: "RcpUCVectCY"
+    type: "float"
+    label: "Vector C Y [1/Ang]"
+    tooltip: "y component of the reciprocal unit cell vector C (defined in the sample frame)"
+    default: 0.0
+    column: 0
+    prefix: "-Y"
+  - name: "RcpUCVectCZ"
+    type: "float"
+    label: "Vector C Z [1/Ang]"
+    tooltip: "z component of the reciprocal unit cell vector C (defined in the sample frame)"
+    default: 0.0
+    column: 0
+    prefix: "-Z"
+
+  - name: "Title"
+    type: "title"
+    label: "Scattering"
+  - name: "NormFact"
+    type: "float"
+    label: "normalization [a.u.]"
+    tooltip: "normalisation factor containing for example the number density"
+    default: 1.0
+    min: 0.000001
+    column: 2
+    prefix: "-N"
+  - name: "MuAbsorb"
+    type: "float"
+    label: "absorption [1/cm/Ang]"
+    tooltip: "Macroscopic absorption cross section per wavelength used to calculate the attenuation within the sample"
+    default: 20.0
+    min: 0.1
+    column: 2
+    prefix: "-m"
+
+  - name: "Title"
+    type: "title"
+    label: "Sample position and Geometry"
+  - name: "PosSmplX"
+    type: "float"
+    label: "X [cm]"
+    tooltip: "Center position X of the single crystal sample"
+    default: 30.0
+    column: 0
+    prefix: "-x"
+  - name: "PosSmplY"
+    type: "float"
+    label: "Y [cm]"
+    tooltip: "Center position Y of the single crystal sample"
+    column: 1
+    prefix: "-y"
+  - name: "PosSmplZ"
+    type: "float"
+    label: "Z [cm]"
+    tooltip: "center position Z of the single crystal sample"
+    default: 0.0
+    column: 2
+    prefix: "-z"
+
+  - name: "RotSmplZ1"
+    type: "float"
+    label: "phi(Z) [deg]"
+    tooltip: "First rotation angle of the sample, i.e. the reciprocal unit vectors abount the Z axis (cf. 'Help sample')"
+    default: 0.0
+    prefix: "-p"
+    column: 0
+  - name: "RotSmplX"
+    type: "float"
+    label: "chi(X) [deg]"
+    tooltip: "Second rotation angle of the sample, i.e. the reciprocal unit vectors about the new X axis (cf. 'Help sample')"
+    default: 0.0
+    prefix: "-q"
+    column: 1
+  - name: "RotSmplZ2"
+    type: "float"
+    label: "omega(Z) [deg]"
+    tooltip: "Third rotation angle of the sample, i.e. the reciprocal unit vectors about the new Z axis (cf. 'Help sample')"
+    default: 0.0
+    prefix: "-O"
+    column: 2
+
+  - name: "eSmplGeom"
+    label: "sample geometry"
+    tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
+    <<: *VtSmplGeom
+    options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+    default: "VT_CUBE"
+    prefix: "-G"
+    column: 0
+
+  - name: "SmplDiam"
+    type: "float"
+    label: "thickness or diameter [cm]"
+    tooltip: "Thickness of a cubic sample, or diameter of sphere or cylinder."
+    min: 0.0001
+    default: 0.2
+    column: 0
+    prefix: "-t"
+  - name: "SmplHeight"
+    type: "float"
+    label: "height [cm]"
+    tooltip: Height of the single crystal sample (not needed for spherical shape)"
+    default: 0.2
+    min: 0.0
+    column: 1
+    prefix: "-h"
+  - name: "SmplWidth"
+    type: "float"
+    label: "diameter [cm]"
+    tooltip: "Width of a cubic single crystal sample"
+    default: 0.2
+    min: 0.0
+    column: 2
+    prefix: "-w"
+
+  - name: "FrameOutHor"
+    type: "float"
+    label: "horiz. angle [deg]"
+    tooltip: "horizontal angular coordinate in output frame"
+    default: 0.0
+    prefix: "-u"
+    column: 0
+  - name: "FrameOutVert"
+    type: "float"
+    label: "vert. angle [deg]"
+    tooltip: "vertical angular coordinate in output frame"
+    default: 0.0
+    prefix: "-v"
+    column: 1
+
+  - name: "Title"
+    type: "title"
+    label: "Structure factor file format"
+
+  - name: "ColumnH"
+    type: "int"
+    label: "h column"
+    tooltip: "column of the structure factor file, where the Miller index h is given See also 'Help sample'"
+    min: 0
+    column: 0
+    prefix: "-H"
+  - name: "ColumnK"
+    type: "int"
+    label: "k column"
+    tooltip: "column of the structure factor file, where the Miller index k is given See also 'Help sample'"
+    min: 0
+    column: 1
+    prefix: "-K"
+  - name: "ColumnL"
+    type: "int"
+    label: "l column"
+    tooltip: "column of the structure factor file, where the Miller index l is given See also 'Help sample'"
+    min: 0
+    column: 2
+    prefix: "-L"
+  - name: "ColumnStructFact"
+    type: "int"
+    label: "F column"
+    tooltip: "column of the structure factor file, where the structure factor F is See also HelpFile 'sample.html'"
+    min: 0
+    column: 0
+    prefix: "-F"
+  - name: "ColumnStructFactSq"
+    type: "int"
+    label: "|F|² column"
+    tooltip: "column of the structure factor file, where the square of the structure factor F² is See also HelpFile 'sample.html'"
+    default: 1
+    min: 0
+    column: 1
+    prefix: "-Q"
+  - name: "ColumnDW"
+    type: "int"
+    label: "Debye-Waller column"
+    tooltip: "column of the structure factor file, where the Debye-Waller factor is See also HelpFile 'sample.html'"
+    min: 0
+    column: 2
+    prefix: "-W"
+
+  - name: "bColorRefl"
+    type: "bool"
+    label: "Mark reflection"
+    tooltip: "yes: sets the color of the scattered neutron to the number of the reflection no: leaves the color unchanged"
+    column: 0
+    default: no
+    prefix: "-c"
+  - name: "ScaleFact"
+    type: "float"
+    label: "Scale factor"
+    tooltip: "Normalization factor for the structure factor See also HelpFile 'sample.html'"
+    default: 1.0
+    min: 0.000001
+    column: 1
+    prefix: "-f"

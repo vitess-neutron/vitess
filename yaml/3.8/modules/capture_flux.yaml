@@ -1,0 +1,145 @@
+capture_flux:
+  executable: "capture_flux"
+  label: "capture_flux"
+  category: "evaluation"
+  parameters:
+  - name: "RefLambda"
+    type: "float"
+    label: "reference wavelength"
+    unit: "Ang"
+    tooltip: "reference wavelength in the capture flux definition, usually 1.798 Ang. If 0.0 is given, no reference wavelength is used"
+    min: 0.0
+    default: 1.798
+    prefix: "-R"
+    required: true
+  - name: "WndType"
+    type: int
+    label: "shape of the illuminated gold foil area"
+    tooltip: "0: No restrictions, 1: circular, 2: rectangular"
+    min: 0
+    max: 2
+    default: 2
+    prefix: "-t"
+    required: true
+    # TODO
+    # type: "mapping"
+    # display:
+    #   NO_RESTRICTIONS: "no restrictions"
+    #   CIRCULAR: "circular"
+    #   RECTANGULAR: "rectangular"
+    # commandline:
+    #   NO_RESTRICTIONS: 0
+    #   CIRCULAR: 1
+    #   RECTANGULAR: 2
+  - name: "WndCntrY"
+    type: "float"
+    label: "center y"
+    unit: "cm"
+    tooltip: "y coordinate: center of circular window"
+    column: 0
+    prefix: "-y"
+    required: false
+  - name: "WndCntrZ"
+    type: "float"
+    label: "center z"
+    unit: "cm"
+    tooltip: "z coordinate: center of circular window"
+    column: 1
+    prefix: "-z"
+    required: false
+  - name: "WndRadius"
+    type: "float"
+    label: "radius"
+    unit: "cm"
+    tooltip: "radius of circular gold foil"
+    column: 2
+    min: 0.0
+    prefix: "-r"
+  - name: "WidthMin"
+    type: "float"
+    label: "min. y"
+    unit: "cm"
+    tooltip: "lower frame value of rectangular window"
+    column: 0
+    default: -1.0
+    prefix: "-w"
+    required: false
+  - name: "WidthMax"
+    type: "float"
+    label: "max. y"
+    unit: "cm"
+    tooltip: "higher frame value of rectangular window"
+    column: 1
+    default: 1.0
+    prefix: "-W"
+    required: false
+  - name: "HeightMin"
+    type: "float"
+    label: "min. z"
+    unit: "cm"
+    tooltip: "bottom of rectangular window"
+    column: 0
+    default: -1.0
+    prefix: "-h"
+    required: false
+  - name: "HeightMax"
+    type: "float"
+    label: "max. z"
+    unit: "cm"
+    tooltip: "top of rectangular window"
+    column: 1
+    default: 1.0
+    prefix: "-H"
+    required: false
+  - name: "LambdaMin"
+    type: "float"
+    label: "min. lambda"
+    unit: "Ang"
+    tooltip: "Minimum lambda for flux count"
+    column: 0
+    min: 0.0
+    default: 0.0
+    prefix: "-l"
+    required: false
+  - name: "LambdaMax"
+    type: "float"
+    label: "max. lambda"
+    unit: "Ang"
+    tooltip: "Maximum lambda for flux count"
+    column: 1
+    min: 0.0
+    default: 0.0
+    prefix: "-L"
+    required: false
+
+  views:
+    WndType:
+      0:
+        disable:
+          - "WndCntrY"
+          - "WndCntrZ"
+          - "WndRadius"
+          - "WidthMin"
+          - "WidthMax"
+          - "HeightMin"
+          - "HeightMax"
+      1:
+        enable:
+          - "WndCntrY"
+          - "WndCntrZ"
+          - "WndRadius"
+        disable:
+          - "WidthMin"
+          - "WidthMax"
+          - "HeightMin"
+          - "HeightMax"
+      2:
+        enable:
+          - "WidthMin"
+          - "WidthMax"
+          - "HeightMin"
+          - "HeightMax"
+        disable:
+          - "WndCntrY"
+          - "WndCntrZ"
+          - "WndRadius"

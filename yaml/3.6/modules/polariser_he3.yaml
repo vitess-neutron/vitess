@@ -1,0 +1,173 @@
+polariser_he3:
+  executable: "polariser_he3"
+  label: "polariser_he3"
+  category: "polariser"
+
+  parameters:
+  - name: "wdep"
+    type: "bool"
+    label: "wavelength dependence"
+    tooltip: "choice between analytical or numerical definition of the wavelength dependence of the polarisation and transmission"
+    default: true
+    column: 0
+    prefix: "-a"
+
+  - name: "phe3"
+    type: "float"
+    label: "polarisation He3[%]"
+    tooltip: "polarisation of the He3 in percent only used for analytical determination of polarisation and transmission"
+    default: 50
+    column: 0
+    prefix: "-b"
+
+  - name: "polx"
+    type: "float"
+    label: "polarisation xsection [barn/Ang]"
+    tooltip: "polarisation cross-section of neutrons with He3 in barn/Ang only used for analytical determination of polarisation and transmission"
+    default: 2945
+    column: 1
+    prefix: "-c"
+    min: 1.0e-6
+
+  - name: "dens"
+    type: "float"
+    label: "density He3 [1/cm^3]"
+    tooltip: "particle density of the He3 gas in 1/cm^3 only used for analytical determination of polarisation and transmission"
+    default: 1.0e+19
+    column: 2
+    prefix: "-d"
+    min: 1.0e-6
+
+  - name: "pfile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "polarisation file"
+    tooltip: "data file for the wavelength dependent polarisation"
+    default: ""
+    column: 0
+    prefix: "-P"
+
+  - name: "tfile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "transmission file"
+    tooltip: "data file for the wavelength dependent transmission"
+    default: ""
+    column: 0
+    prefix: "-T"
+
+  - name: "x"
+    type: "float"
+    label: "position main X [cm]"
+    tooltip: "x center position of the cylindrical chamber"
+    default: 10
+    column: 0
+    prefix: "-k"
+
+  - name: "y"
+    type: "float"
+    label: "position main Y [cm]"
+    tooltip: "y center position of the cylindrical chamber"
+    default: 0
+    column: 1
+    prefix: "-l"
+
+  - name: "z"
+    type: "float"
+    label: "position main Z [cm]"
+    tooltip: "z center position of the cylindrical chamber"
+    default: 0
+    column: 2
+    prefix: "-m"
+
+  - name: "clen"
+    type: "float"
+    label: "cylinder length [cm]"
+    tooltip: "length of the cylindrical chamber along the beamline"
+    default: 10
+    column: 0
+    prefix: "-X"
+    min: 1.0e-6
+
+  - name: "crad"
+    type: "float"
+    label: "cylinder diameter [cm]"
+    tooltip: "diameter of the cylindrical chamber"
+    default: 10
+    column: 1
+    prefix: "-Y"
+    min: 1.0e-6
+
+  - name: "gx"
+    type: "float"
+    label: "guide field X [Gs]"
+    tooltip: "x component of the guide field in Gauss"
+    default: 1
+    column: 0
+    prefix: "-G"
+
+  - name: "gy"
+    type: "float"
+    label: "guide field Y [Gs]"
+    tooltip: "y component of the guide field in Gauss"
+    default: 0
+    column: 1
+    prefix: "-H"
+
+  - name: "gz"
+    type: "float"
+    label: "guide field Z [Gs]"
+    tooltip: "z component of the guide field in Gauss"
+    default: 0
+    column: 2
+    prefix: "-K"
+
+  - name: "px"
+    type: "float"
+    label: "pol. field X [Gs]"
+    tooltip: "x component of the field in the chamber which is added to the guide field in Gauss"
+    default: 10
+    column: 0
+    prefix: "-M"
+
+  - name: "py"
+    type: "float"
+    label: "pol. field Y [Gs]"
+    tooltip: "y component of the field in the chamber which is added to the guide field in Gauss"
+    default: 0
+    column: 1
+    prefix: "-N"
+
+  - name: "pz"
+    type: "float"
+    label: "pol. field Z [Gs]"
+    tooltip: "z component of the field in the chamber which is added to the guide field in Gauss"
+    default: 0
+    column: 2
+    prefix: "-O"
+
+  - name: "ox"
+    type: "float"
+    label: "output X [cm]"
+    tooltip: "x position of the output frame (in the input frame)"
+    default: 20
+    column: 0
+    prefix: "-p"
+
+  - name: "oy"
+    type: "float"
+    label: "output Y [cm]"
+    tooltip: "y position of the output frame (in the input frame)"
+    default: 0
+    column: 1
+    prefix: "-r"
+
+  - name: "oz"
+    type: "float"
+    label: "output Z [cm]"
+    tooltip: "z position of the output frame (in the input frame)"
+    default: 0
+    column: 2
+    prefix: "-s"

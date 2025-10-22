@@ -1,0 +1,147 @@
+spacewindow:
+  executable: "spacewindow"
+  label: "spacewindow"
+  category: "compatibility"
+  deprecated: true
+
+  parameters:
+  - name: "Title_Geom"
+    type: "title"
+    label: "Geometry"
+  - name: "Distance"
+    type: "float"
+    label: "distance to window [cm]"
+    tooltip: "distance from origin to the center of the window (along the x-axis)"
+    default: 0.0
+    min: 0.0
+    column: 0
+    prefix: "-l"
+  - name: "eShape"
+    label: "window shape"
+    tooltip: "shape of the aperture"
+    <<: *VtShape
+    options: ["VT_SQUARE", "VT_CIRCLE"]
+    default: "VT_SQUARE"
+    column: 1
+    prefix: "-R"
+
+  - name: "Title_Cir"
+    type: "title"
+    label: "Circular window coordinates"
+  - name: "Radius"
+    type: "float"
+    label: "radius"
+    tooltip: "radius of circular window"
+    min: 0.0
+    column: 0
+    prefix: "-r"
+  - name: "CntrY"
+    type: "float"
+    label: "center y"
+    tooltip: "y coordinate: center of window"
+    default: 0.0
+    column: 1
+    prefix: "-y"
+  - name: "CntrZ"
+    type: "float"
+    label: "center z"
+    tooltip: "z coordinate: center of window"
+    default: 0.0
+    column: 2
+    prefix: "-z"
+
+  - name: "Title_Rect"
+    type: "title"
+    label: "Rectangular window coordinates"
+  - name: "MinY"
+    type: "float"
+    label: "min. y [cm]"
+    tooltip: "y-coordinate: lower bound of a rectangular window (on the right side)"
+    column: 0
+    prefix: "-w"
+  - name: "MaxY"
+    type: "float"
+    label: "max. y [cm]"
+    tooltip: "y-coordinate: Upper bound of a rectangular window (on the left side)"
+    column: 1
+    prefix: "-W"
+  - name: "MinZ"
+    type: "float"
+    label: "min. z [cm]"
+    tooltip: "z-coordinate: bottom of a rectangular window"
+    column: 0
+    prefix: "-h"
+  - name: "MaxZ"
+    type: "float"
+    label: "max. z [cm]"
+    tooltip: "z-coordinate: top of a rectangular window"
+    column: 1
+    prefix: "-H"
+  - name: "RotAngle"
+    type: "float"
+    label: "rot. angle [deg]"
+    tooltip: "Rotation angle of the rectangular window (see Help file for details)"
+    column: 2
+    prefix: "-A"
+
+  - name: "Title_Opt"
+    type: "title"
+    label: "Options"
+  - name: "bBeamstop"
+    type: "bool"
+    label: "used as beamstop"
+    tooltip: "yes: negative window: absorption inside and transmission outside  no: normal window: transmission inside and absorption outside (default)"
+    default: no
+    column: 0
+    prefix: "-S"
+  - name: "bOldFrame"
+    type: "bool"
+    label: "used previous frame"
+    tooltip: "yes: the co-ordinate system of the previous module is kept no: the co-ordinate system is shifted to the window exit as usual (default)"
+    default: no
+    column: 1
+    prefix: "-F"
+
+  - name: "Title_Out"
+    type: "title"
+    label: "Outer Material"
+  - name: "eMatOut"
+    label: "frame material"
+    tooltip: "Material used for the absorbing window frame"
+    <<: *VtWndAbs
+    options: ["VT_WABS_FILE", "VT_WABS_GD", "VT_WABS_CD", "VT_WABS_B10", "VT_WABS_EU", "VT_WABS_SI", "VT_WABS_IDEAL"]
+    default: "VT_WABS_IDEAL"
+    column: 1
+    prefix: "-c"
+  - name: "ThicknOut"
+    type: "float"
+    label: "thickness of frame [cm]"
+    tooltip: "Thickness of the material used for the absorbing window frame"
+    min: 0.0
+    column: 0
+    prefix: "-t"
+  - name: "sFileOut"
+    type: "file"
+    plottable: true
+    editable: true
+    label: "transmission file"
+    tooltip: "File containing the wavelength dependent attenuation inside the window frame (see Help file for details)"
+    prefix: "-C"
+
+  - name: "Title_In"
+    type: "title"
+    label: "Inner Material"
+  - name: "ThicknIn"
+    type: "float"
+    label: "thickness of window [cm]"
+    tooltip: "Thickness of the material used for the window pane"
+    min: 0.0
+    column: 0
+    prefix: "-T"
+  - name: "sFileIn"
+    type: "file"
+    plottable: true
+    editable: true
+    label: "transmission  file"
+    tooltip: "File containing the wavelength dependent attenuation inside the window pane (see Help file for details)"
+    prefix: "-m"

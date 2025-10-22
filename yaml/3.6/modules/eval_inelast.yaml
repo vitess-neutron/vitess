@@ -1,0 +1,136 @@
+eval_inelast:
+  executable: "eval_inelast"
+  label: "eval_inelast"
+  category: "evaluation"
+
+  parameters:
+  - name: "Title_File"
+    type: "title"
+    label: "Output files"
+  - name: "sFileTof"
+    type: "file"
+    plottable: true
+    label: "TOF spectrum"
+    tooltip: "Filename for the TOF spectrum data file."
+    default: "tof_sp.dat"
+    prefix: "-E"
+  - name: "sFileE"
+    type: "file"
+    plottable: true
+    label: "energy spectrum"
+    tooltip: "Filename for the energy spectrum data file. "
+    default: "energy_sp.dat"
+    prefix: "-G"
+
+  - name: "Title_Range"
+    type: "title"
+    label: "Range and parameters"
+  - name: "eInstrGeom"
+    label: "geometry"
+    tooltip: "Defines geometry type of TOF instrument"
+    <<: *VtInstGeom
+    options: ["VT_DIRECT_GEOM", "VT_INVERT_GEOM"]
+    default: "VT_DIRECT_GEOM"
+    column: 0
+    prefix: "-A"
+  - name: "bPathCorrect"
+    type: "bool"
+    label: "correct TOF to distance"
+    tooltip: "yes: correct TOF for the flight path from sample center to the position of the neutron detection no: use the sum of given primary and secondary flight path"
+    column: 1
+    default: yes
+    prefix: "-t"
+
+  - name: "FlightPath1"
+    type: "float"
+    label: "primary flight path [cm]"
+    tooltip: "Length of the neutron flight path from moderator to sample"
+    min: 0.0
+    column: 0
+    prefix: "-a"
+  - name: "FlightPath2"
+    type: "float"
+    label: "secondary flight path [cm]"
+    tooltip: "Length of the neutron flight path from sample to detector"
+    min: 0.0
+    column: 1
+    prefix: "-b"
+
+  - name: "LambdaRef"
+    type: "float"
+    label: "reference wavelength [Ang]"
+    tooltip: "Initial or final wavelength of the neutrons which is known from the experimental setup."
+    min: 0.0
+    column: 0
+    prefix: "-c"
+  - name: "TimeOffset"
+    type: "float"
+    label: "time offset [ms]"
+    tooltip: "global shift of the neutron time t -> t - TimeOffset [ms]"
+    column: 1
+    prefix: "-d"
+
+  - name: "MinE"
+    type: "float"
+    label: "min. energy transfer [meV]"
+    tooltip: "Minimal energy transfer in which the user is interested to bin intensities"
+    default: -2.0
+    column: 0
+    prefix: "-m"
+  - name: "MaxE"
+    type: "float"
+    label: "max. energy transfer [meV]"
+    tooltip: "Maximal energy transfer in which the user is interested to bin intensities"
+    column: 1
+    default: 2.0
+    prefix: "-M"
+  - name: "nBins"
+    type: "int"
+    label: "number of bins"
+    tooltip: "The number of time and energy channels to be considered.  Only one range needs to be given, the other range is calculated."
+    default: 100
+    min: 1
+    column: 2
+    prefix: "-C"
+
+  - name: "MinTime"
+    type: "float"
+    label: "minimal time [ms]"
+    tooltip: "Minimal TOF, in which the user is interested to bin intensities"
+    column: 0
+    prefix: "-e"
+  - name: "MaxTime"
+    type: "float"
+    label: "maximal time [ms]"
+    tooltip: "Maximal TOF, in which the user is interested to bin intensities"
+    column: 1
+    prefix: "-g"
+  - name: "TimeGrad"
+    type: "float"
+    label: "gradient of time bins"
+    tooltip: "Derivative s of the time channel width in function of TOF (as described in Help|Evaluation, section 'eval_inelast', 'Expressions for TOF binning')"
+    column: 2
+    prefix: "-h"
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "AngleCntr"
+    type: "float"
+    label: "angle center [deg]"
+    tooltip: "Center of the restricted horizontal range (relative to the X-axis)  cf. Help|Evaluation, section 'eval_inelast'"
+    column: 0
+    prefix: "-j"
+  - name: "AngleRange"
+    type: "float"
+    label: "angle range [deg]"
+    tooltip: "Restriction to horizontal angles [center - range, center + range]  cf. Help|Evaluation, section 'eval_inelast'"
+    column: 1
+    prefix: "-k"
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "Excludes all neutrons with different color from evaluation.  color=-1 means that all trajectories are regarded  "
+    min: -1
+    column: 2
+    prefix: "-f"

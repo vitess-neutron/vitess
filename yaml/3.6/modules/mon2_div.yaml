@@ -1,0 +1,128 @@
+mon2_div:
+  executable: "mon2_div"
+  label: "mon2_div"
+  category: "monitor"
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "monitor file"
+    tooltip: "monitor output file containing intensity as a function of y- and z-position"
+    default: "sample.div"
+    prefix: "-O"
+
+  - name: "Title_Par"
+    type: "title"
+    label: "Ranges"
+  - name: "MinDivY"
+    type: "float"
+    label: "min. y-value [deg]"
+    tooltip: "minimal horizontal divergence to be monitored"
+    default: -5.0
+    column: 0
+    prefix: "-w"
+  - name: "MaxDivY"
+    type: "float"
+    label: "max. y-value [deg]"
+    tooltip: "maximal horizontal divergence to be monitored"
+    default: 5.0
+    column: 1
+    prefix: "-W"
+  - name: "nBinsDivY"
+    type: "int"
+    label: "number of y-bins"
+    tooltip: "number of monitor channels in horizontal direction"
+    default: 50
+    min: 1
+    column: 2
+    prefix: "-y"
+
+  - name: "MinDivZ"
+    type: "float"
+    label: "min. z-value [deg]"
+    tooltip: "minimal vertical divergence to be monitored"
+    default: -5.0
+    column: 0
+    prefix: "-h"
+  - name: "MaxDivZ"
+    type: "float"
+    label: "max. z-value [deg]"
+    tooltip: "maximal vertical divergence to be monitored"
+    default: 5.0
+    column: 1
+    prefix: "-H"
+  - name: "nBinsDivZ"
+    type: "int"
+    label: "number of z-bins"
+    tooltip: "number of monitor channels in vertical direction"
+    default: 50
+    column: 2
+    prefix: "-z"
+
+  - name: "Title_Opt"
+    type: "title"
+    label: "Options"
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajectories meeting the monitor conditions are written no: all are written"
+    default: no
+    column: 1
+    prefix: "-e"
+  - name: "eFormat"
+    label: "file format"
+    tooltip: "file format for output: matrix: 2D matrix   xyz: 3 columns x, y, f(x,y);  compact: only 1 line of header, minimal number of digits.  integer: integer numbers rounded from calculated intensity"
+    <<: *VtFormat2D
+    options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+    default: "MATRIX"
+    column: 2
+    prefix: "-F"
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "FilterMinLambda"
+    type: "float"
+    label: "lambda min [Ang]"
+    tooltip: "minimal wavelength to be taken into account"
+    column: 0
+    prefix: "-l"
+  - name: "FilterMaxLambda"
+    type: "float"
+    label: "lambda min [Ang]"
+    tooltip: "maximal wavelength to be taken into account"
+    column: 1
+    prefix: "-L"
+  - name: "FilterMinY"
+    type: "float"
+    label: "y-pos min [cm]"
+    tooltip: "minimal horizontal position to be taken into account"
+    column: 0
+    prefix: "-u"
+  - name: "FilterMaxY"
+    type: "float"
+    label: "y-pos max [cm]"
+    tooltip: "maximal horizontal position to be taken into account"
+    column: 1
+    prefix: "-U"
+  - name: "FilterMinZ"
+    type: "float"
+    label: "z-pos min [cm]"
+    tooltip: "minimal vertical position to be taken into account"
+    column: 0
+    prefix: "-v"
+  - name: "FilterMaxZ"
+    type: "float"
+    label: "z-pos max [cm]"
+    tooltip: "maximal vertical position to be taken into account"
+    column: 1
+    prefix: "-V"

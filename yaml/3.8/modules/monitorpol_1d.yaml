@@ -1,0 +1,78 @@
+monitorpol_1d:
+  executable: "monitorpol_1d"
+  label: "monitorpol_1d"
+  category: "compatibility"
+  deprecated: true
+
+  parameters:
+  - <<: *monitor_sMonFile
+    tooltip: "monitor output file containing polarisation as a function of the chosen parameter"
+    default: "pol.dat"
+
+  - name: "Title_Par"
+    type: "title"
+    label: "Parameter and range"
+  - name: "eMonPar"
+    label: "variable parameter"
+    tooltip: "ID for the parameter, as a function of which the polarzation is shown"
+    <<: *VtMon1Par
+    options: ["MON_LAMBDA","MON_TIME","MON_DIV_Y","MON_DIV_Z","MON_Y","MON_Z"]
+    default: "MON_LAMBDA"
+    column: 0
+    prefix: "-k"
+    required: true
+  - <<: *monitor_iColor
+    tooltip: "excludes all neutrons with diff. color from monitoring, if iColor >= 0"
+    column: 1
+
+  - name: "MinValue"
+    type: "float"
+    label: "min. y-value"
+    unit: "cm"
+    tooltip: "lower bound value of the monitored range"
+    default: 0.0
+    column: 0
+    prefix: "-m"
+    required: true
+  - name: "MaxValue"
+    type: "float"
+    label: "max. y-value"
+    unit: "cm"
+    tooltip: "upper bound value of the monitored range"
+    column: 1
+    default: 10.0
+    prefix: "-M"
+    required: true
+  - *monitor_nBins
+
+  - name: "Title_Dir"
+    type: "title"
+    label: "Analysis direction"
+  - name: "PolX"
+    type: "float"
+    label: "directon x"
+    tooltip: "x-component of the quantization direction"
+    default: 1.0
+    column: 0
+    prefix: "-a"
+    required: true
+  - name: "PolY"
+    type: "float"
+    label: "directon y"
+    tooltip: "y-component of the quantization direction"
+    default: 0.0
+    column: 1
+    prefix: "-b"
+    required: true
+  - name: "PolZ"
+    type: "float"
+    label: "directon z"
+    tooltip: "z-component of the quantization direction"
+    default: 0.0
+    column: 2
+    prefix: "-c"
+    required: true
+
+  - *monitor_Title_Opt
+  - *monitor_bProbWeight
+  - *monitor_bExcl

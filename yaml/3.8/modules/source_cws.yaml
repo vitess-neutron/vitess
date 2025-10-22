@@ -1,0 +1,68 @@
+source_cws:
+  executable: "source"
+  label: "source_cws"
+  category: "source"
+  parameters:
+  - <<: *source_eSrcKind
+    default: "SRC_CWS"
+  - <<: *source_eSrcType
+    hidden: true
+    default: "CWS"
+
+  - *source_Title_Sim
+  - *source_nBunches
+  - *source_nTraj
+  - *source_sSimName
+  - *source_MinLambda
+  - *source_MaxLambda
+  - *source_MinTime
+  - *source_MaxTime
+
+  - name: "Title_Mod"
+    type: "title"
+    label: "Source, moderator and beamline parameters"
+  - <<: *source_eSrcName
+    hidden: false
+    default: "ANYSOURCE"
+    column: 0
+
+  - *source_SrcPower
+  - *source_ModDecl
+
+  - name: "wModWnd"
+    label: "moderator window"
+    tooltip: "parameters describing geometry and characteristics of a moderator are given on a separate window"
+    max: 10
+    column: 0
+    required: false
+    <<: *moderator_cws
+  - *source_sModFile
+
+  - *source_Title_Prop
+  - *source_eDirMode
+
+  - *source_MinDivY
+  - *source_MaxDivY
+  - *source_MinDivZ
+  - *source_MaxDivZ
+
+  - *source_TargetDist
+  - *source_TargetWidth
+  - *source_TargetHeight
+
+  - *source_Title_Time
+  - *source_TofDist
+  - *source_TofMin
+  - *source_TofMax
+
+  - *source_Title_Pol
+  - *source_PolDirX
+  - *source_PolDirY
+  - *source_PolDirZ
+  - *source_PolDeg
+
+  - *source_Title_Special
+  - *source_TimeMeas
+  - *source_LambdaWant
+  - *source_eTraceMode
+  - *source_sTraceFile

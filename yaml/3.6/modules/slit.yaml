@@ -1,0 +1,27 @@
+slit:
+  executable: "slit"
+  label: "slit"
+  category: "spacewindow"
+  parameters:
+  - name: "Distance"
+    type: "float"
+    label: "distance to slit [cm]"
+    tooltip: "distance from origin to slit (along the x-axis)"
+    default: 0.0
+    min: 0.0
+    column: 0
+    prefix: "-d"
+  - name: "Width"
+    type: "float"
+    label: "width [cm]"
+    tooltip: "width of the (rectangular) slit"
+    min: 0.0
+    column: 1
+    prefix: "-W"
+  - name: "Height"
+    type: "float"
+    label: "height [cm]"
+    tooltip: "height of the (rectangular) slit"
+    min: 0.0
+    column: 2
+    prefix: "-H"
