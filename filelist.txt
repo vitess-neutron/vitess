@@ -12,7 +12,7 @@ TOOLS
 Vitess
 Vitess-MacOS
 WWW
-YAML
+yaml
 callVitess
 darwin_gnuplot.txt
 filelist.txt
