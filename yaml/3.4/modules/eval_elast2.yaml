@@ -1,0 +1,205 @@
+eval_elast2:
+  executable: "eval_elast2"
+  label: "eval_elast2"
+  category: "evaluation"
+
+  parameters:
+  - name: "Title_File"
+    type: "title"
+    label: "Evalation parameter and output file"
+  - name: "eEvalCombi"
+    type: "int"
+    label: "evaluation parameter"
+    tooltip: "Parameter combination, as a function of which the intensity is shown 1: scattering angle + lambda, 2: scattering angle + TOF"
+    column: 0
+    prefix: "-k"
+  - name: "sEvalFile"
+    type: "file"
+    plottable: true
+    label: "evaluation file"
+    tooltip: "Output file of the evaluation containing the intensity as a function of the chosen parameter"
+    default: "evaluation.dat"
+    prefix: "-o"
+
+  - name: "Title_Range"
+    type: "title"
+    label: "Ranges and parameters"
+  - name: "nBinsX"
+    type: "int"
+    label: "number of bins in X"
+    tooltip: "number of evaluation channels on the x-axis (scattering angle)"
+    default: 100
+    min: 1
+    column: 0
+    prefix: "-n"
+  - name: "MinX"
+    type: "float"
+    label: "minimum X [deg]"
+    tooltip: "lower bound value of the evaluated x-range"
+    default: 0.0
+    column: 1
+    prefix: "-x"
+  - name: "MaxX"
+    type: "float"
+    label: "maximum X [deg]"
+    tooltip: "upper bound value of the evaluated x-range"
+    default: 10.0
+    column: 2
+    prefix: "-X"
+
+  - name: "LogPctX"
+    type: "float"
+    label: "increase to next bin X [%]"
+    tooltip: "Percentage p of increase to the next bin of the x-axis p = 0: linear binning p > 0: logarithmic binning (number of bins ignored)"
+    default: 0.0
+    column: 0
+    prefix: "-R"
+  - name: "eSort"
+    type: "int"
+    label: "Sort by"
+    tooltip: "Sort order in the data file. 0=No sorting, 1=Sort by X, 2=Y, 3=Intensity, 4=Counts; <0 for reverse"
+    default: 0
+    column: 0
+    prefix: "-s"
+  - name: "bZero"
+    type: "bool"
+    label: "Zeros"
+    tooltip: "yes: zero entries are written to disk  no: zero entries are omitted"
+    column: 1
+    default: no
+    prefix: "-f"
+
+  - name: "nBinsY"
+    type: "int"
+    label: "number of bins in Y"
+    tooltip: "number of evaluation channels"
+    default: 100
+    min: 1
+    column: 0
+    prefix: "-m"
+  - name: "MinY"
+    type: "float"
+    label: "minimum Y [Ang] [ms]"
+    tooltip: "lower bound value of the evaluated y-range"
+    default: 0.0
+    column: 1
+    prefix: "-y"
+  - name: "MaxY"
+    type: "float"
+    label: "maximum Y [Ang] [ms]"
+    tooltip: "upper bound value of the evaluated y-range"
+    default: 10.0
+    column: 2
+    prefix: "-Y"
+  - name: "LogPctY"
+    type: "float"
+    label: "increase to next bin Y [%]"
+    tooltip: "Percentage p of increase to the next bin of the y-axis p = 0: linear binning p > 0: logarithmic binning (number of bins ignored)"
+    default: 0.0
+    column: 0
+    prefix: "-S"
+
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: beam intensity is monitored  no: number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only neutrons meeting the evaluation conditions are written  no: all are written"
+    default: no
+    column: 1
+    prefix: "-c"
+  - name: "eScatAngle"
+    type: "int"
+    label: "Scat. angle selection"
+    tooltip: "Defines the way how the scattering angle is determined. 0=direction 1=position"
+    default: 0
+    column: 2
+    prefix: "-D"
+
+  - name: "Title_TOF"
+    type: "title"
+    label: "TOF option"
+  - name: "bTof"
+    type: "bool"
+    label: "time of flight"
+    tooltip: "yes: time of flight instrument  no: instrument for continuous measurements"
+    default: no
+    column: 0
+    prefix: "-w"
+  - name: "bPathCorrect"
+    type: "bool"
+    label: "correct TOF to distance"
+    tooltip: "yes: the distance from sample center to the position of the neutron detection is used to calculate the correct flight path  no: the given 'filght path' is used"
+    default: yes
+    column: 1
+    prefix: "-t"
+
+  - name: "FlightPath"
+    type: "float"
+    label: "flighta path [cm]"
+    tooltip: "Nominal length of the neutron flight path from origin to detector (for TOF option)"
+    min: 0.0
+    column: 0
+    prefix: "-l"
+  - name: "DetDist"
+    type: "float"
+    label: "sample-detector distance [cm]"
+    tooltip: "Nominal distance from sample to detector (for TOF option)"
+    min: 0.0
+    column: 1
+    prefix: "-L"
+  - name: "TimeOffset"
+    type: "float"
+    label: "time offset [ms]"
+    tooltip: "global shift of the neutron time (t - TimeOffset) [ms] (for TOF option)"
+    column: 2
+    prefix: "-T"
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "DeadSpot"
+    type: "float"
+    label: "dead spot [deg]"
+    tooltip: "excludes all neutrons with a scattering angle < DeadSpot"
+    column: 0
+    prefix: "-d"
+  - name: "FilterTimeMin"
+    type: "float"
+    label: "time interval begin [ms]"
+    tooltip: "minimal TOF to be taken into account for evaluation (used for TOF and continuous instruments)"
+    column: 1
+    prefix: "-e"
+  - name: "FilterTimeMax"
+    type: "float"
+    label: "time interval end [ms]"
+    tooltip: "maximal TOF to be taken into account for evaluation (used for TOF and continuous instruments)"
+    column: 1
+    prefix: "-E"
+
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "Excludes all neutrons with different color from evaluation.  color=-1 means that all trajectories are regarded  "
+    min: -1
+    column: 2
+    prefix: "-C"
+  - name: "iColorMin"
+    type: "int"
+    label: "color"
+    tooltip: "Excludes all neutrons with wrong wrong from evaluation.  color=-1 means that all trajectories are regarded, otherwise color >= minColor is required"
+    min: -1
+    column: 2
+    prefix: "-a"
+  - name: "iColorMax"
+    type: "int"
+    label: "color"
+    tooltip: "Excludes all neutrons with wrong color from evaluation.  color=-1 means that all trajectories are regarded, otherwise color <= minColor is required  "
+    min: -1
+    column: 2
+    prefix: "-A"

@@ -1,0 +1,364 @@
+sample_inelast:
+  executable: "sample_inelast"
+  label: "sample_inelast"
+  category: "sample"
+
+  parameters:
+  - name: "sParFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "parameter file"
+    tooltip: "File containing parameters of the sample These parameters are only used if they are not given as direct input parameters."
+    prefix: "-P"
+
+  - name: "Title_SQ"
+    type: "title"
+    label: "S(q,w): main (P) and dispersion (D) parameters"
+  - name: "P1"
+    type: "float"
+    label: "P1"
+    unit: "ueV"
+    tooltip: "reference energy (peak position for vanishing energy dispersion)"
+    column: 0
+    default: 0.0
+    prefix: "-a"
+  - name: "P2"
+    type: "float"
+    label: "P2"
+    unit: "ueV"
+    tooltip: "Lorentzian width (HWHM)"
+    column: 1
+    min: 0.0
+    default: 0.0
+    prefix: "-b"
+  - name: "P3"
+    type: "float"
+    label: "P3"
+    unit: ""
+    tooltip: "scaling factor (for both peaks)"
+    column: 2
+    min: 0.0001
+    default: 1.0
+    prefix: "-c"
+  - name: "P4"
+    type: "float"
+    label: "P4"
+    unit: ""
+    tooltip: "intensity of the second peak relative to the first"
+    column: 0
+    default: 0.0
+    prefix: "-d"
+  - name: "D1"
+    type: "float"
+    label: "D1"
+    unit: "ueV*Ang"
+    tooltip: "linear energy dispersion coefficient of momentum component x"
+    column: 0
+    default: 0.0
+    prefix: "-x"
+  - name: "D2"
+    type: "float"
+    label: "D2"
+    unit: "ueV*Ang"
+    tooltip: "linear energy dispersion coefficient of momentum component y"
+    column: 1
+    default: 0.0
+    prefix: "-y"
+  - name: "D3"
+    type: "float"
+    label: "D3"
+    unit: "ueV*Ang"
+    tooltip: "linear energy dispersion coefficient of momentum component z"
+    column: 2
+    default: 0.0
+    prefix: "-z"
+  - name: "scc"
+    type: "float"
+    label: "coherent scattering cross section"
+    unit: "barn"
+    tooltip: "Macroscopic total scattering cross section of the sample"
+    column: 0
+    default: 7.7456
+    prefix: "-s"
+  - name: "sci"
+    type: "float"
+    label: "incoherent scattering cross section"
+    unit: "barn"
+    tooltip: "Macroscopic incoherent scattering cross section of the sample"
+    column: 0
+    default: 160.5200
+    prefix: "-Q"
+  - name: "asc"
+    type: "float"
+    label: "absorption cross section"
+    unit: "barn"
+    tooltip: "Macroscopic absorption scattering cross section of the sample"
+    column: 0
+    default: 0.6652
+    prefix: "-m"
+  - name: "mas"
+    type: "float"
+    label: "Molar mass of the compound"
+    unit: "g/mol"
+    tooltip: "Molar mass of the compound"
+    column: 0
+    default: 18.0000
+    prefix: "-B"
+  - name: "den"
+    type: "float"
+    label: "Density of the compound"
+    tooltip: "Density of the compound"
+    unit: "g/mol"
+    column: 0
+    default: 1.0000
+    prefix: "-C"
+  - name: "bBoseFact"
+    type: "bool"
+    label: "Bose factor?"
+    tooltip: "flag: multiplication with the Bose factor (cf. 'Help|sample')"
+    column: 0
+    default: no
+    prefix: "-D"
+  - name: "Temp"
+    type: "float"
+    label: "temperature"
+    unit: "K"
+    tooltip: "temperature of the sample (only needed if use of the Bose factor is chosen)"
+    min: 0.0
+    column: 1
+    prefix: "-T"
+  - name: "nRep"
+    type: "int"
+    label: "repetition"
+    tooltip: "number of trajectories generated per incoming trajectory"
+    min: 1
+    column: 0
+    prefix: "-A"
+
+  - name: "Title_scattering"
+    type: "title"
+    label: "Scattering parameters"
+  - name: "ScatLambda"
+    type: "float"
+    label: "lambda final"
+    unit: "Ang"
+    tooltip: "Average wavelength Lambda of the scattered neutrons"
+    column: 0
+    default: 6.0
+    prefix: "-L"
+  - name: "ScatHor"
+    type: "float"
+    label: "angle horiz final"
+    unit: "deg"
+    tooltip: "Horizontal rotation Theta defining the mean scattering direction"
+    column: 1
+    default: 0.0
+    prefix: "-E"
+  - name: "ScatVert"
+    type: "float"
+    label: "angle vert final"
+    unit: "deg"
+    tooltip: "Vertical rotation Phi defining the mean scattering direction"
+    column: 2
+    default: 0.0
+    prefix: "-F"
+
+  - name: "DelLambda"
+    type: "float"
+    label: "delta lambda final"
+    unit: "Ang"
+    tooltip: "Range around the mean wavelength, i.e. the final wavelength will be in the range [Lambda-DelLambda], Lambda+DelLambda]."
+    column: 0
+    prefix: "-l"
+  - name: "DelScatHor"
+    type: "float"
+    label: "delta angle horiz"
+    unit: "deg"
+    tooltip: "Horizontal range DelTheta around the mean scattering direction, i.e. the outgoing angle will be in range [Theta-DelTheta, Theta+DelTheta]."
+    column: 1
+    prefix: "-e"
+  - name: "DelScatVert"
+    type: "float"
+    label: "delta angle vert"
+    unit: "deg"
+    tooltip: "Vertical range DelPhi around the mean scattering dirction, i.e. the outgoing angle will be in range [Phi-DelPhi, Phi+DelPhi]."
+    column: 2
+    default: 0.0
+    prefix: "-f"
+
+  - name: "MuScatTotal"
+    type: "float"
+    label: "scattering coeff"
+    unit: "1/cm"
+    tooltip: "User defined macroscopic total scattering cross section of the sample"
+    column: 0
+    default: 0.0
+    prefix: "-s"
+  - name: "MuAbsorb"
+    type: "float"
+    label: "absorption coeff"
+    unit: "1/cm/Ang"
+    tooltip: "User defined macroscopic absorption cross section of the sample per wavelength"
+    column: 1
+    default: 0.0
+    prefix: "-m"
+
+  - name: "Title_position"
+    type: "title"
+    label: "Position, orientation and geometry of the sample"
+  - name: "SmplPosX"
+    type: "float"
+    label: "X"
+    unit: "cm"
+    tooltip: "center x position of the sample"
+    column: 0
+    default: 20.0
+    prefix: "-X"
+  - name: "SmplPosY"
+    type: "float"
+    label: "Y"
+    unit: "cm"
+    tooltip: "center y position of the sample"
+    column: 1
+    default: 0.0
+    prefix: "-Y"
+  - name: "SmplPosZ"
+    type: "float"
+    label: "Z"
+    unit: "cm"
+    tooltip: "center z position of the sample"
+    column: 2
+    default: 0.0
+    prefix: "-Z"
+
+  - name: "eSmplGeom"
+    <<: *VtSmplGeom
+    label: "sample geometry"
+    tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
+    column: 0
+    options: ["VT_CYL", "VT_SPHERE", "VT_CUBE", "VT_HOL_CYL"]
+    default: "VT_CYL"
+    prefix: "-G"
+
+  - name: "SizePar1"
+    type: "float"
+    label: "thickness or diameter"
+    unit: "cm"
+    tooltip: "thickness of a cuboid or (outer) diameter of a sphere or cylinder"
+    column: 0
+    default: 0.5
+    prefix: "-t"
+  - name: "Height"
+    type: "float"
+    label: "height"
+    unit: "cm"
+    tooltip: "height of a cuboid or cylinder"
+    column: 1
+    default: 2.0
+    prefix: "-h"
+  - name: "Width"
+    type: "float"
+    label: "inner diameter or width"
+    unit: "cm"
+    tooltip: "width of a cuboid or inner diameter of a hollow cylinder"
+    column: 2
+    default: 0.0
+    prefix: "-w"
+
+  - name: "SmplRotHor"
+    type: "float"
+    label: "horizontal angle"
+    unit: "deg"
+    tooltip: "Rotation of the sample in horizontal direction (first rotation)"
+    column: 0
+    default: 0.0
+    prefix: "-o"
+  - name: "SmplRotVert"
+    type: "float"
+    label: "vertical angle"
+    unit: "deg"
+    tooltip: "Rotation of the sample in vertical direction (second rotation)"
+    column: 1
+    default: 0.0
+    prefix: "-O"
+
+  - name: "Title_ref"
+    type: "title"
+    label: "reference wavevector"
+  - name: "LambdaInit"
+    type: "float"
+    label: "lambda initial"
+    unit: "Ang"
+    tooltip: "wavelength of the incoming neutron (see Help|sample)"
+    column: 0
+    default: 6.0
+    prefix: "-q"
+  - name: "DirInHor"
+    type: "float"
+    label: "angle horiz initial"
+    unit: "deg"
+    tooltip: "horizontal orientation of the incoming neutron (see Help|sample)"
+    column: 1
+    default: 0.0
+    prefix: "-i"
+  - name: "DirInVert"
+    type: "float"
+    label: "angle vert initial"
+    unit: "deg"
+    tooltip: "vertical orientation of the incoming neutron (see 'Help|sample')"
+    column: 2
+    default: 0.0
+    prefix: "-I"
+
+  - name: "Title_frame"
+    type: "title"
+    label: "Output frame"
+  - name: "eOutFrame"
+    <<: *VtFrameGen
+    label: "frame generation"
+    tooltip: "'user defined frame': output frame defined by the values below 'standard frame generation': creates output direction using the initial wavevector values (see Help|sample)"
+    column: 0
+    options: ["VT_FRAME_USER", "VT_FRAME_STD"]
+    default: "VT_FRAME_STD"
+    prefix: "-g"
+  - name: "FrameOutX"
+    type: "float"
+    label: "X'"
+    unit: "cm"
+    tooltip: "x coordinate of the output frame"
+    column: 0
+    default: 20.0
+    prefix: "-R"
+  - name: "FrameOutY"
+    type: "float"
+    label: "Y'"
+    unit: "cm"
+    tooltip: "y coordinate of the output frame"
+    column: 1
+    default: 0.0
+    prefix: "-S"
+  - name: "FrameOutZ"
+    type: "float"
+    label: "Z'"
+    unit: "cm"
+    tooltip: "z coordinate of the output frame"
+    column: 2
+    default: 0.0
+    prefix: "-W"
+  - name: "FrameOutHor"
+    type: "float"
+    label: "horiz. angle"
+    unit: "deg"
+    tooltip: "Rotation angle of the output frame in horizontal direction (first rotation) (0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
+    column: 0
+    default: 0.0
+    prefix: "-u"
+  - name: "FrameOutVert"
+    type: "float"
+    label: "vert. angle"
+    unit: "deg"
+    tooltip: "Rotation angle of the output frame in vertical direction (first rotation) (0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
+    column: 1
+    default: 0.0
+    prefix: "-U"

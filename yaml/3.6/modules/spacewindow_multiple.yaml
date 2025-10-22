@@ -1,0 +1,94 @@
+spacewindow_multiple:
+  executable: "spacewindow_multiple"
+  label: "spacewindow_multiple"
+  category: "spacewindow"
+
+  parameters:
+  - name: "colfile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "collimator file"
+    tooltip: "File which contains the circular hole(s) data. Each line must contain a triple of data describing a hole: y,z,radius. The number of holes for each collimator must be less than 100. (see help)"
+    default: ""
+    prefix: "-I"
+
+  - name: "dist"
+    type: "float"
+    label: "distance orig <->win [cm]"
+    tooltip: "Distance to window along x-direction  [cm]"
+    default: 0
+    column: 0
+    prefix: "-D"
+    min: 0
+
+  - name: "rad"
+    type: "float"
+    label: "Outer radius [cm]"
+    tooltip: "Outer radius of the circular plate (multiaperture collimators) [cm]"
+    default: 100
+    column: 1
+    prefix: "-r"
+    min: 1.0e-6
+
+  - name: "wndshape"
+    label: "shape"
+    tooltip: "shape of the individual windows automatic means: 3 columns gives circular, 4 columns rectangular shape"
+    <<: *VtMultWndShape
+    options: ["VT_MWND_AUTO", "VT_MWND_CIRCLE", "VT_MWND_SQUARE"]
+    default: "VT_MWND_AUTO"
+    column: 0
+    prefix: "-S"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Outer Material"
+
+  - name: "matfile"
+    type: "file"
+    plottable: false
+    editable: false
+    label: "transmission file"
+    tooltip: "File containing the wavelength dependent attenuation inside the window frame (not for beamstop option, see Help file for details)"
+    default: ""
+    prefix: "-C"
+
+  - name: "thick"
+    type: "float"
+    label: "thickness of frame [cm]"
+    tooltip: "Thickness of the material used for the absorbing window frame. It is centered around the distance from the origin and cannot be thinner than pane (cf. help file)"
+    default:
+    column: 0
+    prefix: "-t"
+    min: 0
+
+  - name: "mat"
+    label: "frame material"
+    tooltip: "Material used for the absorbing window frame. For the beamstop option, vacuum is assumed"
+    <<: *VtWndAbs
+    options: ["VT_WABS_FILE", "VT_WABS_GD", "VT_WABS_CD", "VT_WABS_B10", "VT_WABS_EU", "VT_WABS_SI", "VT_WABS_IDEAL"]
+    default: "VT_WABS_IDEAL"
+    column: 0
+    prefix: "-c"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Inner Material"
+
+  - name: "imatfile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "transmission file"
+    tooltip: "File containing the wavelength dependent attenuation inside the window pane or the beamstop (see Help file for details)"
+    default: ""
+    prefix: "-m"
+
+  - name: "imatthick"
+    type: "float"
+    label: "thickness of window pane [cm]"
+    tooltip: "Thickness of the material used for the window pane or for the beamstop It is centered around the distance from the origin and cannot be thicker than frame (cf. help file)"
+    default:
+    column: 0
+    prefix: "-T"
+    min: 0

@@ -1,0 +1,32 @@
+source_ai:
+  executable: "source_ai"
+  label: "source_ai"
+  category: "source"
+  parameters:
+  - name: "Title_Shape"
+    type: "title"
+    label: "Variational Autoencoder model. Needs libtorch installation"
+  - name: "sModFile"
+    type: "file"
+    plottable: false
+    label: "Model file"
+    tooltip: "The model is the result of torch.jit.save(model) in python, where model is a PyTorch model. Model file Specifies the model to be used (ending .model in FILES/moderators)"
+    default: "vae_hbs.model"
+    prefix: "-M"
+    required: true
+  - name: "nNeut"
+    type: "int"
+    label: "Number of traj. per bunch"
+    tooltip: "number of neutrons simulates in a single bunch. the total number of neutrons is nNeut x nBunches"
+    column: 0
+    default: 10000
+    prefix: "-n"
+    required: true
+  - name: "nBunches"
+    type: "int"
+    label: "number of neutron bunches"
+    tooltip: "neutrons are bunches into nBunches, total number of neutrons will be nNeut x nBunches."
+    column: 1
+    default: 10
+    prefix: "-b"
+    required: true

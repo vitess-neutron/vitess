@@ -1,0 +1,126 @@
+source_simple:
+  executable: "source"
+  label: "source_simple"
+  category: "source"
+  parameters:
+  - name: "eSrcKind"
+    hidden: true
+    label: "kind of source"
+    <<: *VtSrcKind
+    options: ["SRC_SIMPLE", "SRC_CWS", "SRC_PULSED", "SRC_ISIS", "SRC_ESS"]
+    default: "SRC_SIMPLE"
+    prefix: "-K"
+
+  - name: "Titel_Sim"
+    type: "title"
+    label: "Simulation parameters"
+  - name: "nBunches"
+    type: "int"
+    label: "number of bundels"
+    tooltip: "number of packages into which the whole simulation is separated"
+    default: 5
+    column: 0
+    prefix: "-l"
+  - name: "nTraj"
+    type: "float"
+    label: "number of traj. per bundle"
+    tooltip: "number of neutron trajectories (events) created in each bundle"
+    default: 1000000
+    column: 1
+    prefix: "-n"
+  - name: "sSimName"
+    type: "string"
+    label: "simulation name"
+    tooltip: "name or ID of the simulation given by the user (only for indexing)"
+    default: ""
+    column: 2
+    prefix: "-I"
+
+  - name: "MinLambda"
+    type: "float"
+    label: "min. wavelength [Ang]"
+    tooltip: "minimum of the wavelength range"
+    min: 0.0
+    default: 1.0
+    column: 0
+    prefix: "-m"
+  - name: "MaxLambda"
+    type: "float"
+    label: "max. wavelength [Ang]"
+    tooltip: "maximum of the wavelength range"
+    default: 5.0
+    column: 1
+    prefix: "-M"
+
+  - name: "Titel_Mod"
+    type: "title"
+    label: "Moderator parameters"
+  - name: "eSrcType"
+    hidden: true
+    label: "source type"
+    <<: *VtSrcType
+    options: ["NO_TYPE", "CWS"]
+    default: "CWS"
+    prefix: "-S"
+  - name: "wModWnd"
+    label: "moderator window"
+    tooltip: "parameters describing the moderator geometry and characteristics"
+    max: 1
+    column: 0
+    <<: *moderator_simple
+  - name: "sModFile"
+    type: "file"
+    plottable: false
+    editable: false
+    label: "moderator file"
+    tooltip: "name of the file containing the moderator parameters This old way of reading the moderator parameters is kept for compatibility reasons. They are only used if they are not given as direct input parameters. They will be saved in the instrument file (in yaml format)"
+    prefix: "-a"
+
+  - name: "Titel_Prop"
+    type: "title"
+    label: "Flight direction and propagation"
+  - name: "eDirMode"
+    label: "direction defined"
+    tooltip: "mode to determine neutron directions 'by virtual window' means that the window is the target, but the neutrons stay at the source position, otherwise neutrons are propagated to the window"
+    <<: *VtDirect
+    options: ["VT_DIVERGENCE", "VT_REAL_WND", "VT_VIRT_WND"]
+    default: "VT_REAL_WND"
+    column: 0
+    prefix: "-d"
+  - name: "MaxDivY"
+    type: "float"
+    label: "max. divergence x <-> y [deg]"
+    tooltip: "maximum horizontal divergence (absolute value)"
+    column: 0
+    prefix: "-y"
+  - name: "MaxDivZ"
+    type: "float"
+    label: "max. divergence x <-> z [deg]"
+    tooltip: "maximum vertical divergence (absolute value)"
+    column: 1
+    prefix: "-z"
+
+  - name: "TargetDist"
+    type: "float"
+    label: "distance to window [cm]"
+    tooltip: "distance moderator - target window"
+    min: 0.0
+    default: 100.0
+    column: 0
+    prefix: "-D"
+  - name: "TargetWidth"
+    type: "float"
+    label: "window width [cm]"
+    tooltip: "width of the target window"
+    min: 0.0
+    default: 3.0
+    column: 1
+    prefix: "-w"
+  - name: "TargetHeight"
+    type: "float"
+    label: "window height [cm]"
+    tooltip: "height of the target window"
+    min: 0.0
+    default: 3.0
+    column: 2
+    prefix: "-h"

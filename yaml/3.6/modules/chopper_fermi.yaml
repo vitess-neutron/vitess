@@ -1,0 +1,135 @@
+chopper_fermi:
+  executable: "chopper_fermi"
+  label: "chopper_fermi"
+  category: "chopper"
+
+  parameters:
+  - name: "eChanShape"
+    label: "channel shape"
+    tooltip: "straight: straight Fermi chopper circular: Curved Fermi chopper with circular shaped channels  ideal: Curved Fermi chopper with channels close to parabolic shape"
+    <<: *VtChnlShape
+    options: ["VT_CHN_STR","VT_CHN_CIRC", "VT_CHN_IDEAL"]
+    default: "VT_CHN_STR"
+    column: 1
+    prefix: "-g"
+
+  - name: "sOutFile"
+    type: "file"
+    plottable: false
+    editable: false
+    label: "geometry file"
+    tooltip: "output file of the curved channel geometry"
+    prefix: "-G"
+
+  - name: "PosMainX"
+    type: "float"
+    label: "position X [cm]"
+    tooltip: "Center position X of the Fermi chopper"
+    default: 10.0
+    column: 0
+    prefix: "-X"
+  - name: "PosMainY"
+    type: "float"
+    label: "position Y [cm]"
+    tooltip: "Center position Y of the Fermi chopper"
+    default: 0.0
+    column: 1
+    prefix: "-Y"
+  - name: "PosMainZ"
+    type: "float"
+    label: "position Z [cm]"
+    tooltip: "center position Z of the Fermi chopper"
+    default: 0.0
+    column: 2
+    prefix: "-V"
+
+  - name: "Height"
+    type: "float"
+    label: "height [cm]"
+    tooltip: "height of the channels of the Fermi chopper"
+    default: 5.0
+    min: 0.0001
+    column: 0
+    prefix: "-a"
+  - name: "Width"
+    type: "float"
+    label: "width [cm]"
+    tooltip: "width of the active area of the Fermi chopper"
+    default: 4.0
+    min: 0.0001
+    column: 1
+    prefix: "-b"
+  - name: "Length"
+    type: "float"
+    label: "channel length [cm]"
+    tooltip: "channel length of the Fermi chopper (not active for the channel shape option 'ideal')"
+    default: 3.0
+    min: 0.0001
+    column: 2
+    prefix: "-c"
+
+  - name: "nChannels"
+    type: "int"
+    label: "number of channels"
+    tooltip: "number of channels of the Fermi chopper"
+    default: 20
+    min: 1
+    column: 0
+    prefix: "-l"
+  - name: "Thickness"
+    type: "float"
+    label: "wall thickness [cm]"
+    tooltip: "thickness of the blades separating the Fermi chopper channels"
+    default: 0.02
+    min: 0.0
+    column: 1
+    prefix: "-m"
+  - name: "Diameter"
+    type: "float"
+    label: "diameter [cm]"
+    tooltip: "diameter of the shadowing cylinder (see Help | chopper)"
+    default: 8.0
+    min: 0.0
+    column: 2
+    prefix: "-r"
+
+  - name: "Freq"
+    type: "float"
+    label: "rotations per second"
+    tooltip: "frequency of the chopper rotation"
+    default: 500.0
+    min: 0.0001
+    column: 0
+    prefix: "-n"
+  - name: "Phase"
+    type: "float"
+    label: "phase [deg]"
+    tooltip: "Chopper orientation at time = 0"
+    default: 0.0001
+    min: 0.0001
+    column: 1
+    prefix: "-q"
+  - name: "OptLambda"
+    type: "float"
+    label: "optimal wavelength [Ang]"
+    tooltip: "only for a curved Fermi choppoer: optimal wavelength to be transmitted by the curved Fermi chopper (cf. Help | chopper)"
+    min: 0.0001
+    column: 2
+    prefix: "-L"
+
+  - name: "bZeroTime"
+    type: "bool"
+    label: "set zero time"
+    tooltip: "yes: the chopper defines the zero time  no: the zero time is defined in the source  (see Help | chopper)"
+    default: no
+    column: 0
+    prefix: "-z"
+  - name: "eGates"
+    type: "int"
+    label: "number of gates"
+    tooltip: "number of gates representing the channels (see Help | chopper)"
+    min: 4
+    max: 8
+    default: 6
+    column: 2
+    prefix: "-p"

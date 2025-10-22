@@ -1,0 +1,172 @@
+flipper_coil:
+  executable: "flipper_coil"
+  label: "flipper_coil"
+  category: "flipper"
+
+  parameters:
+  - name: "Title_param"
+    type: "title"
+    label: "Rectangular coil flipper"
+
+  - name: "x"
+    type: "float"
+    label: "position main X"
+    unit: "cm"
+    tooltip: "center position x of the rectangular coil"
+    column: 0
+    default: 5
+    prefix: "-k"
+    required: true
+  - name: "y"
+    type: "float"
+    label: "position main Y"
+    unit: "cm"
+    tooltip: "center position y of the rectangular coil"
+    column: 1
+    default: 0
+    prefix: "-l"
+    required: true
+  - name: "z"
+    type: "float"
+    label: "position main Z"
+    unit: "cm"
+    tooltip: "center position z of the rectangular coil"
+    column: 2
+    default: 0
+    prefix: "-m"
+    required: true
+
+  - name: "cas"
+    type: "int"
+    label: "orientation of the coil axes"
+    tooltip: "1: Y direction, 2: Z direction"
+    column: 0
+    default: 0
+    prefix: "-y"
+    required: true
+    # TODO
+    # type: "mapping"
+    # display:
+    #   Y_DIRECTION: "Y direction"
+    #   Z_DIRECTION: "Z direction"
+    # commandline:
+    #   Y_DIRECTION: 1
+    #   Z_DIRECTION: 2
+    # default: "Y_DIRECTION"
+
+  - name: "hof"
+    type: "float"
+    label: "offset horiz"
+    unit: "deg"
+    tooltip: "rotation angle (first rotation) of the coil axes in horizontal direction"
+    column: 0
+    default: 0
+    prefix: "-i"
+    required: true
+  - name: "vof"
+    type: "float"
+    label: "offset vert"
+    unit: "deg"
+    tooltip: "rotation angle (first rotation) of the coil axes in vertical direction"
+    column: 1
+    default: 0
+    prefix: "-j"
+    required: true
+
+  - name: "dx"
+    type: "float"
+    label: "dimension X"
+    unit: "cm"
+    tooltip: "dimension of the rectangular coil in X direction"
+    column: 0
+    default: 10
+    prefix: "-X"
+    required: true
+  - name: "dy"
+    type: "float"
+    label: "dimension Y"
+    unit: "cm"
+    tooltip: "dimension of the rectangular coil in Y direction"
+    column: 1
+    default: 10
+    prefix: "-Y"
+    required: true
+  - name: "dz"
+    type: "float"
+    label: "dimension Z"
+    unit: "cm"
+    tooltip: "dimension of the rectangular coil in Z direction"
+    column: 2
+    default: 10
+    prefix: "-V"
+    required: true
+
+  - name: "gf"
+    type: "float"
+    label: "guide field"
+    unit: "Gs"
+    tooltip: "strength of the guide magnetic field which is considered parallel to the beam axes"
+    column: 0
+    default: 0.9787
+    prefix: "-G"
+    required: true
+
+  - name: "cf"
+    type: "float"
+    label: "coil field component"
+    unit: "Gs"
+    tooltip: "strength of the coil magnetic field which is considered parallel to the coil axes"
+    default: 0.9787
+    column: 0
+    prefix: "-H"
+    required: true
+  - name: "wt"
+    type: "float"
+    label: "wall thickness"
+    unit: "cm"
+    tooltip: "thickness of the coil wire (wall)"
+    column: 1
+    default: 0.2
+    prefix: "-t"
+    min: 0
+    required: true
+  - name: "ns"
+    # TODO type: int
+    type: "float"
+    label: "field mesh steps"
+    unit: ""
+    tooltip: "number of 'boxes' in which the field is devided (max: 100)"
+    column: 2
+    min: 1
+    max: 100
+    default: 10
+    prefix: "-N"
+    required: true
+
+  - name: "ox"
+    type: "float"
+    label: "output X"
+    unit: "cm"
+    tooltip: "x position of the output frame (in the input frame)"
+    column: 0
+    default: 10
+    prefix: "-p"
+    required: true
+  - name: "oy"
+    type: "float"
+    label: "output Y"
+    unit: "cm"
+    tooltip: "y position of the output frame (in the input frame)"
+    column: 1
+    default: 0
+    prefix: "-r"
+    required: true
+  - name: "oz"
+    type: "float"
+    label: "output Z"
+    unit: "cm"
+    tooltip: "z position of the output frame (in the input frame)"
+    column: 2
+    default: 0
+    prefix: "-s"
+    required: true

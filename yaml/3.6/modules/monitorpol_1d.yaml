@@ -1,0 +1,100 @@
+monitorpol_1d:
+  executable: "monitorpol_1d"
+  label: "monitorpol_1d"
+  category: "compatibility"
+  deprecated: true
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "monitor file"
+    tooltip: "monitor output file containing polarisation as a function of the chosen parameter"
+    default: "pol.dat"
+    prefix: "-O"
+
+  - name: "Title_Par"
+    type: "title"
+    label: "Parameter and range"
+  - name: "eMonPar"
+    label: "variable parameter"
+    tooltip: "ID for the parameter, as a function of which the polarzation is shown"
+    <<: *VtMon1Par
+    options: ["MON_LAMBDA","MON_TIME","MON_DIV_Y","MON_DIV_Z","MON_Y","MON_Z"]
+    default: "MON_LAMBDA"
+    column: 0
+    prefix: "-k"
+  - name: "iColor"
+    type: "int"
+    tooltip: "excludes all neutrons with diff. color from monitoring, if iColor >= 0"
+    label: "color"
+    min: -1
+    column: 1
+    prefix: "-C"
+
+  - name: "MinValue"
+    type: "float"
+    label: "min. y-value [cm]"
+    tooltip: "lower bound value of the monitored range"
+    default: 0.0
+    column: 0
+    prefix: "-m"
+  - name: "MaxValue"
+    type: "float"
+    label: "max. y-value [cm]"
+    tooltip: "upper bound value of the monitored range"
+    column: 1
+    default: 10.0
+    prefix: "-M"
+  - name: "nBins"
+    type: "int"
+    label: "number of bins"
+    tooltip: "number of monitor channels"
+    default: 100
+    min: 1
+    column: 2
+    prefix: "-n"
+
+  - name: "Title_Dir"
+    type: "title"
+    label: "Analysis direction"
+  - name: "PolX"
+    type: "float"
+    label: "directon x"
+    tooltip: "x-component of the quantization direction"
+    default: 1.0
+    column: 0
+    prefix: "-a"
+  - name: "PolY"
+    type: "float"
+    label: "directon y"
+    tooltip: "y-component of the quantization direction"
+    default: 0.0
+    column: 1
+    prefix: "-b"
+  - name: "PolZ"
+    type: "float"
+    label: "directon z"
+    tooltip: "z-component of the quantization direction"
+    default: 0.0
+    column: 2
+    prefix: "-c"
+
+  - name: "Title_Opt"
+    type: "title"
+    label: "Options"
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajectories meeting the monitor conditions are written o: all are written"
+    default: no
+    column: 1
+    prefix: "-e"

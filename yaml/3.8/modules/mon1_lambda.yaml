@@ -1,0 +1,50 @@
+mon1_lambda:
+  executable: "monitor1"
+  label: "mon1_lambda"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_eMonPar
+    default: "MON_LAMBDA"
+  - <<: *monitor_sMonFile
+    tooltip: "monitor output file containing intensity as a function of the neutron wavelength"
+    default: "monitor.mtl"
+  - <<: *monitor_sRefFile
+    tooltip: "Reference input file containing data to normalize the monitored wavelength spectrum"
+
+  - *monitor_Title_Range
+  - name: "MinLambda"
+    type: "float"
+    label: "min. wavelength"
+    unit: "Ang"
+    tooltip: "lower bound value of the monitored wavelength range"
+    default: 0.0
+    column: 0
+    prefix: "-m"
+    required: true
+  - name: "MaxLambda"
+    type: "float"
+    label: "max. wavelength"
+    unit: "Ang"
+    tooltip: "upper bound value of the monitored wavelength range"
+    column: 1
+    default: 10.0
+    prefix: "-M"
+    required: true
+  - *monitor_nBins
+
+  - *monitor_Title_Opt
+  - *monitor_iColor
+  - *monitor_bAllFile
+
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eMonNorm
+
+  - *monitor_Title_Filter
+  - *monitor_FilterMinTime
+  - *monitor_FilterMaxTime
+  - *monitor_FilterMinY
+  - *monitor_FilterMaxY
+  - *monitor_FilterMinZ
+  - *monitor_FilterMaxZ

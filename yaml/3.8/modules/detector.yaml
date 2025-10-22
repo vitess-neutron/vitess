@@ -1,0 +1,400 @@
+detector:
+  executable: "detector"
+  label: "detector"
+  category: "detector"
+
+  parameters:
+  - name: "Title_bas"
+    type: "title"
+    label: "Basic detector properties"
+  - name: "bArray"
+    type: "bool"
+    label: "array item"
+    tooltip: "'no' (default): only detector or last detector in an array 'yes': first or intermediate item of a detector array"
+    default: no
+    column: 1
+    prefix: "-B"
+
+  - name: "eDetGeom"
+    label: "geometry"
+    tooltip: "Geometry of the detector"
+    <<: *VtDetGeom
+    options: ["VT_DET_FLAT","VT_DET_CYL"]
+    default: "VT_DET_FLAT"
+    column: 0
+    prefix: "-G"
+    required: true
+  - name: "eDetType"
+    label: "Type"
+    tooltip: "Detector type: gas tubes (only when 'flat') or area/volume detector"
+    <<: *VtDetType
+    options: ["VT_DET_TUBE","VT_DET_AREA"]
+    default: "VT_DET_AREA"
+    column: 1
+    prefix: "-a"
+    required: true
+  - name: "eDetUse"
+    label: "usage"
+    tooltip: "'monitor only' leaves neutron position and weight unchanged 'realistic' considers efficiency, cell size and resolution 'grid off' only the efficiency (see also Help|Detector)"
+    <<: *VtDetUse
+    options: ["VT_DET_REAL", "VT_GRID_OFF", "VT_MON_ONLY"]
+    default: "VT_MON_ONLY"
+    column: 2
+    prefix: "-U"
+    required: true
+
+  - name: "Title_flt"
+    type: "title"
+    label: "Filter"
+  - name: "iMinColor"
+    type: "int"
+    label: "min color"
+    tooltip: "Minimal color necessary for the trajectory to be treated (-1 means all)"
+    column: 0
+    min: -1
+    default: -1
+    prefix: "-q"
+    required: false
+  - name: "iMaxColor"
+    type: "int"
+    label: "max color"
+    tooltip: "Maximal color necessary for the trajectory to be treated (-1 means all)"
+    column: 1
+    min: -1
+    default: -1
+    prefix: "-Q"
+    required: false
+  - name: "iAddColor"
+    type: "int"
+    label: "add color"
+    tooltip: "Add value to color after detection. A negative number means no change (see also Help|Detector)"
+    column: 2
+    min: -1
+    default: 0
+    prefix: "-S"
+    required: false
+
+  - name: "bKeepColor"
+    type: "bool"
+    label: "keep wrong color"
+    tooltip: "If activated, neutrons outside the color selection will be passed on to the next module untouched. Otherwise, these neutrons are discarded (default). Only relevant if 'min color' and/or 'max color' is used"
+    column: 0
+    default: false
+    prefix: "-d"
+    required: false
+  - name: "nRep"
+    type: "int"
+    label: "repetition"
+    tooltip: "Number of trajectories generated per incoming trajectory"
+    column: 1
+    min: 1
+    default: 1
+    prefix: "-A"
+    required: false
+
+  - name: "Title_pos"
+    type: "title"
+    label: "Detector position and size"
+  - name: "ScatVert"
+    type: "float"
+    label: "phi"
+    unit: "deg"
+    tooltip: "Angle between the y-axis and the projection of the vector to the detector center to the yz-plane [0,180] deg. For cylindrical geometry phi must be 0 deg (left) or 180 deg (right)!"
+    min: 0.0
+    max: 360.0
+    default: 0.0
+    prefix: "-P"
+    column: 0
+    required: true
+  - name: "ScatHor"
+    type: "float"
+    label: "theta"
+    unit: "deg"
+    tooltip: "Angle between the vector to the detector center and the +x-axis [0,180] deg."
+    min: 0.0
+    max: 180.0
+    default: 0.0
+    prefix: "-T"
+    column: 1
+    required: true
+  - name: "Distance"
+    type: "float"
+    label: "distance"
+    unit: "cm"
+    tooltip: "Distance from the centre of the detector surface to the origin (0,0,0), i.e. the sample center In case of a cylindrical detector this is the inner cylinder radius."
+    min: 0.0001
+    default: 100.0
+    column: 2
+    prefix: "-D"
+    required: true
+
+  - name: "Height"
+    type: "float"
+    label: "height"
+    unit: "cm"
+    tooltip: "Total height of the detector"
+    default: 30.0
+    min: 0.0
+    column: 0
+    prefix: "-h"
+    required: true
+  - name: "Width"
+    type: "float"
+    label: "width"
+    unit: "cm"
+    tooltip: "Full width of a flat detector In case of a cylindrical detector it is the length of the cylinder arch."
+    default: 30.0
+    min: 0.0
+    column: 1
+    prefix: "-w"
+    required: true
+  - name: "Thickness"
+    type: "float"
+    label: "thickness"
+    unit: "cm"
+    tooltip: "Total thickness of the detecting material"
+    default: 1.0
+    min: 0.0
+    column: 2
+    prefix: "-t"
+    required: true
+
+  - name: "Title_res"
+    type: "title"
+    label: "Cell size and resolution"
+  - name: "nRows"
+    type: "int"
+    label: "number of rows"
+    tooltip: "Number of rows partitioning the detector height (hor. tubes or digitalization bins)."
+    default: 1
+    min: 1
+    column: 0
+    prefix: "-r"
+    required: true
+  - name: "nColumns"
+    type: "int"
+    label: "number of columns"
+    tooltip: "Number of columns partitioning the detector width (vert. tubes or digitalization bins)"
+    default: 1
+    min: 1
+    column: 1
+    prefix: "-c"
+    required: true
+  - name: "nLayers"
+    type: "int"
+    label: "number of columns"
+    tooltip: "Number of layers partitioning the detector thickness (physical layers or digitalization bins in volume detector) (see also Help file)"
+    default: 1
+    min: 1
+    column: 2
+    prefix: "-n"
+    required: true
+
+  - name: "ResHor"
+    type: "float"
+    label: "hor. resolution"
+    unit: "cm"
+    tooltip: "Spatial resolution (FWHM) in horizontal direction"
+    default: 0.0
+    min: 0.0
+    column: 0
+    prefix: "-u"
+    required: true
+  - name: "ResVert"
+    type: "float"
+    label: "vert. resolution"
+    unit: "cm"
+    tooltip: "spatial resolution (FWHM) in vertical direction"
+    default: 0.0
+    min: 0.0
+    column: 1
+    prefix: "-v"
+    required: true
+  - name: "ResX"
+    type: "float"
+    label: "resolution in x"
+    unit: "cm"
+    tooltip: "spatial resolution (FWHM) in beam direction"
+    default: 0.0
+    min: 0.0
+    column: 2
+    prefix: "-l"
+    required: true
+
+  - name: "Title_eff"
+    type: "title"
+    label: "Detector efficiency"
+  - name: "sEffFile"
+    type: "file"
+    plottable: true
+    editable: true
+    label: "lambda efficiency"
+    tooltip: "File containing two columns: wavelength and efficiency. If an efficiency file is given, other efficiency data are ignored."
+    prefix: "-E"
+    required: false
+  - name: "eDetMat"
+    label: "absorber material"
+    tooltip: "Material that interacts with neutrons and thus determines the (wavelength-dependent) detection efficiency."
+    <<: *VtDetAbs
+    options: ["VT_GAS_BF3","VT_GAS_HE3","VT_SOLID_B10","VT_SOLID_LI6","VT_ABS_OTHER"]
+    default: "VT_GAS_HE3"
+    column: 0
+    prefix: "-m"
+    required: true
+  - name: "Par1"
+    type: "float"
+    label: "pressure [bar] or layer thickness [cm]."
+    tooltip: "He3, BF3: Pressure used to calculate particle density. If gas mixture is used, give value for absorber component. Solid B10 or Li6: layer thickness of converter material."
+    default: 0.0
+    min: 0.0
+    column: 0
+    prefix: "-p"
+    required: true
+  - name: "Par2"
+    type: "float"
+    label: "gas temperature [K] or atomic density [1e27/m^3]."
+    tooltip: "He3, BF3: Temperature used to calculate particle density. Solid B10 or Li6: atomic density of the converter material."
+    default: 0.0
+    min: 0.0
+    column: 1
+    prefix: "-k"
+    required: true
+  - name: "EffModify"
+    type: "float"
+    label: "efficiency modifyer"
+    unit: ""
+    tooltip: "The efficiency calculated from the interaction cross-section with the chosen material or taken from the efficiency file is multiplied by this factor. (See also help file.)"
+    default: 1.0
+    min: 0.0
+    column: 2
+    prefix: "-e"
+    required: true
+
+  - name: "Title_tub"
+    type: "title"
+    label: "Geometry details: Tube detector"
+  - name: "eOrient"
+    label: "tube orientation"
+    tooltip: "Orientation of tubes: horizontal means that the cylinder (or tube) axis is parallel to the y axis, vertical means parallel to the z axis. (See also help file.)"
+    <<: *VtOrient
+    options: ["HORIZONTAL", "VERTICAL"]
+    default: "VERTICAL"
+    column: 0
+    prefix: "-o"
+    required: false
+  - name: "eDetXsection"
+    label: "tube cross-section"
+    tooltip: "Choose circular or rectangular cross-section for cylindrical or cubic detectors"
+    <<: *VtTubeShape
+    options: ["VT_TUBE_CIRCLE", "VT_TUBE_SQUARE"]
+    default: "VT_TUBE_CIRCLE"
+    column: 1
+    prefix: "-b"
+    required: false
+  - name: "WallThickn"
+    type: "float"
+    label: "wall thickness"
+    unit: "cm"
+    tooltip: "Thickness of tube walls Walls are treated as vacuum, i.e. no detection possible within the walls but also no unwanted scattering"
+    default: 0.0
+    min: 0.0
+    column: 0
+    prefix: "-f"
+    required: false
+  - name: "bShift"
+    type: "bool"
+    label: "layers shifted"
+    tooltip: "flag: layers shifted against each other by half the diameter"
+    default: no
+    column: 1
+    prefix: "-s"
+    required: false
+
+  - name: "Title_flt"
+    type: "title"
+    label: "Geometry details: Flat detector"
+  - name: "PhiDetSurf"
+    type: "float"
+    label: "phi_n"
+    unit: "deg"
+    tooltip: "Inclined detector surface: phi_n [0,360] is the angle between the projection of the back surface normal onto (y',z') plane (analog to phi), (see also help file)"
+    default: 0.0
+    min: 0.0
+    max: 360.0
+    column: 0
+    prefix: "-V"
+    required: false
+  - name: "ThetaDetSurf"
+    type: "float"
+    label: "theta_n"
+    unit: "deg"
+    tooltip: "Inclined detector surface: theta_n [0,180] deg is the angle between (the backside of) the detector surface normal and the position vector (see also help file)."
+    default: 0.0
+    min: 0.0
+    max: 180.0
+    column: 1
+    prefix: "-W"
+    required: false
+
+  - name: "Title_cyl"
+    type: "title"
+    label: "Geometry details: Cylindrical detector"
+  - name: "eAxis"
+    label: "axis orientation"
+    tooltip: "Orientation of the cylinder axis; it must be parallel to x, y or z axis"
+    <<: *VtAxis
+    options: ["X_AXIS", "Y_AXIS", "Z_AXIS"]
+    default: "Z_AXIS"
+    column: 0
+    prefix: "-x"
+    required: false
+  - name: "bConstPhi"
+    type: "bool"
+    label: "const phi"
+    tooltip: "flag: Use constant phi pixel, i.e. pixel size in height dimension is determined by constant angular spread instead of constant spatial extension."
+    default: no
+    column: 1
+    prefix: "-z"
+    required: false
+
+  - name: "Title_OutFile"
+    type: "title"
+    label: "Output File"
+  - name: "OutFile"
+    type: "file"
+    plottable: false
+    editable: false
+    label: "output file"
+    tooltip: "Detecor output in event mode (3D position, time, weight), written by last detector in array. If left blank or the array box is ticked, no output file will be written."
+    prefix: "-O"
+    required: false
+
+  views:
+    eDetGeom:
+      VT_DET_FLAT:
+        enable:
+          - "PhiDetSurf"
+          - "ThetaDetSurf"
+        disable:
+          - "eAxis"
+          - "bConstPhi"
+      VT_DET_CYL:
+        enable:
+          - "eAxis"
+          - "bConstPhi"
+        disable:
+          - "PhiDetSurf"
+          - "ThetaDetSurf"
+    eDetType:
+      VT_DET_TUBE:
+        enable:
+          - "eOrient"
+          - "eDetXsection"
+          - "WallThickn"
+          - "bShift"
+      VT_DET_AREA:
+        disable:
+          - "eOrient"
+          - "eDetXsection"
+          - "WallThickn"
+          - "bShift"

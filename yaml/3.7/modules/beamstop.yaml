@@ -1,0 +1,79 @@
+beamstop:
+  executable: "beamstop"
+  label: "beamstop"
+  parameters:
+  - name: "Distance"
+    type: "float"
+    label: "distance from sample"
+    unit: "cm"
+    tooltip: "distance between sample and beamstop"
+    default: 0.0
+    min: 0.0
+    column: 0
+    prefix: "-d"
+    required: true
+
+  - name: "eShape"
+    label: "beamstop shape"
+    tooltip: "shape of the beamstop"
+    <<: *VtShape
+    options: ["VT_SQUARE","VT_CIRCLE"]
+    default: "VT_SQUARE"
+    column: 0
+    prefix: "-R"
+    required: true
+  - name: "bProp"
+    type: "bool"
+    label: "beam propagation"
+    tooltip: "'no' (default): neutrons remain on the sample surface 'yes': neutrons are propagated to the beamstop"
+    default: no
+    column: 1
+    prefix: "-p"
+    required: false
+
+  - name: "Title_Coords"
+    type: "title"
+    label: "Beamstop coordinates"
+  - name: "Radius"
+    type: "float"
+    label: "radius"
+    unit: "cm"
+    tooltip: "radius of circular beamstop"
+    min: 0.0
+    column: 0
+    prefix: "-r"
+    required: false
+
+  - name: "Width"
+    type: "float"
+    label: "max. y"
+    unit: "cm"
+    tooltip: "Width of a rectangular beamstop"
+    min: 0.0
+    column: 0
+    prefix: "-W"
+    required: false
+  - name: "Height"
+    type: "float"
+    label: "max. z"
+    unit: "cm"
+    tooltip: "Height of a rectangular beamstop"
+    min: 0.0
+    column: 1
+    prefix: "-H"
+    required: false
+
+  views:
+    eShape:
+      VT_SQUARE:
+        enable:
+          - "Radius"
+        disable:
+          - "Width"
+          - "Height"
+      VT_CIRCLE:
+        enable:
+          - "Width"
+          - "Height"
+        disable:
+          - "Radius"

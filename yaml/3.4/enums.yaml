@@ -1,0 +1,927 @@
+EssModVsn: &EssModVsn
+  type: "enum"
+  label: "ESS version"
+  commandline:
+    BUTTERFLY1_2016: 6
+    BUTTERFLY2_2015: 5
+    VARHEIGHT_2013: 4
+    SCHOENFELDT_2013: 3
+    ZANINI_2012: 2
+    MEZEI_2001: 1
+    NO_VERSION: 0
+  display:
+    BUTTERFLY1_2016: "BUTTERFLY1_2016"
+    BUTTERFLY2_2015: "BUTTERFLY2_2015"
+    VARHEIGHT_2013: "VARHEIGHT_2013"
+    SCHOENFELDT_2013: "SCHOENFELDT_2013"
+    ZANINI_2012: "ZANINI_2012"
+    MEZEI_2001: "MEZEI_2001"
+    NO_VERSION: "NO_VERSION"
+McCompID: &McCompID
+  type: "enum"
+  label: "Module ID"
+  commandline:
+    MCN_OPT_PIPE: 1220
+    MCN_OPT_FOM: 1210
+    MCN_OPT_MAIN: 1200
+    MCN_TOOL_ANLZ_2D: 1130
+    MCN_TOOL_DST_TIME: 1120
+    MCN_TOOL_GUIDE: 1110
+    MCN_TOOL_LAT_DST: 1100
+    MCN_TOOL_STD_DEV: 1090
+    MCN_TOOL_GEN_SURF: 1080
+    MCN_TOOL_GEN_EXTR: 1070
+    MCN_TOOL_GEN_COAT: 1060
+    MCN_TOOL_GEN_BAT: 1055
+    MCN_TOOL_DIR_VIEW: 1050
+    MCN_TOOL_DEF_DIR: 1040
+    MCN_TOOL_CHOP: 1030
+    MCN_TOOL_CAS: 1020
+    MCN_TOOL_A2B: 1010
+    MCN_RUNTIME: 980
+    MCN_EVAL2_ELAST: 950
+    MCN_EVAL1_INELAST: 920
+    MCN_EVAL1_SANS: 910
+    MCN_EVAL1_ELAST: 900
+    MCN_MON2_POL_POS: 890
+    MCN_MON2_TOFWL: 880
+    MCN_MON2_WLDIV: 878
+    MCN_MON2_POSDIV: 876
+    MCN_MON2_RDIV: 874
+    MCN_MON2_KDIV: 872
+    MCN_MON2_DIV: 870
+    MCN_MON2_POS: 860
+    MCN_MONITOR2: 850
+    MCN_MON1_POL: 840
+    MCN_MON1_BRL: 820
+    MCN_MON1: 810
+    MCN_MONITOR1: 800
+    MCN_VISUAL: 740
+    MCN_RESET: 730
+    MCN_FILTER: 720
+    MCN_FRAME: 710
+    MCN_SMPL_REFL: 680
+    MCN_SMPL_SANS: 670
+    MCN_SMPL_NXS: 660
+    MCN_SMPL_S_Q: 650
+    MCN_SMPL_POWDER: 640
+    MCN_SMPL_SNGL_X: 630
+    MCN_SMPL_INELAST: 620
+    MCN_SMPL_EL_ISO: 610
+    MCN_WRITEOUT: 590
+    MCN_DETECTOR: 540
+    MCN_SMPL_ENVIRO: 530
+    MCN_BEAMSTOP: 520
+    MCN_CAPTURE: 510
+    MCN_FIELD_SESANS: 470
+    MCN_FIELD_ROT: 460
+    MCN_FIELD_PREC: 450
+    MCN_RES_DRABKIN: 430
+    MCN_FLIP_GRAD: 422
+    MCN_FLIP_COIL: 420
+    MCN_POL_SM: 412
+    MCN_POL_HE3: 410
+    MCN_MONOCHROM: 352
+    MCN_MONO_ANA: 350
+    MCN_VEL_SELECT: 330
+    MCN_CHOP_FERMI: 320
+    MCN_CHOP_DISC: 310
+    MCN_BENDER: 280
+    MCN_GUIDE_IDEAL: 275
+    MCN_GUIDE: 270
+    MCN_COLL_VIRT: 266
+    MCN_COLL_RADIAL: 264
+    MCN_COLL_SOLLER: 262
+    MCN_COLLIMATOR: 260
+    MCN_SM_ENSEMBLE: 250
+    MCN_MIRROR_ELLI: 244
+    MCN_MIRROR_POL: 242
+    MCN_MIRROR: 240
+    MCN_LENSE: 230
+    MCN_GRID: 224
+    MCN_WND_MULT: 222
+    MCN_WINDOW: 220
+    MCN_SLIT: 210
+    MCN_SPACE: 200
+    MCN_READ_IN: 190
+    MCN_SRC_LP: 150
+    MCN_SRC_SP: 140
+    MCN_SRC_TOF: 130
+    MCN_SRC_CWS: 120
+    MCN_SRC_SMPL: 110
+    MCN_SOURCE: 100
+    MCN_COMP_UNKNOWN: 0
+  display:
+    MCN_OPT_PIPE: "MCN_OPT_PIPE"
+    MCN_OPT_FOM: "MCN_OPT_FOM"
+    MCN_OPT_MAIN: "MCN_OPT_MAIN"
+    MCN_TOOL_ANLZ_2D: "MCN_TOOL_ANLZ_2D"
+    MCN_TOOL_DST_TIME: "MCN_TOOL_DST_TIME"
+    MCN_TOOL_GUIDE: "MCN_TOOL_GUIDE"
+    MCN_TOOL_LAT_DST: "MCN_TOOL_LAT_DST"
+    MCN_TOOL_STD_DEV: "MCN_TOOL_STD_DEV"
+    MCN_TOOL_GEN_SURF: "MCN_TOOL_GEN_SURF"
+    MCN_TOOL_GEN_EXTR: "MCN_TOOL_GEN_EXTR"
+    MCN_TOOL_GEN_COAT: "MCN_TOOL_GEN_COAT"
+    MCN_TOOL_GEN_BAT: "MCN_TOOL_GEN_BAT"
+    MCN_TOOL_DIR_VIEW: "MCN_TOOL_DIR_VIEW"
+    MCN_TOOL_DEF_DIR: "MCN_TOOL_DEF_DIR"
+    MCN_TOOL_CHOP: "MCN_TOOL_CHOP"
+    MCN_TOOL_CAS: "MCN_TOOL_CAS"
+    MCN_TOOL_A2B: "MCN_TOOL_A2B"
+    MCN_RUNTIME: "MCN_RUNTIME"
+    MCN_EVAL2_ELAST: "MCN_EVAL2_ELAST"
+    MCN_EVAL1_INELAST: "MCN_EVAL1_INELAST"
+    MCN_EVAL1_SANS: "MCN_EVAL1_SANS"
+    MCN_EVAL1_ELAST: "MCN_EVAL1_ELAST"
+    MCN_MON2_POL_POS: "MCN_MON2_POL_POS"
+    MCN_MON2_TOFWL: "MCN_MON2_TOFWL"
+    MCN_MON2_WLDIV: "MCN_MON2_WLDIV"
+    MCN_MON2_POSDIV: "MCN_MON2_POSDIV"
+    MCN_MON2_RDIV: "MCN_MON2_RDIV"
+    MCN_MON2_KDIV: "MCN_MON2_KDIV"
+    MCN_MON2_DIV: "MCN_MON2_DIV"
+    MCN_MON2_POS: "MCN_MON2_POS"
+    MCN_MONITOR2: "MCN_MONITOR2"
+    MCN_MON1_POL: "MCN_MON1_POL"
+    MCN_MON1_BRL: "MCN_MON1_BRL"
+    MCN_MON1: "MCN_MON1"
+    MCN_MONITOR1: "MCN_MONITOR1"
+    MCN_VISUAL: "MCN_VISUAL"
+    MCN_RESET: "MCN_RESET"
+    MCN_FILTER: "MCN_FILTER"
+    MCN_FRAME: "MCN_FRAME"
+    MCN_SMPL_REFL: "MCN_SMPL_REFL"
+    MCN_SMPL_SANS: "MCN_SMPL_SANS"
+    MCN_SMPL_NXS: "MCN_SMPL_NXS"
+    MCN_SMPL_S_Q: "MCN_SMPL_S_Q"
+    MCN_SMPL_POWDER: "MCN_SMPL_POWDER"
+    MCN_SMPL_SNGL_X: "MCN_SMPL_SNGL_X"
+    MCN_SMPL_INELAST: "MCN_SMPL_INELAST"
+    MCN_SMPL_EL_ISO: "MCN_SMPL_EL_ISO"
+    MCN_WRITEOUT: "MCN_WRITEOUT"
+    MCN_DETECTOR: "MCN_DETECTOR"
+    MCN_SMPL_ENVIRO: "MCN_SMPL_ENVIRO"
+    MCN_BEAMSTOP: "MCN_BEAMSTOP"
+    MCN_CAPTURE: "MCN_CAPTURE"
+    MCN_FIELD_SESANS: "MCN_FIELD_SESANS"
+    MCN_FIELD_ROT: "MCN_FIELD_ROT"
+    MCN_FIELD_PREC: "MCN_FIELD_PREC"
+    MCN_RES_DRABKIN: "MCN_RES_DRABKIN"
+    MCN_FLIP_GRAD: "MCN_FLIP_GRAD"
+    MCN_FLIP_COIL: "MCN_FLIP_COIL"
+    MCN_POL_SM: "MCN_POL_SM"
+    MCN_POL_HE3: "MCN_POL_HE3"
+    MCN_MONOCHROM: "MCN_MONOCHROM"
+    MCN_MONO_ANA: "MCN_MONO_ANA"
+    MCN_VEL_SELECT: "MCN_VEL_SELECT"
+    MCN_CHOP_FERMI: "MCN_CHOP_FERMI"
+    MCN_CHOP_DISC: "MCN_CHOP_DISC"
+    MCN_BENDER: "MCN_BENDER"
+    MCN_GUIDE_IDEAL: "MCN_GUIDE_IDEAL"
+    MCN_GUIDE: "MCN_GUIDE"
+    MCN_COLL_VIRT: "MCN_COLL_VIRT"
+    MCN_COLL_RADIAL: "MCN_COLL_RADIAL"
+    MCN_COLL_SOLLER: "MCN_COLL_SOLLER"
+    MCN_COLLIMATOR: "MCN_COLLIMATOR"
+    MCN_SM_ENSEMBLE: "MCN_SM_ENSEMBLE"
+    MCN_MIRROR_ELLI: "MCN_MIRROR_ELLI"
+    MCN_MIRROR_POL: "MCN_MIRROR_POL"
+    MCN_MIRROR: "MCN_MIRROR"
+    MCN_LENSE: "MCN_LENSE"
+    MCN_GRID: "MCN_GRID"
+    MCN_WND_MULT: "MCN_WND_MULT"
+    MCN_WINDOW: "MCN_WINDOW"
+    MCN_SLIT: "MCN_SLIT"
+    MCN_SPACE: "MCN_SPACE"
+    MCN_READ_IN: "MCN_READ_IN"
+    MCN_SRC_LP: "MCN_SRC_LP"
+    MCN_SRC_SP: "MCN_SRC_SP"
+    MCN_SRC_TOF: "MCN_SRC_TOF"
+    MCN_SRC_CWS: "MCN_SRC_CWS"
+    MCN_SRC_SMPL: "MCN_SRC_SMPL"
+    MCN_SOURCE: "MCN_SOURCE"
+    MCN_COMP_UNKNOWN: "MCN_COMP_UNKNOWN"
+VtAxis: &VtAxis
+  type: "enum"
+  label: "Scattering axis"
+  commandline:
+    Z_AXIS: 2
+    Y_AXIS: 1
+    X_AXIS: 0
+    NO_AXIS: -1
+  display:
+    Z_AXIS: "Z"
+    Y_AXIS: "Y"
+    X_AXIS: "X"
+    NO_AXIS: "none"
+VtBrlNorm: &VtBrlNorm
+  type: "enum"
+  commandline:
+    BRL_PCT: 3
+    BRL_TRANSF: 2
+    BRL_ABS: 1
+  display:
+    BRL_PCT: "1% lambda"
+    BRL_TRANSF: "transfer"
+    BRL_ABS: "absolute"
+VtBrlPar: &VtBrlPar
+  type: "enum"
+  commandline:
+    VT_ENERGY: 8
+    VT_DIV_RAD: 7
+    VT_DIV_VERT: 6
+    VT_DIV_HOR: 5
+    VT_POS_Z: 4
+    VT_POS_Y: 3
+    VT_TIME: 2
+    VT_LAMBDA: 1
+    VT_NOT_DEF: 0
+  display:
+    VT_ENERGY: "energy"
+    VT_DIV_RAD: "div_rad"
+    VT_DIV_VERT: "div_z"
+    VT_DIV_HOR: "div_y"
+    VT_POS_Z: "pos_z"
+    VT_POS_Y: "pos_y"
+    VT_TIME: "time"
+    VT_LAMBDA: "lambda"
+    VT_NOT_DEF: "VT_NOT_DEF"
+VtCompAct: &VtCompAct
+  type: "enum"
+  label: "Component Status"
+  commandline:
+    LAST_PART: 4
+    MIDDLE_PART: 3
+    FIRST_PART: 2
+    ACTIVE: 1
+    INACTIVE: 0
+    NOT_EXIST: -1
+  display:
+    LAST_PART: "last part"
+    MIDDLE_PART: "middle part"
+    FIRST_PART: "first part"
+    ACTIVE: "active"
+    INACTIVE: "inactive"
+    NOT_EXIST: "NOT_EXIST"
+VtDataFormat: &VtDataFormat
+  type: "enum"
+  label: "format used to store trajctories: float, exponential or binary"
+  commandline:
+    VT_BINARY: 2
+    VT_FLOAT: 1
+    VT_EXPONENTIAL: 0
+  display:
+    VT_BINARY: "binary"
+    VT_FLOAT: "float"
+    VT_EXPONENTIAL: "exponential"
+VtDetAbs: &VtDetAbs
+  type: "enum"
+  label: "absorbing detector material"
+  commandline:
+    VT_ABS_OTHER: 5
+    VT_SOLID_LI6: 3
+    VT_SOLID_B10: 2
+    VT_GAS_HE3: 1
+    VT_GAS_BF3: 0
+  display:
+    VT_ABS_OTHER: "VT_ABS_OTHER"
+    VT_SOLID_LI6: "VT_SOLID_LI6"
+    VT_SOLID_B10: "VT_SOLID_B10"
+    VT_GAS_HE3: "VT_GAS_HE3"
+    VT_GAS_BF3: "VT_GAS_BF3"
+VtDetGeom: &VtDetGeom
+  type: "enum"
+  label: "Detector geometry"
+  commandline:
+    VT_DET_FLAT: 2
+    VT_DET_CYL: 1
+  display:
+    VT_DET_FLAT: "VT_DET_FLAT"
+    VT_DET_CYL: "VT_DET_CYL"
+VtDetType: &VtDetType
+  type: "enum"
+  label: "Detector type"
+  commandline:
+    VT_DET_AREA: 1
+    VT_DET_TUBE: 0
+  display:
+    VT_DET_AREA: "VT_DET_AREA"
+    VT_DET_TUBE: "VT_DET_TUBE"
+VtDetUse: &VtDetUse
+  type: "enum"
+  label: "Detector module usage"
+  commandline:
+    VT_GRID_OFF: 2
+    VT_MON_ONLY: 1
+    VT_DET_REAL: 0
+  display:
+    VT_GRID_OFF: "VT_GRID_OFF"
+    VT_MON_ONLY: "VT_MON_ONLY"
+    VT_DET_REAL: "VT_DET_REAL"
+VtDirType: &VtDirType
+  type: "enum"
+  label: "directory type"
+  commandline:
+    OUT_DIR: 3
+    IN_DIR: 2
+    INSTL_DIR: 1
+    PAR_DIR: 0
+    NO_DIR: -1
+  display:
+    OUT_DIR: "output directory"
+    IN_DIR: "input directory"
+    INSTL_DIR: "installation directory"
+    PAR_DIR: "parameter directory"
+    NO_DIR: "NO_DIR"
+VtDirect: &VtDirect
+  type: "enum"
+  label: "definition of flight direction"
+  commandline:
+    VT_VIRT_WND: 2
+    VT_REAL_WND: 1
+    VT_DIVERGENCE: 0
+  display:
+    VT_VIRT_WND: "by virtual window"
+    VT_REAL_WND: "by real window"
+    VT_DIVERGENCE: "by divergence"
+VtDistr: &VtDistr
+  type: "enum"
+  label: "Distribution function"
+  commandline:
+    GAUSSIAN: 2
+    LORENTZIAN: 1
+  display:
+    GAUSSIAN: "Gaussian"
+    LORENTZIAN: "Lorentzian"
+VtFormat2D: &VtFormat2D
+  type: "enum"
+  commandline:
+    XYZ_CMPT: 3
+    MATR_CMPT: 2
+    XYZ: 1
+    MATRIX: 0
+    NO_2D_FORMAT: -1
+  display:
+    XYZ_CMPT: "xyz compact   "
+    MATR_CMPT: "matrix compact"
+    XYZ: "xyz"
+    MATRIX: "matrix"
+    NO_2D_FORMAT: "NO_2D_FORMAT"
+VtFrameGen: &VtFrameGen
+  type: "enum"
+  label: "Frame generation"
+  commandline:
+    VT_FRAME_USER: 2
+    VT_FRAME_STD: 1
+  display:
+    VT_FRAME_USER: "VT_FRAME_USER"
+    VT_FRAME_STD: "VT_FRAME_STD"
+VtGdeShape: &VtGdeShape
+  type: "enum"
+  label: "guide shape"
+  commandline:
+    VT_LIN_CURV: 6
+    VT_FROM_FILE: 5
+    VT_ELLIPTIC: 4
+    VT_PARABOLIC: 3
+    VT_CURVED: 2
+    VT_LINEAR: 1
+    VT_CONSTANT: 0
+  display:
+    VT_LIN_CURV: "curved+linear"
+    VT_FROM_FILE: "from file"
+    VT_ELLIPTIC: "elliptic"
+    VT_PARABOLIC: "parabolic"
+    VT_CURVED: "curved"
+    VT_LINEAR: "linear"
+    VT_CONSTANT: "constant"
+VtGdeWall: &VtGdeWall
+  type: "enum"
+  label: "guide wall"
+  commandline:
+    GW_INIT: 5
+    GW_EXIT: 4
+    GW_RIGHT: 3
+    GW_LEFT: 2
+    GW_BOTTOM: 1
+    GW_TOP: 0
+  display:
+    GW_INIT: "init"
+    GW_EXIT: "exit"
+    GW_RIGHT: "right"
+    GW_LEFT: "lweft"
+    GW_BOTTOM: "bottom"
+    GW_TOP: "top"
+VtInMod: &VtInMod
+  type: "enum"
+  commandline:
+    VT_PAR_IN: 5
+    VT_SN_QUD: 4
+    VT_Q_R_COL: 3
+    VT_M_R_COL: 2
+    VT_REFL_STD: 1
+  display:
+    VT_PAR_IN: "VT_PAR_IN"
+    VT_SN_QUD: "VT_SN_QUD"
+    VT_Q_R_COL: "VT_Q_R_COL"
+    VT_M_R_COL: "VT_M_R_COL"
+    VT_REFL_STD: "VT_REFL_STD"
+VtListPar: &VtListPar
+  type: "enum"
+  label: "reflection list parameter"
+  commandline:
+    VT_LIST_ALL_LF: -4
+    VT_LIST_ALL: 4
+    VT_LIST_T1SR_LF: -3
+    VT_LIST_T1SR: 3
+    VT_LIST_REFL_LF: -2
+    VT_LIST_REFL: 2
+    VT_LIST_PASS_LF: -1
+    VT_LIST_PASS: 1
+  display:
+    VT_LIST_ALL_LF: "All trajectories (LF)"
+    VT_LIST_ALL: "All trajectories"
+    VT_LIST_T1SR_LF: "Traj. with at least 1 reflection (LF)"
+    VT_LIST_T1SR: "Traj. with at least 1 reflection"
+    VT_LIST_REFL_LF: "Only successful reflections (LF)"
+    VT_LIST_REFL: "Only successful reflections"
+    VT_LIST_PASS_LF: "Trajectories passing the guide end (LF)"
+    VT_LIST_PASS: "Trajectories passing the guide end"
+VtListVbs: &VtListVbs
+  type: "enum"
+  label: "additional output for reflection list"
+  commandline:
+    VT_LSTM_EDGE: 2
+    VT_LSTM_YES: 1
+    VT_LSTM_NO: 0
+  display:
+    VT_LSTM_EDGE: "entry & exit"
+    VT_LSTM_YES: "yes"
+    VT_LSTM_NO: "no"
+VtMeasMode: &VtMeasMode
+  type: "enum"
+  label: "measuring mode (sample_reflectom)"
+  commandline:
+    VT_REFERENCE: 1
+    VT_SAMPLE: 0
+  display:
+    VT_REFERENCE: "flat"
+    VT_SAMPLE: "cylindrical"
+VtModShape: &VtModShape
+  type: "enum"
+  label: "window or moderator shape"
+  format: "char"
+  commandline:
+    VT_MOD_CIRCLE: "C"
+    VT_MOD_SQUARE: "R"
+  display:
+    VT_MOD_CIRCLE: "circular"
+    VT_MOD_SQUARE: "rectangular"
+VtModType: &VtModType
+  type: "enum"
+  commandline:
+    MULT_SPEC: 4
+    COUPLED: 3
+    DECOUPLED: 2
+    POISONED: 1
+    NO_MOD_TYPE: 0
+  display:
+    MULT_SPEC: "multi-spectral"
+    COUPLED: "coupled"
+    DECOUPLED: "decoupled unpoisoned"
+    POISONED: "decoupled poisoned"
+    NO_MOD_TYPE: "NO_MOD_TYPE"
+VtMon1Par: &VtMon1Par
+  type: "enum"
+  label: "monitor parameter for mon1 and monpol1"
+  commandline:
+    MON_DIV_YZ: 8
+    MON_ENERGY: 7
+    MON_Z: 6
+    MON_Y: 5
+    MON_DIV_Z: 4
+    MON_DIV_Y: 3
+    MON_TIME: 2
+    MON_LAMBDA: 1
+    NO_MON_PAR: 0
+  display:
+    MON_DIV_YZ: "div_rad"
+    MON_ENERGY: "energy"
+    MON_Z: "pos_z"
+    MON_Y: "pos_y"
+    MON_DIV_Z: "div_z"
+    MON_DIV_Y: "div_y"
+    MON_TIME: "time"
+    MON_LAMBDA: "lambda"
+    NO_MON_PAR: "NO_MON_PAR"
+VtMonNorm: &VtMonNorm
+  type: "enum"
+  label: "normalization options"
+  commandline:
+    NORM_REF_FILE: 2
+    NORM_BIN_SIZE: 1
+    NO_NORM: 0
+  display:
+    NORM_REF_FILE: "reference file"
+    NORM_BIN_SIZE: "bin size"
+    NO_NORM: "none"
+VtMonPar: &VtMonPar
+  type: "enum"
+  label: "monitor parameter for monitor1D and monitor2D"
+  commandline:
+    COLOR: 14
+    COL_HOR: 13
+    COL_VERT: 12
+    DIR_THETA: 16
+    DIR_PHI: 15
+    POS_PHI: 11
+    POS_R: 10
+    K_Z: 9
+    K_Y: 8
+    TIME: 7
+    ENERGY: 6
+    LAMBDA: 5
+    DIV_Z: 4
+    DIV_Y: 3
+    POS_Z: 2
+    POS_Y: 1
+    POS_X: 17
+    NO_PAR: 0
+  display:
+    COLOR: "color"
+    COL_HOR: "col_hor"
+    COL_VERT: "col_vert"
+    DIR_THETA: "dir_theta"
+    DIR_PHI: "dir_phi"
+    POS_PHI: "pos_phi"
+    POS_R: "pos_r"
+    K_Z: "k_z"
+    K_Y: "k_y"
+    TIME: "time"
+    ENERGY: "energy"
+    LAMBDA: "lambda"
+    DIV_Z: "div_z"
+    DIV_Y: "div_y"
+    POS_Z: "pos_z"
+    POS_Y: "pos_y"
+    POS_X: "pos_x"
+    NO_PAR: "none"
+VtMonoArrange: &VtMonoArrange
+  type: "enum"
+  label: "monochromator arrangement"
+  commandline:
+    CE_ARRAY_FILE: 3
+    CE_ARRAY_CALC: 2
+    SINGLE_CE: 1
+  display:
+    CE_ARRAY_FILE: "CE array from file"
+    CE_ARRAY_CALC: "calculated CE array"
+    SINGLE_CE: "single CE"
+VtMonoFocus: &VtMonoFocus
+  type: "enum"
+  label: "focusing options"
+  commandline:
+    DBL_FOC: 4
+    VERT_CYL: 3
+    SPHERICAL: 2
+    CONST_LMBD: 1
+  display:
+    DBL_FOC: "double focussing"
+    VERT_CYL: "vert. cylinder"
+    SPHERICAL: "sperical"
+    CONST_LMBD: "constant lambda"
+VtMonoType: &VtMonoType
+  type: "enum"
+  label: "monochromator geometry"
+  commandline:
+    TRANSM_MONO: 2
+    REFL_MONO: 1
+  display:
+    TRANSM_MONO: "transmission"
+    REFL_MONO: "reflection"
+VtMultWndShape: &VtMultWndShape
+  type: "enum"
+  label: "Shape of multiple windows"
+  commandline:
+    VT_MWND_SQUARE: 2
+    VT_MWND_CIRCLE: 1
+    VT_MWND_AUTO: 0
+  display:
+    VT_MWND_SQUARE: "rectangular"
+    VT_MWND_CIRCLE: "spherical"
+    VT_MWND_AUTO: "automatic"
+VtOrient: &VtOrient
+  type: "enum"
+  label: "Orientation"
+  commandline:
+    VERTICAL: 1
+    HORIZONTAL: 0
+  display:
+    VERTICAL: "vertical"
+    HORIZONTAL: "horizontal"
+VtOscill: &VtOscill
+  type: "enum"
+  label: "oscillation (of the radial collimator)"
+  commandline:
+    VT_RND_PHASE: 1
+    VT_OSC_OFF: 0
+  display:
+    VT_RND_PHASE: "randow phase oscillation"
+    VT_OSC_OFF: "oscillation off"
+VtPlotFilt: &VtPlotFilt
+  type: "enum"
+  label: "reflection plot filter"
+  commandline:
+    VT_PLOT_DIED: 2
+    VT_PLOT_SCAT: 1
+    VT_PLOT_ALL: 0
+  display:
+    VT_PLOT_DIED: "only died"
+    VT_PLOT_SCAT: "only scattered"
+    VT_PLOT_ALL: "all"
+VtPlotPar: &VtPlotPar
+  type: "enum"
+  label: "reflection plot parameter"
+  commandline:
+    dKeySpinZ: 26
+    dKeySpinY: 25
+    dKeySpinX: 24
+    dKeyVectorZ: 23
+    dKeyVectorY: 22
+    dKeyVectorX: 21
+    dKeyPositionZ: 20
+    dKeyPositionY: 19
+    dKeyPositionX: 18
+    dKeyProbability: 17
+    dKeyWavelength: 16
+    dKeyTime: 15
+    iKeyColor: 14
+    dKeyDivZ: 13
+    dKeyDivY: 12
+    dKeyreflectivity: 11
+    dKeym: 10
+    dKeydegangular: 9
+    iKeyThisCollision: 8
+    dKeyRefCountZ: 7
+    dKeyRefCountY: 6
+    dKeyRefCount: 5
+    iKeyMode10: 4
+    iKeyMode5: 3
+    iKeyMode0: 2
+    iKeyMode: 1
+    KeyNone: 0
+  display:
+    dKeySpinZ: "Spin Z"
+    dKeySpinY: "Spin Y"
+    dKeySpinX: "Spin X"
+    dKeyVectorZ: "Vector Z"
+    dKeyVectorY: "Vector Y"
+    dKeyVectorX: "Vector X"
+    dKeyPositionZ: "Position Z"
+    dKeyPositionY: "Position Y"
+    dKeyPositionX: "Position X"
+    dKeyProbability: "Probability"
+    dKeyWavelength: "Wavelength"
+    dKeyTime: "TOF"
+    iKeyColor: "color"
+    dKeyDivZ: "DivZ"
+    dKeyDivY: "DivY"
+    dKeyreflectivity: "Reflectivity"
+    dKeym: "m"
+    dKeydegangular: "Ref. Angle"
+    iKeyThisCollision: "Plane"
+    dKeyRefCountZ: "RefCountZ"
+    dKeyRefCountY: "RefCountY"
+    dKeyRefCount: "RefCount"
+    iKeyMode10: "Mode10"
+    iKeyMode5: "Mode5"
+    iKeyMode0: "Mode0"
+    iKeyMode: "Scattered (Mode)"
+    KeyNone: "none"
+VtPrgFormat: &VtPrgFormat
+  type: "enum"
+  label: "data format of the program"
+  commandline:
+    VT_MCNP6_FMT: 5
+    VT_MCNPX_FMT: 4
+    VT_MCPL_FMT: 3
+    VT_MCSTAS_FMT: 2
+    VT_VITESS_FMT: 1
+  display:
+    VT_MCNP6_FMT: "MCNP6"
+    VT_MCNPX_FMT: "MCNPX"
+    VT_MCPL_FMT: "MCPL"
+    VT_MCSTAS_FMT: "McStas"
+    VT_VITESS_FMT: "VITESS"
+VtReason: &VtReason
+  type: "enum"
+  label: "reason for writing interaction point"
+  commandline:
+    VT_DETECTED: 10
+    VT_EXITED: 9
+    VT_ABSORBED: 8
+    VT_SCATTERED: 7
+    VT_REFLECTED: 6
+    VT_TRANSIT: 5
+    VT_ENTERED: 4
+    VT_PASSED: 3
+    VT_OUT_OF_WND: 2
+    VT_OUTSIDE: 1
+    VT_CREATED: 0
+    VT_NO_REASON: -1
+  display:
+    VT_DETECTED: "detected"
+    VT_EXITED: "exited"
+    VT_ABSORBED: "absorbed"
+    VT_SCATTERED: "scattered"
+    VT_REFLECTED: "reflected"
+    VT_TRANSIT: "transited"
+    VT_ENTERED: "entered"
+    VT_PASSED: "passed"
+    VT_OUT_OF_WND: "out of window"
+    VT_OUTSIDE: "outside"
+    VT_CREATED: "created"
+    VT_NO_REASON: "VT_NO_REASON"
+VtRndGen: &VtRndGen
+  type: "enum"
+  label: "Random number generator"
+  commandline:
+    VT_RANLUX: 5
+    VT_MT19937: 4
+    VT_GFSR4: 3
+    VT_TAUS: 2
+    VT_RAN3: 1
+  display:
+    VT_RANLUX: "ranlux"
+    VT_MT19937: "mt19937"
+    VT_GFSR4: "gfsr4"
+    VT_TAUS: "taus"
+    VT_RAN3: "ran3"
+VtSeparator: &VtSeparator
+  type: "enum"
+  label: "choice of separator in trajectory table"
+  commandline:
+    VT_TABULATOR: 1
+    VT_BLANK: 0
+  display:
+    VT_TABULATOR: "tabulator"
+    VT_BLANK: "space"
+VtShape: &VtShape
+  type: "enum"
+  label: "Shape"
+  commandline:
+    VT_CIRCLE: 1
+    VT_SQUARE: 0
+    VT_NO_SHAPE: -1
+  display:
+    VT_CIRCLE: "circular"
+    VT_SQUARE: "rectangular"
+    VT_NO_SHAPE: "VT_NO_SHAPE"
+VtSmplGeom: &VtSmplGeom
+  type: "enum"
+  label: "samnple geometry"
+  commandline:
+    VT_HOL_CYL: 4
+    VT_SPHERE: 3
+    VT_CYL: 2
+    VT_CUBE: 1
+  display:
+    VT_HOL_CYL: "VT_HOL_CYL"
+    VT_SPHERE: "VT_SPHERE"
+    VT_CYL: "VT_CYL"
+    VT_CUBE: "VT_CUBE"
+VtSrcKind: &VtSrcKind
+  type: "enum"
+  label: "type of source: (Vitess 4)"
+  commandline:
+    SRC_ESS: 5
+    SRC_ISIS: 4
+    SRC_PULSED: 3
+    SRC_CWS: 2
+    SRC_SIMPLE: 1
+    NO_SRC_KIND: 0
+  display:
+    SRC_ESS: "source ESS"
+    SRC_ISIS: "source ISIS"
+    SRC_PULSED: "pulsed source"
+    SRC_CWS: "continuous source"
+    SRC_SIMPLE: "simple source"
+    NO_SRC_KIND: "NO_SRC_KIND"
+VtSrcName: &VtSrcName
+  type: "enum"
+  label: "name of source"
+  format: "string"
+  commandline:
+    FRM2: "FRM2"
+    HMI: "HMI"
+    ILL: "ILL"
+    HBS: "HBS"
+    IPNS: "IPNS"
+    CSNS: "CSNS"
+    ISIS: "ISIS"
+    SNS: "SNS"
+    ESS: "ESS"
+    ANYSOURCE: "ANYSOURCE"
+  display:
+    FRM2: "FRM2"
+    HMI: "HMI"
+    ILL: "ILL"
+    HBS: "HBS"
+    IPNS: "IPNS"
+    CSNS: "CSNS"
+    ISIS: "ISIS"
+    SNS: "SNS"
+    ESS: "ESS"
+    ANYSOURCE: "ANYSOURCE"
+VtSrcType: &VtSrcType
+  type: "enum"
+  label: "Type of source: (Vitess 3)"
+  commandline:
+    LPSS: 3
+    SPSS: 2
+    CWS: 1
+    NO_TYPE: 0
+  display:
+    LPSS: "LPSS"
+    SPSS: "SPSS"
+    CWS: "CWS"
+    NO_TYPE: "NO_TYPE"
+VtTS: &VtTS
+  type: "enum"
+  label: "Target station"
+  commandline:
+    VT_TS_2: 2
+    VT_TS_1: 1
+    VT_NO_TS: 0
+  display:
+    VT_TS_2: "TS 2"
+    VT_TS_1: "TS 1"
+    VT_NO_TS: "VT_NO_TS"
+VtTfmnSeq: &VtTfmnSeq
+  type: "enum"
+  label: "Frame"
+  commandline:
+    VT_MRT: 6
+    VT_MTR: 5
+    VT_TMR: 4
+    VT_TRM: 3
+    VT_RMT: 2
+    VT_RTM: 1
+    VT_NO_SEQ: 0
+  display:
+    VT_MRT: "MRT"
+    VT_MTR: "MTR"
+    VT_TMR: "TMR"
+    VT_TRM: "TRM"
+    VT_RMT: "RMT"
+    VT_RTM: "RTM"
+    VT_NO_SEQ: "VT_NO_SEQ"
+VtTrace: &VtTrace
+  type: "enum"
+  label: "tracing options"
+  commandline:
+    ONLY_TRC_TRAJ: 2
+    WRITE_TRC_FILES: 1
+    NO_TRACING: 0
+  display:
+    ONLY_TRC_TRAJ: "only trace trajectories"
+    WRITE_TRC_FILES: "write trace files"
+    NO_TRACING: "no tracing"
+VtTubeShape: &VtTubeShape
+  type: "enum"
+  label: "tube shape"
+  commandline:
+    VT_TUBE_SQUARE: 1
+    VT_TUBE_CIRCLE: 0
+  display:
+    VT_TUBE_SQUARE: "VT_TUBE_SQUARE"
+    VT_TUBE_CIRCLE: "VT_TUBE_CIRCLE"
+VtWaviDistr: &VtWaviDistr
+  type: "enum"
+  label: "waviness distribution"
+  commandline:
+    VT_WAVI_GAUSS: 2
+    VT_WAVI_RECT: 1
+  display:
+    VT_WAVI_GAUSS: "Gaussian"
+    VT_WAVI_RECT: "rectangular"
+VtWndAbs: &VtWndAbs
+  type: "enum"
+  label: "absorber material"
+  commandline:
+    VT_WABS_IDEAL: 6
+    VT_WABS_SI: 5
+    VT_WABS_EU: 4
+    VT_WABS_B10: 3
+    VT_WABS_CD: 2
+    VT_WABS_GD: 1
+    VT_WABS_FILE: 0
+  display:
+    VT_WABS_IDEAL: "ideal absorber"
+    VT_WABS_SI: "silicon"
+    VT_WABS_EU: "europium"
+    VT_WABS_B10: "bor10"
+    VT_WABS_CD: "cadmium"
+    VT_WABS_GD: "gadolinium"
+    VT_WABS_FILE: "from file"

@@ -1,0 +1,127 @@
+sample_environment:
+  executable: "sample_environment"
+  label: "sample_environment"
+
+  parameters:
+  - name: "sParFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "parameter file"
+    tooltip: "File containing parameters of the sample environment These parameters are only used if they are not given as direct input parameters."
+    prefix: "-F"
+  - name: "sStructFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "structure factor file"
+    tooltip: "This file describes the material of the sample environment. It contains the d-spacing value and information to calculate the scattering cross-section of each reflection. It can be in .str (VITESS), .laz and .lau format."
+    prefix: "-s"
+  - name: "eDirInOut"
+    <<: *VtDir
+    label: "direction"
+    tooltip: "Direction of the beam passing the sample environment in: sample environment before sample out: sample environment after sample"
+    column: 0
+    options: ["VT_IN","VT_OUT"]
+    default: "VT_IN"
+    prefix: "-r"
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "Color of the neutrons coherently scattered from the environment, incoherently scattered neutrons get 'color+1'"
+    min: 0
+    column: 0
+    prefix: "-c"
+
+  - name: "PosMainX"
+    type: "float"
+    label: "X"
+    unit: "cm"
+    tooltip: "Center position X of the sample environment  (usually the sample position)"
+    column: 0
+    default: 30.0
+    prefix: "-x"
+  - name: "PosMainY"
+    type: "float"
+    label: "Y"
+    unit: "cm"
+    tooltip: "Center position Y of the sample environment (usually the sample position)"
+    column: 1
+    default: 0.0
+    prefix: "-y"
+  - name: "PosMainZ"
+    type: "float"
+    label: "Z"
+    unit: "cm"
+    tooltip: "center position Z of the sample environment (usually the sample position)"
+    column: 2
+    default: 0.0
+    prefix: "-z"
+
+  - name: "Thickness"
+    type: "float"
+    label: "thickness"
+    unit: "cm"
+    tooltip: "Thickness of the sample environment, which is assumed to be a hollow cylinder."
+    column: 0
+    min: 0.0001
+    default: 0.5
+    prefix: "-t"
+  - name: "Diameter"
+    type: "float"
+    label: "diameter"
+    unit: "cm"
+    tooltip: "Outer diameter of the sample environment, which is assumed to be a hollow cylinder."
+    column: 1
+    min: 0.0001
+    default: 15.0
+    prefix: "-d"
+  - name: "Height"
+    type: "float"
+    label: "height"
+    unit: "cm"
+    tooltip: "Outer height of the sample environment, which is assumed to be a hollow cylinder."
+    column: 2
+    min: 0.0001
+    default: 20.0
+    prefix: "-h"
+
+  - name: "Title"
+    type: "title"
+    label: "Scattering"
+  - name: "MuScatIncoh"
+    type: "float"
+    label: "incoherent scattering"
+    unit: "1/cm"
+    tooltip: "Macroscopic incoherent scattering cross section of the sample environment material. If a non-zero value is given, incoherent scattering is applied."
+    column: 0
+    min: 0.0
+    default: 0.0
+    prefix: "-i"
+  - name: "MuScatTotal"
+    type: "float"
+    label: "total scattering"
+    unit: "1/cm"
+    tooltip: "Macroscopic total scattering cross section of the sample environment material (used for attenuation)"
+    column: 1
+    min: 0.0
+    default: 0.1
+    prefix: "-T"
+  - name: "MuAbsorb"
+    type: "float"
+    label: "absorption"
+    unit: "1/cm"
+    tooltip: "Macroscopic absorption cross section of the sample environment material  (used for attenuation)"
+    column: 2
+    min: 0.0
+    default: 0.0
+    prefix: "-m"
+  - name: "UCV"
+    type: "float"
+    label: "unit cell volume"
+    unit: "Ang^3"
+    tooltip: "Unit cell volume of the sample environment material"
+    column: 0
+    min: 0.0001
+    default: 65.0
+    prefix: "-U"

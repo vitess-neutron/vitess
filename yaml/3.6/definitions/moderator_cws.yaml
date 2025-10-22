@@ -1,0 +1,137 @@
+moderator_cws: &moderator_cws
+  type: "array"
+  min: 1
+  max: 10
+  label: "moderator_cws"
+  parameters:
+  - name: "sModName"
+    label: "name"
+    type: "string"
+    column: 0
+
+  - name: "Title_Geom"
+    type: "title"
+    label: "Geometry"
+  - name: "eModShape"
+    label: "shape"
+    tooltip: "moderator shape"
+    <<: *VtModShape
+    options: ["VT_MOD_SQUARE", "VT_MOD_CIRCLE"]
+    default: "VT_MOD_SQUARE"
+    column: 0
+    prefix: "-s"
+
+  - name: "ModDiam"
+    type: "float"
+    label: "diameter [cm]"
+    tooltip: "diameter of a circular moderator"
+    default: 2.0
+    column: 0
+    prefix: "-r"
+  - name: "ModWidth"
+    type: "float"
+    label: "width [cm]"
+    tooltip: "width of a rectangular moderator"
+    column: 1
+    prefix: "-w"
+  - name: "ModHeight"
+    type: "float"
+    label: "height [cm]"
+    tooltip: "height of a rectangular moderator"
+    column: 2
+    prefix: "-h"
+
+  - name: "ModCntrX"
+    type: "float"
+    label: "center x [cm]"
+    tooltip: "x coordinate of the center of the moderator"
+    default: 0.0
+    column: 0
+    prefix: "-X"
+  - name: "ModCntrY"
+    type: "float"
+    label: "center y [cm]"
+    tooltip: "y coordinate of the center of the moderator"
+    default: 0.0
+    column: 1
+    prefix: "-Y"
+  - name: "ModCntrZ"
+    type: "float"
+    label: "center z [cm]"
+    tooltip: "z coordinate of the center of the moderator"
+    default: 0.0
+    column: 2
+    prefix: "-Z"
+
+  - name: "iOrder"
+    type: "int"
+    label: "spatial order"
+    tooltip: "spatial order of the moderator (the higher the number the more it is in the background)"
+    column: 0
+    prefix: "-o"
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "the trajectories can be marked by this 'color' to identify the moderator of origin"
+    min: -1
+    column: 1
+    prefix: "-c"
+
+  - name: "Title_Charact"
+    type: "title"
+    label: "Moderator characteristics"
+  - name: "AvrgFluxMaxw"
+    type: "float"
+    label: "total flux mod. [n/cm²/s]"
+    tooltip: "Time averaged flux of the moderated neutrons on moderator surface into 2*pi integrated over wavelength"
+    min: 0.0
+    default: 1.0e+13
+    column: 0
+    prefix: "-F"
+  - name: "ModTemp"
+    type: "float"
+    label: "temperature [K]"
+    tooltip: "Temperature of a Maxwellian distribution"
+    min: 0.1
+    default: 50.0
+    column: 1
+    prefix: "-T"
+  - name: "Current"
+    type: "float"
+    label: "current [n/s]"
+    tooltip: "Average moderator current (only useful if moderator flux is zero)"
+    column: 2
+    prefix: "-I"
+
+  - name: "sLambdaFile"
+    type: "file"
+    plottable: true
+    label: "wavelength dist file"
+    tooltip: "File containing the wavelength distribution function"
+    prefix: "-W"
+
+  - name: "Title_Charact"
+    type: "title"
+    label: "Under-moderated neutrons"
+  - name: "AvrgFluxUM"
+    type: "float"
+    label: "total flux UM [n/cm²/s]"
+    tooltip: "Time averaged flux of the under-moderated neutrons on the moderator surface into 2*pi integrated over wavelength"
+    min: 0.0
+    default: 0.0
+    column: 0
+    prefix: "-f"
+  - name: "LambdaFactUM"
+    type: "float"
+    label: "wavelength factor UM  [1/Ang]"
+    tooltip: "Factor for the wavelength dependence of under-moderated neutrons, typically 0.9 for cold neutrons and 2.5 for thermal neutrons"
+    default: 0.9
+    column: 1
+    prefix: "-x"
+  - name: "NormFactUM"
+    type: "float"
+    label: "Scaling factor UM"
+    tooltip: "Scaling factor for the flux of under-moderated neutrons"
+    default: 2.2
+    column: 2
+    prefix: "-k"

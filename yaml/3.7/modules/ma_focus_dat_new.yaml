@@ -1,0 +1,38 @@
+ma_focus_dat_new:
+  executable: "monochromator"
+  label: "ma_focus_dat_new"
+  category: "monochr_analyser"
+
+  parameters:
+  - <<: *mono_option
+    default: 3
+  - *mono_parfile
+  - *mono_mode
+
+  - *mono_trns
+  - *mono_dist
+
+  - *mono_Title_Crystal
+  - *mono_svert
+  - *mono_shoriz
+  - *mono_dspread
+  - *mono_refl
+
+  - *mono_Title_Rotation
+  - *mono_mo_move
+  - *mono_mo_rndt
+  - *mono_mo_freq
+  - *mono_mo_phas
+  - *mono_mo_ampl
+  - *mono_mo_nwnd
+  - *mono_mo_wdth
+  - *mono_mo_rad
+
+  - *mono_Title_Attenuation
+  - *mono_mo_scat
+  - *mono_mo_abs
+  - *mono_reprate
+
+  - *mono_Title_Focusing
+  - <<: *mono_focus_file
+    tooltip: "External focus geometry file to be read"

@@ -1,0 +1,384 @@
+guide:
+  executable: "guide"
+  label: "guide"
+  category: "guide"
+  parameters:
+  - name: "Title_Shape"
+    type: "title"
+    label: "Shape and size of the guide"
+  - name: "eShapeY"
+    label: "horizontal shape"
+    tooltip: "shape of the guide in horizontal direction"
+    <<: *VtGdeShape
+    options: ["VT_CONSTANT","VT_LINEAR","VT_CURVED","VT_LIN_CURV","VT_PARABOLIC","VT_ELLIPTIC","VT_FROM_FILE"]
+    default: "VT_CONSTANT"
+    column: 0
+    prefix: "-Y"
+  - name: "eShapeZ"
+    label: "vertical shape"
+    tooltip: "shape of the guide in vertical direction"
+    <<: *VtGdeShape
+    options: ["VT_CONSTANT","VT_LINEAR","VT_PARABOLIC","VT_ELLIPTIC","VT_FROM_FILE"]
+    default: "VT_CONSTANT"
+    column: 1
+    prefix: "-Z"
+  - name: "sShapeFile"
+    type: "file"
+    plottable: true
+    label: "guide shape"
+    tooltip: "name of the file describing geometry (and coating) of the guide (for details see help file) output or input file depending on the shape options"
+    prefix: "-S"
+  - name: "EntrWidth"
+    type: "float"
+    label: "entrance width [cm]"
+    tooltip: "width of the guide entrance"
+    min: 0.0001
+    column: 0
+    prefix: "-w"
+  - name: "EntrHeight"
+    type: "float"
+    label: "entrance height [cm]"
+    tooltip: "height of the guide entrance"
+    min: 0.0001
+    column: 1
+    prefix: "-h"
+  - name: "ExitWidth"
+    type: "float"
+    label: "exit width [cm]"
+    tooltip: "width of the guide exit"
+    min: 0.0001
+    column: 0
+    prefix: "-W"
+  - name: "ExitHeight"
+    type: "float"
+    label: "exit height [cm]"
+    tooltip: "height of the guide exit"
+    min: 0.0001
+    column: 1
+    prefix: "-H"
+
+  - name: "Title_Character"
+    type: "title"
+    label: "Guide characteristics"
+  - name: "PieceLen"
+    type: "float"
+    label: "piece length [cm]"
+    tooltip: "length of 1 piece of the guide"
+    min: 0.0
+    column: 0
+    prefix: "-p"
+  - name: "nPieces"
+    type: "int"
+    label: "number of pieces"
+    tooltip: "number of pieces in this guide"
+    min: 1
+    column: 1
+    prefix: "-N"
+  - name: "Radius"
+    type: "float"
+    label: "curvature (radius) [m]"
+    tooltip: "radius of a guide that is curved (in horizontal plane)"
+    column: 2
+    prefix: "-R"
+  - name: "DistFoc2Y"
+    type: "float"
+    label: "hor. focus dist. of ellipse [cm]"
+    tooltip: "position behind end of the guide of 2nd focal point in horizontal direction (for elliptic shape only)"
+    min: 0
+    column: 0
+    prefix: "-f"
+  - name: "DistFoc2Z"
+    type: "float"
+    label: "vert. focus dist. of ellipse [cm]"
+    tooltip: "position behind end of the guide of 2nd focal point in vertical direction (for elliptic shape only)"
+    min: 0.0
+    column: 1
+    prefix: "-F"
+
+  - name: "Title_Reflect"
+    type: "title"
+    label: "Reflectivity"
+  - name: "m_Left"
+    type: "float"
+    label: "m-value left plane"
+    tooltip: "m-value for the reflectivity of the left wall using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles) only used if no reflectivity file for the left plane is given"
+    min: 0.0
+    column: 0
+    prefix: "-L"
+  - name: "m_Right"
+    type: "float"
+    label: "right plane"
+    tooltip: "m-value for the reflectivity of the right wall using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles) only used if no reflectivity file for the left plane is given"
+    min: 0.0
+    column: 1
+    prefix: "-Q"
+  - name: "m_TopBottom"
+    type: "float"
+    label: "top/bottom plane"
+    tooltip: "m-value for the reflectivity of the top and bottom wall using the 'general 2020 approach' (see Help|Tools|GenerateMirrorFiles) only used if no reflectivity file for the left plane is given"
+    min: 0.0
+    column: 2
+    prefix: "-G"
+  - name: "sReflLeft"
+    type: "file"
+    plottable: false
+    label: "file left plane"
+    tooltip: "name of the reflectivity file for the left wall It overwrites the m-value given for this plane."
+    prefix: "-i"
+  - name: "sReflRight"
+    type: "file"
+    plottable: false
+    label: "right plane"
+    tooltip: "name of the reflectivity file for the right wall It overwrites the m-value given for this plane."
+    prefix: "-I"
+  - name: "sReflTop"
+    type: "file"
+    plottable: false
+    label: "top plane"
+    tooltip: "name of the reflectivity file for the top wall It overwrites the m-value given for this plane."
+    prefix: "-j"
+  - name: "sReflBottom"
+    type: "file"
+    plottable: false
+    label: "bottom plane"
+    tooltip: "name of the reflectivity file for the bottom wall If no file name is given here, the file of the top plane is used. Both overwrite the m-value given for this plane."
+    prefix: "-J"
+
+  - name: "Title_Channel"
+    type: "title"
+    label: "Channel option"
+  - name: "nChannels"
+    type: "int"
+    label: "number of channels"
+    tooltip: "number of (vertical) channels"
+    min: 1
+    column: 0
+    prefix: "-b"
+  - name: "BladeThickn"
+    type: "float"
+    label: "blade thickness [cm]"
+    tooltip: "thickness of the blades dividing the guide into channels"
+    min: 0.0
+    column: 1
+    prefix: "-s"
+
+  - name: "Title_Special"
+    type: "title"
+    label: "Special options"
+  - name: "MuScatTotal"
+    type: "float"
+    label: "total scat- tering [1/cm]"
+    tooltip: "total macroscopic scattering cross-section"
+    min: 0.0
+    column: 0
+    prefix: "-M"
+  - name: "MuAbsorb"
+    type: "float"
+    label: "absorption [1/cm]"
+    tooltip: "macroscopic absorption cross-section for 1.798 Ang"
+    min: 0.0
+    column: 1
+    prefix: "-m"
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "color necessary for the trajectory to be treated (-1 means all) Not machting neutrons are passed unchanged to the next module."
+    min: -1
+    column: 0
+    prefix: "-g"
+  - name: "AddToColor"
+    type: "int"
+    label: "add to color"
+    tooltip: "Value added to the color of the neutron trajectory on each reflection."
+    column: 1
+    prefix: "-A"
+  - name: "bAbutLoss"
+    type: "bool"
+    label: "abutment loss"
+    tooltip: "flag: abutment loss  0: no  1: yes neutrons hitting the surface close to the end of a guide (segment) are absorbed"
+    default: no
+    column: 0
+    prefix: "-a"
+  - name: "AbutLen"
+    type: "float"
+    label: "abutment loss area [cm]"
+    tooltip: "length of the area around the connection of guide (segments), where neutrons are absorbed"
+    column: 1
+    min: 0.0
+    prefix: "-l"
+  - name: "Waviness"
+    type: "float"
+    label: "surface waviness [deg]"
+    tooltip: "maximal deviation from normal of the waviness of the guide surface."
+    min: 0.0
+    column: 2
+    prefix: "-r"
+  - name: "RotPlane"
+    type: "float"
+    label: "add. plane angle [deg]"
+    tooltip: "rotation angle to create additional planes (see help file for details)"
+    column: 0
+    prefix: "-n"
+
+  - name: "Title_McplOutput"
+    type: "title"
+    label: "MCPL output"
+  - name: "sMcplFile"
+    type: "file"
+    plottable: false
+    label: "MCPL file"
+    tooltip: "name of the file for writing nuclear gamma and neutron events in MCPL format.  Giving a filename activates this option."
+    prefix: "-Z"
+
+  - name: "Title_Reflection"
+    type: "title"
+    label: "Reflection list options"
+  - name: "sListFile"
+    type: "file"
+    plottable: false
+    label: "filename"
+    tooltip: "name of the file for a reflection list. Giving a filename activates this option."
+    prefix: "-o"
+  - name: "eListPar"
+    label: "format"
+    tooltip: "Trajectories to be written out, in each case with or without linefeed  (see help file for details)"
+    <<: *VtListPar
+    options: ["VT_LIST_PASS", "VT_LIST_PASS_LF", "VT_LIST_REFL", "VT_LIST_REFL_LF", "VT_LIST_T1SR", "VT_LIST_T1SR_LF", "VT_LIST_ALL", "VT_LIST_ALL_LF"]
+    default: "VT_LIST_PASS_LF"
+    column: 0
+    prefix: "-O"
+  - name: "eListGeom"
+    label: "geometry list"
+    tooltip: "additional trajectories are written at the entry and the exit of the guide ('entry & exit') or each guide piece ('yes')."
+    <<: *VtListVbs
+    options: ["VT_LSTM_NO", "VT_LSTM_YES", "VT_LSTM_EDGE"]
+    default: "VT_LSTM_NO"
+    column: 1
+    prefix: "-v"
+  - name: "nListMin"
+    type: "int"
+    label: "minimum number of reflections"
+    tooltip: "minimum number of reflections within the guide for reflection list output"
+    min: 0
+    column: 0
+    prefix: "-e"
+  - name: "nListMax"
+    type: "int"
+    label: "maximum number of reflections"
+    tooltip: "Maximum number of reflections within the guide for reflection list output"
+    min: 0
+    column: 1
+    prefix: "-E"
+  - name: "nListMinY"
+    type: "int"
+    label: "minimum number of horiz. refl."
+    tooltip: "minimum number of reflections on the horizontal guide for reflection list output"
+    min: 0
+    column: 0
+    prefix: "-c"
+  - name: "nListMaxY"
+    type: "int"
+    label: "maximum number of horiz. refl."
+    tooltip: "maximum number of reflections on the horizontal guide for reflection list output"
+    min: 0
+    column: 1
+    prefix: "-C"
+  - name: "nListMinZ"
+    type: "int"
+    label: "minimum number of vert. refl."
+    tooltip: "minimum number of reflections on the vertical guide for reflection list output"
+    min: 0
+    column: 0
+    prefix: "-d"
+  - name: "nListMaxZ"
+    type: "int"
+    label: "maximum number of vert. refl."
+    tooltip: "maximum number of reflections on the vertical guide for reflection list output"
+    min: 0
+    column: 1
+    prefix: "-D"
+
+  - name: "Title_ReflectPlot"
+    type: "title"
+    label: "Reflection plot options"
+  - name: "sPlotFile"
+    type: "file"
+    plottable: true
+    label: "filename"
+    tooltip: "Name of the file for a list of reflections for plotting. Giving a filename activates this option."
+    prefix: "-P"
+  - name: "ePlotPar"
+    label: "filter"
+    tooltip: "Choose which trajectories will be binned. This option is also affected by the format option above!!! all events; only scattered neutrons; only died neutrons."
+    <<: *VtPlotFilt
+    options: ["VT_PLOT_ALL", "VT_PLOT_SCAT", "VT_PLOT_DIED"]
+    default: "VT_PLOT_ALL"
+    column: 0
+    prefix: "-B"
+  - name: "ePlotX"
+    label: "X values"
+    tooltip: "Parameter for the x-axis of the reflection plot"
+    <<: *VtPlotPar
+    options: ["dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
+              "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"]
+    default: "dKeyPositionX"
+    column: 0
+    prefix: "-t"
+  - name: "ePlotY"
+    label: "Y values"
+    tooltip: "Parameter for the y-axis of the reflection plot"
+    <<: *VtPlotPar
+    options: ["dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
+              "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"]
+    default: "dKeym"
+    column: 1
+    prefix: "-T"
+  - name: "ePlotProb"
+    label: "Weight"
+    tooltip: "Parameter for the weighting function f(x,y) for reflection plot"
+    <<: *VtPlotPar
+    options: ["KeyNone","dKeydegangular","dKeym","dKeyreflectivity","dKeyDivY","dKeyDivZ","iKeyColor","dKeyTime","dKeyWavelength","dKeyProbability",
+              "dKeyPositionX","dKeyPositionY","dKeyPositionZ","dKeyVectorX","dKeyVectorY","dKeyVectorZ","dKeySpinX","dKeySpinY","dKeySpinZ","iKeyMode"]
+    default: "dKeyProbability"
+    column: 2
+    prefix: "-V"
+  - name: "nPlotX"
+    type: "int"
+    label: "number of x bins"
+    tooltip: "Number of bins in the x-interval of the reflection plot"
+    min: 1
+    max: 1000
+    column: 0
+    prefix: "-k"
+  - name: "PlotMinX"
+    type: "float"
+    label: "minimum X"
+    tooltip: "Lower bound of the x interval in the reflection plot"
+    column: 1
+    prefix: "-x"
+  - name: "PlotMaxX"
+    type: "float"
+    label: "maximum X"
+    tooltip: "Upper bound of the X interval in the reflection plot"
+    column: 2
+    prefix: "-X"
+  - name: "nPlotY"
+    type: "int"
+    label: "number of bins in y"
+    tooltip: "Number of bins in the y-interval of the reflection plot"
+    min: 1
+    max: 100
+    column: 0
+    prefix: "-K"
+  - name: "PlotMinY"
+    type: "float"
+    label: "minimum Y"
+    tooltip: "Lower bound of the y interval in the reflection plot"
+    column: 1
+    prefix: "-u"
+  - name: "PlotMaxY"
+    type: "float"
+    label: "maximum Y"
+    tooltip: "Upper bound of the y interval in the reflection plot"
+    column: 2
+    prefix: "-U"

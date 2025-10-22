@@ -3,9 +3,9 @@
 Check if the YAML files are well-formed and if the referenced executables exist.
 """
 
-import pathlib
 import platform
 import sys
+from pathlib import Path
 
 import yaml
 
@@ -13,7 +13,6 @@ import yaml
 SPECIAL_EXECUTABLES = [
     "merge_spectra",
     "gener_pipe",
-    "visual",
     "gener_batch",
     "guide_shape",
     "fom",
@@ -35,6 +34,21 @@ SPECIAL_EXECUTABLES = [
 ]
 OLD_MODULE_NAMES = []
 
+
+def yaml_dir(top):
+    vers = []
+    for f in Path(top).joinpath("yaml").glob("*"):
+        if (
+            f.is_dir()
+            and "." in f.name
+            and f.joinpath("enums.yaml").is_file()
+            and f.joinpath("modules").is_dir()
+        ):
+            vers.append(f)
+    vers.sort(key=lambda d: tuple(int(x) for x in d.name.split(".", 1)))
+    return vers[-1]
+
+
 if __name__ == "__main__":
     ostype = platform.system()
     if ostype == "Windows":
@@ -42,35 +56,38 @@ if __name__ == "__main__":
     else:
         arch = platform.machine()
         modsuffix = f"_{ostype}_{arch}"
-    top = pathlib.Path(sys.argv[0]).absolute().parent.parent
+    top = Path(__file__).absolute().parent.parent
+    yamldir = yaml_dir(top)
+
+    defs = yamldir.joinpath("enums.yaml").open().read()
+    print("checking enums.yaml...")
+    yaml.safe_load(defs)  # test format
+    for f in yamldir.joinpath("definitions").glob("*.yaml"):
+        print(f"checking {f.name}...")
+        data = f.open().read()
+        yaml.safe_load(defs + data)  # test format
+        defs += data
 
     yaml_modules = set()
     no_category = list()
     missing_hidden = list()
-    for f in top.joinpath("YAML").glob("*.yaml"):
+    for f in yamldir.joinpath("modules").glob("*.yaml"):
         print(f"checking {f.name}...")
         with f.open("r", encoding="utf-8") as fd:
             data = fd.read()
-        d = yaml.safe_load(data)
-        exe, contents = next(iter(d.items()))
-        yaml_modules.add(exe)
+        data = yaml.safe_load(defs + data)
         basename = f.stem
-        if "category" not in contents[0]:
+        contents = data[basename]
+        exe = contents["executable"]
+        yaml_modules.add(exe)
+        if "category" not in contents:
             no_category.append(basename)
         if exe != basename:
             hidden = False
-            for param in contents:
-                props = next(iter(param.values()))
-                if isinstance(props, dict) and props.get("hidden", False):
-                    hidden = True
+            for param in contents["parameters"]:
+                hidden = hidden or param.get("hidden", False)
             if not hidden:
                 missing_hidden.append(basename)
-
-    for f in top.joinpath("YAML", "subwindow").glob("*.yaml"):
-        print(f"checking subwindow/{f.name}...")
-        with f.open("r", encoding="utf-8") as fd:
-            data = fd.read()
-        d = yaml.safe_load(data)
 
     executables = (
         set(

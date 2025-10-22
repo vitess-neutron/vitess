@@ -1,0 +1,182 @@
+eval_sans:
+  executable: "eval_sans"
+  label: "eval_sans"
+  category: "evaluation"
+
+  parameters:
+  - name: "Title_File"
+    type: "title"
+    label: "Output files and reference file"
+  - name: "sIntensFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "Intensity file"
+    tooltip: "The output file containing the intensity distribution I(Q) at the detector (of this simulation)"
+    default: "sans.eva"
+    prefix: "-i"
+    required: true
+  - name: "sEvalFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "S(Q) file"
+    tooltip: "The output file containing the result S(Q) calculated from this intensity distribution and that of the reference file as S(Q) = F_norm * I_smpl(Q) / I_ref(Q)"
+    prefix: "-S"
+    required: false
+  - name: "sRefFile"
+    type: "file"
+    plottable: false
+    editable: false
+    label: "reference file"
+    tooltip: "The input file containing the intensity distribution I(Q) at the detector for isotropic scattering  only needed for S(Q)"
+    prefix: "-I"
+    required: false
+
+  - name: "Title_Par"
+    type: "title"
+    label: "Range and parameters"
+  - name: "MinX"
+    type: "float"
+    label: "min. value"
+    unit: "1/Ang"
+    tooltip: "Lower bound of the evaluated Q-value interval"
+    column: 0
+    default: 0.0
+    prefix: "-m"
+    required: true
+  - name: "MaxX"
+    type: "float"
+    label: "max. value"
+    unit: "1/Ang"
+    tooltip: "Upper bound of the evaluated Q-value interval"
+    column: 1
+    default: 10.0
+    prefix: "-M"
+    required: true
+  - name: "nBins"
+    type: "int"
+    label: "number of bins"
+    tooltip: "number of evaluation channels"
+    column: 2
+    default: 100
+    min: 1
+    prefix: "-n"
+    required: false
+
+  - name: "LogPct"
+    type: "float"
+    label: "increase to next bin"
+    unit: "%"
+    tooltip: "Percentage p of increase to next bin p = 0: linear binning p > 0: logarithmic binning (number of bins ignored)"
+    column: 0
+    default: 0.0
+    min: 0.0
+    prefix: "-R"
+    required: false
+  - name: "DeadSpot"
+    type: "float"
+    label: "dead spot"
+    unit: "deg"
+    tooltip: "Excludes all neutrons with a scattering angle < DeadSpot"
+    column: 1
+    prefix: "-d"
+    required: false
+  - name: "LambdaRef"
+    type: "float"
+    label: "reference wavelength"
+    unit: "Ang"
+    tooltip: "The (average) wavelength set by velocity selector, monchromator or chopper system (NOT used for TOF option)"
+    column: 2
+    min: 0.0
+    # TODO min: 1.0e-25
+    default: 2.0
+    prefix: "-r"
+    required: false
+
+  - name: "NormFact"
+    type: "float"
+    label: "normalization factor"
+    unit: ""
+    tooltip: "The ratio of intensity of the isotropic scatterer to the SANS sample in forward direction (Q=0)"
+    default: 0.1
+    min: 0.0
+    column: 0
+    prefix: "-p"
+    required: false
+
+  - name: "Title_TOF"
+    type: "title"
+    label: "TOF option"
+  - name: "bTof"
+    type: "bool"
+    label: "time of flight"
+    tooltip: "yes: wavelength from TOF and flight path  no: reference wavelength used"
+    column: 0
+    default: no
+    prefix: "-w"
+    required: false
+  - name: "bPathCorrect"
+    type: "bool"
+    label: "correct TOF to distance"
+    tooltip: "yes: the distance from sample center to the position of the neutron detection is used to calculate the correct flight path  no: the given 'filght path' is used"
+    column: 1
+    default: yes
+    prefix: "-t"
+    required: false
+
+  - name: "FlightPath"
+    type: "float"
+    label: "flight path"
+    unit: "cm"
+    tooltip: "Nominal length of the neutron flight path from origin (source or pulse chopper) to detector (for TOF option)"
+    min: 0.0
+    column: 0
+    prefix: "-l"
+    required: false
+  - name: "DetDist"
+    type: "float"
+    label: "sample-detector distance"
+    unit: "cm"
+    tooltip: "Nominal distance from sample to detector (for TOF option)"
+    min: 0.0
+    column: 1
+    prefix: "-L"
+    required: false
+  - name: "TimeOffset"
+    type: "float"
+    label: "time offset"
+    unit: "ms"
+    tooltip: "Global shift of the neutron time t -> (t - TimeOffset) [ms] (for TOF option)"
+    column: 2
+    prefix: "-T"
+    required: false
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "FilterTimeMin"
+    type: "float"
+    label: "time interval begin"
+    unit: "ms"
+    tooltip: "minimal TOF to be taken into account for evaluation (used for TOF and continuous instruments)"
+    column: 0
+    prefix: "-e"
+    required: false
+  - name: "FilterTimeMax"
+    type: "float"
+    label: "time interval end"
+    unit: "ms"
+    tooltip: "maximal TOF to be taken into account for evaluation (used for TOF and continuous instruments)"
+    column: 1
+    prefix: "-E"
+    required: false
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "Excludes all neutrons with different color from evaluation.  color=-1 means that all trajectories are regarded"
+    column: 2
+    min: -1
+    default: -1
+    prefix: "-C"
+    required: false

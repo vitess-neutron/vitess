@@ -1,0 +1,248 @@
+eval_elast2:
+  executable: "eval_elast2"
+  label: "eval_elast2"
+  category: "evaluation"
+
+  parameters:
+  - name: "Title_File"
+    type: "title"
+    label: "Evalation parameter and output file"
+  - name: "eEvalCombi"
+    label: "evaluation parameter"
+    tooltip: "Parameter combination, as a function of which the intensity is shown"
+    <<: *VtEvalComb
+    options: ["VT_SCA_LMBD", "VT_SCA_TOF"]
+    default: "VT_SCA_LMBD"
+    column: 0
+    prefix: "-k"
+    required: true
+  - name: "sEvalFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "evaluation file"
+    tooltip: "Output file of the evaluation containing the intensity as a function of the chosen parameter"
+    default: "eval_elast2.dat"
+    prefix: "-o"
+    required: true
+
+  - name: "Title_Range"
+    type: "title"
+    label: "Ranges and parameters"
+  - name: "MinX"
+    type: "float"
+    label: "minimum X"
+    unit: "deg"
+    tooltip: "lower bound value of the evaluated x-range"
+    column: 0
+    default: 0.0
+    prefix: "-x"
+    required: true
+  - name: "MaxX"
+    type: "float"
+    label: "maximum X"
+    unit: "deg"
+    tooltip: "upper bound value of the evaluated x-range"
+    column: 1
+    default: 10.0
+    prefix: "-X"
+    required: true
+  - name: "nBinsX"
+    type: "int"
+    label: "number of bins in X"
+    tooltip: "number of evaluation channels on the x-axis (scattering angle)"
+    column: 2
+    default: 100
+    min: 1
+    prefix: "-n"
+    required: false
+  - name: "LogPctX"
+    type: "float"
+    label: "increase to next bin X"
+    unit: "%"
+    tooltip: "Percentage p of increase to the next bin of the x-axis p = 0: linear binning p > 0: logarithmic binning (number of bins ignored)"
+    default: 0.0
+    column: 0
+    prefix: "-R"
+    required: false
+  - name: "eSort"
+    label: "Sort by"
+    tooltip: "Sort order in the data file"
+    <<: *VtEvalSort
+    options: ["VT_NO_SORT", "VT_SORT_X", "VT_SORT_X_R", "VT_SORT_Y", "VT_SORT_Y_R", "VT_SORT_INT", "VT_SORT_INT_R", "VT_SORT_CTS", "VT_SORT_CTS_R"]
+    default: "VT_NO_SORT"
+    column: 1
+    prefix: "-s"
+    required: false
+  - name: "bZero"
+    type: "bool"
+    label: "Zeros"
+    tooltip: "yes: zero entries are written to disk  no: zero entries are omitted"
+    column: 2
+    default: no
+    prefix: "-f"
+    required: false
+
+  - name: "MinY"
+    type: "float"
+    label: "minimum Y [Ang] [ms]."
+    tooltip: "lower bound value of the evaluated y-range"
+    default: 0.0
+    column: 0
+    prefix: "-y"
+    required: true
+  - name: "MaxY"
+    type: "float"
+    label: "maximum Y [Ang] [ms]."
+    tooltip: "upper bound value of the evaluated y-range"
+    default: 10.0
+    column: 1
+    prefix: "-Y"
+    required: true
+  - name: "nBinsY"
+    type: "int"
+    label: "number of bins in Y"
+    tooltip: "number of evaluation channels"
+    column: 2
+    default: 100
+    min: 1
+    prefix: "-m"
+    required: false
+  - name: "LogPctY"
+    type: "float"
+    label: "increase to next bin Y"
+    unit: "%"
+    tooltip: "Percentage p of increase to the next bin of the y-axis p = 0: linear binning p > 0: logarithmic binning (number of bins ignored)"
+    column: 0
+    default: 0.0
+    prefix: "-S"
+    required: false
+
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: beam intensity is monitored  no: number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+    required: false
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only neutrons meeting the evaluation conditions are written  no: all are written"
+    default: no
+    column: 1
+    prefix: "-c"
+    required: false
+  - name: "eScatAngle"
+    label: "Scat. angle selection"
+    tooltip: "Defines the way how the scattering angle is determined"
+    <<: *VtAngleSel
+    options: ["VT_SEL_DIR", "VT_SEL_POS"]
+    default: "VT_SEL_DIR"
+    column: 2
+    prefix: "-D"
+    required: false
+
+  - name: "Title_TOF"
+    type: "title"
+    label: "TOF option"
+  - name: "bTof"
+    type: "bool"
+    label: "time of flight"
+    tooltip: "yes: wavelength from TOF and flight path  no: true wavelength of the simulated neutron used (which cannot be determined)"
+    default: no
+    column: 0
+    prefix: "-w"
+    required: false
+  - name: "bPathCorrect"
+    type: "bool"
+    label: "correct TOF to distance"
+    tooltip: "yes: the distance from sample center to the position of the neutron detection is used to calculate the correct flight path  no: the given 'filght path' is used"
+    default: yes
+    column: 1
+    prefix: "-t"
+    required: false
+
+  - name: "FlightPath"
+    type: "float"
+    label: "flighta path"
+    unit: "cm"
+    tooltip: "Nominal length of the neutron flight path from origin (source or pulse chopper) to detector (for TOF option)"
+    min: 0.0
+    column: 0
+    prefix: "-l"
+    required: false
+  - name: "DetDist"
+    type: "float"
+    label: "sample-detector distance"
+    unit: "cm"
+    tooltip: "Nominal distance from sample to detector (for TOF option)"
+    min: 0.0
+    column: 1
+    prefix: "-L"
+    required: false
+  - name: "TimeOffset"
+    type: "float"
+    label: "time offset"
+    unit: "ms"
+    tooltip: "global shift of the neutron time (t - TimeOffset) (for TOF option)"
+    column: 2
+    prefix: "-T"
+    required: false
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "DeadSpot"
+    type: "float"
+    label: "dead spot"
+    unit: "deg"
+    tooltip: "excludes all neutrons with a scattering angle < DeadSpot"
+    column: 0
+    prefix: "-d"
+    required: false
+  - name: "FilterTimeMin"
+    type: "float"
+    label: "time interval begin"
+    unit: "ms"
+    tooltip: "minimal TOF to be taken into account for evaluation (used for TOF and continuous instruments)"
+    column: 1
+    prefix: "-e"
+    required: false
+  - name: "FilterTimeMax"
+    type: "float"
+    label: "time interval end"
+    unit: "ms"
+    tooltip: "maximal TOF to be taken into account for evaluation (used for TOF and continuous instruments)"
+    column: 2
+    prefix: "-E"
+    required: false
+
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "Excludes all neutrons with different color from evaluation.  color=-1 means that all trajectories are regarded  "
+    column: 0
+    min: -1
+    default: -1
+    prefix: "-C"
+    required: false
+  - name: "iColorMin"
+    type: "int"
+    label: "color"
+    tooltip: "Excludes all neutrons with wrong wrong from evaluation.  color=-1 means that all trajectories are regarded, otherwise color >= minColor is required"
+    column: 1
+    min: -1
+    default: -1
+    prefix: "-a"
+    required: false
+  - name: "iColorMax"
+    type: "int"
+    label: "color"
+    tooltip: "Excludes all neutrons with wrong color from evaluation.  color=-1 means that all trajectories are regarded, otherwise color <= minColor is required  "
+    column: 2
+    min: -1
+    default: -1
+    prefix: "-A"
+    required: false

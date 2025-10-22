@@ -1,0 +1,314 @@
+lenses:
+  executable: "lenses"
+  label: "lenses"
+  category: "optical_elements"
+
+  parameters:
+    # TODO: parameter names
+  - name: "Title_Geometry"
+    type: "title"
+    label: "Geometry description of the lense system"
+  - name: "nx"
+    type: "int"
+    label: "Number of lenses"
+    tooltip: "Number of lenses in the x direction"
+    column: 0
+    min: 0
+    default: 5
+    prefix: "-I"
+  - name: "fz"
+    type: "float"
+    label: "RadiusMain"
+    unit: "cm"
+    tooltip: "Radius of the lense: cylindrical surface"
+    column: 1
+    min: 1.0e-6
+    default: 10
+    prefix: "-c"
+  - name: "tz"
+    type: "float"
+    label: "Thickness"
+    unit: "cm"
+    tooltip: "Thickness of the lense along the x axis"
+    column: 2
+    min: 1.0e-6
+    default: 1
+    prefix: "-A"
+  - name: "fx"
+    type: "float"
+    label: "Cur_Radius1"
+    unit: "cm"
+    tooltip: "Radius of curvature radius (of the inner part) of the upstream side of the lense"
+    column: 0
+    default: 10
+    prefix: "-a"
+  - name: "fy"
+    type: "float"
+    label: "Cur_Radius2"
+    unit: "cm"
+    tooltip: "Radius of curvature radius (of the inner part) of the downstream side of the lense"
+    column: 1
+    default: 10
+    prefix: "-b"
+  - name: "fxxa"
+    # TODO mapping
+    type: "int"
+    label: "Lense surface geometry"
+    tooltip: "Choose the geometry of the lense surface. 0: spherical, 1: parabolic"
+    column: 2
+    default: 0
+    prefix: "-K"
+
+  - name: "Title_Material"
+    type: "title"
+    label: "Material"
+  - name: "rax"
+    # TODO mapping/enum
+    type: "int"
+    label: "Lense material"
+    tooltip: "Material of the lense"
+    column: 0
+    min: 0
+    max: 99
+    default: 10
+    prefix: "-i"
+  - name: "mf"
+    type: "float"
+    label: "Delta n"
+    unit: ""
+    tooltip: "Deviation of the refractive index from 1 only considered for 'Lense material'='input'"
+    column: 1
+    min: 1.0e-6
+    default: 1.8
+    prefix: "-R"
+  - name: "nf"
+    type: "float"
+    label: "wavelength"
+    unit: "Ang"
+    tooltip: "Wavelength for which the refractive index is given"
+    column: 2
+    min: 1.0e-6
+    default: 1.8
+    prefix: "-C"
+  - name: "afc"
+    type: "float"
+    label: "Absorption"
+    unit: "1/cm"
+    tooltip: "Attenuation - absorption part coefficient (linear absorption coeff - depends on the wavelength) given by a user, 1/cm"
+    column: 0
+    min: 0
+    default: 0.441
+    prefix: "-D"
+  - name: "spp"
+    type: "float"
+    label: "Scattering"
+    unit: "1/cm"
+    tooltip: "Attenuation - scattering part coefficient (linear scattering coeff - independent of the wavelength) given by a user, 1/cm"
+    column: 1
+    min: 0
+    default: 0.0
+    prefix: "-Q"
+  - name: "surwav"
+    type: "float"
+    label: "surface roughness"
+    unit: "deg"
+    tooltip: "This parameter controls the simulation of the surface roughness. Is is the maximal angle of deviation of the surface normal from the ideal normal."
+    column: 2
+    min: 0
+    default: 0
+    prefix: "-q"
+  - name: "raxa"
+    type: "bool"
+    label: "Attenuation activation"
+    tooltip: "Activate the attenuation inside a lense"
+    default: false
+    column: 0
+    prefix: "-H"
+
+  - name: "Title_Position"
+    type: "title"
+    label: "Position Main"
+  - name: "px"
+    type: "float"
+    label: "position center X"
+    unit: "cm"
+    tooltip: "Center position of a lense"
+    column: 0
+    default: 5
+    prefix: "-d"
+  - name: "py"
+    type: "float"
+    label: "position center Y"
+    unit: "cm"
+    tooltip: "Center position of a lense"
+    column: 1
+    default: 0
+    prefix: "-e"
+  - name: "pz"
+    type: "float"
+    label: "position center Z"
+    unit: "cm"
+    tooltip: "Center position of a lense"
+    column: 2
+    default: 0
+    prefix: "-k"
+
+  - name: "Title_Diaph"
+    type: "title"
+    label: "Diaphragm after lenses"
+  - name: "diafrad1"
+    type: "float"
+    label: "Inner radius"
+    unit: "cm"
+    tooltip: "Inner radius of a diaphragm at the exit of the lenses"
+    column: 0
+    min: 0
+    default: 0.0
+    prefix: "-m"
+  - name: "diafrad2"
+    type: "float"
+    label: "Outer radius"
+    unit: "cm"
+    tooltip: "Outer radius of a diaphragm at the exit of the lenses"
+    column: 1
+    min: 0
+    default: 0.0
+    prefix: "-M"
+
+  - name: "Title_Frame"
+    type: "title"
+    label: "Output Frame"
+  - name: "ox"
+    type: "float"
+    label: "output frame X"
+    unit: "cm"
+    tooltip: "Position of the output frame (in the input frame)"
+    column: 0
+    default: 10
+    prefix: "-s"
+  - name: "oy"
+    type: "float"
+    label: "output frame Y"
+    unit: "cm"
+    tooltip: "Position of the output frame (in the input frame)"
+    column: 1
+    default: 0
+    prefix: "-t"
+  - name: "oz"
+    type: "float"
+    label: "output frame Z"
+    unit: "cm"
+    tooltip: "Position of the output frame (in the input frame)"
+    column: 2
+    default: 0
+    prefix: "-w"
+
+  - name: "Title_Focal"
+    type: "title"
+    label: "Focal distance calculation and flight"
+  - name: "wavefc"
+    type: "float"
+    label: "Wavelength"
+    unit: "Ang"
+    tooltip: "Wavelength for the focal distance calculation"
+    column: 0
+    min: 1.0e-6
+    default: 20.0
+    prefix: "-r"
+  - name: "fligthfcth"
+    # TODO mapping
+    type: "int"
+    label: "Choose formula"
+    tooltip: "choose the formula for focal distance flight after lense (0: thin  1: thick)"
+    column: 0
+    default: 0
+    prefix: "-V"
+  - name: "fligthfc"
+    type: "bool"
+    label: "Activate flight"
+    tooltip: "Continue neutron propagation up to the focal distance (instead of to the output position)"
+    column: 1
+    default: false
+    prefix: "-Y"
+
+  - name: "Title_Visualisation"
+    type: "title"
+    label: "Visualisation"
+  - name: "nxov"
+    type: "int"
+    label: "Lense number "
+    tooltip: "Index of the lense used for the visualisation (0 - means all lenses)"
+    column: 0
+    min: 0
+    default: 0
+    prefix: "-E"
+  - name: "visu"
+    type: "bool"
+    label: "Activate visualisation"
+    tooltip: "activate visualisation"
+    column: 1
+    default: false
+    prefix: "-y"
+  - name: "visuald"
+    # TODO mapping
+    type: "int"
+    label: "Output device (for Unix only)"
+    tooltip: "for Unix/Linux: device for output (0: xwin  1: ps file)"
+    column: 2
+    default: 0
+    prefix: "-l"
+
+  - name: "Title_Trace"
+    type: "title"
+    label: "Ray-tracing after lenses"
+  - name: "vrtnum"
+    type: "int"
+    label: "Number of trajectories"
+    tooltip: "Number of trajectories for visualisation after lense"
+    default: 10000
+    column: 0
+    prefix: "-x"
+    min: 0
+  - name: "vrtalmaxx"
+    type: "float"
+    label: "Max X"
+    tooltip: "Maximum X value at the ray-tracing picture, 0.0 means autocalculation"
+    column: 1
+    min: 0.0
+    default: 0.0
+    prefix: "-S"
+  - name: "visurtal"
+    type: "int"
+    label: "Visual ray-tracing after lense"
+    tooltip: "Activate visualisation after a lense with plane coordinates. 0: off, 1: XZ, 2: XY"
+    column: 2
+    default: 0
+    prefix: "-W"
+
+  - name: "Title_Output"
+    type: "title"
+    label: "Output in the file"
+  - name: "dout_filename"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "File Name"
+    tooltip: "Name for output file"
+    column: 0
+    default: "lensestrj.dat"
+    prefix: "-p"
+  - name: "nxo"
+    type: "int"
+    label: "Lense number"
+    tooltip: "Index of the lense used for output (0 - means all lenses)"
+    column: 0
+    min: 0
+    default: 0
+    prefix: "-v"
+  - name: "outt"
+    type: "bool"
+    label: "Activate output"
+    tooltip: "activate output of the the coordinates in the file for the lense"
+    column: 0
+    default: false
+    prefix: "-z"

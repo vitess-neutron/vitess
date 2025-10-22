@@ -1,0 +1,90 @@
+mon2_z_divz:
+  executable: "mon2_posdiv"
+  label: "mon2_z_divz"
+  category: "monitor"
+
+  parameters:
+  - name: "index_yz"
+    label: "analysis direction"
+    tooltip: "the quantization direction is represented by a vector in cartesian coordinates: Y_AXIS  Z_AXIS"
+    hidden: true
+    <<: *VtAxis
+    options: ["Y_AXIS", "Z_AXIS"]
+    default: "Z_AXIS"
+    prefix: "-q"
+
+  - <<: *monitor_sMonFile
+    tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+    default: "z_divz.dat"
+
+  - name: "min_y"
+    # TODO name mismatch
+    # name: "MinY"
+    type: "float"
+    label: "minimal z-value"
+    unit: "cm"
+    tooltip: ""
+    default: -10
+    column: 0
+    prefix: "-w"
+    required: true
+  - name: "max_y"
+    # TODO name mismatch
+    # name: "MaxY"
+    type: "float"
+    label: "maximal z-value"
+    unit: "cm"
+    tooltip: ""
+    default: 10
+    column: 0
+    prefix: "-W"
+    required: true
+  - <<: *monitor_nBinsY
+    # TODO name mismatch
+    name: "number_ybins"
+    label: "number of z-bins"
+    tooltip: "number of bins within the vertical position range, max. 1000"
+    default: 100
+    max: 1000
+
+  - name: "min_z"
+    # TODO name mismatch
+    # name: "MinZ"
+    type: "float"
+    label: "minimal divz-value"
+    unit: "deg"
+    tooltip: ""
+    default: -3
+    column: 1
+    prefix: "-h"
+    required: true
+  - name: "max_z"
+    # TODO name mismatch
+    # name: "MaxZ"
+    type: "float"
+    label: "maximal divz-value"
+    unit: "deg"
+    tooltip: ""
+    default: 3
+    column: 1
+    prefix: "-H"
+    required: true
+  - <<: *monitor_nBinsZ
+    # TODO name mismatch
+    name: "number_zbins"
+    label: "number of divz-bins"
+    tooltip: "number of bins within the vertical divergence range, max. 1000"
+    default: 100
+    max: 1000
+
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eFormat
+
+  - *monitor_Title_Filter
+  - *monitor_FilterMinLambda
+  - *monitor_FilterMaxLambda
+  - *monitor_FilterMinY_2D
+  - *monitor_FilterMaxY_2D
+  - *monitor_FilterMinZ_2D
+  - *monitor_FilterMaxZ_2D

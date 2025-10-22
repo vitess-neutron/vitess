@@ -214,13 +214,12 @@ test-rocky9:
     - when: on_success
   needs: []
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3 python3-pyyaml diffutils libasan libubsan
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3 diffutils libasan libubsan
     - *linux_before_script
   script:
     - cd SRC
     - make install DEBUG=2 NOG2=1
     - cd ..
-    - python3 tests/test_yaml_format.py
     - tests/test_examples.sh
     - tests/test_modules.sh
   artifacts:
@@ -257,11 +256,16 @@ test-windows:
   artifacts:
     paths: []
 
-test-largefiles:
+test-files:
   stage: test
   image: rockylinux:9
-  needs: []
+  needs:
+    - job: compile-rocky9
+  before_script:
+    - dnf install -y python3 python3-pyyaml
   script:
+    - cp -rf artifacts-Rocky9-x86_64/MODULES .
+    - python3 tests/test_yaml_format.py -v
     - LARGEFILES="$(find . -type f -size +100M -not -path './.git/*' -print)";
       if [ -n "${LARGEFILES}" ]; then
         echo "The following files exceed the github limit of 100MB:";

@@ -1,0 +1,111 @@
+monitorpol_pos:
+  executable: "monitorpol_pos"
+  label: "monitorpol_pos"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_sMonFile
+    tooltip: "monitor output file containing intensity as a function of y- and z-position"
+    default: "p_pos.dat"
+
+  - name: "min_y"
+    # TODO name mismatch
+    # name: "MinY"
+    type: "float"
+    label: "minimal y-value"
+    unit: "cm"
+    tooltip: ""
+    default: -6
+    column: 0
+    prefix: "-w"
+    required: true
+  - name: "max_y"
+    # TODO name mismatch
+    # name: "MaxY"
+    type: "float"
+    label: "maximal y-value"
+    unit: "cm"
+    tooltip: ""
+    default: 6
+    column: 1
+    prefix: "-W"
+    required: true
+  - <<: *monitor_nBinsY
+    # TODO name mismatch
+    name: "number_ybins"
+    tooltip: "number of bins within the horizontal range, max. 1000"
+    default: 100
+    max: 1000
+
+  - name: "min_z"
+    # TODO name mismatch
+    # name: "MinZ"
+    type: "float"
+    label: "minimal z-value"
+    unit: "cm"
+    tooltip: ""
+    default: -6
+    column: 0
+    prefix: "-h"
+    required: true
+  - name: "max_z"
+    # TODO name mismatch
+    # name: "MaxZ"
+    type: "float"
+    label: "maximal z-value"
+    unit: "cm"
+    tooltip: ""
+    default: 6
+    column: 1
+    prefix: "-H"
+    required: true
+  - <<: *monitor_nBinsZ
+    # TODO name mismatch
+    name: "number_zbins"
+    tooltip: "number of bins within the vertical range, max. 1000"
+    default: 100
+    max: 1000
+
+
+  - *monitor_Title_Opt
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eFormat
+
+  - *monitor_Title_Filter
+  - *monitor_FilterMinLambda
+  - *monitor_FilterMaxLambda
+
+  - name: "Title_param"
+    type: "title"
+    label: "Analysis direction"
+
+  - name: "dirx"
+    type: "float"
+    label: "direction X"
+    unit: ""
+    tooltip: "x component of the direction vector representing the quantization direction"
+    default: 1
+    column: 0
+    prefix: "-r"
+    required: true
+
+  - name: "diry"
+    type: "float"
+    label: "direction Y"
+    unit: ""
+    tooltip: "y component of the direction vector representing the quantization direction"
+    default: 0
+    column: 1
+    prefix: "-s"
+    required: true
+
+  - name: "dirz"
+    type: "float"
+    label: "direction Z"
+    unit: ""
+    tooltip: "z component of the direction vector representing the quantization direction"
+    default: 0
+    column: 2
+    prefix: "-t"
+    required: true

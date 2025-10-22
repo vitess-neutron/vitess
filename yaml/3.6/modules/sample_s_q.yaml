@@ -1,0 +1,213 @@
+sample_s_q:
+  executable: "sample_s_q"
+  label: "sample_s_q"
+  category: "sample"
+
+  parameters:
+  - name: "sParFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "sample file"
+    tooltip: "File containing geometry and scattering parameters of the sample These parameters are only used if they are not given as direct input parameters."
+    prefix: "-S"
+
+  - name: "ScatHor"
+    type: "float"
+    label: "angle horiz final [deg]"
+    tooltip: "horizontal rotation defining the (hoizontal) center of the scattering range (usually the center of the detector)"
+    default: 90.0
+    prefix: "-D"
+    column: 0
+  - name: "ScatVert"
+    type: "float"
+    label: "angle vert final [deg]"
+    tooltip: "vertical rotation defining the (vertical) center of the scattering range (usually the center of the detector)"
+    default: 60.0
+    prefix: "-P"
+    column: 1
+  - name: "DelScatHor"
+    type: "float"
+    label: "delta angle horiz [deg]"
+    tooltip: "variation DeltaTheta determining the hor. scattering range [Theta-DeltaTheta, Theta+DeltaTheta]  0 deg: left, 180 deg: right"
+    prefix: "-d"
+    column: 0
+  - name: "DelScatVert"
+    type: "float"
+    label: "delta angle vert [deg]"
+    tooltip: "Variation DeltaPhi determining the vert. scatering range [Phi-DeltaPhi, Phi+DeltaPhi]"
+    default: 10.0
+    prefix: "-p"
+    column: 1
+
+  - name: "bIncohScat"
+    type: "bool"
+    label: "incoherent scattering"
+    tooltip: "yes: activates calculation of incoherent scattering no: no incoherent scattering"
+    default: no
+    column: 0
+    prefix: "-I"
+  - name: "nRep"
+    type: "int"
+    label: "repetition"
+    min: 1
+    default: 1
+    tooltip: "Repetitions (number of trajectories generated per incoming trajectory)"
+    column: 1
+    prefix: "-A"
+  - name: "iColor"
+    type: "int"
+    label: "colour"
+    tooltip: "Colour of the neutrons scattered by the sample"
+    min: 0
+    column: 0
+    prefix: "-c"
+  - name: "bTreatAll"
+    type: "bool"
+    label: "treat all neutrons"
+    tooltip: "no: only neutrons hitting the sample are treated yes: neutrons passing by are also treated"
+    default: no
+    column: 1
+    prefix: "-a"
+
+  - name: "Title"
+    type: "title"
+    label: "Modulation of the sample response"
+  - name: "ModulFreq"
+    type: "float"
+    label: "frequency [Hz]"
+    tooltip: "Modulation frequency of the sample response if Freq > 0.0, S(Q,t) = S(Q) 1/2 (1 + cos(2*pi*Freq*t + Phase0))"
+    default: 0.0
+    prefix: "-f"
+    column: 1
+  - name: "ModulPhase"
+    type: "float"
+    label: "initial phase [deg]"
+    tooltip: "Phase of the sample response at t=0 if Freq > 0.0, S(Q,t) = S(Q) 1/2 (1 + cos(2*pi*Freq*t + Phase0))"
+    default: 0.0
+    prefix: "-o"
+    column: 1
+
+  - name: "Title"
+    type: "title"
+    label: "Sample position and geometry"
+  - name: "PosSmplX"
+    type: "float"
+    label: "x [cm]"
+    tooltip: "Center position X of the sample"
+    default: 30.0
+    column: 0
+    prefix: "-x"
+  - name: "PosSmplY"
+    type: "float"
+    label: "y [cm]"
+    tooltip: "Center position Y of the sample"
+    column: 1
+    prefix: "-y"
+  - name: "PosSmplZ"
+    type: "float"
+    label: "z [cm]"
+    tooltip: "center position Z of the sample"
+    default: 0.0
+    column: 2
+    prefix: "-z"
+
+  - name: "eSmplGeom"
+    label: "sample geometry"
+    tooltip: "Shape of the sample: cylinder, sphere or cuboid (=rectangular)"
+    <<: *VtSmplGeom
+    options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+    default: "VT_CYL"
+    prefix: "-G"
+    column: 0
+
+  - name: "SmplDiam"
+    type: "float"
+    label: "thickness or diameter [cm]"
+    tooltip: "Thickness of a cubic sample, or diameter of sphere of cylinder."
+    min: 0.0001
+    default: 0.2
+    column: 0
+    prefix: "-t"
+  - name: "SmplHeight"
+    type: "float"
+    label: "height [cm]"
+    tooltip: Height of the sample (not needed for spherical shape)"
+    default: 0.5
+    min: 0.0
+    column: 1
+    prefix: "-h"
+  - name: "SmplWidth"
+    type: "float"
+    label: "diameter [cm]"
+    tooltip: "Width of a cubic sample"
+    default: 0.5
+    min: 0.0
+    column: 2
+    prefix: "-w"
+
+  - name: "SmplOrientX"
+    type: "float"
+    label: "x direction [cm]"
+    tooltip: "x-component of the sample orientation"
+    default: 0.0
+    prefix: "-X"
+    column: 0
+  - name: "SmplOrientY"
+    type: "float"
+    label: "y direction [cm]"
+    tooltip: "y-component of the sample orientation"
+    default: 0.0
+    prefix: "-Y"
+    column: 1
+  - name: "SmplOrientZ"
+    type: "float"
+    label: "z direction [cm]"
+    tooltip: "z-component of the sample orientation"
+    default: 0.0
+    prefix: "-Z"
+    column: 2
+
+  - name: "Title"
+    type: "title"
+    label: "Scattering"
+  - name: "eDataSrc"
+    label: "structure factors"
+    tooltip: "Source of the structure factor data, either 'from file' or 'as function' In the latter case, an adaption of the program and re-compiling may be needed (see Help|sample)"
+    <<: *VtDataSrc
+    options: ["VT_FR_FILE", "VT_AS_FCT"]
+    default: "VT_FR_FILE"
+    prefix: "-G"
+    column: 0
+  - name: "sStructFile"
+    type: "file"
+    plottable: true
+    editable: true
+    label: "structure factor file"
+    tooltip: "This file contains information to determine the scattering probability for each reflection. The first contains the momentum transfer values Q [1/Ang] and the second the corresponding value for S"
+    prefix: "-s"
+
+  - name: "MuScatIncoh"
+    type: "float"
+    label: "incoherent scat- tering [1/cm]"
+    tooltip: "Macroscopic incoherent scattering cross section of the sample material. (Needed if 'Incoherent scattering' is chosen.)"
+    default: 0.0
+    min: 0.0
+    column: 0
+    prefix: "-i"
+  - name: "MuScatCoh"
+    type: "float"
+    label: "coherent scat- tering [1/cm]"
+    tooltip: "Macroscopic coherent scattering cross section of the sample material (required)"
+    default: 0.5
+    min: 0.0
+    column: 1
+    prefix: "-C"
+  - name: "MuAbsorb"
+    type: "float"
+    label: "absorption [1/cm]"
+    tooltip: "Macroscopic absorption cross section of the sample material for 1.798 Ang (used for attenuation)"
+    default: 0.1
+    min: 0.0
+    column: 2
+    prefix: "-m"

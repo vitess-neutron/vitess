@@ -1,0 +1,100 @@
+moderator_ess: &moderator_ess
+  type: "array"
+  min: 1
+  max: 10
+  label: "moderator_ess"
+  parameters:
+  - name: "sModName"
+    label: "name"
+    type: "string"
+    column: 0
+
+  - name: "eModType"
+    label: "type"
+    tooltip: "moderator type"
+    <<: *VtModType
+    options: ["POISONED", "DECOUPLED", "COUPLED", "MULT_SPEC"]
+    default: "COUPLED"
+    column: 0
+    prefix: "-t"
+
+  - name: "Width"
+    type: "float"
+    label: "width"
+    unit: "cm"
+    tooltip: "width of the moderator"
+    column: 1
+    prefix: "-w"
+  - name: "Height"
+    type: "float"
+    label: "height"
+    unit: "cm"
+    tooltip: "height of the moderator"
+    default: 3.0
+    column: 2
+    prefix: "-h"
+
+  - name: "ModCntrX"
+    type: "float"
+    label: "center x"
+    unit: "cm"
+    tooltip: "x coordinate of the center of the moderator"
+    default: 0.0
+    column: 0
+    prefix: "-X"
+  - name: "ModCntrY"
+    type: "float"
+    label: "center y"
+    unit: "cm"
+    tooltip: "y coordinate of the center of the moderator"
+    default: 0.0
+    column: 1
+    prefix: "-Y"
+  - name: "ModCntrZ"
+    type: "float"
+    label: "center z"
+    unit: "cm"
+    tooltip: "z coordinate of the center of the moderator"
+    default: 0.0
+    column: 2
+    prefix: "-Z"
+
+  - name: "iOrder"
+    type: "int"
+    label: "spatial order"
+    tooltip: "spatial order of the moderator (the higher the number the more it is in the background)"
+    column: 0
+    prefix: "-o"
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "the trajectories can be marked by this 'color' to identify the moderator of origin"
+    min: -1
+    column: 1
+    prefix: "-c"
+
+  - name: "eModTemp"
+    type: "float"
+    label: "temperature"
+    unit: "K"
+    tooltip: "Temperature of a Maxwellian distribution"
+    min: 50.0
+    max: 325.0
+    default: 50.0
+    column: 0
+    prefix: "-T"
+  - name: "PerformFact"
+    type: "float"
+    label: "performance factor"
+    tooltip: "Factor allowing for losses by aging or engineering design d"
+    min: 0.0
+    default: 1.0
+    column: 1
+    prefix: "-p"
+  - name: "Current"
+    type: "float"
+    label: "current"
+    unit: "n/s"
+    tooltip: "Average moderator current (only useful if moderator flux is zero)"
+    column: 2
+    prefix: "-I"

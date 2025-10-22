@@ -1,0 +1,61 @@
+source_isis:
+  executable: "source"
+  label: "source_isis"
+  category: "source"
+  parameters:
+  - <<: *source_eSrcKind
+    default: "SRC_ISIS"
+  - <<: *source_eSrcType
+    hidden: true
+    default: "SPSS"
+  - <<: *source_eSrcName
+    # TODO name mismatch
+    name: "sSrcName"
+    hidden: true
+    default: "ISIS"
+
+  - *source_Title_Sim
+  - *source_nBunches
+  - *source_nTraj
+  - *source_sSimName
+  - *source_MinLambda
+  - *source_MaxLambda
+
+  - name: "Title_Mod"
+    type: "title"
+    label: "Source and moderator parameters"
+  - <<: *source_Freq
+    default: 50
+  - name: "sBeamline"
+    type: "string"
+    label: "beamline"
+    tooltip: "name of the beamline"
+    column: 1
+    prefix: "-B"
+    required: false
+
+  - *source_Title_Prop
+  - *source_eDirMode
+
+  - *source_TargetDist
+  - *source_TargetWidth
+  - *source_TargetHeight
+
+  - *source_Title_Time
+  - *source_TofDist
+  - *source_TofMin
+  - *source_TofMax
+
+  - *source_Title_Pol
+  - *source_PolDirX
+  - *source_PolDirY
+  - *source_PolDirZ
+  - *source_PolDeg
+
+  - *source_Title_Special
+  - *source_TimeMeas
+  - *source_LambdaWant
+  - *source_eTraceMode
+  - <<: *source_sTraceFile
+    # TODO name mismatch
+    name: "TraceFile"
