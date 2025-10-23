@@ -651,7 +651,7 @@ void SetSamplePar()
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
   {
-    pFile = OpenInputFile(pSmplFileName, FALSE, "rt");
+    pFile = OpenParameterFile(pSmplFileName, FALSE, "rt");
 
     /* Reads the parameters if the file can be opened */
     if (pFile != NULL)

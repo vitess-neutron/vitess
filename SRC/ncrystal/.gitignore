@@ -9,6 +9,7 @@ _site
 *.egg-info/
 dist/
 build/
+install/
 __pycache__/
 
 /devel/simplebuild/simplebuild_cache/

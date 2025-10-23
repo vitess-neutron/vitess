@@ -356,7 +356,7 @@ void OwnInit(int argc, char *argv[])
           }
           break;
         case 'I':                            /* optional: info file for generating integrated intensities */
-          fInfoFile = OpenInputFile(arg, TRUE, "r");
+          fInfoFile = OpenParameterFile(arg, TRUE, "r");
           break;
 
         case 'n':

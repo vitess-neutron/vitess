@@ -57,11 +57,24 @@ extern int           NThreads;       /* number of helper threads for execution, 
 extern double        RotMatrixM[3][3];
 extern double        RotMatrixMX[3][3];
 
-FILE* OpenOutputFile  (const char *sName, short bErrMsg, const char* sMode);              // opens file in the output folder with or without error message
-FILE* OpenInputFile   (const char *sName, short bErrMsg, const char* sMode);              // opens file in the input folder with or without error message
-FILE* OpenInputFile2  (const char *sFilename, const char* sContent, const char* sMode);   // opens file in the input folder with extended error message
-FILE* OpenPackInpFile (const char *sFilename, const char* sPath, short bErrMsg);          // opens input file from the installation directory
+/* Adds the path of a directory - input, output or install_dir/sPath - to a file name
+   opens the file using parameters 'sMode'
+   and exits with error message if bErrMsg=TRUE     */
+FILE *OpenInputFile(const char *sFilename, short bErrMsg, const char *sMode);
+/* opens file in the input folder with extended error message */
+FILE *OpenInputFile2(const char *sFilename, const char *sContent, const char *sMode);
+/* opens file in the parameter folder with or without error message */
+FILE *OpenParameterFile(const char *sFilename, short bErrMsg, const char *sMode);
+/* opens file in the parameter folder with extended error message */
+FILE *OpenParameterFile2(const char *sFilename, const char *sContent, const char *sMode);
+/* opens file in the output folder with or without error message */
+FILE *OpenOutputFile(const char *sFilename, short bErrMsg, const char *sMode);
+/* opens file in the output folder with extended error message */
+FILE *OpenOutputFile2(const char *sFilename, const char *sContent, const char *sMode);
+/* opens input file from the installation directory */
+FILE *OpenPackInpFile(const char *sFilename, const char *sPath, short bErrMsg);
 
+/* Adds path of the installation directory to a file name */
 void TotalPath        (char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
 
 void Init             (int argc, char **argv, const McCompID eModule);

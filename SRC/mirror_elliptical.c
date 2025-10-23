@@ -241,10 +241,12 @@ void  OwnInit(int argc, char *argv[])
     switch(a[1])
     {
       case 'i':
-        refl_filelup = OpenInputFile2((ReflFileNamelup = arg), "reflectivity data for spin-up neutrons", "r");
+        ReflFileNamelup = arg;
+        refl_filelup = OpenParameterFile2(ReflFileNamelup, "reflectivity data for spin-up neutrons", "r");
         break;
       case 'I':
-        refl_fileldo = OpenInputFile2((ReflFileNameldo = arg), "reflectivity data for spin-down neutrons", "r");
+        ReflFileNameldo = arg;
+        refl_fileldo = OpenParameterFile2(ReflFileNameldo, "reflectivity data for spin-down neutrons", "r");
         break;
 
       case 'y':

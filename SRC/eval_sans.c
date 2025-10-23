@@ -394,7 +394,7 @@ void OwnInit(int argc, char *argv[])
     pIntFile = OpenOutputFile(pIntFileName, TRUE, "w");
     if (pRefFileName!=NULL)
     { pSofQFile = OpenOutputFile(pSofQFileName, FALSE, "w");
-      pRefFile  = OpenInputFile (pRefFileName,  FALSE, "r");
+      pRefFile  = OpenParameterFile (pRefFileName,  FALSE, "r");
     }
     if (pSofQFile==NULL || pRefFile==NULL)
       Warning("S(Q) or reference file could not be opened. S(Q) file cannot be generated");
@@ -408,7 +408,7 @@ void OwnInit(int argc, char *argv[])
     bAllFiles=TRUE;
 
   if (pRefFileName!=NULL)
-    pRefFile  = OpenInputFile (pRefFileName,  FALSE, "r");
+    pRefFile = OpenParameterFile (pRefFileName,  FALSE, "r");
   if (pSofQFileName!=NULL)
     pSofQFile = OpenOutputFile(pSofQFileName, FALSE, "w");
 }

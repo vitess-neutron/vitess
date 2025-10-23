@@ -35,9 +35,6 @@ void   GetString  (char* pString, const char* pText);  // Reads string from stdi
 void   GenerFormat(char* sLine);
 void   PrintLine  (int h, int k, int l);               // writes 1 h,k,l line
 
-char*  FullOutName(const char* filename);             // returns path\name.ext for input directory   located in init.c
-
-
 
 /******************************/
 /** Global variables         **/

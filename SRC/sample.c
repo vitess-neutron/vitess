@@ -407,7 +407,7 @@ int ReadStructureFile(const char* sStrFileName, int tag, DoublePair* structFacto
   if (sStrFileName!=NULL && strlen(sStrFileName) > 0)
   {
     /* first open the file, exit if opening fails */
-    pStrucFile = OpenInputFile(sStrFileName, FALSE, "rt");
+    pStrucFile = OpenParameterFile(sStrFileName, FALSE, "rt");
 
     if (pStrucFile==NULL)
     {

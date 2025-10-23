@@ -34,12 +34,10 @@ static float fMax       (float value1,  float value2);
 static short ReadChopper(int argc, char *argv[]);
 static void  OwnInit    (int argc, char *argv[]);
 
-char* FullParName       (const char* filename);
-
-char  sBuffer[BUF_SIZE+1];
+char  sBuffer[BUF_SIZE+1],
+      sFullName[CHAR_BUF_SMALL];    // name of plot file incl. path
 const char *pTitle="  ",  // title of the plot
-     *pFileName=0,  // Name of plot file
-     *pFullName;    // name of plot file incl. path
+     *pFileName=0;  // Name of plot file
 float fTmax=10.0,   // max. time that shall be displayed
       fTp=1.0,      // pulse length
       fTPbeg=0.0,   // beginning, center and end of pulse
@@ -98,7 +96,8 @@ int main(int argc, char* argv[])
   /* write result postscript or PNG file to parameter directory */
   if (pFileName == 0 || *pFileName == 0)
     pFileName = DEFAULTNAME;
-  GraphDev = pFullName = FullParName(pFileName);
+  TotalPath(sFullName, pFileName, "", OUT_DIR);
+  GraphDev = sFullName;
 
   /* initialize pgplot */
   /* ----------------- */
@@ -217,7 +216,7 @@ int main(int argc, char* argv[])
 
   cpgclos();
 
-  fprintf(LogFilePtr, "Figure saved as %s\n", pFullName);
+  fprintf(LogFilePtr, "Figure saved as %s\n", sFullName);
 
   return 0;
 }

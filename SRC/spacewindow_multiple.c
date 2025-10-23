@@ -377,42 +377,29 @@ short ReadWndFile()
     eWinShape [j] = VT_MWND_AUTO;
   }
 
-  if (CollFileName !=NULL)
-  {  if( (coll_file = OpenInputFile(CollFileName, FALSE, "r"))==NULL)
-    {
-      fprintf(LogFilePtr, "ERROR: File %s could not be opened to read window data \n", CollFileName);
-      exit(-1);
-    }
-    else
-    {
-      j=0;
-      while (ReadLine(coll_file, sLine, sizeof(sLine)-1)==TRUE)
-      {
-        j++;
-        if (eShape==VT_MWND_CIRCLE)
-        {  sscanf(sLine, "%lf %lf %lf",     &ywincenter[j], &zwincenter[j], &winradius[j]);
-          eWinShape[j] = VT_MWND_CIRCLE;
-        }
-        else if (eShape==VT_MWND_SQUARE)
-        {  sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
+  if (CollFileName != NULL) {
+    coll_file = OpenParameterFile2(CollFileName, "window data", "r");
+    j = 0;
+    while (ReadLine(coll_file, sLine, sizeof(sLine) - 1) == TRUE) {
+      j++;
+      if (eShape == VT_MWND_CIRCLE) {
+        sscanf(sLine, "%lf %lf %lf", &ywincenter[j], &zwincenter[j], &winradius[j]);
+        eWinShape[j] = VT_MWND_CIRCLE;
+      } else if (eShape == VT_MWND_SQUARE) {
+        sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
+        eWinShape[j] = VT_MWND_SQUARE;
+      } else {
+        sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
+        if (winheight[j] > 0.0) {
           eWinShape[j] = VT_MWND_SQUARE;
-        }
-        else
-        {  sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
-          if (winheight[j] > 0.0)
-          {  eWinShape[j] = VT_MWND_SQUARE;
-          }
-          else
-          {  winradius[j] = winwidth[j];
-            eWinShape[j] = VT_MWND_CIRCLE;
-          }
+        } else {
+          winradius[j] = winwidth[j];
+          eWinShape[j] = VT_MWND_CIRCLE;
         }
       }
     }
     fclose(coll_file);
-  }
-  else
-  {
+  } else {
     fprintf(LogFilePtr,"\n ERROR: No window file name given \n");
     exit(-1);
   }
@@ -519,35 +506,25 @@ void  EvalInput()
     // Read transmission file for window frame
     if (sTransFileNameO !=NULL)
     {
-      pTransFileO = OpenInputFile(sTransFileNameO, FALSE, "r");
-      if (pTransFileO!=NULL)
-      {
-        i=0;
-        while (ReadLine(pTransFileO, sLine, CHAR_BUF_SMALL-1) > 0)
-        { i++;
-          sscanf(sLine, "%lf %lf", &WavO[i], &MuO[i]);
-        }
-        nVal  =i;
-        nValFO=nVal;
-        fclose(pTransFileO);
+      pTransFileO = OpenParameterFile(sTransFileNameO, FALSE, "r");
+      i = 0;
+      while (ReadLine(pTransFileO, sLine, CHAR_BUF_SMALL - 1) > 0) {
+        i++;
+        sscanf(sLine, "%lf %lf", &WavO[i], &MuO[i]);
+      }
+      nVal = i;
+      nValFO = nVal;
+      fclose(pTransFileO);
 
-        /* check the input data */
-        for(i = 1; i <= (nValFO-1); i++)
-        {
-          if (WavO[i+1] <= WavO[i])
-          {
-            fprintf(LogFilePtr,"ERROR: incorrect data in transmission file of the window frame \n");
-            fprintf(LogFilePtr,"The wavelength values (1st column) must be in ascending order!!! \n");
-            exit(-1);
-          }
+      /* check the input data */
+      for (i = 1; i <= (nValFO - 1); i++) {
+        if (WavO[i + 1] <= WavO[i]) {
+          fprintf(LogFilePtr, "ERROR: incorrect data in transmission file of the window frame \n");
+          fprintf(LogFilePtr, "The wavelength values (1st column) must be in ascending order!!! \n");
+          exit(-1);
         }
       }
-      else
-      { Error("Transmission file could not be opened");
-      }
-    }
-    else
-    {
+    } else {
       Error("No file name given describing the transmission of the window frame\n");
     }
   }
@@ -562,34 +539,25 @@ void  EvalInput()
     fprintf(LogFilePtr,"Material transmission characteristics of window pane read from file:  %s \n", sTransFileNameI);
     bPane=TRUE;     /* activate this material */
 
-    pTransFileI = OpenInputFile(sTransFileNameI, FALSE, "r");
-    if (pTransFileI!=NULL)
-    { i=0;
-      while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL-1) > 0)
-      { i++;
-        sscanf(sLine, "%lf %lf", &WavI[i], &MuI[i]);
-      }
-      nValFI=i;
-      fclose(pTransFileI);
+    pTransFileI = OpenParameterFile(sTransFileNameI, FALSE, "r");
+    i = 0;
+    while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL - 1) > 0) {
+      i++;
+      sscanf(sLine, "%lf %lf", &WavI[i], &MuI[i]);
+    }
+    nValFI = i;
+    fclose(pTransFileI);
 
-      /* check the input data */
-      for(i = 1; i <= (nValFI-1); i++)
-      {
-        if (WavI[i+1] <= WavI[i])
-        {
-          fprintf(LogFilePtr,"ERROR: incorrect data in open transmission file of the window \n");
-          fprintf(LogFilePtr,"The wavelength values (1st column) must be in ascending order!!! \n");
-          exit(-1);
-        }
+    /* check the input data */
+    for (i = 1; i <= (nValFI - 1); i++) {
+      if (WavI[i + 1] <= WavI[i]) {
+        fprintf(LogFilePtr, "ERROR: incorrect data in open transmission file of the window \n");
+        fprintf(LogFilePtr, "The wavelength values (1st column) must be in ascending order!!! \n");
+        exit(-1);
       }
     }
-    else
-    { Error("Transmission file could not be opened");
-    }
-
     fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nValFI]);
   }
-  return;
 }
 
 

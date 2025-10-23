@@ -84,14 +84,15 @@
 /******************************/
 /** Inline Functions         **/
 /******************************/
-FILE * openNFile (char *name) {return OpenInputFile(name, TRUE, "r");}
+static FILE *openNFile(char *name)
+{
+  return OpenParameterFile(name, TRUE, "r");
+}
 
 
 /*************************************************/
 /** Prototypes of 'init' and internal functions **/
 /*************************************************/
-char* FullOutName(const char* filename);                    // adds output dir to file name
-
 void OwnInit(int argc, char *argv[]);                       // reads input parameters and initializes global variables
 int  LoadReflFile(FILE* pReflFile, double* pData, const char* sWall, const char* sSpin);
 void FillReflContainer(double array[1000], double m);
@@ -202,6 +203,7 @@ FILE  *AsciiFile=NULL; /* file for output characteristics of bender surfaces */
 #else
   const char *GraphDev = "bender.png";
 #endif
+char fullGraphDev[CHAR_BUF_SMALL];
 
 
 /******************************/
@@ -1491,7 +1493,8 @@ void  OwnInit(int argc, char *argv[])
 
 
     /* open graphical device */
-    if (cpgopen(FullOutName(GraphDev)) < 1)
+    TotalPath(fullGraphDev, GraphDev, "", OUT_DIR);
+    if (cpgopen(fullGraphDev) < 1)
     {
       fprintf(LogFilePtr,"ERROR: I cannot open plot device \n");
       exit(-1);

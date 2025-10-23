@@ -533,16 +533,9 @@ void InitArrays()
 void OpenFiles()
 {
   // opens reference file
-  if (RefFileName!=NULL)
-  {
-    pFileRef = OpenInputFile(RefFileName, FALSE, "rt");
-    if (pFileRef!=NULL)
-    { eNormalize=NORM_REF_FILE;
-    }
-    else
-    {  fprintf(LogFilePtr,"\nERROR: Reference file %s could not be opened\n", RefFileName);
-       exit(-1);
-    }
+  if (RefFileName != NULL) {
+    pFileRef = OpenParameterFile2(RefFileName, "reference data", "rt");
+    eNormalize = NORM_REF_FILE;
   }
 
   // opens main monitor file

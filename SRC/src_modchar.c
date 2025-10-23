@@ -34,13 +34,6 @@ static VtSrcName _eSource=ANYSOURCE; // _eSource    : ANYSOURCE, ESS, SNS, CSNS
 static VtModType _eModType=0;        // _eModType   : decoupled POISONED, DECOUPLED unpoisoned, COUPLED
 
 
-/*********************************/
-/* global functions              */
-/*********************************/
-char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name
-char* FullInName      (const char* filename);                       // adds input dir to file name
-
-
 /**********************************************/
 /* Initialize source and moderator structures */
 /**********************************************/
@@ -546,8 +539,7 @@ short GetEssModDat(ModInfo* pModInfo, const double ModTemp, const double ModHeig
 
     // open file containing ESS moderator characteristics
     pFile = OpenPackInpFile("EssModChar.dat", "FILES/moderators/ESS/", FALSE);
-    if (pFile==NULL)
-      pFile = OpenInputFile("EssModChar.dat", FALSE, "r");
+    if (pFile == NULL) pFile = OpenParameterFile("EssModChar.dat", FALSE, "r");
 
     if (pFile)
     { // search for a line with the given temperature and moderator height
@@ -579,8 +571,13 @@ short GetEssModDat(ModInfo* pModInfo, const double ModTemp, const double ModHeig
       }
     }
     else
-    { char sText[CHAR_BUF_XS];
-      sprintf(sText, "Files %s and %s could not be opened", FullInstallName("EssModChar.dat", "FILES/moderators/ESS/"), FullInName("EssModChar.dat"));
+    {
+      char sText[CHAR_BUF_LENGTH];
+      char sInstallName[CHAR_BUF_SMALL];
+      char sInName[CHAR_BUF_SMALL];
+      TotalPath(sInstallName, "EssModChar.dat", "FILES/moderators/ESS/", INSTL_DIR);
+      TotalPath(sInName, "EssModChar.dat", "", IN_DIR);
+      sprintf(sText, "Files %s and %s could not be opened", sInstallName, sInName);
       Error(sText);
     }
   }

@@ -556,16 +556,11 @@ void OpenFiles()
   short bHeader=YES;
 
   // opens reference file if needed
-  if (eBrlNorm==BRL_TRANSF)
-  { if (RefFileName!=NULL)
-    { pFileRef = OpenInputFile(RefFileName, FALSE, "rt");
-      if (pFileRef==NULL)
-      { fprintf(LogFilePtr,"\nERROR: Reference file %s could not be opened\n", RefFileName);
-        exit(-1);
-      }
-    }
-    else
-    { Error("Reference file missing. This is needed for monitoring the brilliance transfer");
+  if (eBrlNorm == BRL_TRANSF) {
+    if (RefFileName != NULL) {
+      pFileRef = OpenParameterFile(RefFileName, TRUE, "rt");
+    } else {
+      Error("Reference file missing. This is needed for monitoring the brilliance transfer");
     }
   }
 

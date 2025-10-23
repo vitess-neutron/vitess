@@ -66,7 +66,8 @@ double     Euler_L1_aroundZ, Euler_L1_aroundY, Euler_L2_aroundZ, Euler_L2_around
 
 /* computing variables */
 FILE       *Par_CAS, *Statistics_CAS, *TrajData_CAS, *TrajPoints_CAS, *DetPoints_CAS;
-char       *ParameterFileName, *StatisticsFileName, *TrajDataFileName, *TrajPointsFileName, *DetPointsFileName;
+char ParameterFileName[CHAR_BUF_SMALL], StatisticsFileName[CHAR_BUF_SMALL], TrajDataFileName[CHAR_BUF_SMALL],
+    TrajPointsFileName[CHAR_BUF_SMALL], DetPointsFileName[CHAR_BUF_SMALL];
 long       NoTrajectories, NoTrajectoriesEnd, i, Option, phi_repetition;
 double     RotMatrix_M[3][3], RotMatrix_S[3][3], RotMatrix_X[3][3], RotMatrix_D[3][3], RotMatrix_W[3][3], RotMatrix_zeta[3][3];
 double     Euler_W_aroundY, Euler_W_aroundZ, Euler_M_aroundY_foc, Euler_M_aroundZ_foc, Euler_S_aroundY_foc, Euler_S_aroundZ_foc, Euler_X_aroundY_foc, Euler_X_aroundZ_foc, Euler_D_aroundY_foc, Euler_D_aroundZ_foc;
@@ -83,10 +84,6 @@ void  CopyFileIntoFile(char *filename1, char *filename2);             // writes 
 void  EchoSomething(char *filename, char stringvar[STRING_BUFFER]);   // writes text into a file not opened
 void  ShowTime(char *filename);                                       // writes time into a file not opened
 void  ShowDate(char *filename);                                       // writes date into a file not opened
-
-/* from init.c */
-char* FullInName  (const char* filename);                             // adds output dir to file name
-char* FullOutName (const char* filename);                             // adds input dir to file name
 
 
 /******************************/
@@ -132,7 +129,7 @@ int main(int argc, char **argv)
       random = MonteCarlo(-1.,1.);
       lambda_random = lambda + widthlambda/2.*random;
 
-      thetaB = (double) asin(lambda_random/2./d_spacing); Cos2thetaB = cos(2.*thetaB);
+      thetaB = asin(lambda_random/2./d_spacing); Cos2thetaB = cos(2.*thetaB);
 
       deltathetaB = thetaB - thetaB_0;
       deltaCos2thetaB = Cos2thetaB - Cos2thetaB_0;
@@ -279,23 +276,23 @@ void OwnInit(int argc, char *argv[])
           fprintf(LogFilePtr,"\nParameter file '%s' not found\n",&argv[1][2]);
           exit(0);
         }
-        ParameterFileName=FullInName(&argv[1][2]);
+        TotalPath(ParameterFileName, &argv[1][2], "", IN_DIR);
         break;
 
       case 'S':
-        StatisticsFileName=FullOutName(&argv[1][2]);
+        TotalPath(StatisticsFileName, &argv[1][2], "", OUT_DIR);
         break;
 
       case 'T':
-        TrajDataFileName=FullOutName(&argv[1][2]);
+        TotalPath(TrajDataFileName, &argv[1][2], "", OUT_DIR);
         break;
 
       case 't':
-        TrajPointsFileName=FullOutName(&argv[1][2]);
+        TotalPath(TrajPointsFileName, &argv[1][2], "", OUT_DIR);
         break;
 
       case 'D':
-        DetPointsFileName=FullOutName(&argv[1][2]);
+        TotalPath(DetPointsFileName, &argv[1][2], "", OUT_DIR);
         break;
 
       case 'O':

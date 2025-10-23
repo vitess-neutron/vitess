@@ -495,7 +495,7 @@ void SetSamplePar(SampleType* pSample)
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
   {
-    pFile = OpenInputFile(pSmplFileName, FALSE, "rt");
+    pFile = OpenParameterFile(pSmplFileName, FALSE, "rt");
 
     /* Reads the parameters if the file can be opened */
     if (pFile != NULL)
@@ -605,7 +605,7 @@ void ReadStructFile()
   if (strstr(pStrFileName, ".dat") == &pStrFileName[strlen(pStrFileName)-4])
   {
     // opens file containing structure factore parameters (program exit in case of error)
-    FILE* pStructFile = OpenInputFile2(pStrFileName, "structure factors", "r");
+    FILE* pStructFile = OpenParameterFile2(pStrFileName, "structure factors", "r");
 
     nLines = LinesInFile(pStructFile);
     rewind(pStructFile);

@@ -166,109 +166,138 @@ static McCompID GetModId(char* sBuffer);                            // returns I
 static void  Transform(VectorType AbsVec, const VectorType vRelVec, const VectorType vBegVec);
 static void  writeCompressed();
 static int   readCompressedNeutrons();
-static void  WriteTraceLine(Neutron* Neut);
+static void  WriteTraceLine(Neutron* pNeutron);
 static short GetColMax();                                           // Returns maximum color with intensity > 0
-
-// these function should only be used exceptionally outside init.c
-char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name
-char* FullParName     (const char* filename);                       // adds parameter directory to file name
-char* FullInName      (const char* filename);                       // adds input dir to file name
-char* FullOutName     (const char* filename);                       // adds output dir to file name
 
 
 /**************************************************************/
 /* GLOBAL FUNCTIONS                                           */
 /**************************************************************/
 
-/* Adds path of the installation directory to a file name */
-char* FullInstallName(const char* sFileName, const char* sRelPath)
+FILE *OpenInputFile(const char *sFilename, short bErrMsg, const char *sMode)
 {
-  TotalPath(sFilePath, sFileName, sRelPath, INSTL_DIR);
-
-  return sFilePath;
-}
-
-/* Adds the path of a directory - input, output or parameter - to a file name */
-char* FullParName(const char* fileName)
-{
-  return conCat(fileName, "", PAR_DIR);
-}
-
-char* FullInName(const char* fileName)
-{
-  return conCat(fileName, "", IN_DIR);
-}
-
-char* FullOutName(const char* fileName)
-{
-  return conCat(fileName, "", OUT_DIR);
-}
-
-
-/* Adds the path of a directory - input, output or install_dir/sPath - to a file name
-   opens the file using parameters 'sMode'
-   and exits with error message if bErrMsg=TRUE     */
-FILE* OpenInputFile(const char *sFilename, short bErrMsg, const char* sMode)
-{
-  char *sFullName = NULL;
+  char sFullName[CHAR_BUF_SMALL];
   FILE *pFile = NULL;
 
-  if (sFilename != NULL) {
-    sFullName = FullInName(sFilename);
-    if (sFullName) {
-      if (bErrMsg)
-        pFile = fileOpen(sFullName, sMode);
-      else
-        pFile = fopen(sFullName, sMode);
-      free(sFullName);
-    }
+#if DEBUG
+  if (sMode[0] != 'r') {
+    char text[CHAR_BUF_SMALL];
+    snprintf(text, CHAR_BUF_SMALL, "opening input file '%s' with mode '%s'", sFilename, sMode);
+    Warning(text);
   }
-  return (pFile);
-}
-
-FILE* OpenInputFile2(const char *sFilename, const char* sContent, const char* sMode)
-{
-  char *sFullName = NULL;
-  FILE *pFile = NULL;
+#endif
 
   if (sFilename != NULL) {
-    sFullName = FullInName(sFilename);
-    if (sFullName) {
-      pFile = fileOpen2(sFullName, sMode, sContent);
-      free(sFullName);
-    }
-  }
-
-  return (pFile);
-}
-
-FILE* OpenOutputFile(const char *sFilename, short bErrMsg, const char* sMode)
-{
-  char *sFullName = NULL;
-  FILE *pFile = NULL;
-
-  if (sFilename != NULL) {
-    sFullName = FullOutName(sFilename);
-    if (sFullName) {
-      if (bErrMsg)
-        pFile = fileOpen(sFullName, sMode);
-      else
-        pFile = fopen(sFullName, sMode);
-      free(sFullName);
-    }
-  }
-  return (pFile);
-}
-
-FILE* OpenPackInpFile(const char *sFilename, const char* sPath, short bErrMsg)
-{
-  FILE *pFile = NULL;
-
-  if (sFilename != NULL) {
+    TotalPath(sFullName, sFilename, "", IN_DIR);
     if (bErrMsg)
-      pFile = fileOpen(FullInstallName(sFilename, sPath), "r");
+      pFile = fileOpen(sFullName, sMode);
     else
-      pFile = fopen(FullInstallName(sFilename, sPath), "r");
+      pFile = fopen(sFullName, sMode);
+  }
+  return (pFile);
+}
+
+FILE *OpenInputFile2(const char *sFilename, const char *sContent, const char *sMode)
+{
+  char sFullName[CHAR_BUF_SMALL];
+  FILE *pFile = NULL;
+
+#if DEBUG
+  if (sMode[0] != 'r') {
+    char text[CHAR_BUF_SMALL];
+    snprintf(text, CHAR_BUF_SMALL, "opening input file '%s' with mode '%s'", sFilename, sMode);
+    Warning(text);
+  }
+#endif
+
+  if (sFilename != NULL) {
+    TotalPath(sFullName, sFilename, "", IN_DIR);
+    pFile = fileOpen2(sFullName, sMode, sContent);
+  }
+  return (pFile);
+}
+
+FILE *OpenParameterFile(const char *sFilename, short bErrMsg, const char *sMode)
+{
+  char sFullName[CHAR_BUF_SMALL];
+  FILE *pFile = NULL;
+
+#if DEBUG
+  if (sMode[0] != 'r') {
+    char text[CHAR_BUF_SMALL];
+    snprintf(text, CHAR_BUF_SMALL, "opening parameter file '%s' with mode '%s'", sFilename, sMode);
+    Warning(text);
+  }
+#endif
+
+  if (sFilename != NULL) {
+    TotalPath(sFullName, sFilename, "", PAR_DIR);
+    if (bErrMsg)
+      pFile = fileOpen(sFullName, sMode);
+    else
+      pFile = fopen(sFullName, sMode);
+  }
+  return (pFile);
+}
+
+FILE *OpenParameterFile2(const char *sFilename, const char *sContent, const char *sMode)
+{
+  char sFullName[CHAR_BUF_SMALL];
+  FILE *pFile = NULL;
+
+#if DEBUG
+  if (sMode[0] != 'r') {
+    char text[CHAR_BUF_SMALL];
+    snprintf(text, CHAR_BUF_SMALL, "opening parameter file '%s' with mode '%s'", sFilename, sMode);
+    Warning(text);
+  }
+#endif
+
+  if (sFilename != NULL) {
+    TotalPath(sFullName, sFilename, "", PAR_DIR);
+    pFile = fileOpen2(sFullName, sMode, sContent);
+  }
+  return (pFile);
+}
+
+FILE *OpenOutputFile(const char *sFilename, short bErrMsg, const char *sMode)
+{
+  char sFullName[CHAR_BUF_SMALL];
+  FILE *pFile = NULL;
+
+  if (sFilename != NULL) {
+    TotalPath(sFullName, sFilename, "", OUT_DIR);
+    if (bErrMsg)
+      pFile = fileOpen(sFullName, sMode);
+    else
+      pFile = fopen(sFullName, sMode);
+  }
+  return (pFile);
+}
+
+FILE *OpenOutputFile2(const char *sFilename, const char *sContent, const char *sMode)
+{
+  char sFullName[CHAR_BUF_SMALL];
+  FILE *pFile = NULL;
+
+  if (sFilename != NULL) {
+    TotalPath(sFullName, sFilename, "", OUT_DIR);
+    pFile = fileOpen2(sFullName, sMode, sContent);
+  }
+  return (pFile);
+}
+
+FILE *OpenPackInpFile(const char *sFilename, const char *sPath, short bErrMsg)
+{
+  char sFullName[CHAR_BUF_SMALL];
+  FILE *pFile = NULL;
+
+  if (sFilename != NULL) {
+    TotalPath(sFullName, sFilename, sPath, INSTL_DIR);
+    if (bErrMsg)
+      pFile = fileOpen(sFullName, "r");
+    else
+      pFile = fopen(sFullName, "r");
   }
   return (pFile);
 }
@@ -657,15 +686,14 @@ void Init(int argc, char **argv, const McCompID eModule)
   // Here we care for output, and if data compression is an option.
   if (OutputFileName!=NULL)
   {
-    if (strcmp(OutputFileName, "no_file") == 0)
-    { OutputFilePtr = NULL;
-    }
-    else
-    {
+    if (strcmp(OutputFileName, "no_file") == 0) {
+      OutputFilePtr = NULL;
+    } else {
       OutputFilePtr = OpenOutputFile(OutputFileName, TRUE, "wb");
       if (OutputFilePtr)
       {
-        char *sFullName = FullOutName(OutputFileName);
+        char sFullName[CHAR_BUF_SMALL];
+        TotalPath(sFullName, OutputFileName, "", OUT_DIR);
         if (CompressionMode)
           compressModeW = CompressionMode; // it has been stated explicitly
         else if (strstr(sFullName, ".float."))
@@ -679,7 +707,6 @@ void Init(int argc, char **argv, const McCompID eModule)
           fwrite("cmp2", 1, 4, OutputFilePtr);
         else
           compressModeW = 0;               // to catch an unknown CompressionMode
-        free(sFullName);
       }
     }
   }
@@ -1908,20 +1935,23 @@ void InitNeutron(Neutron* pNeut)
 {
   int k;
 
-  pNeut->ID.IDGrp[0]='A';
-  pNeut->ID.IDGrp[1]='A';
-  pNeut->ID.IDNo=0;
+  pNeut->ID.IDGrp[0] = 'A';
+  pNeut->ID.IDGrp[1] = 'A';
+  pNeut->ID.IDNo = 0;
 
-  pNeut->Debug='N';
-  pNeut->Color= 0;
-  pNeut->Time       =0.0;
-  pNeut->Wavelength =0.0;
-  pNeut->Probability=0.0;
+  pNeut->Debug = 'N';
+  pNeut->_pad1 = '\0';
+  pNeut->Color = 0;
+  pNeut->_pad2[0] = '\0';
+  pNeut->_pad2[1] = '\0';
+  pNeut->Time = 0.0;
+  pNeut->Wavelength = 0.0;
+  pNeut->Probability = 0.0;
 
-  for (k=0; k < 3; k++)
-  { pNeut->Position[k]=0.0;
-    pNeut->Vector[k]  =0.0;
-    pNeut->Spin[k]    =0.0;
+  for (k = 0; k < 3; k++) {
+    pNeut->Position[k] = 0.0;
+    pNeut->Vector[k] = 0.0;
+    pNeut->Spin[k] = 0.0;
   }
 }
 
@@ -2046,81 +2076,41 @@ static char* setDir (char *arg)
   return pDir;
 }
 
-/****************************************************************/
-/* combines path to the directory with sub-directory and file   */
-/*   (conCat shall be replaced by TotalPath in the future)      */
-/****************************************************************/
-static char* conCat (const char *sFile, const char* sSubDir, VtDirType sel)
-{
-  char *pResult=NULL;
-  char *pDir=NULL;
-  int  LenD=0, LenF=0, LenS=0;
-
-  // no file, no full file name
-  if (sFile == NULL)
-    return NULL;
-
-
-  /* Do not change an absolute path. */
-#ifdef _MSC_VER
-  /* we consider a filename with : as absolute */
-  // if (strstr(sFile, ":")) sel = -1;
-  if (sFile[1] == ':') sel = -1;
-#else
-  if (sFile[0] == '/') sel = -1;
-#endif
-
-  switch (sel)
-  { case PAR_DIR  : pDir = ParDir;     LenD = ParDirLength;      break;
-    case INSTL_DIR: pDir = InstallDir; LenD = InstallDirLength;  break;
-    case IN_DIR   : pDir = InputDir;  if (InputDir !=NULL) LenD = strlen(InputDir);  break;
-    case OUT_DIR  : pDir = OutputDir; if (OutputDir!=NULL) LenD = strlen(OutputDir); break;
-    default: LenD = 0;
-  }
-
-  LenF = strlen(sFile);
-  LenS = strlen(sSubDir);
-
-  // allocate memory and copy all parts to the string
-  if ((pResult = (char *) malloc(LenD+LenF+LenS+3)))
-  {
-    // set path
-    if (LenD > 0)
-    { memcpy(pResult, pDir, LenD);
-      if (LenS > 0)
-        strcpy(pResult+LenD, sSubDir);
-      else
-        pResult[LenD] = '\0';
-    }
-    else
-    {  strcpy(pResult, sSubDir);
-    }
-    ChangeSlash(pResult);
-
-    // add missing slash and file name
-    if (LenS > 0 && sSubDir[LenS-1]!=cSlash)
-      AddSlash(pResult);
-
-    strcat(pResult, sFile);
-  }
-
-  return pResult;
-}
-
 void TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType sel)
 {
   pPath[0] = '\0';
 
-  switch (sel)
-  {
-    case PAR_DIR  : if (ParDir    != NULL) strcpy(pPath, ParDir);     break;
-    case INSTL_DIR: if (InstallDir!= NULL) strcpy(pPath, InstallDir); break;
-    case IN_DIR   : if (InputDir  != NULL) strcpy(pPath, InputDir);   break;
-    case OUT_DIR  : if (OutputDir != NULL) strcpy(pPath, OutputDir);  break;
+  if (sFile == NULL) return;
+
+  /* Do not change an absolute path. */
+#ifdef _MSC_VER
+  if (sFile[0] == '\\' || sFile[1] == ':') sel = NO_DIR;
+#else
+  if (sFile[0] == '/') sel = NO_DIR;
+#endif
+
+  switch (sel) {
+  case PAR_DIR:
+    if (ParDir != NULL) strcpy(pPath, ParDir);
+    break;
+  case INSTL_DIR:
+    if (InstallDir != NULL) strcpy(pPath, InstallDir);
+    break;
+  case IN_DIR:
+    if (InputDir != NULL) strcpy(pPath, InputDir);
+    break;
+  case OUT_DIR:
+    if (OutputDir != NULL) strcpy(pPath, OutputDir);
+    break;
+  case NO_DIR:
+    break;
   }
 
-  AddSlash(pPath);
-  strcat(pPath, sSubDir);
+  if (sSubDir != NULL)
+  {
+    AddSlash(pPath);
+    strcat(pPath, sSubDir);
+  }
   AddSlash(pPath);
   strcat(pPath, sFile);
 
@@ -2134,7 +2124,7 @@ void TotalPath(char* pPath, const char *sFile, const char* sSubDir, VtDirType se
 static McCompID GetModId(char* sBuffer)
 {
   long nDum;
-  McCompID eModule;
+  int eModule;
 
   sscanf(sBuffer, "%ld %3d", &nDum, &eModule);
 

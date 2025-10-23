@@ -519,10 +519,11 @@ void  OwnInit(int argc, char *argv[])
   {
     if (bActive)
     {
-      char *sFullOutName = FullParName(sOutFileName); /* TODO should this be an output file? */
+      char sFullName[CHAR_BUF_SMALL];
+      TotalPath(sFullName, sOutFileName, "", OUT_DIR);
       if (ePrgFormat== VT_MCPL_FMT)
       {
-        hOutFile = mcpl_create_outfile(sFullOutName);
+        hOutFile = mcpl_create_outfile(sFullName);
       }
       else if (ePrgFormat== VT_SSW_FMT)
       {
@@ -570,10 +571,7 @@ void  OwnInit(int argc, char *argv[])
         printf("Creating (or overwriting) output SSW file.\n");
 
         //Open new ssw file:
-        pOutFile = fopen(sOutFileName,"wb");
-
-        if (!pOutFile)
-          Error("Problems opening new SSW file");
+        pOutFile = OpenOutputFile(sOutFileName, TRUE, "wb");
 
         //Write header:
         int nb = fwrite(hdrbuf, 1, ssw_hdrlen, pOutFile);
@@ -592,23 +590,18 @@ void  OwnInit(int argc, char *argv[])
         ssb[0] = 0.0;
 
         assert(iSurface>=0&&iSurface<1000000);
+      } else if (eDatFormat == VT_BINARY) {
+        pOutFile = OpenOutputFile(sOutFileName, TRUE, "wb");
+      } else {
+        pOutFile = OpenOutputFile(sOutFileName, TRUE, "wt");
       }
-      else if (eDatFormat== VT_BINARY)
-      { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wb");
-      }
-      else
-      { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wt");
-      }
-      fprintf(LogFilePtr,"Trajectories written to output file %s\n", sFullOutName);
-      free(sFullOutName);
-    }
-    else
-    { Note("writeout inactive, no file written");
+      fprintf(LogFilePtr,"Trajectories written to output file %s\n", sFullName);
+    } else {
+      Note("writeout inactive, no file written");
       bHeader = FALSE;
     }
-  }
-  else
-  { Error("File name missing");
+  } else {
+    Error("File name missing");
   }
 
   if (ePrgFormat==VT_MCPL_FMT && eDatFormat!=VT_BINARY)

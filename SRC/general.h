@@ -135,7 +135,11 @@ void   FillRMatrixZY     (double RotMatrix[3][3], const double roty, const doubl
 void   CartesianToEulerZY(VectorType Vector, double *roty,  double *rotz);
 void   EulerToCartesianZY(VectorType Vector, double *roty,  double *rotz);
 
+/* open file 'name' and gives pointer back.
+   in case of an opening error, a message is written to the LogFile */
 FILE*  fileOpen          (const char* sName, const char* sMode);
+/* open file 'name' with content 'content' and gives pointer back
+   in case of an opening error, a message is written to the LogFile */
 FILE*  fileOpen2         (const char* sName, const char* sMode, const char* sContent);
 
 void   Error  (const char *text);

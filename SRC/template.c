@@ -239,8 +239,8 @@ void ReadXyzFile(char* sFileName)
   char sLine[CHAR_BUF_SMALL]=""; // content of 1 line
 
   // opens input file (program exit in case of error)
-  FILE* pFile = OpenInputFile2(sFileName, "file content", "r");
-  //         or OpenInputFile (sFileName, TRUE, "r");
+  FILE* pFile = OpenParameterFile(sFileName, TRUE, "r");
+  //         or OpenParameterFile (sFileName, TRUE, "r");
 
   if (pFile!=NULL)
   {

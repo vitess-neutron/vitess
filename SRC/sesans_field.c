@@ -349,18 +349,15 @@ short ReadFieldArea(const char* sFileName)
 {
   short nCrnr=0;
   char  sLine[256];
-  FILE* pFieldFile = OpenInputFile2(sFileName, "precession field corners", "r");
+  FILE *pFieldFile = OpenParameterFile2(sFileName, "precession field corners", "r");
 
-  if (pFieldFile != NULL)
-  {
-    while (ReadLine(pFieldFile, sLine, sizeof(sLine)-1))
-    {  // StrgScanLF(sLine, &(vCorner[nCrnr]), 3, 0);
-      sscanf(sLine, "%lf %lf %lf", &vCorner[nCrnr][0], &vCorner[nCrnr][1], &vCorner[nCrnr][2]);
-      nCrnr++;
-    }
-    fprintf(LogFilePtr, "range from file: '%s'\n", sFileName);
-    fclose(pFieldFile);
+  while (ReadLine(pFieldFile, sLine, sizeof(sLine) - 1)) {
+    // StrgScanLF(sLine, &(vCorner[nCrnr]), 3, 0);
+    sscanf(sLine, "%lf %lf %lf", &vCorner[nCrnr][0], &vCorner[nCrnr][1], &vCorner[nCrnr][2]);
+    nCrnr++;
   }
+  fprintf(LogFilePtr, "range from file: '%s'\n", sFileName);
+  fclose(pFieldFile);
 
   return nCrnr;
 }

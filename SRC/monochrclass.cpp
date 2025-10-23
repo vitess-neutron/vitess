@@ -377,7 +377,7 @@ void Monochromator::setMonochrPar()
   /* Opens the parameter file if a file name is given */
   if (ParFileName!=NULL)
   {
-    pFile = OpenInputFile(ParFileName, FALSE, "r");
+    pFile = OpenParameterFile(ParFileName, FALSE, "r");
 
     /* Reads the parameters if the file could be opened */
     if (pFile != NULL)
@@ -615,56 +615,51 @@ void Monochromator::readFocFile()
   char  sLine[CHAR_BUF_SMALL]="";
   double FocPar[8];
 
-  pGeomFile = OpenInputFile(GeomFileName, FALSE, "r");
-
-  if (pGeomFile==NULL)
+  pGeomFile = OpenParameterFile2(GeomFileName, "focus data", "r");
+  // number of (layers,) columns and rows
+  if (ColumnsInFile(pGeomFile) == 3) // ColumnsInFile must NOT be called after ReadLine() !!!
   {
-    Error2("focus file not found", GeomFileName);
+    ReadLine(pGeomFile, sLine, sizeof(sLine) - 1);
+    sscanf(sLine, "%d %d %d", &NumberCE[0], &NumberCE[1], &NumberCE[2]);
+  } else {
+    NumberCE[0] = 1;
+    ReadLine(pGeomFile, sLine, sizeof(sLine) - 1);
+    sscanf(sLine, "%d %d", &NumberCE[1], &NumberCE[2]);
   }
-  else
+
+  // loop over all crystal elements (1 line for each element)
+  // reads 3 position deviations, 3 size deviations and 2 orientation deviations in each line
+  // and adds these values to those  given for the monochromator center or central element resp.
+  for (h = 0; h < NumberCE[0]; h++) // loop over succeeding arrays
   {
-    // number of (layers,) columns and rows
-    if (ColumnsInFile(pGeomFile) == 3)                 // ColumnsInFile must NOT be called after ReadLine() !!!
+    for (i = 0; i < NumberCE[1]; i++) // loop over columns
     {
-      ReadLine(pGeomFile, sLine, sizeof(sLine)-1);
-      sscanf(sLine, "%d %d %d", &NumberCE[0], &NumberCE[1], &NumberCE[2]);
-    }
-    else
-    { NumberCE[0]=1;
-      ReadLine(pGeomFile, sLine, sizeof(sLine)-1);
-      sscanf(sLine, "%d %d", &NumberCE[1], &NumberCE[2]);
-    }
+      std::vector<double> tempVector;
+      PosCEx_F[h].push_back(tempVector);
+      PosCEy_F[h].push_back(tempVector);
+      PosCEz_F[h].push_back(tempVector);
+      DimCEx_F[h].push_back(tempVector);
+      DimCEy_F[h].push_back(tempVector);
+      DimCEz_F[h].push_back(tempVector);
+      RotCEh_F[h].push_back(tempVector);
+      RotCEv_F[h].push_back(tempVector);
 
-    // loop over all crystal elements (1 line for each element)
-    // reads 3 position deviations, 3 size deviations and 2 orientation deviations in each line
-    // and adds these values to those  given for the monochromator center or central element resp.
-    for (h=0; h < NumberCE[0]; h++)      // loop over succeeding arrays
-    {
-      for(i=0; i < NumberCE[1]; i++)     // loop over columns
+      for (j = 0; j < NumberCE[2]; j++) // loop over rows; each column is one vector
       {
-        std::vector <double> tempVector;
-        PosCEx_F[h].push_back(tempVector);
-        PosCEy_F[h].push_back(tempVector);
-        PosCEz_F[h].push_back(tempVector);
-        DimCEx_F[h].push_back(tempVector);
-        DimCEy_F[h].push_back(tempVector);
-        DimCEz_F[h].push_back(tempVector);
-        RotCEh_F[h].push_back(tempVector);
-        RotCEv_F[h].push_back(tempVector);
-
-        for(j=0; j < NumberCE[2]; j++)   // loop over rows; each column is one vector
-        {
-          ReadLine  (pGeomFile, sLine, sizeof(sLine)-1);
-          StrgScanLF(sLine, FocPar, 8, 0);
-          PosCEx_F[h][i].push_back(FocPar[0]); PosCEy_F[h][i].push_back(FocPar[1]); PosCEz_F[h][i].push_back(FocPar[2]);
-          DimCEx_F[h][i].push_back(FocPar[3]); DimCEy_F[h][i].push_back(FocPar[4]); DimCEz_F[h][i].push_back(FocPar[5]);
-          RotCEh_F[h][i].push_back(FocPar[6]); RotCEv_F[h][i].push_back(FocPar[7]);
-        }
+        ReadLine(pGeomFile, sLine, sizeof(sLine) - 1);
+        StrgScanLF(sLine, FocPar, 8, 0);
+        PosCEx_F[h][i].push_back(FocPar[0]);
+        PosCEy_F[h][i].push_back(FocPar[1]);
+        PosCEz_F[h][i].push_back(FocPar[2]);
+        DimCEx_F[h][i].push_back(FocPar[3]);
+        DimCEy_F[h][i].push_back(FocPar[4]);
+        DimCEz_F[h][i].push_back(FocPar[5]);
+        RotCEh_F[h][i].push_back(FocPar[6]);
+        RotCEv_F[h][i].push_back(FocPar[7]);
       }
     }
-    fclose(pGeomFile);
   }
-  return;
+  fclose(pGeomFile);
 }/* End ReadFocFile */
 
 

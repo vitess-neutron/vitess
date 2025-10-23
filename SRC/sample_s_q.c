@@ -522,7 +522,7 @@ void SetSamplePar(SampleType *pSample)
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
   {
-    pFile = OpenInputFile(pSmplFileName, FALSE, "rt");
+    pFile = OpenParameterFile(pSmplFileName, FALSE, "rt");
 
     /* Reads the parameters if the file can be opened */
     if (pFile != NULL)
@@ -660,7 +660,7 @@ int LoadSofQFile(const char* pFileName)
   if (pFileName!=NULL && strlen(pFileName) >0)
   {
     /* opens distribution file */
-    pStrFacFile = OpenInputFile(pFileName, FALSE, "rt");
+    pStrFacFile = OpenParameterFile(pFileName, FALSE, "rt");
     if (pStrFacFile!=NULL)
     {
       long   n;

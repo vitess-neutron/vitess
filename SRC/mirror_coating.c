@@ -40,9 +40,6 @@ double GetDouble (const char* pText);                // Reads double value from 
 void   GetString (char* pString, const char* pText); // Reads string from stdin
 void   Mode2Text (char* sReflMode, VtInMod iMode);   // Converts enum for reflectivity calculation to text
 
-char*  FullInName(const char* filename);             // returns path\name.ext for input directory   located in init.c
-void   setParDirectory (char *a);
-
 
 /******************************/
 /** Program                  **/
@@ -69,7 +66,7 @@ int main(int argc, char* argv[])
   long    i, nLen=0;
   FILE   *pFileIn,
          *pFileOut;
-  char   *pFullName,
+  char   sFullName[CHAR_BUF_SMALL],
          *sDash="---------------------------------------------------------------------------------------------",
           sMode[CHAR_BUF_SMALL]="",
           sText[CHAR_BUF_SMALL]="",
@@ -176,9 +173,9 @@ int main(int argc, char* argv[])
   {
     /* write to input directory */
     GetString(sFileOut, "Name of the output mirror file         ");
-    pFullName = FullInName(sFileOut);
+    TotalPath(sFullName, sFileOut, "", OUT_DIR);
 
-    pFileOut = fopen(pFullName, "w");
+    pFileOut = OpenOutputFile(sFileOut, TRUE, "w");
     if (pFileOut!=NULL)
     {
       // Header
@@ -218,10 +215,10 @@ int main(int argc, char* argv[])
       }
       fclose(pFileOut);
 
-      printf("\n%s\nData written to %s\n", sText, pFullName);
+      printf("\n%s\nData written to %s\n", sText, sFullName);
     }
     else
-    {  printf("\nERROR: Output file %s could not be generated\n", pFullName);
+    {  printf("\nERROR: Output file %s could not be generated\n", sFullName);
     }
   }
   else

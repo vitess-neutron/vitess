@@ -301,12 +301,12 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'U':
-        ReflUpFileName=&argv[1][2];
-        pReflUpFile = OpenInputFile2(ReflUpFileName, "reflectivity data for spin-up neutrons", "r");
+        ReflUpFileName = &argv[1][2];
+        pReflUpFile = OpenParameterFile2(ReflUpFileName, "reflectivity data for spin-up neutrons", "r");
         break;
       case 'D':
-        ReflDownFileName=&argv[1][2];
-        pReflDownFile = OpenInputFile2(ReflDownFileName, "reflectivity data for spin-down neutrons", "r");;
+        ReflDownFileName = &argv[1][2];
+        pReflDownFile = OpenParameterFile2(ReflDownFileName, "reflectivity data for spin-down neutrons", "r");
         break;
 
       case 'L':

@@ -432,7 +432,7 @@ void LoadHorDistrib(const char* sID)
 
     /* opening distribution file, either from the input directory or from the installation directory */
     sprintf(sFileName, "ESS2016_%s.dat", sID);
-    pDisFile = OpenInputFile(sFileName, FALSE, "rt");
+    pDisFile = OpenParameterFile(sFileName, FALSE, "rt");
     if (pDisFile==NULL)
       pDisFile = OpenPackInpFile(sFileName, "FILES/moderators/ESS/", FALSE);
     if (pDisFile!=NULL)

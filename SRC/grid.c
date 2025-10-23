@@ -569,34 +569,24 @@ void  EvalInput()
     // Read transmission file for grid element
     if (sTransFileName != NULL)
     {
-      trans_file = OpenInputFile(sTransFileName, FALSE, "r");
-      if (trans_file != NULL)
-      {
-        i=0;
-        while (ReadLine(trans_file, sLine, sizeof(sLine)-1) > 0)
-        { i++;
-          sscanf(sLine, "%lf %lf", &WAVS[i], &MUS[i]);
-        }
-        nValF = i;
-        fclose(trans_file);
+      trans_file = OpenParameterFile2(sTransFileName, "transmission data", "r");
+      i = 0;
+      while (ReadLine(trans_file, sLine, sizeof(sLine) - 1) > 0) {
+        i++;
+        sscanf(sLine, "%lf %lf", &WAVS[i], &MUS[i]);
+      }
+      nValF = i;
+      fclose(trans_file);
 
-        /* check the input data */
-        for(i = 1; i <= (nValF-1); i++)
-        {
-          if (WAVS[i+1] <= WAVS[i])
-          {
-            fprintf(LogFilePtr,"MISTAKE: incorrect data in the transmission file of the grid material \n");
-            fprintf(LogFilePtr,"The wavelength values (1st column) must be in ascending order!!!\n");
-            exit(-1);
-          }
+      /* check the input data */
+      for (i = 1; i <= (nValF - 1); i++) {
+        if (WAVS[i + 1] <= WAVS[i]) {
+          fprintf(LogFilePtr, "MISTAKE: incorrect data in the transmission file of the grid material \n");
+          fprintf(LogFilePtr, "The wavelength values (1st column) must be in ascending order!!!\n");
+          exit(-1);
         }
       }
-      else
-      { Error("Transmission file could not be opened");
-      }
-    }
-    else
-    {
+    } else {
       Error("No file name given describing the transmission of the window frame\n");
     }
   }
@@ -617,37 +607,28 @@ short ReadGridFile()
   /* Input data from the file describing the grid system */
   if (sCollFileName !=NULL)
   {
-    coll_file = OpenInputFile(sCollFileName, FALSE, "r");
-    if (coll_file==NULL)
-    {
-      fprintf(LogFilePtr,"File %s describing the grid arrangement could not be opened\n", sCollFileName);
-      exit(-1);
-    }
-    else
-    {
-      while (ReadLine(coll_file, sLine, sizeof(sLine)-1)==TRUE)
-      {
-        StrgScanLF(sLine, rdate, 3, 0);
-        i++;
+    coll_file = OpenParameterFile2(sCollFileName, "grid arrangement", "r");
+    while (ReadLine(coll_file, sLine, sizeof(sLine) - 1) == TRUE) {
+      StrgScanLF(sLine, rdate, 3, 0);
+      i++;
 
-        if (DistanceAbs > 0.0)
-        {
-          /* reducing the grid sizes according the converging to the detector */
-          ywincenter[i] = ((rdate[0])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(-1.0, 1.0)*WinCenterDev);
-          zwincenter[i] = ((rdate[1])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo(-1.0, 1.0)*WinCenterDev);
-          winsize   [i] = ((rdate[2])*(2.0*TotalLength-DistanceAbs)/(2.0*TotalLength)) + (MonteCarlo( 0.0, 1.0)*WinRadiusDev);
-        }
-        else
-        {
-          ywincenter[i] = rdate[0] + (MonteCarlo(-1.0, 1.0)*WinCenterDev);
-          zwincenter[i] = rdate[1] + (MonteCarlo(-1.0, 1.0)*WinCenterDev);
-          winsize   [i] = rdate[2] + (MonteCarlo (0.0, 1.0)*WinRadiusDev);
-        }
+      if (DistanceAbs > 0.0) {
+        /* reducing the grid sizes according the converging to the detector */
+        ywincenter[i] = ((rdate[0]) * (2.0 * TotalLength - DistanceAbs) / (2.0 * TotalLength)) +
+                        (MonteCarlo(-1.0, 1.0) * WinCenterDev);
+        zwincenter[i] = ((rdate[1]) * (2.0 * TotalLength - DistanceAbs) / (2.0 * TotalLength)) +
+                        (MonteCarlo(-1.0, 1.0) * WinCenterDev);
+        winsize[i] = ((rdate[2]) * (2.0 * TotalLength - DistanceAbs) / (2.0 * TotalLength)) +
+                     (MonteCarlo(0.0, 1.0) * WinRadiusDev);
+      } else {
+        ywincenter[i] = rdate[0] + (MonteCarlo(-1.0, 1.0) * WinCenterDev);
+        zwincenter[i] = rdate[1] + (MonteCarlo(-1.0, 1.0) * WinCenterDev);
+        winsize[i] = rdate[2] + (MonteCarlo(0.0, 1.0) * WinRadiusDev);
       }
-      nHoles = i;
-
-      fclose(coll_file);
     }
+    nHoles = i;
+
+    fclose(coll_file);
   }
   else
   {

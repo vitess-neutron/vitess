@@ -440,8 +440,8 @@ short SetEnvironPar(SampleType* pEnvironment)
   InitSample(&stEnvironment);
 
   // Read parameter data
-  if (pSampleFileName!=NULL)
-  { pFile=OpenInputFile(pSampleFileName, FALSE, "rt");
+  if (pSampleFileName != NULL) {
+    pFile = OpenParameterFile(pSampleFileName, FALSE, "rt");
     if (pFile != NULL)
     {
       if (ReadLine(pFile, sLine, nLen)) sscanf(sLine, "%lf %lf %lf", &thickness, &diameter, &height);
@@ -483,11 +483,11 @@ long ReadStrucFact(DoublePair* pStrucFac[])
 
   /* first try the file name from parameter input, then that from the parameter file */
   if (strlen(sStructFileP) > 0)
-    pStrucFile = OpenInputFile(sStructFileP, FALSE, "rt");
+    pStrucFile = OpenParameterFile(sStructFileP, FALSE, "rt");
   if (pStrucFile==NULL)
   {
     if (strlen(sStructFileF) > 0)
-      pStrucFile = OpenInputFile(sStructFileF, FALSE, "rt");
+      pStrucFile = OpenParameterFile(sStructFileF, FALSE, "rt");
     if (pStrucFile==NULL)
     {
       fprintf(LogFilePtr,"ERROR: Can't read the structure factor data, neither from %s nor from %s\n", sStructFileP, sStructFileP);

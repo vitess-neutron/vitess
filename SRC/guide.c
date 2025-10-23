@@ -1,6 +1,3 @@
-#ifndef GUIDE_PARALLEL_C
-#define GUIDE_PARALLEL_C
-
 /********************************************************************************************/
 /*  VITESS module 'guide'                                                                   */
 /*                                                                                          */
@@ -109,9 +106,6 @@ double   GetLengthFromFile(FILE *file);                      // determines lengt
 double   PathThroughGuideGravOrder1(int thread_i, Neutron *pThisNeutron, NeutronGuide guide,  // calculates flight pat within the guide
                                     GuidePiece *Pce, ReflCond *RefOut, long iPiece);
 
-char*    FullInName (const char* filename);  // from init.c
-char*    FullOutName(const char* filename);  // from init.c
-
 
 // functions for threading
 static void   flushOutput   (void);
@@ -120,7 +114,6 @@ static void   addThreadOutput(int thread_i, char *s, int len);
 static void   CountMessageThread (int thread_i, VtMsgID code, TotalID id);
 static void   MergeThreadBins (BINDATA **bin, int pixcount);
 static void   MergeBins ();
-static FILE*  tryOpen(const char *fn, const char *s);
 static void   allocRdata (ReflFile ***p, int c);
 
 
@@ -432,7 +425,7 @@ void OwnInit   (int argc, char *argv[])
   double bintervalX = 1.0, bintervalY = 1.0;
   int ibinX, ibinY;
   int k;
-  char *sFullName = NULL;
+  char fullMCPLName[CHAR_BUF_SMALL];
 
   MsgInit();
   InitVector(BegPosM);
@@ -450,19 +443,24 @@ void OwnInit   (int argc, char *argv[])
     switch (argv[i][1])
     {
     case 'i':  /* left plane */
-      pReflL = tryOpen( (ReflFileNameL = arg), "coating of left plane");
+      ReflFileNameL = arg;
+      pReflL = OpenParameterFile2(ReflFileNameL, "coating of left plane", "r");
       break;
     case 'I':  /* right plane */
-      pReflR = tryOpen( (ReflFileNameR = arg), "coating of right plane");
+      ReflFileNameR = arg;
+      pReflR = OpenParameterFile2(ReflFileNameR, "coating of right plane", "r");
       break;
     case 'j':    /* top plane */
-      pReflT = tryOpen( (ReflFileNameT = arg), "coating of top plane");
+      ReflFileNameT = arg;
+      pReflT = OpenParameterFile2(ReflFileNameT, "coating of top plane", "r");
       break;
     case 'J':    /* bottom plane */
-      pReflB = tryOpen( (ReflFileNameB = arg), "coating of bottom plane");
+      ReflFileNameB = arg;
+      pReflB = OpenParameterFile2(ReflFileNameB, "coating of bottom plane", "r");
       break;
     case 'o':  /* Reflection parameter writeout */
-      if ((pReflParam = OpenInputFile(arg, FALSE, "w")))
+      pReflParam = OpenOutputFile(arg, FALSE, "w");
+      if (pReflParam != NULL)
       {
         fprintf(pReflParam,
                 "#____ID____ Scattered plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z\n"
@@ -497,13 +495,13 @@ void OwnInit   (int argc, char *argv[])
 
       MCPLParamFileName=arg;
       char mcpl_tmp_filename[1024];
-      sFullName = FullOutName(arg);
+      TotalPath(fullMCPLName, MCPLParamFileName, "", OUT_DIR);
       for (k = 0; k <= NThreads; ++k) {
         if (k == 0) {
-          sprintf(mcpl_tmp_filename, "%s.mcpl", sFullName);
+          sprintf(mcpl_tmp_filename, "%s.mcpl", fullMCPLName);
           remove(mcpl_tmp_filename);
         } else {
-          sprintf(mcpl_tmp_filename, "%s.tmp%d.mcpl", sFullName, k);
+          sprintf(mcpl_tmp_filename, "%s.tmp%d.mcpl", fullMCPLName, k);
         }
 
         pReflMCPLThread[k] = mcpl_create_outfile(mcpl_tmp_filename);
@@ -511,8 +509,6 @@ void OwnInit   (int argc, char *argv[])
         // Init the Threads own tmp particle
         memset(particleT + k, '\0', sizeof(mcpl_particle_t));
       }
-      free(sFullName);
-      sFullName = NULL;
       //End of MCPL related code
       break;
 
@@ -533,7 +529,8 @@ void OwnInit   (int argc, char *argv[])
                                 */
       break;
     case 'P':  /* Reflection parameter plot */
-      if ((pReflPlot = OpenInputFile(arg, FALSE, "w")))
+      pReflPlot = OpenOutputFile(arg, FALSE, "w");
+      if (pReflPlot != NULL)
       {
         fprintf(pReflPlot,
                 "#   X          Y        counts   Mode    0       5       10    RefCount RCy RCz  ____ID____ plane refangle  m_Ni  reflectivity   DivY     DivZ   Trc  color   TOF    lambda   count rate     pos_x      pos_y      pos_z      dir_x     dir_y     dir_z     sp_x sp_y sp_z   WeightSum\n"
@@ -771,7 +768,7 @@ void OwnInit   (int argc, char *argv[])
 
   if (eGuideShapeY==VT_FROM_FILE || eGuideShapeZ==VT_FROM_FILE)
   {
-    pFile = OpenInputFile(ShapeFileName, FALSE, "r");
+    pFile = OpenParameterFile(ShapeFileName, FALSE, "r");
     if (pFile)
     {
       nPieces      = LinesInFile(pFile) - 1;
@@ -1680,6 +1677,7 @@ void processNeutron(int neutron_i, int thread_i)
 /************************************************************************************/
 void OwnCleanup()
 {
+  char fullMCPLName[CHAR_BUF_SMALL];
   if (NThreads > 0)
   {
     int i,count;
@@ -1715,11 +1713,12 @@ void OwnCleanup()
         mcpl_close_outfile(pReflMCPLThread[i]);
     }
     //Merge MCPL files
-    sprintf(mcpl_outfilename, "%s.mcpl", FullOutName(MCPLParamFileName));
+    TotalPath(fullMCPLName, MCPLParamFileName, "", OUT_DIR);
+    sprintf(mcpl_outfilename, "%s.mcpl", fullMCPLName);
     fprintf(LogFilePtr, "MCPL outfile: %s \n", mcpl_outfilename);
     for (i=1;i<=NThreads;++i)
     {
-      sprintf(mcpl_tmp_filename, "%s.tmp%d.mcpl", FullOutName(MCPLParamFileName), i);
+      sprintf(mcpl_tmp_filename, "%s.tmp%d.mcpl", fullMCPLName, i);
       if (mcpl_can_merge(mcpl_outfilename, mcpl_tmp_filename) )
       {
         mcpl_merge_inplace(mcpl_outfilename, mcpl_tmp_filename);
@@ -1851,7 +1850,7 @@ void   LoadReflFile(ReflFile* pReflFile)
   if (pReflFile && pReflFile->filename)
   {
     if (pReflFile->pfile == NULL)
-      pReflFile->pfile = OpenInputFile(pReflFile->filename, TRUE, "r");
+      pReflFile->pfile = OpenParameterFile(pReflFile->filename, TRUE, "r");
 
     if (pReflFile->pfile != NULL)
     {
@@ -2416,18 +2415,6 @@ static void MergeBins ()
 }
 
 
-static FILE* tryOpen(const char *sFilename, const char *sPurpose)
-{
-  FILE* pFile=OpenInputFile(sFilename, FALSE, "r");
-  if (pFile==NULL)
-  { fprintf(LogFilePtr, "ERROR: File %s containing %s could not be opened\n", sFilename, sPurpose);
-    exit(-1);
-  }
-
-  return pFile;
-}
-
-
 static void allocRdata (ReflFile ***p, int c)
 {
   ReflFile **np;
@@ -2914,30 +2901,30 @@ void DoBin(ReflCond *RefOut, int thread_i)
 }
 
 
-double GetValueNone            (ReflCond *RefOut, int cNeut) { return (double)1.0; }
-double GetValueKeyMode         (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].Mode; }
-double GetValueKeyRefCount     (ReflCond *RefOut, int cNeut) { return (double)RefOut->RefCount; }
-double GetValueKeyRefCountY    (ReflCond *RefOut, int cNeut) { return (double)RefOut->RefCountY; }
-double GetValueKeyRefCountZ    (ReflCond *RefOut, int cNeut) { return (double)RefOut->RefCountZ; }
-double GetValueKeyThisCollision(ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].ThisCollision; }
-double GetValueKeydegangular   (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].degangular; }
-double GetValueKeym            (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].m; }
-double GetValueKeyreflectivity (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].reflectivity; }
-double GetValueKeyDivY         (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].DivY; }
-double GetValueKeyDivZ         (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].DivZ; }
-double GetValueKeyColor        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Color; }
-double GetValueKeyTime         (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Time; }
-double GetValueKeyWavelength   (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Wavelength; }
-double GetValueKeyProbability  (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Probability; }
-double GetValueKeyPositionX    (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Position[0]; }
-double GetValueKeyPositionY    (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Position[1]; }
-double GetValueKeyPositionZ    (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Position[2]; }
-double GetValueKeyVectorX      (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Vector[0]; }
-double GetValueKeyVectorY      (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Vector[1]; }
-double GetValueKeyVectorZ      (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Vector[2]; }
-double GetValueKeySpinX        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[0]; }
-double GetValueKeySpinY        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[1]; }
-double GetValueKeySpinZ        (ReflCond *RefOut, int cNeut) { return (double)RefOut->neutrons[cNeut].neutron.Spin[2]; }
+double GetValueNone            (ReflCond *RefOut, int cNeut) { (void)RefOut; (void)cNeut; return 1.0; }
+double GetValueKeyMode         (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].Mode; }
+double GetValueKeyRefCount     (ReflCond *RefOut, int cNeut) { (void)cNeut; return RefOut->RefCount; }
+double GetValueKeyRefCountY    (ReflCond *RefOut, int cNeut) { (void)cNeut; return RefOut->RefCountY; }
+double GetValueKeyRefCountZ    (ReflCond *RefOut, int cNeut) { (void)cNeut; return RefOut->RefCountZ; }
+double GetValueKeyThisCollision(ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].ThisCollision; }
+double GetValueKeydegangular   (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].degangular; }
+double GetValueKeym            (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].m; }
+double GetValueKeyreflectivity (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].reflectivity; }
+double GetValueKeyDivY         (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].DivY; }
+double GetValueKeyDivZ         (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].DivZ; }
+double GetValueKeyColor        (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Color; }
+double GetValueKeyTime         (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Time; }
+double GetValueKeyWavelength   (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Wavelength; }
+double GetValueKeyProbability  (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Probability; }
+double GetValueKeyPositionX    (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Position[0]; }
+double GetValueKeyPositionY    (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Position[1]; }
+double GetValueKeyPositionZ    (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Position[2]; }
+double GetValueKeyVectorX      (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Vector[0]; }
+double GetValueKeyVectorY      (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Vector[1]; }
+double GetValueKeyVectorZ      (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Vector[2]; }
+double GetValueKeySpinX        (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Spin[0]; }
+double GetValueKeySpinY        (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Spin[1]; }
+double GetValueKeySpinZ        (ReflCond *RefOut, int cNeut) { return RefOut->neutrons[cNeut].neutron.Spin[2]; }
 
 
 GetVal SetValueFunction(const VtPlotPar key)
@@ -3114,6 +3101,3 @@ void CalcGammaAndNeutron(double incI, double reflectivity, double wl, double mVa
     }
   }
 }
-
-
-#endif
