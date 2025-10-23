@@ -495,114 +495,90 @@ void ReadReflectivityFile()
   if (sReflFileName!=NULL)
   {
     // open reflectivity file
-    pReflFile=OpenInputFile(sReflFileName, FALSE, "rt");
-    if (pReflFile==NULL)
-    {
-      fprintf(LogFilePtr,"ERROR: reflection file '%s' not found!\n", sReflFileName);
-      exit(0);
-    }
-    else
-    {
-      nLinesRefl = LinesInFile(pReflFile);
-      if (bOffSpec == 0)
-      {
-        /* reads number of lines, allocates memory and then reads the specular reflectivity file */
-        //      nLinesRefl = LinesInFile(pReflFile);
-        pTabQ      = calloc(nLinesRefl, sizeof(double));
-        pTabR      = calloc(nLinesRefl, sizeof(double));
-        for(n=0; n<nLinesRefl; n++)
-        { ReadLine(pReflFile, Buffer, CHAR_BUF_LENGTH);
-          sscanf  (Buffer,"%le%c%le", &pTabQ[n], &c1, &pTabR[n]);
-          Qmin = fmin(Qmin, pTabQ[n]);
-          Qmax = fmax(Qmax, pTabQ[n]);
-        }
+    pReflFile = OpenParameterFile2(sReflFileName, "reflectivity data", "rt");
+    nLinesRefl = LinesInFile(pReflFile);
+    if (bOffSpec == 0) {
+      /* reads number of lines, allocates memory and then reads the specular reflectivity file */
+      //      nLinesRefl = LinesInFile(pReflFile);
+      pTabQ = calloc(nLinesRefl, sizeof(double));
+      pTabR = calloc(nLinesRefl, sizeof(double));
+      for (n = 0; n < nLinesRefl; n++) {
+        ReadLine(pReflFile, Buffer, CHAR_BUF_LENGTH);
+        sscanf(Buffer, "%le%c%le", &pTabQ[n], &c1, &pTabR[n]);
+        Qmin = fmin(Qmin, pTabQ[n]);
+        Qmax = fmax(Qmax, pTabQ[n]);
       }
+    } else {
       /* reads the offspecular reflectivity file (q_i, q_f,ij, R) */
-      else
-      {
-        double q_i = 0;
-        double q_f = 0;
-        double refl = 0;
-        int numColumnsFound = -1;
-        unsigned int innerCounter = 0;
-        unsigned int outerCounter = 0;
-        double q_i_prev = 0;
-        double* q_f_array = calloc(nLinesRefl, sizeof(double));
-        double* refl_array = calloc(nLinesRefl, sizeof(double));
-        int i;
+      double q_i = 0;
+      double q_f = 0;
+      double refl = 0;
+      int numColumnsFound = -1;
+      unsigned int innerCounter = 0;
+      unsigned int outerCounter = 0;
+      double q_i_prev = 0;
+      double *q_f_array = calloc(nLinesRefl, sizeof(double));
+      double *refl_array = calloc(nLinesRefl, sizeof(double));
+      int i;
 
-        pTab_Qin_Qout = calloc(nLinesRefl+2, sizeof(double*));
-        pTab_RoffSpec = calloc(nLinesRefl  , sizeof(double*));
+      pTab_Qin_Qout = calloc(nLinesRefl + 2, sizeof(double *));
+      pTab_RoffSpec = calloc(nLinesRefl, sizeof(double *));
 
-        while (!feof(pReflFile))
-        {
-          numColumnsFound = fscanf(pReflFile, "%le %le %le", &q_i, &q_f, &refl);
+      while (!feof(pReflFile)) {
+        numColumnsFound = fscanf(pReflFile, "%le %le %le", &q_i, &q_f, &refl);
 
-          if (numColumnsFound < 2)
-          {
-            fgets(Buffer, CHAR_BUF_LENGTH, pReflFile);
-            continue;
-          }
-
-          if (innerCounter == 0 && outerCounter == 0)
-            q_i_prev = q_i;
-
-          if (q_i == q_i_prev)
-          {
-            q_f_array [innerCounter] = q_f;
-            refl_array[innerCounter] = refl;
-            innerCounter++;
-          }
-          else
-          {
-            pTab_Qin_Qout[outerCounter]    = calloc(innerCounter+2, sizeof(double));
-            pTab_RoffSpec[outerCounter]    = calloc(innerCounter, sizeof(double));
-            pTab_Qin_Qout[outerCounter][0] = (double) innerCounter;
-            pTab_Qin_Qout[outerCounter][1] = (double) q_i_prev;
-
-            for (i = 0; i < innerCounter; i++)
-            {
-              pTab_Qin_Qout[outerCounter][i+2] = q_f_array [i];
-              pTab_RoffSpec[outerCounter][i]   = refl_array[i];
-            }
-
-            innerCounter=0;
-            outerCounter++;
-            q_i_prev                 = q_i;
-            q_f_array [innerCounter] = q_f;
-            refl_array[innerCounter] = refl;
-            innerCounter++;
-          }
-
+        if (numColumnsFound < 2) {
+          fgets(Buffer, CHAR_BUF_LENGTH, pReflFile);
+          continue;
         }
 
-        if (innerCounter > 0)
-        {
-          pTab_Qin_Qout[outerCounter]    = calloc(innerCounter+2, sizeof(double));
-          pTab_RoffSpec[outerCounter]    = calloc(innerCounter, sizeof(double));
-          pTab_Qin_Qout[outerCounter][0] = (double) innerCounter;
-          pTab_Qin_Qout[outerCounter][1] =  q_i_prev;
+        if (innerCounter == 0 && outerCounter == 0) q_i_prev = q_i;
 
-          for (i = 0; i < innerCounter; i++)
-          {
-            pTab_Qin_Qout[outerCounter][i+2] = q_f_array [i];
-            pTab_RoffSpec[outerCounter][i]   = refl_array[i];
+        if (q_i == q_i_prev) {
+          q_f_array[innerCounter] = q_f;
+          refl_array[innerCounter] = refl;
+          innerCounter++;
+        } else {
+          pTab_Qin_Qout[outerCounter] = calloc(innerCounter + 2, sizeof(double));
+          pTab_RoffSpec[outerCounter] = calloc(innerCounter, sizeof(double));
+          pTab_Qin_Qout[outerCounter][0] = (double)innerCounter;
+          pTab_Qin_Qout[outerCounter][1] = (double)q_i_prev;
+
+          for (i = 0; i < innerCounter; i++) {
+            pTab_Qin_Qout[outerCounter][i + 2] = q_f_array[i];
+            pTab_RoffSpec[outerCounter][i] = refl_array[i];
           }
 
+          innerCounter = 0;
           outerCounter++;
-
+          q_i_prev = q_i;
+          q_f_array[innerCounter] = q_f;
+          refl_array[innerCounter] = refl;
+          innerCounter++;
         }
-        nQinPoints = outerCounter;
-
-        free (q_f_array);
-        free (refl_array);
       }
 
-      fclose(pReflFile) ;
+      if (innerCounter > 0) {
+        pTab_Qin_Qout[outerCounter] = calloc(innerCounter + 2, sizeof(double));
+        pTab_RoffSpec[outerCounter] = calloc(innerCounter, sizeof(double));
+        pTab_Qin_Qout[outerCounter][0] = (double)innerCounter;
+        pTab_Qin_Qout[outerCounter][1] = q_i_prev;
+
+        for (i = 0; i < innerCounter; i++) {
+          pTab_Qin_Qout[outerCounter][i + 2] = q_f_array[i];
+          pTab_RoffSpec[outerCounter][i] = refl_array[i];
+        }
+
+        outerCounter++;
+      }
+      nQinPoints = outerCounter;
+
+      free(q_f_array);
+      free(refl_array);
     }
-  }
-  else
-  {
+
+    fclose(pReflFile);
+  } else {
     fprintf(LogFilePtr,"ERROR: no reflection file name given!\n");
     exit(0);
   }
@@ -628,7 +604,7 @@ void SetSamplePar()
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
   {
-    pFile = OpenInputFile(pSmplFileName, FALSE, "rt");
+    pFile = OpenParameterFile(pSmplFileName, FALSE, "rt");
 
     /* Reads the parameters if the file can be opened */
     if (pFile != NULL)
@@ -690,7 +666,7 @@ void SetSamplePar()
 /* void ReadParameterFile()
 {
   // opens file containing sample parameters (program exit in case of error)
-  FILE* pSmplFile = OpenInputFile2(pSmplFileName, "sample data", "r");
+  FILE* pSmplFile = OpenParameterFile2(pSmplFileName, "sample data", "r");
 
   // reads from file by using ReadParF(pSmplFile) and ReadParComment(pSmplFile)
   PosSmpl[0]=ReadParF(pSmplFile); PosSmpl[1]=ReadParF(pSmplFile); PosSmpl[2]=ReadParF(pSmplFile); ReadParComment(pSmplFile) ;

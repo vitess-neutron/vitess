@@ -1071,7 +1071,7 @@ void EvalInput()
       /*  Amplitude distribution is reading from file   */
 
       /* Open magnetic field file */
-      fampld = OpenInputFile2(Ampld, "magnetic field along the flight path", "r");
+      fampld = OpenParameterFile2(Ampld, "magnetic field along the flight path", "r");
 
       /* initialisation */
       for(i=0; i<FIELD_SIZE_2; i++)

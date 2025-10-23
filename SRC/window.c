@@ -636,7 +636,7 @@ void EvalInput()
     // Read transmission file for window frame
     if (sTransFileNameO !=NULL)
     {
-      pTransFileO = OpenInputFile(sTransFileNameO, FALSE, "r");
+      pTransFileO = OpenParameterFile(sTransFileNameO, FALSE, "r");
       if (pTransFileO!=NULL)
       {
         i=0;
@@ -681,7 +681,7 @@ void EvalInput()
     fprintf(LogFilePtr,"Material transmission characteristics of inner material read from file:  %s \n", sTransFileNameI);
     bPane = TRUE; /* activate this material */
 
-    pTransFileI = OpenInputFile(sTransFileNameI,FALSE, "r");
+    pTransFileI = OpenParameterFile(sTransFileNameI,FALSE, "r");
     if (pTransFileI!=NULL)
     { i=0;
       while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL-1) > 0)

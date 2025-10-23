@@ -220,14 +220,10 @@ polInterp(double* X,double* Y,int Psize,double Aim)
 
 FILE* openFile(char* FileName)
 {
-  FILE* efile=0;
+  FILE *efile;
 
   /* Is the file located in working dir? */
-  efile = OpenInputFile(FileName, FALSE, "r");
-  if (!efile) {
-    fprintf(LogFilePtr, "\nERROR: Can't open %s to read source file\n", FileName);
-    exit (-1);
-  }
+  efile = OpenParameterFile(FileName, TRUE, "r");
   return efile;
 }
 

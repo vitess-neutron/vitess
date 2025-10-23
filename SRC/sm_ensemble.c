@@ -652,13 +652,7 @@ void ReadParameterFile(char* sFileName)
   int   l = 1,
         use_this_mirror=MIRR_INACTIVE;
 
-  FILE* f = OpenInputFile(sFileName, FALSE, "r");
-
-  if (f==NULL)
-  {
-    fprintf(LogFilePtr,"\nERROR: Parameter file '%s' not found.\n", sFileName);
-    exit(0);
-  }
+  FILE* f = OpenParameterFile(sFileName, TRUE, "r");
 
   while (!feof(f))
   {

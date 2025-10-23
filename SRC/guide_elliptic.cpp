@@ -1,6 +1,3 @@
-#ifndef GUIDE_ELLIPTIC_CPP
-#define GUIDE_ELLIPTIC_CPP
-
 /********************************************************************************************/
 /*  VITESS module 'guide_elliptic.cpp'                                                      */
 /*                                                                                          */
@@ -88,11 +85,7 @@ void OwnInit(int argc, char *argv[])
       switch(argv[i][1])
       {
         case 'O':
-          if((fShapeFilePointer = fopen(&argv[i][2],"w"))==NULL)  //File with shape informations
-          {
-            fprintf(LogFilePtr,"\nFile %s could not be opened for elliptic guide shape output\n",&argv[i][2]);
-            exit(-1);
-          }
+          fShapeFilePointer = OpenOutputFile(&argv[i][2], TRUE, "w");  //File with shape informations
           shapeFile=&argv[i][2];
           break;
 
@@ -155,10 +148,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'i':  /* left plane */
-          if ((fReflFileLeftPointer = OpenInputFile(&argv[i][2], FALSE, "r"))==NULL) //Reflectivity file left plane
-          {  fprintf(LogFilePtr,"ERROR: File %s containing coating of left plane could not be opened\n",&argv[i][2]);
-            exit(-1);
-          }
+          fReflFileLeftPointer = OpenParameterFile2(&argv[i][2], "coating of left plane", "r");
           reflFileNameLeft=(std::string) &argv[i][2];
           reflContainer[0].pfile = fReflFileLeftPointer;
           reflContainer[0].filename = reflFileNameLeft.c_str();
@@ -170,10 +160,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'I':  /* right plane */
-          if ((fReflFileRightPointer = OpenInputFile(&argv[i][2], FALSE, "r"))==NULL) //Reflectivity file right plane
-          {  fprintf(LogFilePtr,"ERROR: File %s containing coating of right plane could not be opened\n",&argv[i][2]);
-            exit(-1);
-          }
+          fReflFileRightPointer = OpenParameterFile2(&argv[i][2], "coating of right plane", "r");
           reflFileNameRight=(std::string) &argv[i][2];
           reflContainer[1].pfile = fReflFileRightPointer;
           reflContainer[1].filename = reflFileNameRight.c_str();
@@ -185,11 +172,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'j':    /* top plane */
-          if ((fReflFileTopPointer = OpenInputFile(&argv[i][2], FALSE, "r"))==NULL) //Reflectivity file top plane
-          {
-            fprintf(LogFilePtr,"ERROR: File %s containing coating of top plane could not be opened\n",&argv[i][2]);
-            exit(-1);
-          }
+          fReflFileTopPointer = OpenParameterFile2(&argv[i][2], "coating of top plane", "r");
           reflFileNameTop=(std::string) &argv[i][2];
           reflContainer[2].pfile = fReflFileTopPointer;
           reflContainer[2].filename = reflFileNameTop.c_str();
@@ -201,11 +184,7 @@ void OwnInit(int argc, char *argv[])
           break;
 
         case 'J':    /* bottom plane */
-          if ((fReflFileBottomPointer = OpenInputFile(&argv[i][2], FALSE, "r"))==NULL)  //Reflectivity file bottom plane
-          {
-            fprintf(LogFilePtr,"ERROR: File %s containing coating of bottom plane could not be opened\n",&argv[i][2]);
-            exit(-1);
-          }
+          fReflFileBottomPointer = OpenParameterFile2(&argv[i][2], "coating of bottom plane", "r");
           reflFileNameBottom=(std::string) &argv[i][2];
           reflContainer[3].pfile = fReflFileBottomPointer;
           reflContainer[3].filename = reflFileNameBottom.c_str();
@@ -372,7 +351,7 @@ void LoadReflFile(ReflFile *pReflFile)
   if (pReflFile && pReflFile->filename)
   {
     if (pReflFile->pfile == NULL)
-      pReflFile->pfile = OpenInputFile(pReflFile->filename, TRUE, "r");
+      pReflFile->pfile = OpenParameterFile(pReflFile->filename, TRUE, "r");
 
     if (pReflFile->pfile != NULL)
     {
@@ -1388,5 +1367,3 @@ void WriteIAPEllGuide(Neutron *n, VtReason eReason)
 
   return;
 }
-
-#endif

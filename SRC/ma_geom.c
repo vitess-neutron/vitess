@@ -154,7 +154,7 @@ VectorType  r, Step_H, Step_V ;
 
   /* print to file */
 
-  Foc_Crys = fopen(GeomFileName, "w") ;
+  Foc_Crys = OpenOutputFile(GeomFileName, TRUE, "w") ;
 
   fprintf(Foc_Crys,"%d %d\n", NumberCE[0], NumberCE[1]) ;/**/
 
@@ -180,11 +180,10 @@ VectorType  r, Step_H, Step_V ;
     }
   }
 
-  if(Foc_Crys != NULL)fclose(Foc_Crys) ;
-
-
-  return ;
-
+  if (Foc_Crys != NULL) {
+    fclose(Foc_Crys);
+    Foc_Crys = NULL;
+  }
 }/* End Crys_GeomLambda */
 
 
@@ -282,7 +281,7 @@ VectorType  r, Step_H, Step_V ;
 
   /* print to file */
 
-  Foc_Crys = fopen(GeomFileName, "w") ;
+  Foc_Crys = OpenOutputFile(GeomFileName, TRUE, "w") ;
 
   fprintf(Foc_Crys,"%d %d\n", NumberCE[0], NumberCE[1]) ;/**/
 
@@ -308,11 +307,10 @@ VectorType  r, Step_H, Step_V ;
     }
   }
 
-  if(Foc_Crys != NULL)fclose(Foc_Crys) ;
-
-
-  return ;
-
+  if (Foc_Crys != NULL) {
+    fclose(Foc_Crys);
+    Foc_Crys = NULL;
+  }
 }/* End Crys_GeomSphere */
 
 
@@ -386,7 +384,7 @@ VectorType  r ;
 
   /* print to file */
 
-  Foc_Crys = fopen(GeomFileName, "w") ;
+  Foc_Crys = OpenOutputFile(GeomFileName, TRUE, "w") ;
 
   fprintf(Foc_Crys,"%d %d\n", 1, NumberCE[1]) ;/**/
 
@@ -408,11 +406,10 @@ VectorType  r ;
         PosCE_F[0][m][j], PosCE_F[1][m][j], PosCE_F[2][m][j], DimCE_F[0][m][j], DimCE_F[1][m][j], DimCE_F[2][m][j], RotHoriz_F[m][j], RotVert_F[m][j] ) ;
     }
 
-  if(Foc_Crys != NULL)fclose(Foc_Crys) ;
-
-
-  return ;
-
+  if (Foc_Crys != NULL) {
+    fclose(Foc_Crys);
+    Foc_Crys = NULL;
+  }
 }/* End Crys_GeomVertCyl */
 
 
@@ -486,7 +483,7 @@ void  crys_geomDoubleCyl()
 
   /* print to file */
 
-  Foc_Crys = fopen(GeomFileName, "w") ;
+  Foc_Crys = OpenOutputFile(GeomFileName, TRUE, "w") ;
 
   fprintf(Foc_Crys,"%d %d\n", NumberCE[0], NumberCE[1]) ;/**/
 
@@ -512,9 +509,8 @@ void  crys_geomDoubleCyl()
     }
   }
 
-  if(Foc_Crys != NULL)fclose(Foc_Crys) ;
-
-
-  return ;
-
+  if (Foc_Crys != NULL) {
+    fclose(Foc_Crys);
+    Foc_Crys = NULL;
+  }
 }/* End crys_geomDoubleCyl */

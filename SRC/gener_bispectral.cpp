@@ -18,8 +18,6 @@
 extern "C"
 {
 #include "init.h"
-
-  char*  FullInName(const char* filename);            // returns path\name.ext for input directory   located in init.c
 }
 
 using namespace std;
@@ -69,6 +67,7 @@ int main(int argc, char* argv[])
   vector<double>  Y1, Y2, Y3, Y4, Z1, Z2, Z3, Z4, AngleHV, ThetaCSM, Rcsm, Mud, MuInc;
 
   FILE*   pFile;
+  char sFullName[CHAR_BUF_SMALL];
 
   Init(argc, argv, MCN_TOOL_GEN_EXTR);
 
@@ -299,6 +298,7 @@ int main(int argc, char* argv[])
   // write sm_ensemble input file::
   ///////////////////////////////////////////////////////////////////////
 
+  TotalPath(sFullName, fileName, "", IN_DIR); /* used only for messages */
   pFile = OpenInputFile(fileName, FALSE, "w");
 
   if (pFile!=NULL){
@@ -327,11 +327,11 @@ int main(int argc, char* argv[])
           fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
       }
     }
-    printf("\nOutput file has been generated: (%s)", FullInName(fileName));
+    printf("\nOutput file has been generated: (%s)", sFullName);
     fclose(pFile);
   }
   else {
-    printf("\nERROR: Output file could not be generated\n(%s)", FullInName(fileName));
+    printf("\nERROR: Output file could not be generated\n(%s)", sFullName);
   }
 
   cout<<"\n Type 'exit' to terminate: "<<endl;

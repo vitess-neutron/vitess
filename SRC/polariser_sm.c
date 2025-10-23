@@ -635,7 +635,7 @@ void SetGeometry(char* sColor)
 /********************************************************/
 void ReadParameterFile()
 {
-  FILE* pFile = OpenInputFile2(ParameterFileName, "Reflectivity data", "r");
+  FILE* pFile = OpenParameterFile2(ParameterFileName, "Reflectivity data", "r");
 
   /* reads from file by using ReadParF and ReadParComment */
   DimSM[0]       =ReadParF(pFile); DimSM[1]       =ReadParF(pFile); DimSM[2]       =ReadParF(pFile); ReadParComment(pFile);
@@ -661,7 +661,7 @@ void ReadReflFile(char* sFilename, double* pData)
   long count=0;
   int  nRows=0;
 
-  FILE* pFile = OpenInputFile2(sFilename, "Reflectivity data", "r");
+  FILE* pFile = OpenParameterFile2(sFilename, "Reflectivity data", "r");
 
   nRows=LinesInFile(pFile);
   if (pFile != NULL)

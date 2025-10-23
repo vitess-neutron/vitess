@@ -560,7 +560,8 @@ void  OwnInit(int argc, char *argv[])
           Detector.AbsPar2=atof(&argv[i][2]);
           break;
         case 'E':    /* efficiency file */
-          Eff.pfile = OpenInputFile2( (Eff.filename = &argv[i][2]), "efficiency data", "r");
+          Eff.filename = &argv[i][2];
+          Eff.pfile = OpenParameterFile2(Eff.filename, "efficiency data", "r");
           break;
         case 'e':
           Detector.EfficiencyMod=atof(&argv[i][2]);
@@ -603,7 +604,7 @@ void  OwnInit(int argc, char *argv[])
           DetOutFileName=(&argv[i][2]);
           if (!Detector.bArray)
           {
-            pOutFile=OpenInputFile(DetOutFileName, TRUE, "w+");
+            pOutFile=OpenOutputFile(DetOutFileName, TRUE, "w+");
             fprintf(pOutFile,"#Trajectories detector_eventmode \n");
             fprintf(pOutFile,"#    pos_x [cm]   pos_y [cm]   pos_z [cm]  time [ms]    weight     color      spin_x     spin_y    spin_z \n");
             fprintf(pOutFile,"#-------------------------------------------------------------------------\n");

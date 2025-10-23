@@ -39,8 +39,6 @@ long   GetLong  (const char* pText);                 // Reads long value from st
 double GetDouble(const char* pText);                 // Reads double value from stdin
 void   GetString(char* pString, const char* pText);  // Reads string from stdin
 
-char*  FullOutName(const char* filename);             // returns path\name.ext for input directory   located in init.c
-
 
 /******************************/
 /** Program                  **/
@@ -58,7 +56,7 @@ int main(int argc, char* argv[])
   int    nChannels   = 0,     // Number of channels
          nWafers     = 0;     // Number sub-channels per channel
   short  bConcentric = FALSE; // criterion: concentric circles
-  char   sFileName[50]="", sConcentr[9]="no";
+  char   sFileName[50]="", sConcentr[9]="no", sFullName[CHAR_BUF_SMALL];
   FILE*  pSurfaceFile =NULL;
 
   _eModule = MCN_TOOL_GEN_SURF;
@@ -102,6 +100,7 @@ int main(int argc, char* argv[])
       WaferThkAvrg= (WaferThkIn+WaferThkOut)/2.0;
 
       // GenerateSurfaceFile
+      TotalPath(sFullName, sFileName, "", OUT_DIR); /* only used for messages */
       pSurfaceFile = OpenOutputFile(sFileName, FALSE, "w");
 
       if (pSurfaceFile)
@@ -132,19 +131,16 @@ int main(int argc, char* argv[])
           Yexit += DistExit;
         }
 
-        printf ("\nData written to %s\n", FullOutName(sFileName));
+        printf ("\nData written to %s\n", sFullName);
         fclose(pSurfaceFile);
+      } else {
+        printf("ERROR: Output file '%s' could not be generated\n", sFullName);
       }
-      else
-      {  printf("ERROR: Output file '%s' could not be generated\n", FullOutName(sFileName));
-      }
+    } else {
+      printf("ERROR: Number of channels and subchannels per channel must both be greater 0 -  no file generated\n");
     }
-    else
-    {  printf("ERROR: Number of channels and subchannels per channel must both be greater 0 -  no file generated\n");
-    }
-  }
-  else
-  {  printf("ERROR: no surface file name given!\n File could not be generated\n");
+  } else {
+    printf("ERROR: no surface file name given!\n File could not be generated\n");
   }
 
   printf("\n Hit any key to terminate ! \n");

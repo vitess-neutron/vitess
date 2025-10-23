@@ -33,9 +33,6 @@ long   GetLong  (const char* pText);                // Reads long value from std
 short  GetShort (const char* pText);                // Reads short value from stdin
 void   GetString(char* pString, const char* pText); // Reads string from stdin
 
-char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name
-char* FullInName      (const char* filename);                       // adds parameter directory to file name
-
 
 /*********************************/
 /** Global and Static Variables **/
@@ -56,8 +53,7 @@ double GuideMaxWidth, GuideMaxHeight,
 int main(int argc, char* argv[])
 {
   FILE*   pFile;
-  char    sString[9], sFileName[50],
-         *pFullName;
+  char    sString[9], sFileName[50], sFullName[CHAR_BUF_SMALL];
 
   _eModule=MCN_TOOL_GUIDE;
 
@@ -87,10 +83,8 @@ int main(int argc, char* argv[])
     dTotalLength = nPieces * piecelength;
 
     /* write to parameter directory or to FILES in install directory */
-    pFullName = FullInName(sFileName);
-    // if (strcmp(pFullName, sFileName)==0)
-    //    pFullName = FullInstallName(sFileName, "FILES/");
-    pFile = fopen(pFullName, "w");
+    TotalPath(sFullName, sFileName, "", OUT_DIR); /* only used for messages */
+    pFile = OpenOutputFile(sFileName, TRUE, "w");
 
     if (pFile!=NULL)
     {
@@ -157,10 +151,10 @@ int main(int argc, char* argv[])
           else    fprintf(LogFilePtr, "constant height\n");
           break;
       }
-      printf("\nData written to %s\n", pFullName);
+      printf("\nData written to %s\n", sFullName);
     }
     else
-    {  printf("\nERROR: Output file %s could not be generated\n", pFullName);
+    {  printf("\nERROR: Output file %s could not be generated\n", sFullName);
     }
 
     printf("\n\n done - another one? (y/n) ");

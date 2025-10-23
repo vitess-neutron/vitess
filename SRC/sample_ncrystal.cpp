@@ -27,7 +27,6 @@
 /******************************/
 void   OwnInit(int argc, char *argv[]);                       // Reads input parameters and sets global variables
 void   OwnCleanup();                                          // Does module specific cleanup
-void   ReadFile(char* sFileName);                             // Reads input file for ncrystal
 void   CalcAndWritePar(SampleType *pSample);                  // Calculates arrays from input parameters and writes to log file
 void   SetGeometry(const char* sColor);                       // Fills the structure stGeometry for visualization
 void   OutputTransform(VectorType Pos, VectorType Dir);       // Co-ordinate transformation to output frame
@@ -907,23 +906,6 @@ void  CalcAndWritePar(SampleType* pSample)
   fprintf(LogFilePtr, "\nThese are the first 10 scattering events:\n");
 }
 
-
-/*******************************************************/
-/** Reads data from input file                        **/
-/*******************************************************/
-void ReadFile(char* sFileName)
-{
-  // opens input file (program exit in case of error)
-  FILE* pFile = OpenInputFile2(sFileName, "file content", "r");
-  //FILE *pFile = fopen(sFileName, "r");
-
-  if (pFile!=NULL)
-  {
-    fprintf(LogFilePtr, "Succesfully opened NCrystal library file: %s\n",sFileName);
-    fclose(pFile);
-  }
-  else fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n",sFileName);
-}
 
 /*******************************************************/
 /** Fills the structure stGeometry for visualization  **/

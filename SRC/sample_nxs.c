@@ -107,12 +107,10 @@ double MuTot,    // file  macrosc. scattering cross section, defined in 'sample.
 /******************************/
 /** Prototypes               **/
 /******************************/
-void  OwnInit    (int argc, char *argv[]);     // reads input parameters and sets global
-void  OwnCleanup (DoublePair *StrucFac);       // Does module specific cleanup
+void OwnInit     (int argc, char *argv[]);     // reads input parameters and sets global
+void OwnCleanup  (DoublePair *StrucFac);       // Does module specific cleanup
 void SetSamplePar(SampleType *pSample);        // sets sample parameters
-void  SetGeometry(char* sColor);               // fills the structure stGeometry for visualization
-
-char* FullInName (const char* filename);       // path to input directory + file name  (from init.c)
+void SetGeometry (char* sColor);               // fills the structure stGeometry for visualization
 
 
 /******************************/
@@ -142,7 +140,7 @@ int main(int argc, char *argv[])
   int        nxs_init_success = 0;
   VectorType InISP[2]={{0.0,0.0,0.0},{0.0,0.0,0.0}};             /* neutron intersection before scattering */
   Neutron    InNeutron;
-  char       *filename;
+  char       filename[CHAR_BUF_SMALL];
 
   // initialisation
   // --------------
@@ -171,16 +169,12 @@ int main(int argc, char *argv[])
   uc.atomInfoList = NULL;
   uc.hklList = NULL;
   uc.sgInfo.ListSeitzMx = NULL;
-  filename = FullInName(pNxsFileNameI);
+  TotalPath(filename, pNxsFileNameI, "", IN_DIR);
   numAtoms = nxs_readParameterFile(filename, &uc, &atomInfoList );
-  free(filename);
-  filename = NULL;
   if( numAtoms < 1 )
   {
-    filename = FullInName(sNxsFileNameF);
+    TotalPath(filename, sNxsFileNameF, "", IN_DIR);
     numAtoms = nxs_readParameterFile(filename, &uc, &atomInfoList );
-    free(filename);
-    filename = NULL;
     if( numAtoms < 1 )
     {
       NXS_AtomInfo ai;
@@ -619,7 +613,7 @@ void SetSamplePar(SampleType *pSample)
   /* Opens the parameter file if a file name is given */
   if (pSmplFileName!=NULL)
   {
-    pSampleFile = OpenInputFile(pSmplFileName, FALSE, "rt");
+    pSampleFile = OpenParameterFile(pSmplFileName, FALSE, "rt");
 
     /* Reads the parameters if the file can be opened */
     if (pSampleFile != NULL)

@@ -427,11 +427,7 @@ void OwnInit(int argc, char *argv[])
       switch(argv[1][1])
   {
   case 'P':
-    if ((Par_Crys = OpenInputFile(&argv[1][2], FALSE, "r"))==NULL)
-      {
-        fprintf(LogFilePtr,"\nERROR: parameter file '%s' not found!",&argv[1][2]);
-        exit(0);
-      }
+    Par_Crys = OpenParameterFile(&argv[1][2], TRUE, "r");
     ParameterFileName=&argv[1][2];
     break;
 
@@ -614,41 +610,23 @@ void OwnInit(int argc, char *argv[])
       goto cont ;
     }
 
-  if(Option == 2.)
-    {
-      if(geom_option ==1) crys_geomLambda() ;
-      if(geom_option ==2) crys_geomSphere() ;
-      if(geom_option ==3) crys_geomVertCyl() ;
-      if(geom_option ==4) crys_geomDoubleCyl() ;
+    if (Option == 2.) {
+      if (geom_option == 1) crys_geomLambda();
+      if (geom_option == 2) crys_geomSphere();
+      if (geom_option == 3) crys_geomVertCyl();
+      if (geom_option == 4) crys_geomDoubleCyl();
 
-      if((Foc_Crys = OpenInputFile(GeomFileName, FALSE, "r"))==NULL)
-  {
-    fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
-    exit(0);
-  }
-
+      Foc_Crys = OpenParameterFile(GeomFileName, TRUE, "r");
       ReadFocFile() ;
-
       if(Foc_Crys != NULL)fclose(Foc_Crys) ;
-
       goto cont ;
     }
 
-  if(Option == 3.)
-    {
-
+    if (Option == 3.) {
       NumberCE[0]= NumberCE[1]=0;
-
-      if((Foc_Crys = OpenInputFile(GeomFileName, FALSE, "r"))==NULL)
-  {
-    fprintf(LogFilePtr,"\nERROR: focus file '%s' not found!", GeomFileName);
-    exit(0);
-  }
-
+      Foc_Crys = OpenParameterFile(GeomFileName, TRUE, "r");
       ReadFocFile() ;
-
-      if(Foc_Crys != NULL)fclose(Foc_Crys) ;
-
+      if (Foc_Crys != NULL) fclose(Foc_Crys);
     }
 
  cont: ;

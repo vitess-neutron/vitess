@@ -22,8 +22,6 @@ static short LfdNo          (VtMsgID eID);
 static short GetLfdNo       (VtMsgID eID);
 static short ReadMessageText(VtMsgID eID, char* sText, char* cType);
 
-char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name
-
 
 /*********************************/
 /** global and static variables **/

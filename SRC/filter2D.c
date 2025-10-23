@@ -176,31 +176,21 @@ void LoadTable()
   int i;
 
   /* If there is a structure factor file go and load the file */
-  if (sFilterTable!=NULL)
-  {
+  if (sFilterTable != NULL) {
     /* opens distribution file */
-    pFilterFile = OpenInputFile(sFilterTable, FALSE, "rt");
-    if (pFilterFile!=NULL)
-    {
-      /* reads number of lines, allocates memory and then reads data */
-      nBinsHor  = ColumnsInFile(pFilterFile);
-      nBinsVert = LinesInFile(pFilterFile);
-      aFilter  = calloc(nBinsHor*nBinsVert, sizeof(double));
+    pFilterFile = OpenParameterFile(sFilterTable, TRUE, "rt");
+    /* reads number of lines, allocates memory and then reads data */
+    nBinsHor = ColumnsInFile(pFilterFile);
+    nBinsVert = LinesInFile(pFilterFile);
+    aFilter = calloc(nBinsHor * nBinsVert, sizeof(double));
 
-      for (i=0; i < nBinsVert; i++)
-      {
-        ReadLine  (pFilterFile, sBuffer, CHAR_BUF_LENGTH);
-        StrgScanLF(sBuffer, &(aFilter[i*nBinsHor]), nBinsHor, 0);
-      }
+    for (i = 0; i < nBinsVert; i++) {
+      ReadLine(pFilterFile, sBuffer, CHAR_BUF_LENGTH);
+      StrgScanLF(sBuffer, &(aFilter[i * nBinsHor]), nBinsHor, 0);
+    }
 
-      /* closes trace file */
-      fclose(pFilterFile) ;
-    }
-    else
-    {
-      fprintf(LogFilePtr, "\nERROR: Can't open %s to read structure factor file\n", sFilterTable);
-      exit (-1);
-    }
+    /* closes trace file */
+    fclose(pFilterFile) ;
   }
 }
 

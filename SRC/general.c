@@ -757,9 +757,7 @@ void EulerToCartesianZY(VectorType Vector, double *roty, double *rotz)
 /*  General I/O Functions                                                               */
 /****************************************************************************************/
 
-/* fileOpen open file 'name' and gives pointer back
-   in case of an opening error, a message is written to the LogFile */
-FILE * fileOpen(const char *name, const char *mode)
+FILE *fileOpen(const char *name, const char *mode)
 {
   FILE *f;
   const char *fmt = "ERROR: Can't open file %s!\n";
@@ -769,7 +767,8 @@ FILE * fileOpen(const char *name, const char *mode)
   }
 #endif
 
-  if (! (f = fopen(name, mode))) {
+  f = fopen(name, mode);
+  if (f == NULL) {
     fprintf(LogFilePtr, fmt, name);
     fflush(LogFilePtr);
     exit(-1);
@@ -777,7 +776,7 @@ FILE * fileOpen(const char *name, const char *mode)
   return f;
 }
 
-FILE * fileOpen2(const char* sName, const char* sMode, const char* sContent)
+FILE *fileOpen2(const char *sName, const char *sMode, const char *sContent)
 {
   FILE* fp;
   const char *fmt = "ERROR: Can't open file %s containing %s!\n";
@@ -787,8 +786,8 @@ FILE * fileOpen2(const char* sName, const char* sMode, const char* sContent)
   }
 #endif
 
-  if (! (fp = fopen(sName, sMode)))
-  {
+  fp = fopen(sName, sMode);
+  if (fp == NULL) {
     fprintf(LogFilePtr, fmt, sName, sContent);
     fflush(LogFilePtr);
     exit(-1);

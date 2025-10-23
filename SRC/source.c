@@ -1275,7 +1275,7 @@ short ReadModData(char* sFileName)
   short iM=0, eTS=0;
   FILE* pFileR=NULL;
 
-  pFileR = OpenInputFile(sFileName, FALSE,"rt");
+  pFileR = OpenParameterFile(sFileName, FALSE,"rt");
   if (pFileR==NULL)
     pFileR = OpenPackInpFile(sFileName, FullModPath(stSrc.nSource), FALSE);
   if (pFileR!=NULL)
@@ -1556,7 +1556,7 @@ void LoadWavelengthDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
     if (pTraj->LambdaMin >= 0.0  &&  pTraj->LambdaMax > pTraj->LambdaMin)
     {
       /* opening distribution file */
-      pDisFile = OpenInputFile(pMod->sLFileName, FALSE, "rt");
+      pDisFile = OpenParameterFile(pMod->sLFileName, FALSE, "rt");
       if (pDisFile==NULL)
         pDisFile = OpenPackInpFile(pMod->sLFileName, FullModPath(stSrc.nSource), FALSE);
       if (pDisFile!=NULL)
@@ -1638,7 +1638,7 @@ void LoadTimeDistribution(Moderator* pMod, TrajParam* pTraj, FctTable* pFluxT)
     if (pTraj->TimeFrmMax > pTraj->TimeFrmMin)
     {
       /* opening distribution file */
-      pDisFile = OpenInputFile(pMod->sTFileName, FALSE, "rt");
+      pDisFile = OpenParameterFile(pMod->sTFileName, FALSE, "rt");
       if (pDisFile==NULL)
         pDisFile = OpenPackInpFile(pMod->sTFileName, FullModPath(stSrc.nSource), FALSE);
       if (pDisFile!=NULL)
@@ -1744,7 +1744,7 @@ void  LoadWavelengthTimeDistrib(Moderator* pMod, TrajParam* pTraj, FctTable* pFl
       pTraj->LambdaMax  > pTraj->LambdaMin  && pTraj->LambdaMin >= 0.0)
   {
     /* openíng distribution file */
-    pDisFile = OpenInputFile(pMod->sLTFileName, FALSE, "rt");
+    pDisFile = OpenParameterFile(pMod->sLTFileName, FALSE, "rt");
     if (pDisFile==NULL)
       pDisFile = OpenPackInpFile(pMod->sLTFileName, FullModPath(stSrc.nSource), FALSE);
     if (pDisFile!=NULL)

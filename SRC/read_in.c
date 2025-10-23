@@ -63,8 +63,6 @@ void  InitMcNeutr(Neutron* pNeutron);                                           
 void  GetId      (TotalID* pID);                                                   // Creates next ID for a trajectory
 void  ConvertDate(const char* sDateUS, char* sDateInt);                            // Converts American to international date format
 
-extern char* FullParName(const char* filename);                                    // function in init.c, adds parameter directory to file name
-
 
 /******************************/
 /** Global Variables    **/
@@ -353,10 +351,10 @@ void OwnInit(int argc, char *argv[])
   {
     if (sInputFileName[0] != NULL)
     {
-      char *sFullInputName = FullParName(sInputFileName[0]);
+      char sFullInputName[CHAR_BUF_SMALL];
+      TotalPath(sFullInputName, sInputFileName[0], "", IN_DIR);
       hInFile = mcpl_open_file(sFullInputName);
-      free(sFullInputName);
-      fprintf(LogFilePtr, mcpl_hdr_srcname(hInFile));       // Name of the generating application
+      fprintf(LogFilePtr, "%s\n", mcpl_hdr_srcname(hInFile));       // Name of the generating application
     }
     else
     { Error("Input file 1 not given");
@@ -365,11 +363,15 @@ void OwnInit(int argc, char *argv[])
       Warning("Input file 2 and 3 cannot be treated.");
   }
   else if (ePrgFormat==VT_SSW_FMT){
-    hSSWFile = ssw_open_file(sInputFileName[0]);
+    char sFullInputName[CHAR_BUF_SMALL];
+    TotalPath(sFullInputName, sInputFileName[0], "", IN_DIR);
+    hSSWFile = ssw_open_file(sFullInputName);
   }
   else if (ePrgFormat==VT_KDS_FMT){
+    char sFullInputName[CHAR_BUF_SMALL];
+    TotalPath(sFullInputName, sInputFileName[0], "", IN_DIR);
     KDS_setlogfile(LogFilePtr);
-    hKDSFile = KDS_open(sInputFileName[0]);
+    hKDSFile = KDS_open(sFullInputName);
   }
   else
   {

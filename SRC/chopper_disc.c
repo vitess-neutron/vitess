@@ -299,7 +299,7 @@ void ChopInit   (int argc, char *argv[])
       {
         case 'C':
           ChopperFileName = &argv[i][2];
-          ChopperFile = OpenInputFile(ChopperFileName, FALSE, "r");
+          ChopperFile = OpenParameterFile(ChopperFileName, FALSE, "r");
           if (ChopperFile==NULL)
           {
             fprintf(LogFilePtr, "ERROR: Chopper parameter file %s could not be opened\n", ChopperFileName);

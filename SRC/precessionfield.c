@@ -432,7 +432,7 @@ void readmagneticmap()
   VectorType Vec;
   double Theta, Phi;
 
-  FieldMapFile=OpenInputFile2(FieldFileName, "field map", "r");
+  FieldMapFile = OpenParameterFile2(FieldFileName, "field map", "r");
 
   /* read number of matrix lines, columns from first line */
   ind_x_max = ReadParI(FieldMapFile); ind_y_max = ReadParI(FieldMapFile); ind_z_max = ReadParI(FieldMapFile); ReadParComment(FieldMapFile) ;
@@ -499,7 +499,7 @@ void writemagneticmap()
   long i_x, i_y, i_z, i_x_max, i_y_max, i_z_max ;
   double Dim[3], Posit[3], fieldsph[3] ;
 
-  FieldMapFile=OpenInputFile2(FieldFileName, "field map", "w");
+  FieldMapFile = OpenOutputFile2(FieldFileName, "field map", "w");
 
   /*    INPUT  */
   i_x_max = i_y_max = i_z_max = 2 ;

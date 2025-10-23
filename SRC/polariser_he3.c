@@ -564,7 +564,7 @@ void ReadPolAndTrans()
   long  count=0;
   FILE* pFile=NULL;
 
-  pFile=OpenInputFile2(sPolFile, "polarization data", "r");
+  pFile = OpenParameterFile2(sPolFile, "polarization data", "r");
 
   for(count=0; count<FLD_SIZE; count++)
   {
@@ -574,7 +574,7 @@ void ReadPolAndTrans()
   fclose(pFile);
 
 
-  pFile = OpenInputFile2(sTransFile, "transmission data", "r");
+  pFile = OpenParameterFile2(sTransFile, "transmission data", "r");
 
   for(count=0; count<FLD_SIZE; count++)
   {
