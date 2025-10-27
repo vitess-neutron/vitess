@@ -1,11 +1,10 @@
 ### project VITESS
 ### HMI DN
-### M. Fromme  
+### M. Fromme
 ###
 ### procedures for command execution
 
-proc lookWhosConcerned {serrep serpar serno \
-			    modi Comode serll sermol serpal} {
+proc lookWhosConcerned {serrep serpar serno modi Comode serll sermol serpal} {
   upvar $serrep srep
   upvar $serpar spar
   upvar $serno sno
@@ -146,7 +145,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   #    default {if {[entryVal helpthreads] > 0} {set par _parallel} }
 
   set pdir [entryVal defdirectory]
-  set insert "$fc --B$buffersize --P";	# general command options
+  set insert "$fc --B$buffersize --P";  # general command options
   switch $mode {
     bat - sh - tcl - pl -  py - grd {append insert \$P}
     default {append insert $pdir}
@@ -185,12 +184,12 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   }
   set first 1
 
-  catch {unset Serdefault};		# will become an array of gui-values for series
+  catch {unset Serdefault};    # will become an array of gui-values for series
 
   set usedIdices {}
 
   for {set i 1} {$i <= $maxModule} {incr i} {
-    if [info exists Disabled($i)] { 
+    if [info exists Disabled($i)] {
       if {$Disabled($i)} continue
     }
     set varName mod$i
@@ -208,7 +207,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       ma_flat       {set com "monochr_analyser$sys -O1"}
       ma_focus      {set com "monochr_analyser$sys -O2"}
       ma_focus_dat  {set com "monochr_analyser$sys -O3"}
-      ma_flat_new   {set com "monochromator$sys -O1"}	
+      ma_flat_new   {set com "monochromator$sys -O1"}
       ma_focus_new   {set com "monochromator$sys -O2"}
       ma_focus_dat_new   {set com "monochromator$sys -O3"}
       mon1_lambda {set com "monitor1$sys -k1"}
@@ -221,12 +220,13 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       mon1_divyz  {set com "monitor1$sys -k8"}
       mon2_y_divy  {set com "mon2_posdiv$sys -q1"}
       mon2_z_divz  {set com "mon2_posdiv$sys -q2"}
-      monpol_lambda {set com "monitorpol_1d$sys -k1"}
-      monpol_time   {set com "monitorpol_1d$sys -k2"}
-      monpol_divy   {set com "monitorpol_1d$sys -k3"}
-      monpol_divz   {set com "monitorpol_1d$sys -k4"}
-      monpol_y      {set com "monitorpol_1d$sys -k5"}
-      monpol_z      {set com "monitorpol_1d$sys -k6"}
+      monpol_lambda {set com "mon1_pol$sys -k1"}
+      monpol_time   {set com "mon1_pol$sys -k2"}
+      monpol_divy   {set com "mon1_pol$sys -k3"}
+      monpol_divz   {set com "mon1_pol$sys -k4"}
+      monpol_y      {set com "mon1_pol$sys -k5"}
+      monpol_z      {set com "mon1_pol$sys -k6"}
+      mon_brilliance {set com "mon1_brl$sys"}
       quadr_field  {set com "sesans_field$sys"}
       sm_ensemble {set com "sm_ensemble$sys"}
       source_ESS_LPTS {set com "source$sys -S3"}
@@ -243,18 +243,19 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
       source_const_wave  {set com "source$sys -S1"}
       source_short_pulsed {set com "source$sys -S2"}
       source_long_pulsed {set com "source$sys -S3"}
+      spacewindow {set com "window$sys"}
       external_command {
         set intcom 0
         set com "[globVal extern_com_$i] [globVal extern_shortopt_$i]"
         upvar #0 extern_optfile_$i fname
         forceParamDir fname resfn
         if {$fname != ""} {
-	        if {"0" == [catch {open $resfn r} f]} {
-	          while {[gets $f ins] > 0} {
-	            append com " $ins"
-	          }
-	          close $f
-	        }
+          if {"0" == [catch {open $resfn r} f]} {
+            while {[gets $f ins] > 0} {
+              append com " $ins"
+            }
+            close $f
+          }
         }
       }
       default    {set com $var$sys}
@@ -290,14 +291,14 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
         append com $ppadd
         append fc "$com$imore"
         if {$mode != "kstate"} {
-	        # get name of input file
-	        set l [lindex $ll 0]
-	        set finame [entryVal [lindex $l 0]]
-	        if {"" != [set unzip [unzipCom $finame]]} {
-	          set fc "$unzip $finame | $fc --c[file size $finame]"
-	        } else {
-	          writeCommandOption $l _ "" $spar0 $srep0 $serno0
-	        }
+          # get name of input file
+          set l [lindex $ll 0]
+          set finame [entryVal [lindex $l 0]]
+          if {"" != [set unzip [unzipCom $finame]]} {
+            set fc "$unzip $finame | $fc --c[file size $finame]"
+          } else {
+            writeCommandOption $l _ "" $spar0 $srep0 $serno0
+          }
         }
         set first 0
       } else {
@@ -520,10 +521,10 @@ proc cleanupPipes {} {
         set errfound 1
             } elseif [regexp GSL_RNG_ $line] {
         if {$firstgsl} {
-	        outProtocol $line
+          outProtocol $line
         }
         if [regexp GSL_RNG_SEED $line] {
-	        set firstgsl 0
+          set firstgsl 0
         }
       } else {
         outProtocol $line
@@ -545,15 +546,15 @@ proc cleanupPipes {} {
         # compress that file
         outProtocol "try to compress $foname"
         if {[getSystem] == "windows"} {
-	        set rc [catch {exec [file join [globVal ExeDirectory] gzip.exe] -f $foname} res]
+          set rc [catch {exec [file join [globVal ExeDirectory] gzip.exe] -f $foname} res]
         } else {
-	        set rc [catch {exec gzip -f $foname} res]
+          set rc [catch {exec gzip -f $foname} res]
         }
         set fzname $foname.gz
         if {$rc == 0 && [file exists $fzname]} {
-	        outProtocol "compressed to $fzname"
+          outProtocol "compressed to $fzname"
         } else {
-	        outProtocol "did not compress, $res"
+          outProtocol "did not compress, $res"
         }
       }
     }
@@ -925,8 +926,8 @@ proc startActionD {} {
     }
     incr i
     if {$PipeActive && [$PsCheck]} {
-      after $wmsecs;			# wait for completion,
-      update;				# but allow other window events
+      after $wmsecs; # wait for completion,
+      update;        # but allow other window events
     } else {
       update
       if {!$PipeActive} {
@@ -1097,8 +1098,8 @@ proc startAction {{sercom ""} {simu simulation} {visrun 0}} {
       }
     }
     if {$PipeActive && [$PsCheck]} {
-      after $wmsecs;			# wait for completion,
-      update;				# but allow other window events
+      after $wmsecs; # wait for completion,
+      update;        # but allow other window events
     } else {
       update
       if {!$PipeActive} {
@@ -1138,15 +1139,15 @@ proc stopAction {{verbose 1} {kill 0}} {
     switch [getSystem] {
       unix    {
         if {$kill} {
-	        catch {eval exec $KillProg -9 $PipeIdList}
+          catch {eval exec $KillProg -9 $PipeIdList}
         } else {
-	        # The sequence of ids in $PipeIdList may have changed.
-	        # For correct results we stop processes in pipe order.
-	        foreach p $PipeIdsAtStart {
-	          if {[lsearch $PipeIdList $p] < 0} continue
-	          catch {exec $KillProg $p}
-	          after 500;			# wait and let things come to an end
-	        }
+          # The sequence of ids in $PipeIdList may have changed.
+          # For correct results we stop processes in pipe order.
+          foreach p $PipeIdsAtStart {
+            if {[lsearch $PipeIdList $p] < 0} continue
+            catch {exec $KillProg $p}
+            after 500;      # wait and let things come to an end
+          }
         }
       }
       windows {
@@ -1436,7 +1437,7 @@ proc importTable {w} {
       set s [itemize $s "; \t"]
       if {[set slen [llength $s]] > $cols} {set slen $cols}
       for {set j 0} {$j < $slen} {incr j} {
-	gSet series$i.${j}_ [lindex $s $j]
+  gSet series$i.${j}_ [lindex $s $j]
       }
     }
   }
@@ -1493,7 +1494,7 @@ proc saveSeries {w {act tofile}} {
     set smd5 [computeMd5 "$pdir+$cfiles+$cdir+$c+$ll+$vl"]
     if {[set r [isOldMd5 $smd5]] != ""} {
       if {"no" == [tk_messageBox -icon question -type yesno -title "confirmed command"\
-		  -message "This simulation has been done at\n$r\nReally do it again?"]} return
+      -message "This simulation has been done at\n$r\nReally do it again?"]} return
     }
     # now execute the series
     exeSeries $pdir $copy $cfiles $cdir $c $ll $vl $tindl
@@ -1668,35 +1669,35 @@ proc inputSeries {w} {
       set m $g.$j
       set a .${j}_
       switch -- $i {
-	-2 {
-	  set tv seriest2$a
-	  gSet $tv [lindex $nal $j]
-	  entry $m -width $ewid  -textvariable $tv -state disabled
-	}
-	-1 {
-	  set tv seriest1$a
-	  gSet $tv [lindex $nmodl $j]
-	  entry $m -width $ewid -textvariable $tv -state disabled
-	}
-	0 {
-	  entry $m -width $ewid -relief sunken -textvariable series0$a -bg $entryColor
-	  bind $m <Return> "setSeriesColumn $j $num"
-	}
-	1  {
-	  upvar #0 series1$a vv
-	  if [catch {set val $vv}] {
-	    # value has not been set before, use value from GUI
-	    if {[set n [lindex $nal $j]] != ""} {
-	      # entry variables for modules except inputESET have their module number appended
-	      if {[set modno [lindex $mol $j]] == 0} {set modno ""}
-	      set vv [globVal ${n}_$modno]
-	    }
-	  }
-	  entry $m -width $ewid -relief sunken -textvariable series1$a -bg $entryColor
-	}
-	default  {
-	  entry $m -width $ewid -relief sunken -textvariable series$i$a -bg $entryColor
-	}
+  -2 {
+    set tv seriest2$a
+    gSet $tv [lindex $nal $j]
+    entry $m -width $ewid  -textvariable $tv -state disabled
+  }
+  -1 {
+    set tv seriest1$a
+    gSet $tv [lindex $nmodl $j]
+    entry $m -width $ewid -textvariable $tv -state disabled
+  }
+  0 {
+    entry $m -width $ewid -relief sunken -textvariable series0$a -bg $entryColor
+    bind $m <Return> "setSeriesColumn $j $num"
+  }
+  1  {
+    upvar #0 series1$a vv
+    if [catch {set val $vv}] {
+      # value has not been set before, use value from GUI
+      if {[set n [lindex $nal $j]] != ""} {
+        # entry variables for modules except inputESET have their module number appended
+        if {[set modno [lindex $mol $j]] == 0} {set modno ""}
+        set vv [globVal ${n}_$modno]
+      }
+    }
+    entry $m -width $ewid -relief sunken -textvariable series1$a -bg $entryColor
+  }
+  default  {
+    entry $m -width $ewid -relief sunken -textvariable series$i$a -bg $entryColor
+  }
       }
       pack $m -side left
     }
@@ -1908,7 +1909,7 @@ proc mergeResults {w} {
     showText "!specify at least two input directories!"
     return
   }
-  
+
   if {$mergeresdir_ == ""} {
     # create a result directory
     set n [clock format [clock seconds] -format %Y-%m-%d]
@@ -1941,7 +1942,7 @@ proc mergeResults {w} {
 
   # merge files
   set ok 1
-  
+
   foreach mfile $mlist {
     set c "$com -f -n $mfile [file join $mergeresdir_ $mfile] $mdirs"
     # merge now, using the merge_spectra binary
@@ -1972,7 +1973,7 @@ proc mergeRes {w} {
   set fnt [ssbuttonFont]
   set ewid 64
   set lwid [expr int(1.5*$ewid)]
- 
+
   set ww $w.f
   label $ww.l -text "Parent\ninput\ndirectory" -font $lfont -bg $labColor -pady 0.5c
   entry $ww.e -width $ewid -relief sunken -textvariable mergerootdir_ -bg $entryColor
@@ -1993,7 +1994,7 @@ proc mergeRes {w} {
       -xscrollcommand "$w.ps.xscroll set"
   pack $ww.e -side left -anchor w
   xscroll $w.ps "$ww.e xview"
- 
+
   set ww $w.me
   label $ww.l -text "Monitor files" -font $lfont -bg $labColor -pady 0.5c
   button $ww.bn -text "Find from input directories" -background $bgColor -font $fnt\

@@ -265,6 +265,7 @@ test-files:
     - dnf install -y python3 python3-pyyaml
   script:
     - cp -rf artifacts-Rocky9-x86_64/MODULES .
+    - python3 tests/coverage.py || true
     - python3 tests/test_yaml_format.py -v
     - LARGEFILES="$(find . -type f -size +100M -not -path './.git/*' -print)";
       if [ -n "${LARGEFILES}" ]; then

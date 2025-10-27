@@ -9,31 +9,6 @@ from pathlib import Path
 
 import yaml
 
-# exclude lists
-SPECIAL_EXECUTABLES = [
-    "ascii2bin",
-    "cas_v40",
-    "chop_phases",
-    "define_direction",
-    "direct_view",
-    "dist_time",
-    "fom",
-    "gener_batch",
-    "gener_bispectral",
-    "gener_hkl",
-    "gener_pipe",
-    "guide_shape",
-    "lattice_dist",
-    "merge",
-    "merge_spectra",
-    "mirror_coating",
-    "opt_sim",
-    "sortiap",
-    "standard_deviation",
-    "surface_file",
-]
-OLD_MODULE_NAMES = []
-
 
 def yaml_dir(top):
     vers = []
@@ -50,6 +25,12 @@ def yaml_dir(top):
 
 
 if __name__ == "__main__":
+    # load exclude lists
+    wd = Path(__file__).parent
+    ns = dict()
+    exec(wd.joinpath("properties.py").open().read(), ns)
+    TOOLS = ns.get("TOOLS", [])
+
     ostype = platform.system()
     if ostype == "Windows":
         modsuffix = ".exe"
@@ -89,14 +70,9 @@ if __name__ == "__main__":
             if not hidden:
                 missing_hidden.append(basename)
 
-    executables = (
-        set(
-            m.name[: -len(modsuffix)]
-            for m in top.joinpath("MODULES").glob("*" + modsuffix)
-        )
-        .difference(SPECIAL_EXECUTABLES)
-        .difference(OLD_MODULE_NAMES)
-    )
+    executables = set(
+        m.name[: -len(modsuffix)] for m in top.joinpath("MODULES").glob("*" + modsuffix)
+    ).difference(TOOLS)
     missing_executables = yaml_modules.difference(executables)
     missing_yaml = executables.difference(yaml_modules)
 

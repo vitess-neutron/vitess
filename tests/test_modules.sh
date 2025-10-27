@@ -1,22 +1,6 @@
 #!/bin/sh
 
-TESTS_DIR="$(cd "$(dirname "$0")" || exit 2; pwd)"
-VITESS_DIR="$(realpath "${TESTS_DIR}/..")"
-V="${VITESS_DIR}/MODULES"
-[ -z "${TEMP_DIR}" ] && TEMP_DIR="/tmp"
-
-case "$(uname -s)" in
-    # tests under windows with MSYS
-    MSYS*)
-        MSYS=true
-        [ "${TEMP_DIR}" = "/tmp" ] && TEMP_DIR="${TESTS_DIR}/tmp"
-        mkdir -p "${TEMP_DIR}" || exit 1
-        SUFFIX=".exe"
-        export SUFFIX
-        ;;
-    *)
-        ;;
-esac
+. "$(dirname "$0")/common.sh"
 
 main() {
     if [ $# -eq 0 ]; then
@@ -111,7 +95,7 @@ check_dir() {
     return ${DIR_FAIL}
 }
 
-if [ "${MSYS}" = "true" ]; then
+if [ "${WINDOWS}" = "true" ]; then
     call_pipeline() {
         SCRIPT='/^\$\{?V\}?/ {
             s/(\$\{?P\}?[^[:space:]]*)/$(cygpath -w \1)/g;
