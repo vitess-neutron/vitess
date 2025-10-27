@@ -1,0 +1,31 @@
+# exclude lists
+TOOLS = [
+    "ascii2bin",
+    "cas_v40",
+    "chop_phases",
+    "define_direction",
+    "direct_view",
+    "dist_time",
+    "fom",
+    "gener_batch",
+    "gener_bispectral",
+    "gener_hkl",
+    "gener_pipe",
+    "guide_shape",
+    "lattice_dist",
+    "merge",
+    "merge_spectra",
+    "mirror_coating",
+    "opt_sim",
+    "sortiap",
+    "standard_deviation",
+    "surface_file",
+]
+DEPRECATED = [
+    "chopper_fermi_parallel",
+    "guide_parallel",
+    "sm_ensemble_parallel",
+    "mon_brilliance",
+    "monitorpol_1d",
+    "spacewindow",
+]
