@@ -76,6 +76,7 @@ compile-rocky9:
     OS: Rocky9
     ARCH: x86_64
   before_script:
+    - dnf install -y --nobest glibc-devel
     - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3
     - *linux_before_script
 
@@ -214,6 +215,7 @@ test-rocky9:
     - when: on_success
   needs: []
   before_script:
+    - dnf install -y --nobest glibc-devel
     - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3 diffutils libasan libubsan
     - *linux_before_script
   script:
