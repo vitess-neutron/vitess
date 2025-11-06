@@ -1,2 +1,2 @@
 #!/bin/sh
-grplot $PFILENAME columns:1
+grplot $PFILENAME kind:line x_columns:1 y_columns:2 error_columns:3
