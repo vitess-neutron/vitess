@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme  
+### M. Fromme
 ### June 1999
 
 ### control variables lists and procedures for
@@ -32,18 +32,20 @@
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
 
-if {$tcl_platform(os) == "Darwin"} {
-  set darkMode [exec osascript -e {tell application "System Events" to get dark mode of appearance preferences}]
-} else {
-  set darkMode false
-}
-if {$darkMode eq "true"} {
-  set fgColor black
-  set bgColor #f2f2fb
-} else {
-  set fgColor black
-  set bgColor #f2f2fb
-}
+# deactivated, because of problems with permissions on MacOS (Issue #104)
+# and it has no effect anyway
+# if {$tcl_platform(os) == "Darwin"} {
+#   set darkMode [exec osascript -e {tell application "System Events" to get dark mode of appearance preferences}]
+# } else {
+#   set darkMode false
+# }
+# if {$darkMode eq "true"} {
+#   set fgColor black
+#   set bgColor #f2f2fb
+# } else {
+#   set fgColor black
+#   set bgColor #f2f2fb
+# }
 
 set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
@@ -4091,10 +4093,10 @@ set prismESET {
   {prh float 0.025 {"Prism base\nheight [cm]" "Dimension of each prism along the vertical direction z [cm]" "" h} gt0}
   {eaw float 3 {"Prism height [cm]" "Width of each prism along the horizontal direction y [cm]" "" z} gt0}
 
-  {"Description of the prisms matrix" header}  
+  {"Description of the prisms matrix" header}
   {noc int 16 {"Number of columns" "Number of prisms columns along the neutron beam direction x [#]" "" P} gt0}
   {nor int 40 {"Number of rows" "Number of vertical layers of prisms [#]" "" k} gt0}
-  
+
   {"Special option" header}
   {abs radio yes {"Layer can absorb"
     "no: Layer absorption is neglected,\nyes: Non refracted neutrons pass to the next layer" "" y}
@@ -4422,7 +4424,7 @@ First Xcontrol was adopted to the NEAT neutron scattering experiment,
 developed at HMI department I/DN.
 
 
-Contact:  
+Contact:
 }
 
 helpItem External-Commands {
