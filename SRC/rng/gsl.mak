@@ -11,6 +11,9 @@ ALL : .\libgsl.lib
 ".\libgsl.lib" : $(OBJS)
     $(LIB) /OUT:".\libgsl.lib" $(OBJS)
 
+clean:
+	-del libgsl.lib $(OBJS)
+
 .c.obj:
 	$(CPP) $(CPP_PROJ) $<
 S=default

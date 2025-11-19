@@ -53,7 +53,7 @@ LRESULT CALLBACK g2_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	RECT Rect;
 	struct 	g2_win32_STRUCT *pdp;
 
-	pdp = (struct g2_win32_STRUCT *)GetWindowLong(hWnd, GWL_USERDATA);
+	pdp = (struct g2_win32_STRUCT *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	switch (message) { 
 
 		case WM_PAINT:
@@ -190,7 +190,7 @@ ReleaseDC( hWnd, hDC );
 
 
 
-SetWindowLong(hWnd, GWL_USERDATA, (long)pdp); 
+SetWindowLongPtr(hWnd, GWLP_USERDATA, (long)pdp); 
  
  pdp->hwndThreadWindow = hWnd;
  // Make the window visible; update its client area; and return "success" 

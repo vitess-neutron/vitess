@@ -1,3 +1,4 @@
+src/libg2.lib
 Makefile
 demo/Makefile
 config.log

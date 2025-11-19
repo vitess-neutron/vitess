@@ -1,27 +1,24 @@
 # Unix Makefile for VITESS
 
-SHELL = /bin/sh
+VITESS_VERSION ?= 3.8
 
-ifndef VITESS_VERSION
-VITESS_VERSION = 3.8
-endif
-MODULES_DIR = ../MODULES
-GSLPATH = ./rng
-G2PATH = ./g2-0.72
-NCRYSTALPATH = ./ncrystal
-KDSOURCEPATH = ./kdsource
+MODULES_DIR ?= ../MODULES
+GSLPATH ?= ./rng
+G2PATH ?= ./g2-0.72
+NCRYSTALPATH ?= ./ncrystal
+KDSOURCEPATH ?= ./kdsource
 
 SYS := $(shell uname -s)
 ARCH := $(shell uname -m)
 TODAY := $(shell date '+%Y-%m-%d')
-FULLVERSION = $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
+FULLVERSION := $(VITESS_VERSION) $(SYS)_$(ARCH) $(TODAY)
 
 CC ?= cc
 CXX ?= c++
 ARCHFLAGS =
 CCFLAGS = $(ARCHFLAGS) -pthread -Wall -Wextra -Wno-deprecated-declarations -Wno-sign-compare
 CFLAGS = -std=gnu99 $(CCFLAGS)
-CXXFLAGS = -std=gnu++11 $(CCFLAGS)
+CXXFLAGS = -std=c++17 $(CCFLAGS)
 CPPFLAGS = -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I"$(GSLPATH)"
 LDFLAGS = -L. -L"$(GSLPATH)"
 LDLIBS = -lvitess -lgslran -lm
@@ -325,14 +322,14 @@ ifdef LIBTORCHPATH
 ifeq ($(DARWIN_UNIVERSAL),1)
 # universal build: assume LIBTORCHPATH has subdiretories for architectures
 source_ai_arm64: ARCHFLAGS = -arch arm64
-source_ai_arm64: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/arm64/include -I$(LIBTORCHPATH)/arm64/include/torch/csrc/api/include
+source_ai_arm64: CXXFLAGS += -I$(LIBTORCHPATH)/arm64/include -I$(LIBTORCHPATH)/arm64/include/torch/csrc/api/include
 source_ai_arm64: LDFLAGS += -L$(LIBTORCHPATH)/arm64/lib
 source_ai_arm64: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/arm64/lib
 source_ai_arm64: source_ai.cpp | libvitess.a $(GSLPATH)/libgslran.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 source_ai_x86_64: ARCHFLAGS = -arch x86_64
-source_ai_x86_64: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/x86_64/include -I$(LIBTORCHPATH)/x86_64/include/torch/csrc/api/include
+source_ai_x86_64: CXXFLAGS += -I$(LIBTORCHPATH)/x86_64/include -I$(LIBTORCHPATH)/x86_64/include/torch/csrc/api/include
 source_ai_x86_64: LDFLAGS += -L$(LIBTORCHPATH)/x86_64/lib
 source_ai_x86_64: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/x86_64/lib
 source_ai_x86_64: source_ai.cpp | libvitess.a $(GSLPATH)/libgslran.a
@@ -341,7 +338,7 @@ source_ai_x86_64: source_ai.cpp | libvitess.a $(GSLPATH)/libgslran.a
 source_ai: source_ai_arm64 source_ai_x86_64
 	lipo -create -output  $@ $^
 else
-source_ai: CXXFLAGS += -std=c++17 -I$(LIBTORCHPATH)/include -I$(LIBTORCHPATH)/include/torch/csrc/api/include
+source_ai: CXXFLAGS += -I$(LIBTORCHPATH)/include -I$(LIBTORCHPATH)/include/torch/csrc/api/include
 source_ai: LDFLAGS += -L$(LIBTORCHPATH)/lib
 source_ai: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/lib
 source_ai: source_ai.cpp
