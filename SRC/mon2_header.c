@@ -53,7 +53,7 @@ void WriteHeader1D(FILE* fMonitor, const char *sFctType, short bWeight,
    fprintf(fMonitor,"# x_range : %10.3f, %10.3f\n",  Xmin,     Xmax);
  #endif
 
-  return;
+  fprintf(fMonitor, "\n");
 }
 
 void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCol, long iBnch, long nBnch, int nBinsX,
@@ -95,7 +95,7 @@ void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCo
    fprintf(fMonitor, "# Data x        F(x)       DeltaF(x)    events\n");  // assumes format "%10.3f  %12.5e %12.5e  %7ld\n"
  #endif
 
-  return;
+  fprintf(fMonitor, "\n");
 }
 
 void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, short bWeight,
@@ -134,7 +134,9 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, sho
    fprintf(fMonitor,"# y_range :     %10.3e, %10.3e\n", Ymin, Ymax);
  #endif
 
-  return;
+  if (eFormat != MATRIX && eFormat != MATR_CMPT && eFormat != MATR_INT) {
+    fprintf(fMonitor, "\n");
+  }
 }
 
 
@@ -203,7 +205,9 @@ void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char 
    }
  #endif
 
-  return;
+  if (eFormat != MATRIX && eFormat != MATR_CMPT && eFormat != MATR_INT) {
+    fprintf(fMonitor, "\n");
+  }
 }
 
 /*********************************************/
@@ -258,7 +262,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
           x = (BinPosX[i]+BinPosX[i+1]) / 2.0;
           fprintf(fMonitor, "%10.4f %10.4f  %12.5e %12.5e  %7ld\n", x,y, fNorm*IntXY[i][j], fNorm*IntXYError[i][j], (long)(fNorm*nTrajXY[i][j]));
         }
-        Newline;
+        Newline; /* Remove this to make grplot work and break gnuplot */
       }
       break;
 
@@ -323,7 +327,7 @@ int WriteOutput2DB(FILE* fMonitor, VtFormat2D eFormat, short bWeight,
             fprintf(fMonitor, "%d\n", c);
           }
         }
-        Newline;
+        Newline; /* Remove this to make grplot work and break gnuplot */
       }
       break;
 

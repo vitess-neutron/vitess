@@ -5,6 +5,7 @@
 # Within binning :  6.416e+12 n/s   Trajectories:        500  (incl. filters and eval. time)
 # Bunches: 1 of 1 written
 # Data x        F(x)       DeltaF(x)    events
+
     0.0500   0.00000E+00  0.00000E+00        0
     0.1500   0.00000E+00  0.00000E+00        0
     0.2500   0.00000E+00  0.00000E+00        0
