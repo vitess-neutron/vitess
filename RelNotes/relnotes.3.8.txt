@@ -4,6 +4,14 @@ VITESS 3.8 Release Notes
 Module tests:
 Automated tests have been added that check Modules for changes in output, memory leaks and undefined behavior.
 
-Fixes and improvents:
-- Various memory leaks have been fixed.
+GUI improvements:
+- The GUI now automatically selects an installed plotting tool. The diffrentiation between 1D and 2D plots is done automatically.
+- Fixed issues with context menus.
+- Fixed MacOS-specific errors.
+
+Fixes and improvements:
+- Monitors: the calculation of k_y and k_z is now more consistent.
 - KDSource now finds its MCPL and bandwith files relative to the xml file.
+- sample_ncrystal is available on windows.
+- source_ai available as MacOS universal binary.
+- Various memory leaks have been fixed.

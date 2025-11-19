@@ -6,6 +6,7 @@
 # Total intensity:  8.099e+10 n/s   Trajectories:      10000
 # Within binning :  8.099e+10 n/s   Trajectories:      10000  (incl. filters and eval. time)
 # Bunches: 1 of 1 written
+
     1.0450   8.74723e+08  8.41702e+07      108
     1.1350   7.45121e+08  7.76843e+07       92
     1.2250   7.85616e+08  7.97672e+07       97

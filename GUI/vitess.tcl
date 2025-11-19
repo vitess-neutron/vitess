@@ -47,7 +47,7 @@
 #   set bgColor #f2f2fb
 # }
 
-set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active)$}
+set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active|Color)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
 # Some variables for settings begin with a capital letter, or are otherwise rejected by
@@ -88,6 +88,7 @@ set DoNotSave [concat $DoNotSaveSetting {
   radioColor
   scrollWidth simulation serif sserif
   timeout x3dapp_
+  defaultPlotApp
 }]
 
 foreach s {b h l m t} {
@@ -125,7 +126,7 @@ set globalDescriptionSET {
   inputESET xcontolDefaultsESET
 }
 
-#   Type names		        Extension(s)	Mac File Type(s)
+#   Type names                        Extension(s)        Mac File Type(s)
 
 set fileDialogSET {
   {"All files" *}
@@ -220,9 +221,9 @@ proc makeModuleSets {} {
     set h [lindex $line 2]
     if {$s != ""} {
       foreach t $s m $h {
-	if {$m == ""} {set m $h}
-	append aglob " [set m ${t}ESET]"
-	lappend a [list $t active $m "" "" $m]
+        if {$m == ""} {set m $h}
+        append aglob " [set m ${t}ESET]"
+        lappend a [list $t active $m "" "" $m]
       }
     } else {
       set n [lindex $line 0]
@@ -694,7 +695,7 @@ foreach s {long_pulsed ESS_LPTS ESS_2012 HBS} {
 set screenESET {
     {"Basic parameters" header}
     {scr_file mon2editablefile screen.pos {"monitor file" "name of the 2D monitor output file" "" O}}
-    {scr_geom radio flat {"geometry" "Geometry of the screen, rectangular or cylindrical (about vertical axis)" "" G}	{flat cylindrical} {2 1}}
+    {scr_geom radio flat {"geometry" "Geometry of the screen, rectangular or cylindrical (about vertical axis)" "" G}        {flat cylindrical} {2 1}}
     {scr_format radio matrix {"file\nformat" "file format for the 2D output: matrix or 'xyz' representation using float or integer values of different length\nfor details see 'Help|detector'" "" F} {matrix xyz "matrix compact" "xyz compact" "matrix integer"} {0 1 2 3 4}}
     {}
     {"Screen size" header}
@@ -717,7 +718,7 @@ set detectorESET {
     {"Basic detector properties" header}
     {array select array {"array (first or intermediate part)" "Select if detector is first or intermediate part of detector array. Do not select for single detector." "" B} {{"" 0}}}
     {}
-    {geom radio flat {geometry "The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}	{flat cylindrical} {2 1}}
+    {geom radio flat {geometry "The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}        {flat cylindrical} {2 1}}
     {type radio "area/volume" {"type" "detector type: gas tubes (only when 'flat') or area/volume detector" "" a} {"tubes" "area/volume"} {0 1}}
     {use radio normal { usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments. If 'grid off' is selected, the neutron position is written before taking the segmentation into account (including resolution effects if resolution is not set to 0, true interaction position if resolution is 0), including the probability modification." "" U}  {normal "monitor only" "grid off"} {0 1 2}}
     {}
@@ -779,7 +780,7 @@ proc detectorCheckErr {{app _}} {
       showText "!Please specify the full width for a flat detector"
       return 1
     }
-  } else {				# $geom == "cylindrical"
+  } else {                                # $geom == "cylindrical"
     if {$phi != 0 && $phi != 180 && $cylaxis != "x" } {
       showText "!Please specify phi as either 0 or 180 for a cylindrical geometry if the cylinder axis is not pointing along x"
       return 1
@@ -1615,19 +1616,19 @@ proc chpCheckErr {{app _}} {
     }
     if {$i < $nwindows} {
       if {$winpos == "" || $winheight == "" || $width == "" \
-	      || $ldeviation == "" || $rdeviation == ""} {
-	showText "!Please specify all entries for window  [expr $i + 1]"
-	set err 1
+              || $ldeviation == "" || $rdeviation == ""} {
+        showText "!Please specify all entries for window  [expr $i + 1]"
+        set err 1
       } elseif {"" == $winheight < 0 || $winheight > $radius} {
-	if {$radius == ""} {set rr radius} else {set rr $radius}
-	showText "!0 <= winheigth$i <= $rr"
-	set err 1
+        if {$radius == ""} {set rr radius} else {set rr $radius}
+        showText "!0 <= winheigth$i <= $rr"
+        set err 1
       }
     } else {
       if {$winpos != "" || $winheight != "" || $width != "" \
-	      || $ldeviation != "" || $rdeviation != ""} {
-	showText "!Did you want [expr $i + 1] windows? Then specify number of windows accordingly."
-	set err 1
+              || $ldeviation != "" || $rdeviation != ""} {
+        showText "!Did you want [expr $i + 1] windows? Then specify number of windows accordingly."
+        set err 1
       }
     }
   }
@@ -1719,9 +1720,9 @@ proc refCheckErr {{app _}} {
   if {[entryVal gen $app] == "user defined frame"} {
     foreach l {horang vertang x y z} {
       if {[entryVal $l $app] == ""} {
-	showText "!Please specify all values for user defined frame"
-	set err 1
-	break
+        showText "!Please specify all values for user defined frame"
+        set err 1
+        break
       }
     }
   }
@@ -1761,7 +1762,7 @@ set ma_flat_newESET {
   {mo_rndt radio no {"randomize\nTOF" "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored.\nUseful for a PST on a continuous source" "" K} {yes no} {1 0}}
   {}
   {mo_freq float 0 {"frequency\n[Hz]" "Frequency of the monochromator rotation/oscillation" "" f}}
-  {mo_phas float 0 {"initial\nphase [deg]" "Phase of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection" "" p}}
+  {mo_phas float 0 {"initial\nphase [deg]" "Phase of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is        defined by the offset of the Bragg reflection" "" p}}
   {mo_ampl float 0 {"drive\namplitude[cm]" "For Doppler drive only: Amplitude of the Doppler drive along the x axis" "" Q}}
   {}
   {mo_nwnd float 0 {"number\nof areas" "For PST only: number of identical areas, where the monochromator is mounted on the chopper" "" n}}
@@ -1843,8 +1844,8 @@ proc crs_newCheckErr {{app _}} {
     upvar #0 $l$app $l
   }
   if {$oframedef == "user defined frame" && \
-	  ($oframehang == "" || $oframevang == "" || \
-	       $oframex == "" || $oframey == "" || $oframez == "")} {
+          ($oframehang == "" || $oframevang == "" || \
+               $oframex == "" || $oframey == "" || $oframez == "")} {
     showText "!Please specify last five entries for user defined frame"
     return 1
   }
@@ -1938,8 +1939,8 @@ proc crsCheckErr {{app _}} {
     upvar #0 $l$app $l
   }
   if {$oframedef == "user defined frame" && \
-	  ($oframehang == "" || $oframevang == "" || \
-	       $oframex == "" || $oframey == "" || $oframez == "")} {
+          ($oframehang == "" || $oframevang == "" || \
+               $oframex == "" || $oframey == "" || $oframez == "")} {
     showText "!Please specify last five entries for user defined frame"
     return 1
   }
@@ -2201,7 +2202,7 @@ set precessionfieldESET {
   {y float 0 {"position\nmain Y [cm]" "center y position of the field map " "" l}}
   {z float 0 {"position\nmain Z [cm]" "center z position of the field map " "" m}}
   {ho float 0 {"offset\nhoriz. [deg]" "horizontal (first rotation) rotation angle of the field map" "" i}}
-  {vo float 0 {"offset\nvert. [deg]"  "vertical (first rotation) rotation angles of the	field map" "" j}}
+  {vo float 0 {"offset\nvert. [deg]"  "vertical (first rotation) rotation angles of the        field map" "" j}}
   {"Output frame" header}
   {ox float 10 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" p}}
   {oy float 0  {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
@@ -3168,8 +3169,8 @@ proc samplefilesCheckErr {type {app _}} {
   switch $cyl {
       cylinder {checkMv $hei height rc}
       cuboid {
-	checkMv $hei height rc
-	checkMv $wid width rc
+        checkMv $hei height rc
+        checkMv $wid width rc
       }
     default {set mchecks 0}
   }
@@ -3916,7 +3917,7 @@ proc collimator_sollerCheckErr {{app _}} {
     upvar #0 $l$app $l
   }
   if {$angcoll == "yes" && \
-	  ($minang == "" || $ncent == "" || $spang == "")} {
+          ($minang == "" || $ncent == "" || $spang == "")} {
     showText "!Please give minimum angle, number of coll.centers, and angle spacing"
     return 1
   }
@@ -4299,7 +4300,7 @@ The pipe command looks as follows (the experienced user might tune this
 directly without using the GUI):
 
 module1 --f<inputfilename> -a<value> ... | module2 -a<value> ... |
-	moduleN -a<value> ... --F<outputfilename>
+        moduleN -a<value> ... --F<outputfilename>
 
 The 'pipe' ('|') command is part of the command shell and is common in Unix
 and Windows systems.
@@ -4317,16 +4318,16 @@ gzip -cd <inputfilename> | module1 --c<inputfilesize> -a<value> ...
 Several command line options are common for all modules in the program
 package VITESS, i.e they have a common meaning. These options are
 
-		          	<boption>       <bdefault>
-1. neutron input filename	--f<filename>	stdin
-2. neutron output filename	--F<filename>	stdout
-3. rng init			--Z<value>	1
-4. neutron buffer size	        --B<value>	10000
-5. logfilename		        --L<filename>	stderr
-6. dotter			--J
-7. gravity 			--G		1
-8. min. neutron weight	        --U		1.0e-6
-9. parameter directory	        --P
+                                  <boption>       <bdefault>
+1. neutron input filename       --f<filename>     stdin
+2. neutron output filename      --F<filename>     stdout
+3. rng init                     --Z<value>        1
+4. neutron buffer size          --B<value>        10000
+5. logfilename                  --L<filename>     stderr
+6. dotter                       --J
+7. gravity                      --G                1
+8. min. neutron weight          --U                1.0e-6
+9. parameter directory          --P
 10.helper threads               --T
 11.read potentially compressed  --c<bytesize>
 12.write compressed             --C<mode>       0
@@ -4436,18 +4437,6 @@ resulting neutron data to standard output.
 The external command may be supplied with (argc, argv)-style options,
 which are specified by option string. This option string is given
 as the contents of a text file.
-
-Neutron data have the following C structure type:
-
-typedef struct {
-  double 	Time;
-  double        Wavelength;
-  double        Probability;
-  VectorType    Position;
-  VectorType    Vector;
-  VectorType    Spin;
-} Neutron;
-
 }
 
 helpItem Compression {
@@ -4533,7 +4522,7 @@ proc checkModVar {i {wishedmode ""}} {
     set r _$i\$
     foreach n [info globals] {
       if [regexp $r $n] {
-	lappend delist $n
+        lappend delist $n
       }
     }
   }
@@ -4541,26 +4530,26 @@ proc checkModVar {i {wishedmode ""}} {
   cleanupModView
 
   switch $sep {
-    here {				# normal entries in main window
+    here {                                # normal entries in main window
       catch {destroy $sepw}
       set sepw ""
-      set wm $Amf;			# actual module frame
+      set wm $Amf;                        # actual module frame
       if {$visible == $DummyEntry} {set n $wm.label} else {set n $wm.$visible}
       catch {destroy $n}
       set visible $var
       if {$var == $DummyEntry} {
-	helpFrame $wm
+        helpFrame $wm
       } else {
-	fGroup $wm.h $wm.$var
-	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor -fg $fgColor
+        fGroup $wm.h $wm.$var
+        label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor -fg $fgColor
         entry $wm.h.mname -width 6 -bg $bgColor -fg $fgColor -textvariable mmm_$i
         bind  $wm.h.mname <KeyRelease> "showModName $i"
         bind  $wm.h.mname <Leave> "showModName $i"
         pack $wm.h.mname -side left
-	pack $wm.h.head -side left -expand yes -fill both
+        pack $wm.h.head -side left -expand yes -fill both
 
-	generateEntries $wm.$var ${var}ESET $delist _$i
-	set needMoreModules 1
+        generateEntries $wm.$var ${var}ESET $delist _$i
+        set needMoreModules 1
 
         adjustScrollRegion $Amf $wm.$var
 
@@ -4573,25 +4562,25 @@ proc checkModVar {i {wishedmode ""}} {
     separate {
       set sepw $Mlf.w$i
       if [winfo exists $wm.$visible] {
-	destroy $wm.$visible
+        destroy $wm.$visible
       } else {
-	catch {destroy $sepw}
+        catch {destroy $sepw}
       }
       set visible $var
       if {$var == $DummyEntry} {
-	set sepw ""
+        set sepw ""
       } else {
-	set name "$var module $i"
-	if {[getSystem] == "unix"} {set name "VITESS module $i $var"}
-	generateToplevel $sepw $name
-	frame $sepw.$var
-	pack $sepw.$var
-	set ww [giveRoom $sepw.$var BigFrame$var]
-	fGroup $ww.e $ww.b
-	generateEntries $ww.e ${var}ESET $delist _$i
-	bButton $ww.b.done Done "destroy $sepw"
-	pack $ww.b.done
-	set needMoreModules 1
+        set name "$var module $i"
+        if {[getSystem] == "unix"} {set name "VITESS module $i $var"}
+        generateToplevel $sepw $name
+        frame $sepw.$var
+        pack $sepw.$var
+        set ww [giveRoom $sepw.$var BigFrame$var]
+        fGroup $ww.e $ww.b
+        generateEntries $ww.e ${var}ESET $delist _$i
+        bButton $ww.b.done Done "destroy $sepw"
+        pack $ww.b.done
+        set needMoreModules 1
       }
       catch {emptyFrame $wm}
       helpFrame $Amf
@@ -4602,8 +4591,8 @@ proc checkModVar {i {wishedmode ""}} {
       catch {destroy $wm.$visible}
       catch {emptyFrame $wm}
       foreach l $delist {
-	global $l
-	unset $l
+        global $l
+        unset $l
       }
       set needMoreModules 1
     }
@@ -4618,7 +4607,7 @@ proc checkModVar {i {wishedmode ""}} {
   if {!$needMoreModules} return
   set nexti [expr $i + 1]
   if [winfo exists $Mlf.g$nexti.label] return
-  moduleMenus $nexti;			# if next module menu is invisible
+  moduleMenus $nexti;                        # if next module menu is invisible
 }
 
 proc serializeChpFile {f mode var app} {
@@ -4644,7 +4633,7 @@ proc serializeChpFile {f mode var app} {
     for {set i 0} {$i < $n} {incr i} {
       if {[nextNumItems $f 5 ni] < 5} return
       foreach li $ni it {winpos winheight width ldeviation rdeviation} {
-	set $it$i $li
+        set $it$i $li
       }
     }
   } else {
@@ -4652,7 +4641,7 @@ proc serializeChpFile {f mode var app} {
     for {set i 0} {$i < $nwindows} {incr i} {
       set c [entryVal winpos$i $app]
       foreach it {winheight width ldeviation rdeviation} {
-	append c " [entryVal $it$i $app]"
+        append c " [entryVal $it$i $app]"
       }
       puts $f $c
     }
@@ -4698,56 +4687,56 @@ proc serializeSampleFile {f mode var app submodule} {
     foreach l $nlist {catch {unset $l}}
     if {$f == "0"} return
     if {[gets $f line] < 0 || [gets $f l1] < 0 || \
-	    [gets $f l2] < 0} return
+            [gets $f l2] < 0} return
     scan $line "%g%g%g" x y z
     switch [string range [string tolower $l1] 0 2] {
       cyl {
-	set cyl cylinder
-	scan $l2 "%g%g" thick hei
-	if {[gets $f l2] < 0} return
-	scan $l2 "%g%g%g" cx cy cz
+        set cyl cylinder
+        scan $l2 "%g%g" thick hei
+        if {[gets $f l2] < 0} return
+        scan $l2 "%g%g%g" cx cy cz
       }
       bal {
-	set cyl sphere
-	scan $l2 "%g" thick
+        set cyl sphere
+        scan $l2 "%g" thick
       }
       default {
-	set cyl cuboid
-	scan $l2 "%g%g%g" thick hei wid
-	if {[gets $f l2] < 0} return
-	scan $l2 "%g%g%g" cx cy cz
+        set cyl cuboid
+        scan $l2 "%g%g%g" thick hei wid
+        if {[gets $f l2] < 0} return
+        scan $l2 "%g%g%g" cx cy cz
       }
     }
     if {[gets $f l1] < 0} return
     switch $submodule {
       san {
-	catch {scan $l1 "%s%g%g%g" s hsrad sobv2 sobv3}
-	switch $s {
-	  S {set sob spheres}
-	  D {set sob "polydispersive spheres"}
-	  E {set sob ellipsoids}
-	  P {set sob parallelepipeds}
-	  C {set sob cylinders}
-	  default {set sob "isotropic scattering"}
-	}
-	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
-	scan $l1 "%g%g%g" rho1 rho2 fpkl
-	scan $l2 "%g%g%g" miscs mtscs mabcs
+        catch {scan $l1 "%s%g%g%g" s hsrad sobv2 sobv3}
+        switch $s {
+          S {set sob spheres}
+          D {set sob "polydispersive spheres"}
+          E {set sob ellipsoids}
+          P {set sob parallelepipeds}
+          C {set sob cylinders}
+          default {set sob "isotropic scattering"}
+        }
+        if {[gets $f l1] < 0 || [gets $f l2] < 0} return
+        scan $l1 "%g%g%g" rho1 rho2 fpkl
+        scan $l2 "%g%g%g" miscs mtscs mabcs
       }
       pow {
-	set sfactfile $l1
-	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
-	scan $l1 "%g%g%g" tscat cscat absorp
-	scan $l2 "%g" vol
-	if {[gets $f l3] > 0} {scan $l3 "%d%d%d%d%d%f" cD cF cF2 cM cDW sFactor}
+        set sfactfile $l1
+        if {[gets $f l1] < 0 || [gets $f l2] < 0} return
+        scan $l1 "%g%g%g" tscat cscat absorp
+        scan $l2 "%g" vol
+        if {[gets $f l3] > 0} {scan $l3 "%d%d%d%d%d%f" cD cF cF2 cM cDW sFactor}
       }
       psq {
-	if {$l1 == "D"} {set sfac "from file"} else {set sfac "as function"}
-	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
-	set sfactfile $l1
-	scan $l2 "%g%g%g" tscat cscat absorp
+        if {$l1 == "D"} {set sfac "from file"} else {set sfac "as function"}
+        if {[gets $f l1] < 0 || [gets $f l2] < 0} return
+        set sfactfile $l1
+        scan $l2 "%g%g%g" tscat cscat absorp
       }
-      default {	scan $l1 "%g%g%g%g" tscat cscat absorp vol}
+      default {        scan $l1 "%g%g%g%g" tscat cscat absorp vol}
     }
   } else {
     puts $f "$x $y $z"
@@ -4758,22 +4747,22 @@ proc serializeSampleFile {f mode var app submodule} {
     }
     switch $submodule {
       san {
-	switch $sob {
-	  spheres {set s S}
-	  "polydispersive spheres" {set s D}
-	  ellipsoids {set s E}
-	  parallelepipeds {set s P}
-	  cylinders {set s C}
-	  default {set s I}
-	}
-	puts $f "$s $hsrad $sobv2 $sobv3\n$rho1 $rho2 $fpkl\n$miscs $mtscs $mabcs"
+        switch $sob {
+          spheres {set s S}
+          "polydispersive spheres" {set s D}
+          ellipsoids {set s E}
+          parallelepipeds {set s P}
+          cylinders {set s C}
+          default {set s I}
+        }
+        puts $f "$s $hsrad $sobv2 $sobv3\n$rho1 $rho2 $fpkl\n$miscs $mtscs $mabcs"
       }
       pow {puts $f "$sfactfile\n$tscat $cscat $absorp\n$vol\n$cD $cF $cF2 $cM $cDW $sFactor"}
       psq {
-	if {$sfac == "from file"} {set s D} else {set s F}
-	puts $f "$s\n$sfactfile\n$tscat $cscat $absorp"
+        if {$sfac == "from file"} {set s D} else {set s F}
+        puts $f "$s\n$sfactfile\n$tscat $cscat $absorp"
       }
-      default {	puts $f "$tscat $cscat $absorp $vol"}
+      default {        puts $f "$tscat $cscat $absorp $vol"}
     }
   }
 }
@@ -4794,20 +4783,20 @@ proc serializeNxsFile {f mode var app} {
     scan $line "%g%g%g" x y z
     switch [string range [string tolower $l1] 0 2] {
       cyl {
-	set cyl cylinder
-	scan $l2 "%g%g" thick hei
-	if {[gets $f l2] < 0} return
-	scan $l2 "%g%g%g" cx cy cz
+        set cyl cylinder
+        scan $l2 "%g%g" thick hei
+        if {[gets $f l2] < 0} return
+        scan $l2 "%g%g%g" cx cy cz
       }
       bal {
-	set cyl sphere
-	scan $l2 "%g" thick
+        set cyl sphere
+        scan $l2 "%g" thick
       }
       default {
-	set cyl cuboid
-	scan $l2 "%g%g%g" thick hei wid
-	if {[gets $f l2] < 0} return
-	scan $l2 "%g%g%g" cx cy cz
+        set cyl cuboid
+        scan $l2 "%g%g%g" thick hei wid
+        if {[gets $f l2] < 0} return
+        scan $l2 "%g%g%g" cx cy cz
       }
     }
     if {[gets $f l1] < 0} return
@@ -4840,7 +4829,7 @@ proc serializeEnvFile {f mode var app} {
     foreach l $nlist {catch {unset $l}}
     if {$f == "0"} return
     if {[gets $f l0] < 0 || [gets $f l1] < 0 || \
-	    [gets $f l2] < 0 || [gets $f l3] < 0 } return
+            [gets $f l2] < 0 || [gets $f l3] < 0 } return
     scan $l0 "%g%g%g" env_thick env_wid env_hei
     set env_sffile $l1
     scan $l2 "%g%g%g" env_inc env_sca env_abs
@@ -4907,24 +4896,24 @@ proc serializeIneFile {f mode var app} {
     if {$f == "0"} return
     if [readNumItems $f $alist $app] {
       if {[gets $f l1] >= 0} {
-	set fitem [string tolower [lindex [split $l1] 0]]
-	switch [string range $fitem 0 2] {
-	  cyl {set cyl cylinder}
-	  hol {set cyl hollow-cylinder}
-	  bal {set cyl sphere}
-	  default {set cyl rectangular}
-	}
-	if [readNumItems $f $blist $app] {
-	  if {$gen} {set gen "user defined frame"} else {
-	    set gen "standard frame generation"}
-	}
+        set fitem [string tolower [lindex [split $l1] 0]]
+        switch [string range $fitem 0 2] {
+          cyl {set cyl cylinder}
+          hol {set cyl hollow-cylinder}
+          bal {set cyl sphere}
+          default {set cyl rectangular}
+        }
+        if [readNumItems $f $blist $app] {
+          if {$gen} {set gen "user defined frame"} else {
+            set gen "standard frame generation"}
+        }
       }
     }
   } else {
     puts $f "$lf $ahf $avf\n$dlf $dah $dav\n$scc $asc\n$x1 $y1 $z1\n$hoff $voff"
     switch $cyl {
       cylinder {puts $f cyl}
-	  hollow-cylinder {puts $f holcyl}
+          hollow-cylinder {puts $f holcyl}
       sphere   {puts $f bal}
       default  {puts $f cub}
     }
@@ -4947,9 +4936,9 @@ proc serializeSscFile {f mode var app} {
     if [readNumItems $f $alist $app] {
       if {[gets $f line] < 0} return
       switch [string range [string tolower $line] 0 2] {
-	cyl {set geom cylindrical}
-	cub {set geom cubic}
-	default {set geom ball}
+        cyl {set geom cylindrical}
+        cub {set geom cubic}
+        default {set geom ball}
       }
       readNumItems $f $clist $app
       readNumItems $f $dlist $app
@@ -4977,11 +4966,11 @@ proc serializeRefFile {f mode var app} {
     if {$f == "0"} return
     if [readNumItems $f $alist $app] {
       if $gen {
-	# user frame
-	set gen "user defined frame"
-	readNumItems $f $blist $app
+        # user frame
+        set gen "user defined frame"
+        readNumItems $f $blist $app
       } else {
-	set gen "standard defined frame"
+        set gen "standard defined frame"
       }
     }
   } else {
@@ -5011,16 +5000,16 @@ proc convert2String {ll} {
     if {[incr i] == 2} {
       # shape on position 2, must be C or R
       if {$e == 1 || $e == "C"} {
-	lappend l circular
+        lappend l circular
       } else {
-	lappend l rectangular
+        lappend l rectangular
       }
     } elseif {$i >= 11 && $i <=13} {
       # filenames on positions 11 12 13, may be none
       if {$e == "none" || $e == 0} {
-	lappend l {}
+        lappend l {}
       } else {
-	lappend l $e
+        lappend l $e
       }
     } elseif {$i == 14} {
       # modtype on position 14, must be from 0 to 4
@@ -5041,20 +5030,20 @@ proc convert2Code {ll app} {
   foreach e $ll {
     set v [entryVal $e $app]
     if {[incr i] == 2} {
-	  #2:shape
+          #2:shape
       if {$v == "circular"} {set v C} else {set v R}
     } elseif {$i >= 11 && $i <= 13} {
-	  #11:wfile..13:wtfile
+          #11:wfile..13:wtfile
       if {$v == "" || $v == "0"} {set v none}
     } elseif {$i == 14} {
-	  #14:modtype
+          #14:modtype
       # be careful: v might have - as value
       switch -- $v {
-	"decoupled poisoned" {set v 1}
-	"decoupled unpoisoned" {set v 2}
-	coupled {set v 3}
-	multi-spectral {set v 4}
-	default {set v 0}
+        "decoupled poisoned" {set v 1}
+        "decoupled unpoisoned" {set v 2}
+        coupled {set v 3}
+        multi-spectral {set v 4}
+        default {set v 0}
       }
     } elseif {$v == ""} {
       set v 0
@@ -5094,10 +5083,10 @@ proc serializeModFile {f mode var app} {
       switch [incr imode] {
         0 {set tl $il1}
         1 {set tl $il2
-	        set umod2 used
+                set umod2 used
         }
         2 {set tl $il3
-	        set umod3 used
+                set umod3 used
         }
       }
       set len1 [llength $ll]
@@ -5253,10 +5242,10 @@ proc editFile {var param ext app} {
   if {[set serializeproc [getSerializeProc $ext]] == ""} {
     global bgColor fgColor
     text $w.v.text -relief raised -bd 2 \
-	-height 32 -width 80\
-	-font [monoFont] -bg $bgColor -fg $fgColor\
-	-setgrid 1\
-	-yscrollcommand "$w.v.yscroll set"
+        -height 32 -width 80\
+        -font [monoFont] -bg $bgColor -fg $fgColor\
+        -setgrid 1\
+        -yscrollcommand "$w.v.yscroll set"
     yscroll $w.v "$w.v.text yview"
     pack $w.v.text -side left -fill both -expand yes
   }
@@ -5347,7 +5336,7 @@ proc moveDown {oldi} {
     if {[globVal mod$i] != $DummyEntry} {
       incr i
       if {![winfo exists $w.g$i.label]} {
-	moduleMenus $i
+        moduleMenus $i
       }
     }
   }
@@ -5363,10 +5352,10 @@ proc moveDown {oldi} {
     set r _$i\$
     foreach n $allglob {
       if [regexp $r $n] {
-	lappend rmlist $n
-	regsub $r $n _$newi newr
-	# save entry variable settings of these modules
-	lappend deflist [list $newr [globVal $n]]
+        lappend rmlist $n
+        regsub $r $n _$newi newr
+        # save entry variable settings of these modules
+        lappend deflist [list $newr [globVal $n]]
       }
     }
   }
@@ -5507,12 +5496,12 @@ proc removeMod {oldi} {
     set r _$i\$
     foreach n $allglob {
       if [regexp $r $n] {
-	lappend rmlist $n
-	if {$i > $oldi} {
-	  regsub $r $n _$newi newr
-	  # save entry variable settings of these modules
-	  lappend deflist [list $newr [globVal $n]]
-	}
+        lappend rmlist $n
+        if {$i > $oldi} {
+          regsub $r $n _$newi newr
+          # save entry variable settings of these modules
+          lappend deflist [list $newr [globVal $n]]
+        }
       }
     }
     if {$i > $oldi} {
@@ -5725,7 +5714,7 @@ proc moduleMenus {{n 1}} {
     button $w.cross -image fcross -command removeDigest
     button $w.right -image fright -command digestView -bg $bgColor -fg $fgColor
     label $w.l -text "Instrument Digest"\
-	-font $lfn -bg $bgColor -fg $fgColor
+        -font $lfn -bg $bgColor -fg $fgColor
     pack $w.cross -side left  -anchor w
     pack $w.right -side right -padx 1 -anchor w
     pack $w.l -side top -fill x -anchor w
@@ -5762,24 +5751,24 @@ proc moduleMenus {{n 1}} {
 
     set wm $w.opt.menu
     menubutton $w.opt -textvariable $varName -indicatoron 1 \
-	-menu $wm -font $lfn -bg $bgColor -fg $fgColor -relief raised -bd 2 -width 18 \
-	-highlightthickness 2 -anchor c
+        -menu $wm -font $lfn -bg $bgColor -fg $fgColor -relief raised -bd 2 -width 18 \
+        -highlightthickness 2 -anchor c
     menu $wm -tearoff 0 -bg $bgColor -fg $fgColor
     $wm add radiobutton -label $DummyEntry -variable $varName \
-	-command $cm -font $lfn
+        -command $cm -font $lfn
     foreach label $AvailableSET {
       set j [lindex $label 0]
       if {[set subl [lindex $label 1]] == ""} {
-	$wm add radiobutton -label $j -variable $varName \
-	    -command $cm -font $lfn
+        $wm add radiobutton -label $j -variable $varName \
+            -command $cm -font $lfn
       } else {
-	set subm $wm.$j
-	$wm add cascade -label $j -menu $subm -font $lfn
-	menu $subm -tearoff 0 -bg $bgColor -fg $fgColor
-	foreach jj $subl {
-	  $subm add radiobutton -label $jj -variable $varName \
-	      -command $cm -font $lfn
-	}
+        set subm $wm.$j
+        $wm add cascade -label $j -menu $subm -font $lfn
+        menu $subm -tearoff 0 -bg $bgColor -fg $fgColor
+        foreach jj $subl {
+          $subm add radiobutton -label $jj -variable $varName \
+              -command $cm -font $lfn
+        }
       }
     }
     pack $w.label $w.opt $w.right $w.nlabel -side left -padx 1 -anchor w

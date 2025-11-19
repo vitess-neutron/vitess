@@ -70,7 +70,6 @@ proc prettyNumber {t} {
 }
 
 proc showXYfile {fname} {
-
   set f [open $fname r]
 
   set i [getFreePlot]
@@ -81,7 +80,7 @@ proc showXYfile {fname} {
   set xmax -1.0e24
   set ymin $xmin
   set ymax $xmax
-  while {[gets $f ins] > 0} {
+  while {[gets $f ins] >= 0} {
     if {2 == [scan $ins "%f%f" x y]} {
       if {$x < $xmin} {set xmin $x}
       if {$x > $xmax} {set xmax $x}
@@ -209,7 +208,7 @@ proc showXYfile {fname} {
     set y [y2canvas $graph [lindex $point 1]]
     lappend lp $x $y
     $c create oval [expr $x-2] [expr $y-2] [expr $x+2] [expr $y+2] \
-	-width 1 -outline black -fill SkyBlue2
+        -width 1 -outline black -fill SkyBlue2
   }
   # data points connected by a red line
   eval $c create line $lp -fill #ff0000
