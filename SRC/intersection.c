@@ -218,6 +218,7 @@ double NeutronPlaneAngle2(const Neutron *ThisNeutron, const double AP, const dou
 /* This function move neutron from current position to the surface , furthemore he is include
    GRAVITY effect  and time of flight of neutron (return)
    Author: Manoshin Sergey,   25.03.01                                                            */
+/* Note: Calculation with gravity assumes that the surface is aligned with the Z-Axis             */
 /**************************************************************************************************/
 double NeutronSurfaceSecIntersectionGr(Neutron *ThisNeutron, const SurfaceSecond ThisSurfaceSecond, const long keygrav)
 {
@@ -253,6 +254,7 @@ double NeutronSurfaceSecIntersectionGr(Neutron *ThisNeutron, const SurfaceSecond
   if (keygrav == 1)
     {
       /* Corrected: Marz 03 */
+      /* Assume there is no curvature in the Z direction */
       AA = -0.5*(G*1.0e-4)*ThisSurfaceSecond.F;
     }
   else
