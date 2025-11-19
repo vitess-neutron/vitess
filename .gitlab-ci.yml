@@ -80,24 +80,6 @@ compile-rocky9:
     - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3
     - *linux_before_script
 
-compile-centos7:
-  extends: .compile-linux
-  image: centos:7
-  variables:
-    OS: CentOS7
-    ARCH: x86_64
-    NONCRYSTAL: 1
-    LIBTORCHPATH:
-  before_script:
-    - sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS*.repo
-    - sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS*.repo
-    - sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS*.repo
-    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip libxml2-devel python3
-    - *linux_before_script
-    - cd vitess-data
-    - ./cmake-3.28.5-linux-x86_64.sh --skip-license --prefix=/usr/local
-    - cd ..
-
 compile-ubuntu:
   extends: .compile-linux
   image: ubuntu:latest
@@ -174,7 +156,7 @@ compile-darwin:
     paths:
       - artifacts-Darwin-universal/
 
-compile-windows:
+.compile-windows-base:
   extends: .compile-base
   rules:
     - when: on_success
@@ -183,7 +165,6 @@ compile-windows:
     - libvirt
   variables:
     OS: Windows10
-    ARCH: x86
     WINDOWS_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-windows-data.git"
     WINDOWS_DATA_USER: "gitlab+deploy-token-91"
     WINDOWS_DATA_PASSWORD: "NzWKCpEizPVzMEUSgxGA"
@@ -193,20 +174,42 @@ compile-windows:
     - mv vitess-data/tcl /c/
     - mv vitess-data/gnuplot /c/
     - cd -
+
+.windows_package_script: &windows_package_script
+  - mkdir artifacts-${OS}-${ARCH}
+  - cp -r MODULES artifacts-${OS}-${ARCH}/
+  - mkdir -p /c/vitess${VITESS_VERSION}
+  - cp -r `cat filelist.txt` /c/vitess${VITESS_VERSION}/
+  - /c/vitess-data/innosetup/ISCC.exe TOOLS/Win10Vitess${VITESS_VERSION}.iss
+  - cp TOOLS/Output/mysetup.exe artifacts-${OS}-${ARCH}/Vitess${VITESS_VERSION}-${OS}-${ARCH}.exe
+
+compile-windows32:
+  extends: .compile-windows-base
+  variables:
+    ARCH: x86
   script:
     - cd SRC
     - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak all
     - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak install
     - cd ..
-    - mkdir artifacts-${OS}-${ARCH}
-    - cp -r MODULES artifacts-${OS}-${ARCH}/
-    - mkdir -p /c/vitess${VITESS_VERSION}
-    - cp -r `cat filelist.txt` /c/vitess${VITESS_VERSION}/
-    - /c/vitess-data/innosetup/ISCC.exe TOOLS/Win10Vitess${VITESS_VERSION}.iss
-    - cp TOOLS/Output/mysetup.exe artifacts-${OS}-${ARCH}/Vitess${VITESS_VERSION}-${OS}-${ARCH}.exe
+    - *windows_package_script
   artifacts:
     paths:
       - artifacts-Windows10-x86/
+
+compile-windows64:
+  extends: .compile-windows-base
+  variables:
+    ARCH: x86_64
+  script:
+    - cd SRC
+    - vcvars_cmd nmake -f vitess.mak all
+    - vcvars_cmd nmake -f vitess.mak install
+    - cd ..
+    - *windows_package_script
+  artifacts:
+    paths:
+      - artifacts-Windows10-x86_64/
 
 test-rocky9:
   extends: compile-rocky9
@@ -242,8 +245,24 @@ test-darwin:
   artifacts:
     paths: []
 
-test-windows:
-  extends: compile-windows
+test-windows32:
+  extends: compile-windows32
+  stage: test
+  rules:
+    - when: never
+  needs: []
+  script:
+    - pacman -S --noconfirm diffutils
+    - cd SRC
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak DEBUG=1 all
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak DEBUG=1 install
+    - cd ..
+    - tests/test_modules.sh
+  artifacts:
+    paths: []
+
+test-windows64:
+  extends: compile-windows64
   stage: test
   rules:
     - when: on_success
@@ -251,8 +270,8 @@ test-windows:
   script:
     - pacman -S --noconfirm diffutils
     - cd SRC
-    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak DEBUG=1 all
-    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak DEBUG=1 install
+    - vcvars_cmd nmake -f vitess.mak DEBUG=1 all
+    - vcvars_cmd nmake -f vitess.mak DEBUG=1 install
     - cd ..
     - tests/test_modules.sh
   artifacts:
@@ -286,7 +305,7 @@ package:
       allow_failure: true
   script:
     - mkdir Downloads
-    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-universal Windows10-x86 Rocky9-x86_64 Fedora40-x86_64 Debian-x86_64; do
+    - for OSARCH in Rocky8-x86_64 Ubuntu-x86_64 Darwin-universal Windows10-x86 Windows10-x86_64 Rocky9-x86_64 Fedora40-x86_64 Debian-x86_64; do
         mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
         cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
         cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;

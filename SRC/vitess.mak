@@ -3,28 +3,34 @@
 # nmake /f vitess.mak all
 # nmake /f vitess.mak install
 # after cd to the SRC directory of the Vitess tree
-# from a Microsoft VS 2017 cmd.exe
+# from a Microsoft VS 2022 cmd.exe
+
+!if "$(VSCMD_ARG_TGT_ARCH)" == "x86"
+WINARCH=win32
+!else
+WINARCH=win64
+!endif
 
 VERSION_MAJOR = 3
 VERSION_MINOR = 8
 GSLPATH = .\rng
 G2PATH = .\g2-0.72
-NCRYSTALPATH = .\ncrystal\win32
-KDSOURCEPATH = .\kdsource\win32
+NCRYSTALPATH = .\ncrystal\$(WINARCH)
+KDSOURCEPATH = .\kdsource\$(WINARCH)
 
 CC = cl.exe
 CXX = cl.exe
-CCFLAGS = /MT /nologo /W3 /GF /EHsc
+CCFLAGS = /MT /nologo /W3 /GF /EHsc /wd5105
 CFLAGS = /std:c11 $(CCFLAGS)
-CXXFLAGS = /std:c++14 $(CCFLAGS)
-CPPFLAGS = /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR) /I "$(GSLPATH)" /I "$(NCRYSTALPATH)\include" /I "$(KDSOURCEPATH)\include"
+CXXFLAGS = /std:c++17 $(CCFLAGS)
+CPPFLAGS = /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR) /I "$(GSLPATH)"
 LD = link.exe
-LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /libpath:"$(NCRYSTALPATH)\lib" /libpath:"$(KDSOURCEPATH)\lib" /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmt.lib
-LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib msvcrt.lib vitess.lib libgsl.lib NCrystal.lib kdsource.lib mcpl.lib libxml2.lib
+LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmt.lib
+LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib msvcrt.lib vitess.lib libgsl.lib
 
 !ifndef NOG2
 CPPFLAGS = $(CPPFLAGS) /DDO_PS /DVT_GRAPH /I "$(G2PATH)\src" /I "$(G2PATH)\src\Win32" /I "$(G2PATH)\src\PS"
-LDFLAGS = $(LDFLAGS) /libpath:"$(G2PATH)"
+LDFLAGS = $(LDFLAGS) /libpath:"$(G2PATH)\src"
 LDLIBS = $(LDLIBS) libg2.lib
 !endif
 
@@ -133,6 +139,9 @@ writeout.exe
 !ifndef NOG2
 ALL = $(ALL) visual.exe dist_time.exe
 !endif
+!ifdef LIBTORCHPATH
+ALL = $(ALL) source_ai.exe
+!endif
 
 # objects used by multiple modules
 COMMON = init.obj \
@@ -156,20 +165,51 @@ sswread.obj
 COMMON = $(COMMON) cpgplot.obj
 !endif
 
+DEPS = $(GSLPATH)\libgsl.lib
+!ifndef NOG2
+DEPS = $(DEPS) $(G2PATH)\src\libg2.lib
+!endif
+
 # general make targets
-all: vitess.lib $(ALL)
+all: $(DEPS) vitess.lib $(ALL)
 
 clean:
 	-del *.lib *.obj $(ALL)
 
-# Note: DLLs are required because of MSVC limitations
+distclean: clean
+	cd "$(GSLPATH)"
+	$(MAKE) /f gsl.mak clean
+	cd "$(MAKEDIR)"
+	cd "$(G2PATH)\src"
+	$(MAKE) /f g2.mak clean
+	cd "$(MAKEDIR)"
+
 install: $(ALL)
 	copy /Y *.exe ..\MODULES\\
-	copy /Y $(KDSOURCEPATH)\lib\*.dll ..\MODULES\\
 
 vitess.lib: $(COMMON)
 	lib /OUT:vitess.lib $(COMMON)
 
+$(GSLPATH)\libgsl.lib:
+	cd "$(GSLPATH)"
+	$(MAKE) /f gsl.mak
+	cd "$(MAKEDIR)"
+
+$(G2PATH)\src\libg2.lib:
+	cd "$(G2PATH)\src"
+	$(MAKE) /f g2.mak
+	cd "$(MAKEDIR)"
+
+# KDSource for read_in
+read_in.exe: read_in.c random_sampler.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) /I "$(KDSOURCEPATH)\include" /Fe$@ $** $(LDLIBS) kdsource.lib bcrypt.lib /link $(LDFLAGS) /libpath:"$(KDSOURCEPATH)\lib"
+
+# NCrystal for sample_ncrystal
+sample_ncrystal.exe: sample_ncrystal.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) /I "$(NCRYSTALPATH)\include" /Fe$@ $** $(LDLIBS) NCrystal.lib /link $(LDFLAGS) /libpath:"$(NCRYSTALPATH)\lib"
+
+source_ai.exe: source_ai.cpp
+	$(CXX) $(CXXFLAGS) /wd4251 $(CPPFLAGS) /I "$(LIBTORCHPATH)\include" /I "$(LIBTORCHPATH)\include\torch\csrc\api\include" /Fe$@ $** $(LDLIBS) /link $(LDFLAGS) torch.lib torch_cpu.lib c10.lib /libpath:"$(LIBTORCHPATH)\lib"
 
 # additional dependencies
 bender.exe: bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c
@@ -195,8 +235,6 @@ monochr_analyser.exe: monochr_analyser.c ma_functions.c ma_geom.c
 monochromator.exe: monochromator.cpp monochrclass.cpp
 
 opt_sim.exe: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
-
-read_in.exe: read_in.c random_sampler.c
 
 sample_nxs.exe: sample_nxs.c nxs.c sgclib.c sgfind.c sghkl.c sgio.c sgsi.c
 

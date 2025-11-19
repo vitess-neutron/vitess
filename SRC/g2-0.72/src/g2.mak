@@ -17,7 +17,7 @@ OBJS= .\g2_device.obj .\g2_ui_control.obj \
       .\g2_graphic_pd.obj .\g2_control_pd.obj \
       .\g2_ui_graphic.obj .\g2_ui_virtual_device.obj \
       .\g2_ui_device.obj .\g2_splines.obj
-      
+
 BASE_INS= $(BDIR)\g2.h
 
 PS_DIR= $(BDIR)\PS
@@ -25,10 +25,10 @@ PS_SRC= $(PS_DIR)\g2_PS.c
 PS_OBJ= $(PS_DIR)\g2_PS.obj
 PS_INS= $(PS_DIR)\g2_PS.h
 
-WIN32_DIR= $(BDIR)\WIN32
-WIN32_SRC= $(WIN32_DIR)/g2_win32.c $(WIN32_DIR)/g2_win32_thread.c 
-WIN32_OBJ= $(WIN32_DIR)/g2_win32.obj $(WIN32_DIR)/g2_win32_thread.obj
-WIN32_INS= $(WIN32_DIR)/g2_win32.h
+WIN32_DIR= $(BDIR)\Win32
+WIN32_SRC= $(WIN32_DIR)\g2_win32.c $(WIN32_DIR)\g2_win32_thread.c
+WIN32_OBJ= $(WIN32_DIR)\g2_win32.obj $(WIN32_DIR)\g2_win32_thread.obj
+WIN32_INS= $(WIN32_DIR)\g2_win32.h
 
 #GD_DIR= $(BDIR)/GD
 #GD_SRC= $(GD_DIR)/g2_gd.c
@@ -39,6 +39,8 @@ WIN32_INS= $(WIN32_DIR)/g2_win32.h
 #INS= $(BASE_INS) $(PS_INS) $(FIG_INS) $(X11_INS) $(WIN32_INS) $(GD_INS)
 
 G2_ALL_OBJECTS=$(OBJS) $(WIN32_OBJ) $(PS_OBJ)
+
+All : .\libg2.lib
 
 # nach cd Win32
 #g2_win32.obj: $(WIN32_SRC)
@@ -73,12 +75,17 @@ g2_ui_device.obj: g2_ui_device.c
     cl $(CFLAGS) $**
 g2_splines.obj: g2_splines.c
     cl $(CFLAGS) $**
+$(WIN32_DIR)/g2_win32.obj: $(WIN32_DIR)\g2_win32.c
+    cl $(CFLAGS) /Fo$@ $**
+$(WIN32_DIR)/g2_win32_thread.obj: $(WIN32_DIR)\g2_win32_thread.c
+    cl $(CFLAGS) /Fo$@ $**
+$(PS_DIR)\g2_PS.obj: $(PS_DIR)\g2_PS.c
+    cl $(CFLAGS) /Fo$@ $**
 
-
-All : .\libg2.lib
 
 ".\libg2.lib" : $(G2_ALL_OBJECTS)
     $(AR) /OUT:".\libg2.lib" $(G2_ALL_OBJECTS)
 
-
+clean:
+	-del .\libg2.lib $(G2_ALL_OBJECTS)
 
