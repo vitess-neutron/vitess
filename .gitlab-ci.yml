@@ -245,22 +245,6 @@ test-darwin:
   artifacts:
     paths: []
 
-test-windows32:
-  extends: compile-windows32
-  stage: test
-  rules:
-    - when: never
-  needs: []
-  script:
-    - pacman -S --noconfirm diffutils
-    - cd SRC
-    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak DEBUG=1 all
-    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak DEBUG=1 install
-    - cd ..
-    - tests/test_modules.sh
-  artifacts:
-    paths: []
-
 test-windows64:
   extends: compile-windows64
   stage: test

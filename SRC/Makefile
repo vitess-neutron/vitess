@@ -241,7 +241,7 @@ endif
 
 # build libraries
 $(G2PATH)/libg2.a:
-	cd $(G2PATH); ./configure $(G2OPTS) --disable-shared CC=$(CC) CXX=$(CXX) CFLAGS="$(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
+	cd $(G2PATH); ./configure $(G2OPTS) --disable-shared CC=$(CC) CXX=$(CXX) CFLAGS="-std=gnu99 $(ARCHFLAGS)" CXXFLAGS="$(ARCHFLAGS)"
 	$(MAKE) -C "$(G2PATH)" all
 
 $(GSLPATH)/libgslran.a:

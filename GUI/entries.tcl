@@ -435,6 +435,12 @@ proc generateEntries {w globalset {delist {}} {app _}} {
     for {set i 0} {$i < 3} {incr i} {
       fileEntry $w.$i.e [lindex $all $i] $itemlabwidth $fileentrywidth $app
     }
+    # disable input/output file entries
+    foreach i {0 1} {
+      $w.$i.e.e configure -state disabled
+      $w.$i.e.b configure -state disabled
+      $w.$i.e.bn configure -state disabled
+    }
 
     foreach i {3 4} o {"" opt} {
       nvalEntryLabel $w.3.e$o [list [lindex $all $i]] 1 8 $app $o
