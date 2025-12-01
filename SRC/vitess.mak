@@ -16,7 +16,7 @@ VERSION_MINOR = 8
 GSLPATH = .\rng
 G2PATH = .\g2-0.72
 NCRYSTALPATH = .\ncrystal\$(WINARCH)
-KDSOURCEPATH = .\kdsource\$(WINARCH)
+KDSOURCEPATH = .\libkdsource\$(WINARCH)
 
 CC = cl.exe
 CXX = cl.exe
@@ -77,6 +77,7 @@ guide.exe \
 guide_elliptic.exe \
 guide_parallel.exe \
 guide_shape.exe \
+kdsource.exe \
 lattice_dist.exe \
 lenses.exe \
 merge.exe \
@@ -200,8 +201,8 @@ $(G2PATH)\src\libg2.lib:
 	$(MAKE) /f g2.mak
 	cd "$(MAKEDIR)"
 
-# KDSource for read_in
-read_in.exe: read_in.c random_sampler.c
+# KDSource for module kdsource
+kdsource.exe: kdsource.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) /I "$(KDSOURCEPATH)\include" /Fe$@ $** $(LDLIBS) kdsource.lib bcrypt.lib /link $(LDFLAGS) /libpath:"$(KDSOURCEPATH)\lib"
 
 # NCrystal for sample_ncrystal
@@ -235,6 +236,8 @@ monochr_analyser.exe: monochr_analyser.c ma_functions.c ma_geom.c
 monochromator.exe: monochromator.cpp monochrclass.cpp
 
 opt_sim.exe: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
+
+read_in.exe: read_in.c random_sampler.c
 
 sample_nxs.exe: sample_nxs.c nxs.c sgclib.c sgfind.c sghkl.c sgio.c sgsi.c
 

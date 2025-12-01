@@ -21,8 +21,9 @@
 /* 1.6a Aug  2022  P. Zakalek      removed automatic rotation of MCPL file format            */
 /* 1.6b Aug  2022  P. Zakalek      added option to limit number of read neutrons             */
 /* 1.6c Feb  2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
-/* 3.5  Jul  2024  J. Robledo      random sampling feature                                   */
-/* 3.7  Apr  2025  N. Schmidt      KDsource functionality                                    */
+/* 1.7  Jul  2024  J. Robledo      random sampling feature                                   */
+/* 1.7  Apr  2025  N. Schmidt      KDsource functionality                                    */
+/* 1.8  Nov  2025  F. Beule        Move KDSource to a separate module                        */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -34,7 +35,6 @@
 #include "trace.h"
 #include "sswread.h"
 #include "random_sampler.h"
-#include "kdsource.h"
 
 #define NF_MAX         3
 #define MAX_HEADER  3000
@@ -52,7 +52,6 @@ short ReadMcplTraj  (Neutron* pNeutron);                              // Reads M
 short ReadMcnpxTraj (Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads MCNPX  trajectory
 short ReadSSWTraj   (Neutron* pNeutron, int* nTrj, ssw_file_t pFile); // Reads MCNP SSW trajectory
 short ReadMcnp6Traj (Neutron* pNeutron, int* nTrj, FILE* pFile);      // Reads MCNP6 trajectory
-short ReadKDSTraj   (Neutron* pNeutron, KDSource *pFile, int perturb, double wcrit);             // Reads KDSource file
 
 short ConvertMcStas2Vitess(Neutron* pVitNeut, const McNeutron*       pMcNeut);     // Converts McStas to VITESS trajectory
 short ConvertMcpl2Vitess  (Neutron* pVitNeut, const mcpl_particle_t* pMcplPtcl);   // Converts MCPL to VITESS trajectory
@@ -78,7 +77,6 @@ short        iDetectColor=-1;            // -C        Only for VITESS format: Re
 int          nRep=1;                     // -R        Number of times the input is read
 double       maxEv=-1;                   // -M        maximal numver of events read
 int          sample=0;                   // -J        random sample or not
-int          use_kde=1;                  // -K        Where to use KDE or just read the particles from the MCPL file refered in the xml file.
 
 /*
 extern char* _sTraceFileName;            // -T        name of the file containing the trajectories to be traced or started
@@ -91,7 +89,6 @@ extern VtTrace _eTraceMode;              // -t        NO_TRACING     : no tracin
 FILE*        pInFile[NF_MAX];            //           pointer to input file
 mcpl_file_t  hInFile;                    //           handle to MCPL input file
 ssw_file_t   hSSWFile;                   //           handle to SSW input file
-KDSource*    hKDSFile;                   //           handle to KDSource input file
 
 FILE*        LogFile;                    //           this module needs a separate log file to avoid mixing events with log output
 
@@ -112,14 +109,13 @@ int main(int argc, char **argv)
   int             nT=0;             // number of trajectories identified
   // char            sLine[256]="";    // one line in input file
   Neutron         InNeutron;
-  double          w_crit=0.0;       // weight to use KDE while calling KDSource
 
   // Initialisation
   // --------------
   _eModule=MCN_READ_IN;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.7");
+  PrintModuleName(_eModule, "1.8");
   OwnInit(argc, argv);
 
   bVisInstalled = FALSE;
@@ -170,20 +166,6 @@ int main(int argc, char **argv)
             rc = VT_EOF;
           }
         }
-      }
-    }
-  } else if (ePrgFormat == VT_KDS_FMT) {
-    rc = TRUE;
-    int NumNeutrFile = hKDSFile->plist->npts;
-    w_crit = use_kde ? KDS_w_mean(hKDSFile, 1000, NULL): -1;
-    while (rc != VT_EOF && NumNeutRead < NumNeutrFile && NumNeutRead < maxEv) {
-      rc =  ReadKDSTraj(&InNeutron, hKDSFile, use_kde, w_crit);
-      if (rc == TRUE)
-      {
-        NumNeutRead += rc;
-        WriteNeutron(&InNeutron);
-        if (NumNeutRead <= 10)
-        fprintf(LogFilePtr, "%lu\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\t%.3e\n", InNeutron.ID.IDNo, InNeutron.Wavelength, InNeutron.Position[0], InNeutron.Position[1], InNeutron.Position[2],  InNeutron.Vector[0], InNeutron.Vector[1], InNeutron.Vector[2], InNeutron.Time, InNeutron.Probability);
       }
     }
   }
@@ -337,7 +319,7 @@ void OwnInit(int argc, char *argv[])
           sample = (VtSampling) atoi(&argv[i][2]);
           break;
         case 'K':
-          use_kde = (int)atoi(&argv[i][2]);
+          Error("KDSource functionality has been moved to module 'kdsource'");
           break;
         default:
           fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
@@ -368,10 +350,7 @@ void OwnInit(int argc, char *argv[])
     hSSWFile = ssw_open_file(sFullInputName);
   }
   else if (ePrgFormat==VT_KDS_FMT){
-    char sFullInputName[CHAR_BUF_SMALL];
-    TotalPath(sFullInputName, sInputFileName[0], "", IN_DIR);
-    KDS_setlogfile(LogFilePtr);
-    hKDSFile = KDS_open(sFullInputName);
+    Error("KDSource functionality has been moved to module 'kdsource'");
   }
   else
   {
@@ -402,7 +381,6 @@ void OwnInit(int argc, char *argv[])
       case VT_MCNPX_FMT : nHeader=   0; Error  ("Binary input for MCNPX not yet properly implemented"); break;
       case VT_MCNP6_FMT : nHeader=   0; break;
       case VT_SSW_FMT: nHeader= 0; break;
-      case VT_KDS_FMT: nHeader= 0; break;
       default: Error("Data format is not (yet) implemented");
     }
   }
@@ -431,8 +409,6 @@ void OwnCleanup()
     mcpl_close_file(hInFile);
   } else if (ePrgFormat== VT_SSW_FMT){
     ssw_close_file(hSSWFile);
-  } else if (ePrgFormat== VT_KDS_FMT){
-    KDS_destroy(hKDSFile);
   }
   else
   { // Close all files
@@ -560,15 +536,6 @@ short ReadMcplTraj(Neutron* pNeutron)
     rc = ConvertMcpl2Vitess(pNeutron, pMcplPtcl);
 
   return(rc);
-}
-
-short ReadKDSTraj(Neutron* pNeutron, KDSource *pfile, int perturb, double wcrit)
-{
-  mcpl_particle_t part;
-
-  KDS_sample2(pfile, &part, perturb, wcrit, NULL, 1);
-
-  return ConvertMcpl2Vitess(pNeutron, &part);
 }
 
 /******************************************/
