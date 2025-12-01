@@ -117,6 +117,8 @@ set TempVars {
   vsn
   pow
   tA
+  rA
+  sp
 }
 
 
