@@ -6,7 +6,7 @@ MODULES_DIR ?= ../MODULES
 GSLPATH ?= ./rng
 G2PATH ?= ./g2-0.72
 NCRYSTALPATH ?= ./ncrystal
-KDSOURCEPATH ?= ./kdsource
+KDSOURCEPATH ?= ./libkdsource
 
 SYS := $(shell uname -s)
 ARCH := $(shell uname -m)
@@ -117,6 +117,7 @@ guide \
 guide_elliptic \
 guide_parallel \
 guide_shape \
+kdsource \
 lattice_dist \
 lenses \
 merge \
@@ -283,6 +284,11 @@ gener_pipe: gener_pipe.c pipe_fct.c
 
 grid: grid.c bender_inter_data.c
 
+kdsource: CPPFLAGS += -I$(KDSOURCEPATH)/install/include
+kdsource: LDFLAGS += -L$(KDSOURCEPATH)/install/lib
+kdsource: LDLIBS += -lkdsource -lmcpl -lxml2 -lz
+kdsource: kdsource.c | $(KDSOURCEPATH)/install/lib/libkdsource.a
+
 lenses: lenses.c lensetr.c
 
 mirror_elliptical: mirror_elliptical.c mirrrefl.c
@@ -297,10 +303,7 @@ monochromator: monochromator.cpp monochrclass.cpp
 
 opt_sim: opt_sim.c opt_grad.c opt_grad_mc.c opt_metro.c opt_swarm.c opt_fct.c calc_sim_fom.c
 
-read_in: CPPFLAGS += -I$(KDSOURCEPATH)/install/include
-read_in: LDFLAGS += -L$(KDSOURCEPATH)/install/lib
-read_in: LDLIBS += -lmcpl -lkdsource -lxml2
-read_in: read_in.c random_sampler.c | $(KDSOURCEPATH)/install/lib/libkdsource.a
+read_in: read_in.c random_sampler.c
 
 sample_ncrystal: CPPFLAGS += -I$(NCRYSTALPATH)/install/include
 sample_ncrystal: LDFLAGS += -L$(NCRYSTALPATH)/install/lib

@@ -441,7 +441,7 @@ proc checkAll {} {
           }
         }
       }
-      if {! [regexp {^(source_|read_in|ai_)} $var]} {
+      if {! [regexp {^(source_|read_in|ai_|kdsource)} $var]} {
         set infname [entryVal infilename]
         if {"" == $infname} {
           showText "!Please specify an input file, if the first module\ndoes not generate simulated neutrons"

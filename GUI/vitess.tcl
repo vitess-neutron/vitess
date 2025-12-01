@@ -199,7 +199,7 @@ proc makeModuleSets {} {
       source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS source_ai} source}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
-    {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
+    {trajectories {read_in writeout spin_reset kdsource} {writeout writeout spin_reset ""}}
     {velselect {} velselect}
     {monitor {
       visual
@@ -818,7 +818,7 @@ set template_moduleESET {
 ### Read_In
 ###
 set read_inESET {
-  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW KDSource} {1 2 3 5 6 7}}
+  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
   {inform radio float {"storage format" "format of float values in writeout file" "" F} {exp float binary} {0 1 2}}
   {}
   {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st Input file containing trajectories." "" A} r "" 1}
@@ -889,7 +889,7 @@ set writeoutESET {
   {filtDivMax float "" {"filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
 }
 
-### Read_In
+### source_AI
 ###
 set source_aiESET {
   {"Variational Autoencoder Source - Experimental" header}
@@ -913,6 +913,13 @@ set spin_resetESET {
   {"Colour Reset" header}
   {sccolor int 0
     {"number of\ncolours" "if greater zero, the colour of the trajectories will be reset (to a value between 1 and this number)" "" c}}
+}
+
+### KDSource
+###
+set kdsourceESET {
+  {fname pareditablefile "" {"input\nfile 1" "Specifies the name of the ASCII 1st Input file containing trajectories." "" A} r "" 1}
+  {maxEv float "" {"max events" "Maximum number of trajectories that are read. If 'No', then the whole file will be read." "" M}}
 }
 
 ### Frame
