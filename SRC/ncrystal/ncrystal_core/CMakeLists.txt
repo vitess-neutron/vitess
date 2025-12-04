@@ -297,6 +297,7 @@ ncfind_relinstpath( NCrystal_relpath_CMAKEDIR2DATAFILESDIR "${NCrystal_DATAFILES
 
 add_library( ncrystal_common INTERFACE )
 target_compile_features( ncrystal_common INTERFACE cxx_std_11 )
+target_compile_options( ncrystal_common INTERFACE -Wno-maybe-uninitialized )
 
 #Properties for executables (can't transfer all properties via INTERFACE
 #targets, so we need this variable-based workaround):
