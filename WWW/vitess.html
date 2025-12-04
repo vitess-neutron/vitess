@@ -389,27 +389,31 @@
       <p>
         Neutron data have the following C structure type:
       <pre><code>
-        typedef double VectorType[3];
-        typedef struct
-        {
-          char          IDGrp[2];
-          unsigned long IDNo;
-        }
-        TotalID;
+    typedef double VectorType[3];
 
-        typedef struct
-        {
-          TotalID       ID;
-          char          Debug;
-          short         Color;
-          double        Time;
-          double        Wavelength;
-          double        Probability;
-          VectorType    Position;
-          VectorType    Vector;
-          VectorType    Spin;
-        }
-        Neutron;
+    typedef struct
+    {
+      char IDGrp[2];
+      char _pad[6];
+      uint64_t IDNo;
+    }
+    TotalID;
+
+    typedef struct
+    {
+      TotalID ID;
+      char Debug;
+      char _pad1;
+      int16_t Color;
+      char _pad2[4];
+      double Time;
+      double Wavelength;
+      double Probability;
+      VectorType Position;
+      VectorType Vector;
+      VectorType Spin;
+    }
+    Neutron;
       </code></pre>
       </p>
     </section>
@@ -509,52 +513,29 @@
         </tr>
       </table>
     </section>
-      VITESS is distributed with compiled binaries for Windows, Linux, and Mac OS.
-      With these binaries you may execute VITESS out of the box on most systems.<br>
-      You will need to compile sources, when your system is of another Unix flavor
-      or some system libraries are not compatible, or you want to use the latest
-      compiler's optimization for ultimate speed.
-    <h3>Compiling the C/C++ Sources on Unix Systems</h3>
-    <ol>
-      <li><code>cd &lt;path-to-installation&gt;/SRC</code>
-      <li><code>./mmake.pl</code>
-      <li><code>make</code>
-      <li><code>make install</code>
-    </ol>
+
+
+    <section>
+    <h2>Download and Compilation</h2>
+
     <p>
-    The mmake.pl script explores your system hardware and given Linux or Mac OS software and
-    generates a Makefile.<br>Making depends on compiled GSL PRNG and g2 libraries, to be
-    found in the rng and g2/g2-0.72 subdirectory.<br>
-    You may provide some parameters for the generation, see <code>mmake.pl -h</code>
-    <br>
-    If something is missing you may edit Makefile to your needs, please feel free to ask for help at the
-    vitess@fz-juelich.de mailing list.<br>
-    mmake.pl also states the given VITESS version and the date of its call in the binaries.
-    <br>
-    We use the GNU C compiler as default, but you may use the optimizing Intel compiler
-    by editing the Makefile at the #Compiler lines.
-    <br>
-    Installing the binaries means to move the linked files to the MODULES directory,
-    with a name extension like _Linux (for 32 bit Intel Linux systems),
-    _Linux_x86_64 (64 bit Intel Linux) or _Darwin (32 bit Intel Mac) and _Darwin_x86_64
-    (64 bit Intel Mac).
-    <h3>Compiling the Sources on Windows systems</h3>
-    SRC\vitess.mak in the distribution is a nmake makefile for MS Visual C compilers, to be
-    called in a command shell. Both files may be generated with the Unix mmake.pl script.
+    VITESS is distributed with compiled binaries for Windows, Linux, and Mac OS.
+    With these binaries you may execute VITESS out of the box on most systems.
     </p>
     <p>
-    <ol>
-      <li><code>cd &lt;path-to-installation&gt;\SRC</code>
-      <li>edit compile.bat and vitess.mak to your needs
-      <li><code>compile.bat</code>
-      <li><code>copy Release\*.exe ..\MODULES</code>
-    </ol>
-    You need to edit the path statement of compile.bat, and the CPATH, SROOT, SVNROOT
-    and CPATH2 lines of vitess.mak.<br>
-    Calling compile.bat should produce .exe binaries
-    in SRC\Release. The last step installs these.
+    The latest release can be found on the <a href="https://iffgit.fz-juelich.de/vitess/vitess/-/releases">Gitlab releases page</a>.
     </p>
+
+
+    <h3>Compiling the C/C++ Sources</h3>
+
+    <p>
+    Detailed instructions and dependencies for compilation can be found in the <a href="https://iffgit.fz-juelich.de/vitess/vitess/-/blob/develop/README.md#installation">README file on Gitlab</a>.
+    </p>
+
     </section>
+
+
     <section>
       <div id="Tutorials" class="anchor"></div>
       <h2>VITESS tutorials</h2>
