@@ -73,6 +73,7 @@ CMAKEFLAGS += -DCMAKE_BUILD_TYPE=Debug
 INSTALL = install
 ifeq ($(DEBUG), 2)
 CCFLAGS += -fsanitize=address,undefined
+CPPFLAGS += -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=extensive
 LDFLAGS += -fsanitize=address,undefined
 endif
 endif
@@ -261,14 +262,14 @@ libvitess.a: $(COMMON)
 	$(AR) $(ARFLAGS) $@ $^
 
 ifndef NOG2
-cpgplot.o: | $(G2PATH)/libg2.a
+cpgplot.o: $(G2PATH)/libg2.a
 endif
 
 ifndef NONCRYSTAL
-sample_ncrystal: | $(NCRYSTALPATH)/install/lib/libNCrystal.a
+sample_ncrystal: $(NCRYSTALPATH)/install/lib/libNCrystal.a
 endif
 
-$(ALL): | libvitess.a $(GSLPATH)/libgslran.a
+$(ALL): libvitess.a $(GSLPATH)/libgslran.a
 
 
 # additional dependencies
@@ -329,17 +330,17 @@ source_ai_arm64: CXXFLAGS += -I$(LIBTORCHPATH)/arm64/include -I$(LIBTORCHPATH)/a
 source_ai_arm64: LDFLAGS += -L$(LIBTORCHPATH)/arm64/lib
 source_ai_arm64: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/arm64/lib
 source_ai_arm64: source_ai.cpp | libvitess.a $(GSLPATH)/libgslran.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $(filter-out %.a,$^) $(LDLIBS)
 
 source_ai_x86_64: ARCHFLAGS = -arch x86_64
 source_ai_x86_64: CXXFLAGS += -I$(LIBTORCHPATH)/x86_64/include -I$(LIBTORCHPATH)/x86_64/include/torch/csrc/api/include
 source_ai_x86_64: LDFLAGS += -L$(LIBTORCHPATH)/x86_64/lib
 source_ai_x86_64: LDLIBS += -ltorch -ltorch_cpu -lc10 -Wl,-rpath,$(LIBTORCHPATH)/x86_64/lib
 source_ai_x86_64: source_ai.cpp | libvitess.a $(GSLPATH)/libgslran.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $(filter-out %.a,$^) $(LDLIBS)
 
 source_ai: source_ai_arm64 source_ai_x86_64
-	lipo -create -output  $@ $^
+	lipo -create -output  $@ $(filter-out %.a,$^)
 else
 source_ai: CXXFLAGS += -I$(LIBTORCHPATH)/include -I$(LIBTORCHPATH)/include/torch/csrc/api/include
 source_ai: LDFLAGS += -L$(LIBTORCHPATH)/lib
@@ -350,38 +351,38 @@ endif
 
 # keep old module names for compatibility
 chopper_fermi_parallel: chopper_fermi
-	cp $^ $@
+	cp $(filter-out %.a,$^) $@
 
 guide_parallel: guide
-	cp $^ $@
+	cp $(filter-out %.a,$^) $@
 
 mon_brilliance: mon1_brl
-	cp $^ $@
+	cp $(filter-out %.a,$^) $@
 
 monitorpol_1d: mon1_pol
-	cp $^ $@
+	cp $(filter-out %.a,$^) $@
 
 sm_ensemble_parallel: sm_ensemble
-	cp $^ $@
+	cp $(filter-out %.a,$^) $@
 
 spacewindow: window
-	cp $^ $@
+	cp $(filter-out %.a,$^) $@
 
 
 # suffix rules
 .SUFFIXES: .c .cpp .o .exe
 
-.c.o:
+%.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
 
-.cpp.o:
+%.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $^
 
-.c:
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+%: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $(filter-out %.a,$^) $(LDLIBS)
 
-.cpp:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+%: %.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $(filter-out %.a,$^) $(LDLIBS)
 
-.o:
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+%: %.o
+	$(CXX) $(LDFLAGS) -o $@ $(filter-out %.a,$^) $(LDLIBS)
