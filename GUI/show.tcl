@@ -951,9 +951,9 @@ proc showPlotFile {name {topt 0}} {
   switch $topt {
     grplot {
       if {$ftype == "matrix"} {
-        catch {exec [getGrplot] $name $ use_bins:1 &}
+        catch {exec [getGrplot] $name kind:heatmap use_bins:1 &}
       } elseif {$ftype == "xyz"} {
-        catch {exec [getGrplot] $name xyz_file:1 ignore_space:1 &}
+        catch {exec [getGrplot] $name kind:heatmap xyz_file:1 ignore_space:1 &}
       } else {
         set nrows [getDataRows $name 200]
         if {$nrows >= 200} {
