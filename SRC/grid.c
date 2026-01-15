@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
           }
           prob = exp(-mu*TimeOF*VelocityReal);
           Output.Probability = Output.Probability*prob;
-          if (Output.Probability < wei_min)
+          if (Output.Probability <= wei_min)
             continue;
         }
 

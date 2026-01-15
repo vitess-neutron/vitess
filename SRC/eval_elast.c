@@ -149,6 +149,9 @@ int main(int argc, char *argv[])
       }
       else
       {
+        if (InputNeutrons[i].Probability <= wei_min)
+          continue;
+
         bCounted=FALSE;
 
         /* Writing out all neutrons, if 'exclusive counts = no' is set */

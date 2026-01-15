@@ -1658,14 +1658,15 @@ void processNeutron(int neutron_i, int thread_i)
       Output.Position[0]=0.0;
       Output.Time += TimeOF2;
       Output.Probability *= exp(-(MuScat+MuAbs*Output.Wavelength/1.798)*pathlen);
-
-      WriteNeutronParallel(&Output, thread_i);
+      if (Output.Probability > wei_min)
+        WriteNeutronParallel(&Output, thread_i);
     }
     goto my_exit;
    dump:
    {
       Neutron Output = *myneutron;
-      WriteNeutronParallel(&Output, thread_i);
+      if (Output.Probability > wei_min)
+        WriteNeutronParallel(&Output, thread_i);
    }
  my_exit:;
   }

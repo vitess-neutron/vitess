@@ -196,7 +196,7 @@ void processNeutron (int i, int thread_i)
       return;
 
 
- /* if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1)
+    /* if (PlaneLineIntersect(Pos, Dir, n, - diameter/2., pos) != 1)
     { WriteDIAP(&InputNeutrons[i], VT_OUTSIDE, pos_chp[0] - diameter/2.0 - InNeutron.Position[0]);
       return;
     }
@@ -236,19 +236,22 @@ void processNeutron (int i, int thread_i)
       if (phase0 > 0 && omega > 0)
       {
         if (! inPhase(GatesNumber, phase0 - coef_pi*M_PI, WL, Dir, Pos))
-        { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
+        {
+          WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
           return;
         }
       }
       else if (phase0 < 0 && omega < 0)
       {
         if (! inPhase(GatesNumber, phase0 + coef_pi*M_PI, WL, Dir, Pos))
-        { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
+        {
+          WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
           return;
         }
       }
       else
-      { WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
+      {
+        WriteDIAP(&InputNeutrons[i], VT_ABSORBED, pos_chp[0] - InNeutron.Position[0]);
         return;
       }
     }
@@ -271,8 +274,8 @@ void processNeutron (int i, int thread_i)
     MultiplyByScalar(Path, (- Pos[0])/ Dir[0] );
     AddVector(Pos, Path);                             /* Path = displacement vector */
     CopyVector(Pos, OutNeutron.Position);
-
-    WriteNeutronParallel(&OutNeutron, thread_i);
+    if (OutNeutron.Probability > wei_min)
+      WriteNeutronParallel(&OutNeutron, thread_i);
   }
 }
 
