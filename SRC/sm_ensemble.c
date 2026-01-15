@@ -444,7 +444,8 @@ void processNeutron (int i, int thread_i)
 
       if (eVisual) number_vis_tr++;
 
-      WriteNeutronParallel(&neutron, thread_i);
+      if (neutron.Probability > wei_min)
+        WriteNeutronParallel(&neutron, thread_i);
     }
     if (eVisual==1) fprintf(COLLFILE, "\n");
 

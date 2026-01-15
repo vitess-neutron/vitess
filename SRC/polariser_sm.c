@@ -355,7 +355,8 @@ int main(int argc, char **argv)
           n_cutoff += 1;
           goto getlost;
         }
-
+        if (Prob <= wei_min)
+          continue;
         //IntegralIntensity += Prob;
         NumOut++;
 

@@ -298,6 +298,8 @@ int main(int argc, char **argv)
         OutNeutron = InputNeutrons[i];
         OutNeutron.Time = TOF+TOF3;
         OutNeutron.Probability = Prob;
+        if (Prob <= wei_min)
+          continue;
 
         CopyVector(Pos, OutNeutron.Position);
         CopyVector(SpinVector, OutNeutron.Spin);

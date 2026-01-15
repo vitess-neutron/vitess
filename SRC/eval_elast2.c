@@ -220,6 +220,9 @@ int main(int argc, char *argv[])
       }
       else
       {
+        if (InputNeutrons[i].Probability <= wei_min)
+          continue;
+
         dist     = sqrt(InputNeutrons[i].Position[0]*InputNeutrons[i].Position[0]+InputNeutrons[i].Position[1]*InputNeutrons[i].Position[1]+InputNeutrons[i].Position[2]*InputNeutrons[i].Position[2]);
 
         if (eScatAng==VT_SEL_DIR) { //use direction cosine

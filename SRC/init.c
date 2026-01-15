@@ -1109,6 +1109,16 @@ void WriteNeutron(Neutron *OutNeutron)
 {
   int    col_write =0;
   double tx = OutNeutron->Probability;
+
+  if(IsEOB(OutNeutron)) {
+    // End of Bunch: no further checks or calculations, write and flush buffer immidiately
+    CopyNeutron(OutNeutron, OutputNeutrons + OutNeutNum);
+    OutNeutNum++;
+    OutputBufferFlush(0);
+    NumEobWritten++;
+    return;
+  }
+
   // some modules may produce unreasonable probabilities
   if (ISNAN(tx) || tx < 0)
   {
@@ -1124,15 +1134,15 @@ void WriteNeutron(Neutron *OutNeutron)
       dProbTotal[col_write+1] += tx;
   }
 
-  if (OutputFilePtr)
+  if (OutputFilePtr && OutNeutron->Probability > wei_min) {
     CopyNeutron(OutNeutron, OutputNeutrons + OutNeutNum);
+    OutNeutNum++;
+  }
 
-  if (++OutNeutNum >= BufferSize)
+  if (OutNeutNum >= BufferSize)
     OutputBufferFlush(0);  // flush to stream, and give trace marks
 
   WriteTraceLine(OutNeutron);
-  if (IsEOB(OutNeutron))
-    NumEobWritten++;
 }
 
 void WriteEOB()

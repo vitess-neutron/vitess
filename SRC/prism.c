@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
       else
       {
         // checks of the neutron trajectory (optional)
-        if (InputNeutrons[i].Wavelength == 0.0)
+        if (InputNeutrons[i].Wavelength == 0.0 || InputNeutrons[i].Probability <= wei_min )
           continue;
 
         OutNeutron.Spin[0] = InputNeutrons[i].Spin[0];
@@ -496,6 +496,9 @@ int main(int argc, char *argv[])
         }
 
         /* Writing out the neutrons */
+        if (InputNeutrons[i].Probability <= wei_min)
+          continue;
+
         InputNeutrons[i].Position[0] = j * BaseWidth;
         InputNeutrons[i].Position[2] = InputNeutrons[i].Position[2] + nRows * BaseHeight / 2 - ni * BaseHeight;
 

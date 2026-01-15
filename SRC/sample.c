@@ -266,6 +266,10 @@ void ProcessNeutronToEnd(Neutron *pNeut, VectorType SP, double Ls,
   VectorType OutISP[2];
   long       nisp;
 
+  /* Proceed only if weight gt. wei_min */
+  if (pNeut->Probability <= wei_min)
+     return;
+
   /* Determine the flight length of the neutron before scattering */
   Lbs = DistVector(pNeut->Position, SP); /*including the distance to the sample*/
 
