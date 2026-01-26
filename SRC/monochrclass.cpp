@@ -1322,7 +1322,12 @@ bool Monochromator::selectCE(int& iHit, int& jHit, const Neutron* pNeutIn, const
         CopyMatricesToMatrix(h, i, j, RotMatrixCE_F, RotMatrixCE);
 
         // computes neutron variables in the frame of the CE surface
-        transfIn2CE(pos, dir, pNeutIn->Position, pNeutIn->Vector);
+        CopyVector(pNeutIn->Position, pos);
+        CopyVector(pNeutIn->Vector, dir);
+
+        SubVector(pos, PosCE);
+        RotVector(RotMatrixCE, pos);
+        RotVector(RotMatrixCE, dir);
 
         /* here computes the depth where the neutron meets the reflecting plane,
            equivalent to a parallel shift of a t=0 CE in the frame of CE */
@@ -1333,9 +1338,23 @@ bool Monochromator::selectCE(int& iHit, int& jHit, const Neutron* pNeutIn, const
           PathLenTrans = DistVector(Pos1, Pos2);
           PathLenTransSum += PathLenTrans;
 
-          // vector from CE surface to the plane of reflection
-          Depth[0] = MonteCarlo(Pos1[0], Pos2[0]);
-          Depth[1] = Depth[2] = 0.0 ;
+          /* Uniform sampling across the CE surface (y,z) */
+          const double xmin = -0.5 * DimCE[0];
+          const double xmax =  0.5 * DimCE[0];
+          const double ymin = -0.5 * DimCE[1];
+          const double ymax =  0.5 * DimCE[1];
+          const double zmin = -0.5 * DimCE[2];
+          const double zmax =  0.5 * DimCE[2];
+
+          /* Build Depth as a DISPLACEMENT from the reference point 'pos'
+            'pos' is the neutron position in the CE frame at the reference CE plane
+            used later in reflectNeutron() (transfIn2CE / transfCE2In pipeline). */
+          Depth[0] = MonteCarlo(xmin, xmax);
+          Depth[1] = MonteCarlo(ymin, ymax);
+          Depth[2] = MonteCarlo(zmin, zmax);
+
+          // 'pos' is now the local position at the sampled point:
+          CopyVector(Depth, pos);
 
           /*  // path lengths through the crystal
           if (eMonoMode == REFL_MONO)
