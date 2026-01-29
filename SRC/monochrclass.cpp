@@ -1223,8 +1223,16 @@ double Monochromator::reflectNeutron(Neutron* pNeutRefl, const Neutron* pNeutIn)
       }
 
       /* makes depth correction to get back to the old frame for Depth != 0 */
-      RotBackVector(RotMatrixCE, Depth);
-      AddVector(pNeutRefl->Position, Depth);
+      /* NV corrections here */
+      /* old stuff*/
+      //RotBackVector(RotMatrixCE, Depth);
+      //AddVector(pNeutRefl->Position, Depth);
+            /* end old stuff*/
+      VectorType DepthLab;
+      CopyVector(Depth, DepthLab);
+      RotBackVector(RotMatrixCE, DepthLab);
+      AddVector(pNeutRefl->Position, DepthLab);
+            /* end new stuff*/
 
       if (pNeutRefl->Probability < wei_min)
         continue;
@@ -1586,12 +1594,14 @@ void Monochromator::transf2RotZ(Neutron* pNeutOut, const Neutron* pNeutIn, const
 {
   VectorType PosCEChop;                                 // position of the current CE in the frame of the central CE
   double x = 0.0, y = 0.0,                              // position of the neutron in the frame of the central CE
-      vxMF = 0.0, vyMF = 0.0, vzMF = 0.0, vModMF = 0.0, // speed of the neutron in the frame of the rotating monochromator
+        vx = 0.0, vy = 0.0, vz = 0.0, vMod = 0.0,       // speed of the neutron in the frame of the rotating monochromator
         v0 = 0.0, angle = 0.0, radius = 0.0;
+  double ux = 0.0, uy = 0.0;                      // tangential velocity components
+  double vlabx = 0.0, vlaby = 0.0, vlabz = 0.0;  // lab velocity from incoming neutron state
 
   CopyVector(PosCE, PosCEChop);
   SubVector(PosCEChop, PosCE0);
-  RotVector(RotMatrixCE, PosCEChop);           // Vector to current CE is now in the frame of the central CE
+  RotVector(RotMatrixCE, PosCEChop);  // Vector to current CE is now in the frame of the central CE
 
   v0 = V_FROM_LAMBDA(pNeutIn->Wavelength);
   x = PosCEChop[0] + pNeutIn->Position[0];
@@ -1599,17 +1609,37 @@ void Monochromator::transf2RotZ(Neutron* pNeutOut, const Neutron* pNeutIn, const
   radius = sqrt(sq(x) + sq(y));
   angle = atan2(x, y);
 
-  vxMF = v0 * (pNeutIn->Vector[0]) - omega * radius * cos(angle);
-  vyMF = v0 * (pNeutIn->Vector[1]) + omega * radius * sin(angle);
-  vzMF = v0 * (pNeutIn->Vector[2]);
-  vModMF = sqrt(sq(vxMF) + sq(vyMF) + sq(vzMF));
+  // tangential velocity components
+  ux = omega * radius * cos(angle);
+  uy = omega * radius * sin(angle);
 
+  // lab velocity from incoming neutron state
+  vlabx = v0 * pNeutIn->Vector[0];
+  vlaby = v0 * pNeutIn->Vector[1];
+  vlabz = v0 * pNeutIn->Vector[2];
+
+  // forward: lab -> rotating  (subtract u)
+  // backward: rotating -> lab (add u)
+  if (bForward)
+  {
+    vx = vlabx - ux;
+    vy = vlaby + uy; // your sign convention
+    vz = vlabz;
+  }
+  else
+  {
+    vx = vlabx + ux;
+    vy = vlaby - uy; // inverse
+    vz = vlabz;
+  }
+
+  vMod = sqrt(sq(vx) + sq(vy) + sq(vz));
 
   CopyNeutron(pNeutIn, pNeutOut);
-  pNeutOut->Vector[0] = vxMF / vModMF;
-  pNeutOut->Vector[1] = vyMF / vModMF;
-  pNeutOut->Vector[2] = vzMF / vModMF;
-  pNeutOut->Wavelength = LAMBDA_FROM_V(vModMF);
+  pNeutOut->Vector[0] = vx / vMod;
+  pNeutOut->Vector[1] = vy / vMod;
+  pNeutOut->Vector[2] = vz / vMod;
+  pNeutOut->Wavelength = LAMBDA_FROM_V(vMod);
 
   return;
 }
