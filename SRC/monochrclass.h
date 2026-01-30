@@ -141,7 +141,9 @@ class Monochromator{
   VectorType rDop,                     //  [cm]           position of the Doppler drive at time of impact (in the frame of module)
              vDop;                     // [cm/ms]         speed of the Doppler drive at time of impact (in the frame of module)
 
-
+  // C-frame hit point on the CE plane
+  VectorType HitPosCEPlane;
+  bool       HitPosCEValid;
 
   // Member functions
   // ----------------
