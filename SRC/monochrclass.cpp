@@ -1405,68 +1405,134 @@ bool Monochromator::selectCE(int& iHit, int& jHit, const Neutron* pNeutIn, const
 }/* End SelectCE */
 
 
-bool Monochromator::rotMonoAndSelectCE(int& iHit, int& jHit, double& ToFCE, const Neutron* pNeutIn, const int hIn)
+bool Monochromator::rotMonoAndSelectCE(int& iHit, int& jHit, double& ToFCE,
+                                       const Neutron* pNeutIn, const int hIn)
 {
-  bool   bHit=false;
-  int    h=0,i=0,j=0,               //          columns (i, hor), rows (j, vert) and layer (along beam)
-         hStart,hEnd,               //          first and last layer to be checked (usually only hIn)
-         hLast=-1,iLast=-1,jLast=-1;//          column, row and and layer, where it hit in the las (along beam)
-  double zeta0, zetaN, zetaO,       //   [rad]  initial, current and previous value of the rotation phase
-         DelZeta,                   //   [deg]  and their difference
-         tof =0.0,                  //   [ms]   TOF from the entrance to plane defined by the surface of the CE
-         ToF0=pNeutIn->Time;        //   [ms]   TOF from the source to the entrance
+  bool   bHit = false;
+  int    h=0, i=0, j=0,
+         hStart, hEnd,
+         hLast=-1, iLast=-1, jLast=-1;
+
+  double zeta0, zetaN, zetaO,
+         DelZeta,
+         tof = 0.0,
+         ToF0 = pNeutIn->Time;
 
   // init
-  if (hIn==-1) {hStart = 0;   hEnd = NumberCE[0];}
-  else         {hStart = hIn; hEnd = hIn + 1;}
+  if (hIn == -1) { hStart = 0;   hEnd = NumberCE[0]; }
+  else           { hStart = hIn; hEnd = hIn + 1;     }
+
   zeta0 = Zeta0 * M_PI / 180.0;
 
   // initial time estimation using monochromator center
   fillRotMatrices(zeta0);
   checkCE(ToFCE, MathVector(PosCE0), DimCE0, MathMatrix(RotMatrixCE0), pNeutIn);
-  zetaN = zeta0 + omega * (ToF0+ToFCE);   // total TOF
+
+  zetaN = zeta0 + omega * (ToF0 + ToFCE);   // total TOF
   fillRotMatrices(zetaN);
+
+  // Ensure Depth is well-defined even if we fail to hit anything
+  Depth[0] = Depth[1] = Depth[2] = 0.0;
 
   do
   {
-    zetaO=zetaN;
+    zetaO = zetaN;
 
-    // try if it hits the same element as in the previous step
-    if (iLast>=0 && jLast>=0 && hLast>=0)
+    // ------------------------------------------------------------
+    // 1) Try if it hits the same element as in the previous step
+    // ------------------------------------------------------------
+    if (iLast >= 0 && jLast >= 0 && hLast >= 0)
     {
       CopyVectorsToPos    (hLast, iLast, jLast, PosCE);
       CopyVectorsToDim    (hLast, iLast, jLast, DimCE);
       CopyMatricesToMatrix(hLast, iLast, jLast, RotMatrixCE_F, RotMatrixCE);
 
-      bHit=checkCE(tof, MathVector(PosCE), DimCE, MathMatrix(RotMatrixCE), pNeutIn);
+      bHit = checkCE(tof, MathVector(PosCE), DimCE, MathMatrix(RotMatrixCE), pNeutIn);
+
       if (bHit)
       {
+        // --- NEW: surface-uniform sampling on CE plane for ROT mode ---
+        if (HitPosCEValid)
+        {
+          const double ymin = -0.5 * DimCE[1];
+          const double ymax =  0.5 * DimCE[1];
+          const double zmin = -0.5 * DimCE[2];
+          const double zmax =  0.5 * DimCE[2];
+
+          const double y_surf = MonteCarlo(ymin, ymax);
+          const double z_surf = MonteCarlo(zmin, zmax);
+
+          // Depth is displacement from actual plane-hit point to sampled surface point (x stays on plane)
+          Depth[0] = 0.0;
+          Depth[1] = y_surf - HitPosCEPlane[1];
+          Depth[2] = z_surf - HitPosCEPlane[2];
+        }
+        else
+        {
+          Depth[0] = Depth[1] = Depth[2] = 0.0;
+        }
+
+        // update iteration
         ToFCE = tof;
-        zetaN = zeta0 + omega * (ToF0+ToFCE);   // total TOF
+        zetaN = zeta0 + omega * (ToF0 + ToFCE);
         fillRotMatrices(zetaN);
+
+        // also update outputs in case caller uses them even when reusing previous CE
+        iHit = iLast;
+        jHit = jLast;
+        goto check_rot;
       }
     }
 
-    if (bHit==false)
-    { // loop over all crystal elements (in the layer)
-      for (h=hStart; h < hEnd; h++)           // x-direction
-      { for (i=0; i < NumberCE[1]; i++)       // y-direction
-        { for (j=0; j < NumberCE[2]; j++)     // z-direction
+    // ------------------------------------------------------------
+    // 2) If not, scan elements in the layer(s)
+    // ------------------------------------------------------------
+    if (bHit == false)
+    {
+      for (h = hStart; h < hEnd; h++)
+      {
+        for (i = 0; i < NumberCE[1]; i++)
+        {
+          for (j = 0; j < NumberCE[2]; j++)
           {
-            // copies position, size and orientation data for the current CE
             CopyVectorsToPos    (h, i, j, PosCE);
             CopyVectorsToDim    (h, i, j, DimCE);
             CopyMatricesToMatrix(h, i, j, RotMatrixCE_F, RotMatrixCE);
 
             bHit = checkCE(tof, MathVector(PosCE), DimCE, MathMatrix(RotMatrixCE), pNeutIn);
+
             if (bHit)
             {
-                iHit  = i; jHit  = j;
-                iLast = i; jLast = j; hLast = h;
-                ToFCE = tof;
-                zetaN = zeta0 + omega * (ToF0 + ToFCE);   // total TOF in sec
-                fillRotMatrices(zetaN);
-                goto check_rot;
+              // --- NEW: surface-uniform sampling on CE plane for ROT mode ---
+              if (HitPosCEValid)
+              {
+                const double ymin = -0.5 * DimCE[1];
+                const double ymax =  0.5 * DimCE[1];
+                const double zmin = -0.5 * DimCE[2];
+                const double zmax =  0.5 * DimCE[2];
+
+                const double y_surf = MonteCarlo(ymin, ymax);
+                const double z_surf = MonteCarlo(zmin, zmax);
+
+                Depth[0] = 0.0;
+                Depth[1] = y_surf - HitPosCEPlane[1];
+                Depth[2] = z_surf - HitPosCEPlane[2];
+              }
+              else
+              {
+                Depth[0] = Depth[1] = Depth[2] = 0.0;
+              }
+
+              // bookkeeping
+              iHit  = i;  jHit  = j;
+              iLast = i;  jLast = j;  hLast = h;
+
+              // update iteration
+              ToFCE = tof;
+              zetaN = zeta0 + omega * (ToF0 + ToFCE);
+              fillRotMatrices(zetaN);
+
+              goto check_rot;
             }
           }
         }
@@ -1474,7 +1540,12 @@ bool Monochromator::rotMonoAndSelectCE(int& iHit, int& jHit, double& ToFCE, cons
     }
 
   check_rot:
-    DelZeta = fabs(zetaN-zetaO) * 180.0 / M_PI;
+    DelZeta = fabs(zetaN - zetaO) * 180.0 / M_PI;
+
+    // Optional safety brake (prevents hangs if something goes numerically wrong):
+    // static int itCount = 0;
+    // if (++itCount > 100) break;
+
   }
   while (bHit && DelZeta > DelZetaMax);
 
@@ -1712,49 +1783,73 @@ void Monochromator::transf2DopplX(Neutron* pNeutOut, const Neutron* pNeutIn, con
 
 
 /***********************************************************************
-* Monochromator::checkCE
+* Monochromator::checkCE  (box-consistent with selectCE)
 *
-* checks if neutron hits a plane and calculates flight time until arrival
+* checks if neutron intersects the CE VOLUME (rectangular box) and
+* returns TOF to the CE reference plane x=0 (through vPosCE) if crossed.
 *
-* in : pNeut : neutron parameters in the module frame
-*      Mrot  : matrix to rotate from from module frame to CE frame
-*      SizeCE: size of the current CE (thickness, width, height)
-*      vPosCE: CE position in the module frame
-* out: Time  : TOF to hit the CE
+* in : pNeut  : neutron parameters in the module frame
+*      Mrot   : rotation matrix module -> CE frame
+*      SizeCE : CE size (DimCE) in CE frame: [thickness(x), width(y), height(z)]
+*      vPosCE : CE position (origin of CE frame) in module frame
+* out: Time   : TOF to reach the CE reference plane (x=0 in CE frame)
 *
-* return: on CE? true or false
+* return: intersects CE volume? true/false
 *************************************************************************/
-bool Monochromator::checkCE(double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut)
+bool Monochromator::checkCE(double& Time,
+                            const MathVector vPosCE,
+                            const VectorType SizeCE,
+                            const MathMatrix Mrot,
+                            const Neutron* pNeut)
 {
-  bool       bHit=false;
-  double     t,          // time parameter
-             dist;       // Distance between plane of reflection and incoming neutron
-  MathVector vPos,                                        // neutron position in monochromator plane
-             vPosRel,                                     // neutron position in the CE frame
-             vNmlCE,                                      // plane normal
-             vPos0  = MathVector(pNeut->Position),        // initial neutron position
-             vDir0  = MathVector(pNeut->Vector),          // initial neutron fight direction
-             vUnit  = MathVector(1.0, 0.0, 0.0);          // unit vector
-  MathMatrix MrotInv= Mrot;
+  bool       bHit = false;
+  double     t = 0.0;          // distance parameter along ray
+  double     dist = 0.0;       // plane offset
 
+  MathVector vPos, vPosRel;
+  MathVector vNmlCE;
+  MathVector vPos0 = MathVector(pNeut->Position);
+  MathVector vDir0 = MathVector(pNeut->Vector);
+  MathVector vUnit = MathVector(1.0, 0.0, 0.0);
+  MathMatrix MrotInv = Mrot;
+
+  // default outputs
   Time = 0.0;
-  MrotInv.transpose();     // rotation matrices are defined to rotate the frame,
-                           // to rotate a vector, the inverse matrix must be used,
-                           // which is identical with the transposed matrix for rotation matrices
+  HitPosCEValid = false;
+  HitPosCEPlane[0] = HitPosCEPlane[1] = HitPosCEPlane[2] = 0.0;
+
+  // plane normal in module frame
+  MrotInv.transpose();
   vNmlCE = MrotInv * vUnit;
 
+  // plane equation: n·x = n·vPosCE
   dist = vPosCE * vNmlCE;
+
+  // intersect ray with plane
   if (checkPlaneIntersect(vPos0, vDir0, vNmlCE, dist, t))
   {
-    vPos = vPos0 + vDir0*t;
+    // position on the plane in module frame
+    vPos = vPos0 + vDir0 * t;
+
+    // TOF to that plane
     Time = t / V_FROM_LAMBDA(pNeut->Wavelength);
 
+    // convert plane-hit point into CE frame (this is what selectCE-style sampling needs)
     vPosRel = Mrot * (vPos - vPosCE);
+
+    // store it for the caller (CE frame)
+    HitPosCEPlane[0] = vPosRel.x[0];
+    HitPosCEPlane[1] = vPosRel.x[1];
+    HitPosCEPlane[2] = vPosRel.x[2];
+    HitPosCEValid = true;
+
+    // inside CE footprint?
     bHit = isNeutInCE(vPosRel, SizeCE);
   }
 
   return bHit;
 }
+
 
 /***********************************************************************
 * Monochromator::isNeutInCE
