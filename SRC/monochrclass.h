@@ -123,10 +123,20 @@ class Monochromator{
              braggAngleTot,            //                 total bragg angle (in case braggHor > 0 and braggVer > 0),
              axisPhi;                  //                 spherical angle Phi of the instrument axis in the Bragg frame, needed for the normalisation procedure
   int        mosRndmDir;               //                 defines direction for normal and random mosaicity: 1: vert. norm, hor. rnd  2: vice versa
+  double     rotMonoHorCur;            //                 current rotation phase (rad) for VT_MONO_ROT
+  bool       bPhaseGate;               //                 enable phase gate (VT_MONO_ROT only)
+  double     phaseGateK;               //                 gate half-width = k * mosaic_fwhm[0]
   double     fNorm[3], fRndm[3],       //                 contains parameters for Gaussian distribution of mosaicity
              Period,                   //           [ms]  period of the monochromator movement
              omega,                    //        [rad/ms] angular frequency of the moving monochromator
              TrndMin, TrndMax;         //                 minimum and maximum value of the randomized arrival time
+  int        dbg_hitH, dbg_hitI, dbg_hitJ;
+  std::vector<int> dbg_logCount;
+  int        dbg_logTotal;
+  int        dbg_rotLogCount;
+  int        dbg_phaseLogCount;
+  bool       dbg_lastValid;
+  double     dbg_lastMosH, dbg_lastMosV;
 
   // Variables of the trajectories
   Neutron*   currentNeutron;
@@ -180,7 +190,7 @@ class Monochromator{
   bool        checkCE      (double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut);
   bool        isNeutInCE   (MathVector vPosN, const VectorType SizeCE);
 
-  double      calcReflProbAndDir(VectorType DirOut, const VectorType DirIn, const double pi2_braggAngle);
+  double      calcReflProbAndDir(VectorType DirOut, const VectorType DirIn, const double pi2_braggAngle, const double braggAngleDev);
 
   void        crys_geomNoFocus();
   void        crys_geomLambda();
