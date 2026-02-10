@@ -71,7 +71,6 @@ gSet outcol_7lambda {1}
 gSet outcol_7tof {1}
 gSet outcol_6lambda {0}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet pm_dy_3 {10}
 gSet outcol_5lambda {0}
 gSet opc_dt9_gt {1}
@@ -243,7 +242,6 @@ gSet outcol_2color {1}
 gSet separate99 {here}
 gSet pm_ori_3 {z-axis}
 gSet number_of_bunches_1 {1}
-gSet entryColor {white}
 gSet outcol_3position {0}
 gSet nac_dt3_gt {1}
 gSet gravity_ {on}
@@ -255,7 +253,6 @@ gSet outsurf_4 {}
 gSet max_w_11 {10}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_2 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet filtZDivMin_4 {}
 gSet utrcfunction_1 {}

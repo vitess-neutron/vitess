@@ -142,7 +142,6 @@ gSet series25.5_ {guide-1_120m_12cm.dat}
 gSet outcol_6lambda {1}
 gSet seriest1.2_ {1:M}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet series6.4_ {1.00}
 gSet series10.10_ {2}
 gSet seriest1.14_ {6:W}
@@ -416,7 +415,6 @@ gSet separate99 {here}
 gSet series2.9_ {2}
 gSet number_of_bunches_1 {1}
 gSet series13.9_ {6}
-gSet entryColor {#aedace}
 gSet series2.10_ {2}
 gSet outcol_3position {1}
 gSet series2.11_ {600}
@@ -436,7 +434,6 @@ gSet series13.12_ {6}
 gSet series2.14_ {2}
 gSet series7.10_ {4}
 gSet filtZDivMin_2 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet outcol_21position {1}

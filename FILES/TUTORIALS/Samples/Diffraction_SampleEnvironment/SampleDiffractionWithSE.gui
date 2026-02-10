@@ -254,7 +254,6 @@ gSet ifile_17 {syn_result_SE.eva}
 gSet enter_height_4 {6}
 gSet sfile_o_18 {-}
 gSet ifile_18 {syn_result_SE.eva}
-gSet entryColor {#aedace}
 gSet number_zbins_5 {70}
 gSet ifile_19 {syn_result_SE.eva}
 gSet sfile_o_19 {-}

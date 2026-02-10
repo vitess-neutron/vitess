@@ -216,7 +216,6 @@ gSet separate98 {here}
 gSet separate99 {here}
 gSet enter_height_3 {6}
 gSet enter_height_4 {12}
-gSet entryColor {#aedace}
 gSet enter_height_5 {12}
 gSet gd_abs_3 {0}
 gSet gd_abs_4 {0}

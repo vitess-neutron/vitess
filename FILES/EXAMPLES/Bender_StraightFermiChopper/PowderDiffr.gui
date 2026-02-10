@@ -134,7 +134,6 @@ gSet instrumentfile {PowderDiffr}
 gSet phimax_7 {-1}
 gSet resolutionH_9 {0}
 gSet enter_height_2 {5}
-gSet entryColor {#aedace}
 gSet x_5 {10}
 gSet nac_dt3_gt {1}
 gSet gravity_ {on}

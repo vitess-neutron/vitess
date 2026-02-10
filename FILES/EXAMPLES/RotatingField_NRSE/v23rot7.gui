@@ -48,7 +48,6 @@ gSet bfp_5 {revp.dat}
 gSet bfp_6 {revp.dat}
 gSet bfp_7 {revp.dat}
 gSet bfp_9 {revp.dat}
-gSet bgColor {#dce2ff}
 gSet bp_1 {0}
 gSet bp_10 {0}
 gSet bp_12 {}
@@ -66,7 +65,6 @@ gSet btrap_15 {}
 gSet btrap_5 {}
 gSet btrap_7 {}
 gSet buffersize {10000}
-gSet buttonColor {#98b4a0}
 gSet calcwav_10 {}
 gSet calcwav_13 {}
 gSet calcwav_15 {}
@@ -76,7 +74,6 @@ gSet calcwav_5 {}
 gSet calcwav_6 {}
 gSet calcwav_7 {}
 gSet calcwav_9 {}
-gSet canvasColor {#dce2ff}
 gSet centy_11 {0}
 gSet centy_12 {0}
 gSet centy_14 {0}
@@ -307,7 +304,6 @@ gSet dz_7 {5}
 gSet dz_9 {5}
 gSet enter_height_1 {10}
 gSet enter_height_2 {2}
-gSet entryColor {#aedace}
 gSet esfile {SeriesTemplate}
 gSet excl_counts_10 {no}
 gSet excl_counts_11 {no}
@@ -450,7 +446,6 @@ gSet infolevel {user}
 gSet inputESET.active {.x.h.input}
 gSet instrumentfile {v23rot7}
 gSet itemlabwidth {16}
-gSet labColor {#dce2ff}
 gSet len_guide_1 {100}
 gSet len_guide_2 {1.5}
 gSet lfontfamily {Courier}
@@ -551,8 +546,6 @@ gSet max_z_6 {}
 gSet max_z_8 {}
 gSet maxv_3 {4.05}
 gSet maxv_4 {5}
-gSet menuButtonColor {#dce2ff}
-gSet menuColor {#dce2ff}
 gSet menubarfont {Helvetica 12 bold}
 gSet mf_1 {5000}
 gSet mf_10 {9.57833}
@@ -1044,7 +1037,6 @@ gSet radi_4 {100}
 gSet radi_5 {10}
 gSet radi_6 {100}
 gSet radi_8 {100}
-gSet radioColor {#dce2ff}
 gSet random_seed_ {1}
 gSet rax_1 {0X}
 gSet rax_10 {0Z}

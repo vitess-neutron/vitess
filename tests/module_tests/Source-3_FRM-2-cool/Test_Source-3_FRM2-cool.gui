@@ -138,7 +138,6 @@ gSet separateW4 {}
 gSet visM1 {source_FRM2}
 gSet separateW5 {}
 gSet visM2 {writeout}
-gSet entryColor {#aedace}
 gSet separateW6 {}
 gSet visM3 {--inactive--}
 gSet separateW7 {}
@@ -196,7 +195,6 @@ gSet filtZDivMin_2 {}
 gSet separateW32 {}
 gSet outcol_2spin {1}
 gSet min_time_1 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet separateW33 {}
 gSet separateW34 {}
@@ -209,7 +207,6 @@ gSet separateW37 {}
 gSet dist_dt1_gt {6}
 gSet separateW38 {}
 gSet modfile_1 {Frm-II_ColdFile.mod}
-gSet headerColor {#0b4e66}
 gSet outcol_7counts {1}
 gSet separateW40 {}
 gSet separateW39 {}

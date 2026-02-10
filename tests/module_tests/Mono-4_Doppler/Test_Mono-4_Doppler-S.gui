@@ -65,7 +65,6 @@ gSet outcol_7lambda {1}
 gSet outcol_7tof {1}
 gSet outcol_6lambda {1}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet gapvert_3 {0.0}
 gSet outcol_5lambda {1}
 gSet npl_gt {}
@@ -237,7 +236,6 @@ gSet outcol_2color {1}
 gSet separate98 {here}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {#aedace}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet cangle_3 {0}
@@ -251,7 +249,6 @@ gSet cap_dt9_gt {}
 gSet bragghoriz_2 {UNDEFINED}
 gSet filtZDivMin_2 {}
 gSet mposy_2 {UNDEFINED}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet outcol_1id {1}

@@ -263,7 +263,6 @@ gSet h_focus_pnt_8 {0}
 gSet separate99 {here}
 gSet ty_11 {0}
 gSet enter_height_3 {10}
-gSet entryColor {#aedace}
 gSet enter_height_7 {2.5}
 gSet enter_height_8 {10}
 gSet gd_abs_3 {0}

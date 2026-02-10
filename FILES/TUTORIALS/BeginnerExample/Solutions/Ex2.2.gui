@@ -258,7 +258,6 @@ gSet sfile_o_17 {}
 gSet ifile_17 {}
 gSet ifile_18 {}
 gSet sfile_o_18 {}
-gSet entryColor {#aedace}
 gSet number_ybins_3 {100}
 gSet min_vy_3 {0.4}
 gSet detgaseff_14 {1}

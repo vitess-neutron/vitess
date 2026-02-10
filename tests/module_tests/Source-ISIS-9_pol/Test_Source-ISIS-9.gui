@@ -33,7 +33,6 @@ gSet infilename_ {}
 gSet cap_dt3_gt {}
 gSet outcol_7lambda {1}
 gSet outcol_7tof {1}
-gSet headerColor {#0b4e66}
 gSet npl_gt {}
 gSet opc_dt9_gt {1}
 gSet dist_dt10_gt {0}
@@ -107,7 +106,6 @@ gSet cap_dt10_gt {}
 gSet outprgf_2 {VITESS}
 gSet instrumentfile {Test_Source-ISIS-9}
 gSet outcol_2color {1}
-gSet entryColor {#aedace}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
 gSet gravity_ {off}
@@ -117,7 +115,6 @@ gSet min_wavelength_1 {1}
 gSet outsurf_2 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_2 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

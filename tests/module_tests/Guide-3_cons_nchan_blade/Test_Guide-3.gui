@@ -44,7 +44,6 @@ gSet outcol_7lambda {1}
 gSet ri_frc3_1 {0.0}
 gSet keyplotparam_2 {All}
 gSet outcol_7tof {1}
-gSet headerColor {#0b4e66}
 gSet rrefl_m_2 {3}
 gSet waviness_2 {0}
 gSet keyreflminZ_2 {0}
@@ -193,7 +192,6 @@ gSet outcol_2color {1}
 gSet separate99 {here}
 gSet enter_height_2 {3}
 gSet ri_fact_1 {1.0}
-gSet entryColor {white}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet gd_abs_2 {0}
@@ -204,7 +202,6 @@ gSet comode {action}
 gSet outsurf_3 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_3 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet dbc_gt {28.0}
 gSet keyreflparam_2 {}

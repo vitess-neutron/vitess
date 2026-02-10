@@ -70,7 +70,6 @@ gSet outsurf_3 {}
 gSet number_bins_2 {100}
 gSet outcol_2spin {1}
 gSet filtZDivMin_3 {}
-gSet buttonColorFont {black}
 gSet withbin_2 {no}
 gSet filtDivMax_3 {}
 gSet outcol_2trace {1}

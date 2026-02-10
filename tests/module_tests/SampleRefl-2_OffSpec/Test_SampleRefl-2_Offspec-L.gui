@@ -64,7 +64,6 @@ gSet outcol_7tof {1}
 gSet max_vy_5 {0.1}
 gSet outcol_6lambda {0}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet parameter2_5 {k_y}
 gSet outcol_5lambda {1}
 gSet npl_gt {}
@@ -232,7 +231,6 @@ gSet outcol_2color {1}
 gSet separate98 {here}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {white}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
 gSet number_ybins_5 {100}
@@ -243,7 +241,6 @@ gSet cph_dt3_gt {}
 gSet number_xbins_5 {120}
 gSet min_wavelength_1 {2}
 gSet cap_dt9_gt {}
-gSet buttonColorFont {white}
 gSet scr_file_4 {screen.pos}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}

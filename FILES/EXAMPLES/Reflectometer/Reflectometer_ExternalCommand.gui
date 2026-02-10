@@ -39,7 +39,6 @@ gSet h_focus_pnt_5 {0}
 gSet phimax_7 {-1}
 gSet ifile_13 {}
 gSet enter_height_3 {10}
-gSet entryColor {#aedace}
 gSet enter_height_5 {10}
 gSet keyreflparam_3 {Trajectories passing the guide end (with linefeed)}
 gSet keyreflparam_5 {Trajectories passing the guide end (with linefeed)}

@@ -53,7 +53,6 @@ gSet outcol_7lambda {1}
 gSet keyplotparam_2 {All}
 gSet outcol_7tof {1}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet rrefl_m_2 {3}
 gSet keyreflminZ_2 {0}
 gSet waviness_2 {0}
@@ -214,7 +213,6 @@ gSet separate99 {here}
 gSet number_of_bunches_1 {1}
 gSet enter_height_2 {3}
 gSet number_zbins_3 {100}
-gSet entryColor {white}
 gSet outcol_3position {1}
 gSet gd_abs_2 {0}
 gSet nac_dt3_gt {1}
@@ -224,7 +222,6 @@ gSet cph_dt3_gt {}
 gSet comode {action}
 gSet min_wavelength_1 {3}
 gSet cap_dt9_gt {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

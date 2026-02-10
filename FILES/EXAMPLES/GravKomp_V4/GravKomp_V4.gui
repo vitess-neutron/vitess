@@ -61,7 +61,6 @@ gSet filtJMin_8 {}
 gSet max_vy_4 {5}
 gSet max_vy_8 {5}
 gSet outcol_6lambda {1}
-gSet headerColor {#0b4e66}
 gSet parameter2_4 {pos_z}
 gSet parameter2_8 {pos_z}
 gSet width_slit_5 {3}
@@ -205,7 +204,6 @@ gSet separate99 {here}
 gSet scden_6 {2}
 gSet number_of_bunches_1 {1}
 gSet number_zbins_3 {100}
-gSet entryColor {white}
 gSet number_zbins_7 {100}
 gSet number_ybins_3 {100}
 gSet number_ybins_4 {400}
@@ -219,7 +217,6 @@ gSet number_zbins_10 {100}
 gSet number_xbins_4 {100}
 gSet min_wavelength_1 {18}
 gSet number_xbins_8 {100}
-gSet buttonColorFont {white}
 gSet utrcfunction_1 {}
 gSet polA_11 {no}
 gSet filtJMin_11 {}

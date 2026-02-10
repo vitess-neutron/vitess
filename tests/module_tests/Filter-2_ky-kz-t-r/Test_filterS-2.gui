@@ -118,7 +118,6 @@ gSet max_vy_7 {1}
 gSet max_vy_9 {1}
 gSet outcol_6lambda {0}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet parameter2_7 {k_z}
 gSet parameter2_9 {k_z}
 gSet outcol_5lambda {1}
@@ -315,7 +314,6 @@ gSet separate98 {here}
 gSet outcol_2color {1}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {white}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
@@ -333,7 +331,6 @@ gSet number_xbins_7 {100}
 gSet number_xbins_9 {100}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_2 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}
@@ -909,7 +906,6 @@ gSet filtDivMax_2 {}
 gSet max_vx1_11 {0.2}
 gSet max_vx1_12 {0.2}
 gSet max_vx1_14 {3}
-gSet fgColor {black}
 gSet polx_1 {0}
 gSet nac_dt8_gt {1}
 gSet mtrl_colour_5 {-1}

@@ -59,7 +59,6 @@ gSet outcol_7lambda {1}
 gSet keyplotparam_5 {All}
 gSet outcol_7tof {1}
 gSet outcol_6lambda {1}
-gSet headerColor {#0b4e66}
 gSet rrefl_m_5 {1}
 gSet pm_dy_3 {10}
 gSet outcol_5lambda {1}
@@ -216,7 +215,6 @@ gSet outcol_2color {1}
 gSet separate99 {here}
 gSet pm_ori_3 {z-axis}
 gSet number_of_bunches_1 {1}
-gSet entryColor {white}
 gSet enter_height_5 {3}
 gSet mark {87}
 gSet outcol_3position {1}
@@ -229,7 +227,6 @@ gSet min_wavelength_1 {6}
 gSet outsurf_2 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_2 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

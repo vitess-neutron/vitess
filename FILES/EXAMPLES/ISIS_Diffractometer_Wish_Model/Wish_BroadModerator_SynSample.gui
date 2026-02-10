@@ -100,7 +100,6 @@ gSet outcol_19id {1}
 gSet outcol_20id {1}
 gSet outcol_6lambda {1}
 gSet time_to_zero_10 {no}
-gSet headerColor {#0b4e66}
 gSet time_to_zero_11 {no}
 gSet chop_file_3 {WishChopper1.dat}
 gSet chop_file_4 {WishChopper1.dat}
@@ -287,7 +286,6 @@ gSet separate97 {here}
 gSet separate98 {here}
 gSet separate99 {here}
 gSet enter_height_2 {8}
-gSet entryColor {#aedace}
 gSet enter_height_6 {12.79777}
 gSet sfile_o_22 {-}
 gSet ifile_22 {}
@@ -307,7 +305,6 @@ gSet max_w_12 {10}
 gSet cap_dt9_gt {}
 gSet max_w_16 {10}
 gSet bdia_gt {4.5}
-gSet buttonColorFont {white}
 gSet max_w_18 {10}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

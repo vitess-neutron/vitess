@@ -47,7 +47,6 @@ gSet detgaseff_4 {1}
 gSet outcol_7lambda {1}
 gSet geom_4 {cylindrical}
 gSet outcol_7tof {1}
-gSet headerColor {#0b4e66}
 gSet outcol_5lambda {1}
 gSet opc_dt9_gt {1}
 gSet npl_gt {}
@@ -193,7 +192,6 @@ gSet outcol_2color {1}
 gSet resolutionH_4 {0.1}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {white}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
@@ -205,7 +203,6 @@ gSet min_wavelength_1 {3.9}
 gSet outsurf_3 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_3 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet scr_file_5 {screen.pos}
 gSet utrcfunction_1 {}

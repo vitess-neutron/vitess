@@ -34,7 +34,6 @@ gSet cap_dt3_gt {}
 gSet outcol_7lambda {1}
 gSet ri_frc3_1 {0.0}
 gSet outcol_7tof {1}
-gSet headerColor {#0b4e66}
 gSet outcol_5lambda {1}
 gSet opc_dt9_gt {1}
 gSet npl_gt {}
@@ -173,7 +172,6 @@ gSet separate99 {here}
 gSet ri_fact_1 {1.0}
 gSet geomfile_2 {ch_fermi_geom_out.dat}
 gSet x_2 {10}
-gSet entryColor {white}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
@@ -183,7 +181,6 @@ gSet comode {action}
 gSet outsurf_3 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_3 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet dbc_gt {28.0}
 gSet cap_dt2_gt {}

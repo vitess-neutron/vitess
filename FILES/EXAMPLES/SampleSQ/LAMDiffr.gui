@@ -19,7 +19,6 @@ gSet rotang_2 {0.0}
 gSet delay_gt {0.0}
 gSet setsimpar1_ {}
 gSet phimax_2 {-1}
-gSet entryColor {#aedace}
 gSet use_5 {normal}
 gSet cs_5 {circular}
 gSet outfilename_ {no_file}

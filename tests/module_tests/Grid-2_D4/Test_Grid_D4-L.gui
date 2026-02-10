@@ -45,7 +45,6 @@ gSet outcol_7lambda {1}
 gSet outcol_7tof {1}
 gSet outcol_6lambda {1}
 gSet wincenterdev_2 {0.0}
-gSet headerColor {#0b4e66}
 gSet wincenterdev_4 {0.0}
 gSet shiftverdev_2 {0.0}
 gSet outcol_5lambda {1}
@@ -202,7 +201,6 @@ gSet separate98 {here}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
 gSet number_zbins_3 {100}
-gSet entryColor {#aedace}
 gSet number_zbins_5 {100}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
@@ -213,7 +211,6 @@ gSet cph_dt3_gt {}
 gSet comode {action}
 gSet min_wavelength_1 {1}
 gSet cap_dt9_gt {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

@@ -39,7 +39,6 @@ gSet outcol_7lambda {1}
 gSet ri_frc3_1 {0.0}
 gSet outcol_7tof {1}
 gSet outcol_6lambda {1}
-gSet headerColor {#0b4e66}
 gSet outcol_5lambda {1}
 gSet opc_dt9_gt {1}
 gSet npl_gt {}
@@ -185,7 +184,6 @@ gSet outcol_2color {1}
 gSet separate98 {here}
 gSet separate99 {here}
 gSet ri_fact_1 {1.0}
-gSet entryColor {#aedace}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
 gSet gravity_ {off}
@@ -195,7 +193,6 @@ gSet outsurf_3 {}
 gSet cap_dt9_gt {}
 gSet scr_file_2 {screen-pos_out.dat}
 gSet filtZDivMin_3 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet dbc_gt {28.0}
 gSet cap_dt2_gt {}

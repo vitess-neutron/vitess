@@ -143,7 +143,6 @@ gSet seriest1.1_ {4:o}
 gSet series10.1_ {elast_10.eva}
 gSet outcol_6lambda {0}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet outcol_5lambda {1}
 gSet npl_gt {}
 gSet opc_dt9_gt {1}
@@ -353,7 +352,6 @@ gSet separate98 {here}
 gSet outcol_2color {1}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {white}
 gSet uprd_10 {}
 gSet mark {87}
 gSet outcol_3position {1}
@@ -372,7 +370,6 @@ gSet number_zbins_16 {100}
 gSet number_zbins_17 {100}
 gSet number_zbins_18 {100}
 gSet cap_dt9_gt {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet number_zbins_25 {100}
 gSet utrcfunction_1 {}

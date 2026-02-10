@@ -59,7 +59,6 @@ gSet outcol_7tof {1}
 gSet mnbrid_3 {yes}
 gSet outcol_6lambda {1}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet outcol_5lambda {1}
 gSet opc_dt9_gt {1}
 gSet npl_gt {}
@@ -222,7 +221,6 @@ gSet separate98 {here}
 gSet outcol_2color {1}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {white}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
@@ -234,7 +232,6 @@ gSet outsurf_2 {}
 gSet outsurf_4 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_2 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet scr_file_5 {screen.pos}
 gSet filtZDivMin_4 {}

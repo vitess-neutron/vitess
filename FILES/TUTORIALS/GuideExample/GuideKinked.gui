@@ -240,7 +240,6 @@ gSet separate98 {here}
 gSet separate99 {here}
 gSet enter_height_2 {6}
 gSet enter_height_4 {6}
-gSet entryColor {#aedace}
 gSet enter_height_6 {6}
 gSet number_zbins_8 {120}
 gSet number_zbins_9 {60}

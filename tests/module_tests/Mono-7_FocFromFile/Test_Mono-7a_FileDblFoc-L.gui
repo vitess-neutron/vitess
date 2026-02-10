@@ -58,7 +58,6 @@ gSet outcol_7lambda {1}
 gSet outcol_7tof {1}
 gSet outcol_6lambda {1}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet outcol_5lambda {1}
 gSet npl_gt {}
 gSet opc_dt9_gt {1}
@@ -227,7 +226,6 @@ gSet outcol_2color {1}
 gSet separate98 {here}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {#aedace}
 gSet number_zbins_5 {100}
 gSet mark {87}
 gSet outcol_3position {1}
@@ -238,7 +236,6 @@ gSet comode {action}
 gSet cph_dt3_gt {}
 gSet min_wavelength_1 {6.0}
 gSet cap_dt9_gt {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet outcol_1id {1}

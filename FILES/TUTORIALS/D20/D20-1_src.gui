@@ -56,7 +56,6 @@ gSet outcol_7tof {1}
 gSet seriest1.1_ {22:T}
 gSet outcol_6lambda {1}
 gSet seriest1.2_ {22:h}
-gSet headerColor {#0b4e66}
 gSet seriest1.3_ {22:r}
 gSet outcol_5lambda {1}
 gSet opc_dt9_gt {1}
@@ -215,7 +214,6 @@ gSet separate98 {here}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
 gSet number_zbins_3 {100}
-gSet entryColor {#aedace}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
 gSet number_ybins_3 {100}
@@ -225,7 +223,6 @@ gSet cph_dt3_gt {}
 gSet min_wavelength_1 {2.3}
 gSet cap_dt9_gt {}
 gSet bdia_gt {4.5}
-gSet buttonColorFont {white}
 gSet utrcfunction_1 {}
 gSet outcol_21position {1}
 gSet dbc_gt {28.0}
@@ -656,7 +653,6 @@ gSet dist_dt1_gt {6}
 gSet modfile_1 {ILL_thml_2011.mod}
 gSet fmod_gt {stops no right neutron}
 gSet seriesselection_ {all}
-gSet fgColor {black}
 gSet max_z_3 {10}
 gSet mtrl_colour_2 {-1}
 gSet polx_1 {1}

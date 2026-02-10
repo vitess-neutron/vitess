@@ -139,7 +139,6 @@ gSet outcol_7tof {1}
 gSet seriest1.1_ {22:T}
 gSet outcol_6lambda {1}
 gSet seriest1.2_ {22:h}
-gSet headerColor {#0b4e66}
 gSet src_col_23 {768}
 gSet devvert_14 {0.0}
 gSet seriest1.3_ {22:r}
@@ -351,7 +350,6 @@ gSet separate98 {here}
 gSet phimax_9 {}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {#aedace}
 gSet number_zbins_6 {100}
 gSet number_zbins_8 {100}
 gSet outcol_3position {1}
@@ -373,7 +371,6 @@ gSet cap_dt9_gt {}
 gSet max_w_13 {2.5}
 gSet max_w_15 {2.5}
 gSet bdia_gt {4.5}
-gSet buttonColorFont {white}
 gSet utrcfunction_1 {}
 gSet scr_file_r_23 {0}
 gSet max_w_20 {2.5}
@@ -861,7 +858,6 @@ gSet sc_ex_width_11 {9.5}
 gSet mo_abs_14 {0}
 gSet diry_18 {0}
 gSet seriesselection_ {all}
-gSet fgColor {black}
 gSet max_z_4 {8.85}
 gSet polx_1 {1}
 gSet mtrl_colour_2 {-1}

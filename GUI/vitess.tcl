@@ -47,7 +47,7 @@
 #   set bgColor #f2f2fb
 # }
 
-set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active|Color)$}
+set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active|Color|ColorFont)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
 # Some variables for settings begin with a capital letter, or are otherwise rejected by

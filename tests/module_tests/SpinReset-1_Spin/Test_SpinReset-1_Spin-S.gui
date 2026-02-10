@@ -111,7 +111,6 @@ gSet outprgf_2 {VITESS}
 gSet instrumentfile {Test_SpinReset-1_Spin-S}
 gSet outcol_2color {1}
 gSet number_of_bunches_1 {1}
-gSet entryColor {#aedace}
 gSet nac_dt3_gt {1}
 gSet gravity_ {off}
 gSet cph_dt3_gt {}

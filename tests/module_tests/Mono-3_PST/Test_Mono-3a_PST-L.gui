@@ -103,7 +103,6 @@ gSet max_vy_8 {12.5}
 gSet max_vy_9 {6}
 gSet outcol_6lambda {1}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet parameter2_6 {pos_y}
 gSet parameter2_7 {k_z}
 gSet gapvert_2 {0.0}
@@ -301,7 +300,6 @@ gSet outcol_2color {1}
 gSet separate98 {here}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
-gSet entryColor {#aedace}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet cangle_2 {0}
@@ -325,7 +323,6 @@ gSet number_xbins_9 {100}
 gSet cap_dt9_gt {}
 gSet bragghoriz_2 {UNDEFINED}
 gSet mposy_2 {UNDEFINED}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet outcol_1id {1}

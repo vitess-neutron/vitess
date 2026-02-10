@@ -161,7 +161,7 @@ set menuColor $c
 if {$tcl_platform(os) == "Darwin"} {
   set buttonColor #abb3be
   set buttonColorFont black
-  set menuColor black
+  set radioColor $c
 }
 
 set itemlabwidth 16

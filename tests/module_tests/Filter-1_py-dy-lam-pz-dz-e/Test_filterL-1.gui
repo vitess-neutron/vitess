@@ -88,7 +88,6 @@ gSet outcol_7lambda {1}
 gSet filtJMin_7 {-0.3}
 gSet filtJMin_9 {-0.3}
 gSet outcol_7tof {1}
-gSet headerColor {#0b4e66}
 gSet outcol_5lambda {1}
 gSet opc_dt9_gt {1}
 gSet npl_gt {}
@@ -261,7 +260,6 @@ gSet separate99 {here}
 gSet number_of_bunches_1 {1}
 gSet number_zbins_2 {100}
 gSet number_zbins_3 {100}
-gSet entryColor {white}
 gSet outcol_3position {1}
 gSet number_ybins_2 {100}
 gSet nac_dt3_gt {1}
@@ -275,7 +273,6 @@ gSet min_wavelength_1 {3}
 gSet max_w_12 {6}
 gSet cap_dt9_gt {}
 gSet max_w_13 {20}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

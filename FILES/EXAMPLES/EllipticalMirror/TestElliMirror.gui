@@ -17,7 +17,6 @@ gSet nac_dt7_gt {1}
 gSet wdeterm_gt {average wavelength}
 gSet delay_gt {0.0}
 gSet setsimpar1_ {}
-gSet entryColor {#aedace}
 gSet outfilename_ {noutput.dat}
 gSet opc_dt8_gt {1}
 gSet insname_ {IRIS}

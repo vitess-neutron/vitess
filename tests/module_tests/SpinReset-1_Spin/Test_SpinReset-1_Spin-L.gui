@@ -122,7 +122,6 @@ gSet prop_width_1 {5}
 gSet visM1 {--inactive--}
 gSet separateW5 {}
 gSet visM2 {spin_reset}
-gSet entryColor {#aedace}
 gSet separateW6 {}
 gSet diry_3 {0}
 gSet visM3 {--inactive--}

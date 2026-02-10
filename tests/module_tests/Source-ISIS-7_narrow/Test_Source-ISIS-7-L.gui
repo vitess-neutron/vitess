@@ -48,7 +48,6 @@ gSet filtYMin_6 {}
 gSet cap_dt3_gt {}
 gSet outcol_7lambda {1}
 gSet outcol_7tof {1}
-gSet headerColor {#0b4e66}
 gSet npl_gt {}
 gSet opc_dt9_gt {1}
 gSet dist_dt10_gt {0}
@@ -141,7 +140,6 @@ gSet instrumentfile {Test_Source-ISIS-7-L}
 gSet outcol_2color {1}
 gSet number_zbins_3 {80}
 gSet number_zbins_4 {100}
-gSet entryColor {#aedace}
 gSet outcol_3position {1}
 gSet nac_dt3_gt {1}
 gSet number_ybins_3 {80}
@@ -153,7 +151,6 @@ gSet min_wavelength_1 {1}
 gSet outsurf_2 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_2 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

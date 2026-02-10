@@ -90,7 +90,6 @@ gSet filtJMin_7 {0}
 gSet filtJMin_8 {}
 gSet filtJMin_9 {}
 gSet outcol_7tof {1}
-gSet headerColor {#0b4e66}
 gSet rrefl_m_2 {3}
 gSet waviness_2 {0}
 gSet keyreflminZ_2 {0}
@@ -278,7 +277,6 @@ gSet outcol_2color {1}
 gSet separate99 {here}
 gSet number_of_bunches_1 {1}
 gSet enter_height_2 {3}
-gSet entryColor {white}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet gd_abs_2 {0}
@@ -290,7 +288,6 @@ gSet min_wavelength_1 {3}
 gSet outsurf_3 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_3 {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

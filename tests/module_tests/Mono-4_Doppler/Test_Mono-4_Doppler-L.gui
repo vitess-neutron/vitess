@@ -62,7 +62,6 @@ gSet outcol_7lambda {1}
 gSet outcol_7tof {1}
 gSet outcol_6lambda {1}
 gSet outcol_10tof {0}
-gSet headerColor {#0b4e66}
 gSet gapvert_2 {0.0}
 gSet outcol_5lambda {1}
 gSet npl_gt {}
@@ -234,7 +233,6 @@ gSet outcol_2color {1}
 gSet separate98 {here}
 gSet separate99 {here}
 gSet number_of_bunches_1 {10}
-gSet entryColor {#aedace}
 gSet mark {87}
 gSet outcol_3position {1}
 gSet cangle_2 {0}
@@ -246,7 +244,6 @@ gSet min_wavelength_1 {6}
 gSet cap_dt9_gt {}
 gSet bragghoriz_2 {0}
 gSet mposy_2 {0}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet outcol_1id {1}

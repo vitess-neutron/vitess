@@ -219,7 +219,6 @@ gSet separate99 {here}
 gSet ifile_14 {syn_result.eva}
 gSet sfile_o_14 {-}
 gSet enter_height_4 {6}
-gSet entryColor {#aedace}
 gSet number_zbins_5 {70}
 gSet number_zbins_6 {100}
 gSet outcol_19direction {1}

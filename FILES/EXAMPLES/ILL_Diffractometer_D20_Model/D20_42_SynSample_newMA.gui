@@ -370,7 +370,6 @@ gSet max_w_13 {2.5}
 gSet number_zbins_20 {120}
 gSet max_w_15 {2.5}
 gSet bdia_gt {4.5}
-gSet buttonColorFont {white}
 gSet phimin_16 {}
 gSet utrcfunction_1 {}
 gSet phimin_18 {}
