@@ -12,17 +12,16 @@ PrivilegesRequired=none
 
 [Files]
 Source: "C:\vitess3.8\*"; DestDir: "{app}"; Flags: recursesubdirs; Components: main
-Source: "C:\tcl\*"; DestDir: "{app}"; Flags: recursesubdirs; Components: tcl
-Source: "C:\gnuplot\*"; DestDir: "{app}\gnuplot"; Flags: recursesubdirs; Components: gnuplot
-Source: "C:\vitess3.8\install-windows.txt"; DestDir: "{app}"; Flags: isreadme
+Source: "C:\tcl\*"; DestDir: "{app}\tcl"; Flags: recursesubdirs; Components: tcl
+Source: "C:\gr\*"; DestDir: "{app}\gr"; Flags: recursesubdirs; Components: gr
 
 [Icons]
-Name: "{userdesktop}\Vitess3.8"; Filename: "{app}\bin\wish86t.exe"; IconFilename: "{app}\Bitmaps\vwish.exe"; Parameters: " -f Vitess"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{userdesktop}\Vitess3.8"; Filename: "{app}\tcl\bin\wish86t.exe"; IconFilename: "{app}\BITMAPS\vwish.ico"; Parameters: " -f Vitess"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Components]
 Name: "main"; Description: "Vitess"; Types: full compact custom; Flags: fixed
 Name: "tcl"; Description: "Tcl/TK 8.6"; Types: full
-Name: "gnuplot"; Description: "Gnuplot 5.4"; Types: full
+Name: "gr"; Description: "gr 0.73.22"; Types: full
 
 [Tasks]
 Name: desktopicon; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Components: main

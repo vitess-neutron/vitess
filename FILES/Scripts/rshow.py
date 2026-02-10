@@ -174,18 +174,18 @@ class MonitorFile:
             if len(self.x) > 200:
                 # avoid barplot for large files
                 plt.plot(self.x, self.value, **kwargs)
-            elif self.error is None:
-                plt.bar(self.x, self.value, width=width, **kwargs)
             else:
-                plt.bar(self.x, self.value - self.error, width=width, **kwargs)
-                plt.bar(
-                    self.x,
-                    self.error * 2,
-                    bottom=self.value - self.error,
-                    width=width,
-                    color="grey",
-                    **kwargs,
-                )
+                plt.bar(self.x, self.value, width=width, **kwargs)
+                if self.error is not None:
+                    plt.bar(
+                        self.x,
+                        self.error * 2,
+                        bottom=self.value - self.error,
+                        width=width,
+                        color="black",
+                        alpha=0.4,
+                        **kwargs,
+                    )
         else:
             x, y, value = self._spread_2d()
             axes.pcolormesh(x, y, value, **kwargs)
@@ -236,5 +236,4 @@ class MonitorFile:
 
 if __name__ == "__main__":
     f = MonitorFile(sys.argv[1])
-    f.show()
     f.plot(show=True)
