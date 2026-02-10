@@ -310,7 +310,7 @@ package:
         tar -czf Downloads/Vitess${VITESS_VERSION}-${OSARCH}.tar.gz -C ${OSARCH} vitess${VITESS_VERSION};
       done
     - cp artifacts-Windows10-x86/Vitess${VITESS_VERSION}-Windows10-x86.exe Downloads/
-    - cp artifacts-Windows10-x86/Vitess${VITESS_VERSION}-Windows10-x86_64.exe Downloads/
+    - cp artifacts-Windows10-x86_64/Vitess${VITESS_VERSION}-Windows10-x86_64.exe Downloads/
   artifacts:
     paths:
       - Downloads/
