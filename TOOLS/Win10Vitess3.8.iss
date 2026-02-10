@@ -1,9 +1,9 @@
-; -- Vitess.iss --                                           
+; -- Vitess.iss --
 [Setup]
 AppName=Vitess
 AppVersion=3.8
-AppCopyright=GNU GPL (C) 2025 Forschungszentrum JÃ¼lich GmbH
-DefaultDirName={autopf}\Vitess
+AppCopyright=GNU GPL (C) 2025 Forschungszentrum Jülich GmbH
+DefaultDirName={sd}\Vitess3.8
 UsePreviousAppDir=no
 DirExistsWarning=no
 DisableProgramGroupPage=yes
