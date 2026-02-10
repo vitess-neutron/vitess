@@ -631,16 +631,32 @@ proc checkMatplotlib {} {
 
 
 proc getGrplot {} {
-  global FoundGrplot
+  global FoundGrplot tcl_platform
   if [info exists FoundGrplot] {return $FoundGrplot}
   switch [getSystem] {
     unix {
+      # find bundeled gr
+      set fn [file join [globVal SourceDirectory] bin grplot]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join [globVal SourceDirectory] gr bin grplot]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join [file dirname [globVal SourceDirectory]] gr bin grplot]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      # find installed gr
       set fn [findExecutable grplot]
       if {$fn != ""} {return [set FoundGrplot $fn]}
-      set fn [file join /usr gr bin grplot.exe]
+      set fn [file join /usr gr bin grplot]
       if [file executable $fn] {return [set FoundGrplot $fn]}
-      set fn [file join /usr local gr bin grplot.exe]
+      set fn [file join /usr local gr bin grplot]
       if [file executable $fn] {return [set FoundGrplot $fn]}
+      if {$tcl_platform(os) == "Darwin"} {
+        set fn [file join [globVal SourceDirectory] gr Applications grplot.app Contents MacOS grplot]
+        if [file executable $fn] {return [set FoundGrplot $fn]}
+        set fn [file join /Applications grplot.app Contents MacOS grplot]
+        if [file executable $fn] {return [set FoundGrplot $fn]}
+        set fn [file join /usr local Applications grplot.app Contents MacOS grplot]
+        if [file executable $fn] {return [set FoundGrplot $fn]}
+      }
     }
     windows {
       # find bundeled gr
@@ -953,15 +969,14 @@ proc showPlotFile {name {topt 0}} {
       if {$ftype == "matrix"} {
         catch {exec [getGrplot] $name kind:heatmap use_bins:1 &}
       } elseif {$ftype == "xyz"} {
-        catch {exec [getGrplot] $name kind:heatmap xyz_file:1 ignore_space:1 &}
+        catch {exec [getGrplot] $name kind:heatmap xyz_file:1 ignore_blank_lines:1 &}
       } else {
         set nrows [getDataRows $name 200]
         if {$nrows >= 200} {
           # avoid barplots of large files
           catch {exec [getGrplot] $name kind:line x_columns:1 y_columns:2 error_columns:3 &}
         } else {
-          # after grplot update: equal_up_and_down_error:1 error_type:absolute error_bar_style:1
-          catch {exec [getGrplot] $name kind:barplot x_columns:1 y_columns:2 error_columns:3 &}
+          catch {exec [getGrplot] $name kind:barplot x_columns:1 y_columns:2 error_columns:3 equal_up_and_down_error:1 error_type:absolute error_bar_style:1 &}
         }
       }
     }

@@ -1,5 +1,6 @@
 variables:
   VITESS_VERSION: "3.8"
+  GR_VERSION: "0.73.22"
 
 stages:
   - build
@@ -33,7 +34,7 @@ workflow:
     - make all LTO=1
     - make install
     - cd ..
-    - mkdir artifacts-${OS}-${ARCH}
+    - mkdir -p artifacts-${OS}-${ARCH}
     - cp -r MODULES artifacts-${OS}-${ARCH}
   artifacts:
     paths:
@@ -151,7 +152,18 @@ compile-darwin:
     - unzip "../libtorch-macos-x86_64-${LIBTORCHVERSION}.zip"
     - mv libtorch x86_64
     - cd ..
-    - cd ..
+    - mkdir -p ../artifacts-${OS}-${ARCH}
+    - tar -xzf tcltk.tgz -C ../artifacts-${OS}-${ARCH}
+    - curl -LOv https://gr-framework.org/downloads/gr-${GR_VERSION}-Darwin-universal.tar.gz
+    - tar -xzf gr-${GR_VERSION}-Darwin-universal.tar.gz -C ../artifacts-${OS}-${ARCH}
+    - cd ../artifacts-${OS}-${ARCH}/gr
+    - rm -rf Applications/gksqt.app Applications/GKSTerm.app
+    - mkdir -p bin
+    - echo -e '#!/bin/sh\nGRDIR="$(realpath "$(dirname "$0")/..")"\nDYLD_FALLBACK_LIBRARY_PATH="${GRDIR}/lib" "${GRDIR}/Applications/grplot.app/Contents/MacOS/grplot" "$@"' > bin/grplot
+    - chmod +x bin/grplot
+    # workaround for gr 0.73.22
+    - rm -rf Applications/grplot/Contents/Frameworks/Qt* && tar -xzf ../../vitess-data/qt6.tgz -C Applications/grplot.app/Contents/Frameworks/
+    - cd ../..
   artifacts:
     paths:
       - artifacts-Darwin-universal/
@@ -172,7 +184,8 @@ compile-darwin:
     - cd /c
     - git clone -b vitess${VITESS_VERSION} https://${WINDOWS_DATA_USER}:${WINDOWS_DATA_PASSWORD}@${WINDOWS_DATA_REPO} vitess-data
     - mv vitess-data/tcl /c/
-    - mv vitess-data/gnuplot /c/
+    - curl -LOv https://gr-framework.org/downloads/gr-${GR_VERSION}-Windows-x86_64-msvc.tar.gz
+    - tar -xzf gr-${GR_VERSION}-Windows-x86_64-msvc.tar.gz -C /c/
     - cd -
 
 .windows_package_script: &windows_package_script
@@ -293,6 +306,7 @@ package:
         mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
         cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
         cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;
+        [ ${OSARCH} = Darwin-universal ] && cp -r artifacts-${OSARCH}/Wish.app ${OSARCH}/vitess${VITESS_VERSION}/ && cp -r artifacts-${OSARCH}/gr ${OSARCH}/vitess${VITESS_VERSION}/;
         tar -czf Downloads/Vitess${VITESS_VERSION}-${OSARCH}.tar.gz -C ${OSARCH} vitess${VITESS_VERSION};
       done
     - cp artifacts-Windows10-x86/Vitess${VITESS_VERSION}-Windows10-x86.exe Downloads/
