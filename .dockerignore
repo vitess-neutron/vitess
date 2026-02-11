@@ -1,0 +1,22 @@
+.git
+.gitignore
+.gitattributes
+.gitlab-ci.yml
+
+tests/
+
+# Unused Qt GUI
+GUI-Qt/
+
+# Internal or old documentation
+yaml/
+Concepts/
+ESS-DMSC.txt
+filelist.txt
+install-unix.txt
+install-windows.txt
+darwin_gnuplot.txt
+
+.DS_Store
+Thumbs.db
+Xc20?????.log
