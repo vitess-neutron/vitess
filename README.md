@@ -8,35 +8,43 @@ Welcome to the GitLab repository of **VITESS** (Virtual Instrumentation Tool for
 
 **VITESS** is a tool for the simulation of neutron scattering instruments and experiments at pulsed and continuous sources. Using **VITESS**, you can simulate a large variety of instruments at any of the major current and future neutron sources, including the European Spallation Source, which is currently being designed. **VITESS** is supported by a graphical user interface (GUI), making it simple for you to compose your instrument and run simulations. You can use **VITESS** on a **Windows**, **Linux** or **Macintosh** computer. Simply choose the appropriate [download file](https://iffgit.fz-juelich.de/vitess/vitess/-/releases) and install **VITESS** on your computer. The **VITESS** installation includes some example instruments to demonstrate the main features of the program. You can also use the [examples](./FILES/EXAMPLES/) as an initial aid for your own instruments. For any questions and feedback of all kind you may contact the **VITESS** developers team, vitess@fz-juelich.de, and we will help you as quickly as possible.
 
+Version 3.7 contains two new source modules for better integration with neutronic simulation software: KDSource, which increases the number of neutron trajectories using the kernel density estimator method, and AISource; which creates a function to define the moderator characteristic using AI. It also offers a new module to simulate prisms and one to use the NCrystal library. The monochromator module allows simulating monochromator rotations and oscillations. The modules treating inelastic scattering can now handle spin dependent scattering. NeXus output is included to enable processing simulated data just as real data.
+
+**VITESS** 4.0 is in active development. If you are interested in testing it, checkout the develop branch or download an [up-to-date snapshot](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
+
 
 ## Installation
 
-### Download VITESS Binaries 
+### Download Links
 
 Download the current stable version: [VITESS 3.7](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
 
 Download a snapshot of the development version: [VITESS develop](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package).
 
-Version 3.7 contains two new source modules for better integration with neutronic simulation software: KDSource, which increases the number of neutron trajectories using the kernel density estimator method, and AISource; which creates a function to define the moderator characteristic using AI. It also offers a new module to simulate prisms and one to use the NCrystal library. The monochromator module allows simulating monochromator rotations and oscillations. The modules treating inelastic scattering can now handle spin dependent scattering. NeXus output is included to enable processing simulated data just as real data.
 
-**VITESS** 4.0 is in active development. If you are interested in testing it, checkout the develop branch or download an [up-to-date snapshot](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
+### Windows
+Download the and run the installer from the links above.
 
-### Install Requirements
+### MacOS
+- Install [XQuartz](https://xquartz.org)
+- Download and unpack VITESS: run `curl -L https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/1074589/artifacts/raw/Downloads/Vitess3.7-Darwin-universal.tar.gz | tar xz` in the terminal.
+- If you used a download link from above, you might get an error message about running unknown code. In that case, run `xattr -c -r vitess3.7/`
+- For older versions (Vitess 3.7 or below): Install Tcl/Tk 8.6, e.g. from homebrew: `brew install tcl-tk@8.6`
+
+### Linux
 
 To run the Vitess-GUI you need [Tcl/TK](https://www.tcl-lang.org) 8.6 and [LibGD](https://libgd.org) 2.3.
 
 - Debian, Ubuntu etc: `sudo apt install -y libgd3 tk`
 - RedHat, Fedora, etc: `sudo dnf install -y gd tk`
-- MacOS: `brew install gd tcl-tk@8`
 
-If installed, [Gnuplot](http://www.gnuplot.info) will be used for visualization.
-It is possible to select python plotting if `python` is available, with `matplotlib` and `numpy` installed.
+Install a visualization programm: [Grplot](https://gr-framework.org), python with matplotlib, or gnuplot.
+
 
 ### Optional: Compile from source
 
 To build Vitess on various operating systems you need to install the following packages:
 
-- Windows: [Visual Studio](https://visualstudio.microsoft.com) 2017
 - Mac OS: [Xcode Command Line Tools](https://developer.apple.com/xcode/resources), [XQuartz](https://www.xquartz.org), [LibGD](https://libgd.org), [Tcl/Tk](https://www.tcl-lang.org/) and [CMake](https://cmake.org/)
 - Debian, Ubuntu: `apt-get install make gcc g++ cmake libgd-dev libxml2-dev`
 - RedHat, CentOS: `dnf install make gcc gcc-c++ cmake gd-devel libxml2-devel`
