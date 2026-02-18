@@ -4,12 +4,15 @@ VITESS 3.8 Release Notes
 Module tests:
 Automated tests have been added that check Modules for changes in output, memory leaks and undefined behavior.
 
-GUI improvements:
-- The GUI now automatically selects an installed plotting tool. The diffrentiation between 1D and 2D plots is done automatically.
+GUI and plotting improvements:
+- The GUI now automatically selects an installed plotting tool. The differentiation between 1D and 2D plots is done automatically.
+- The Windows installer now contains grplot instead of gnuplot.
+- The MacOS package contains grplot and Tcl/Tk.
 - Fixed issues with context menus.
 - Fixed MacOS-specific errors.
 
 Fixes and improvements:
+- Monochromator: fixed issues with geometry and movements.
 - Monitors: the calculation of k_y and k_z is now more consistent.
 - KDSource now finds its MCPL and bandwith files relative to the xml file.
 - sample_ncrystal is available on windows.
