@@ -1,6 +1,6 @@
 variables:
   VITESS_VERSION: "3.8"
-  GR_VERSION: "0.73.22"
+  GR_VERSION: "0.73.24"
 
 stages:
   - build
@@ -158,11 +158,6 @@ compile-darwin:
     - tar -xzf gr-${GR_VERSION}-Darwin-universal.tar.gz -C ../artifacts-${OS}-${ARCH}
     - cd ../artifacts-${OS}-${ARCH}/gr
     - rm -rf Applications/gksqt.app Applications/GKSTerm.app
-    - mkdir -p bin
-    - echo -e '#!/bin/sh\nGRDIR="$(realpath "$(dirname "$0")/..")"\nDYLD_FALLBACK_LIBRARY_PATH="${GRDIR}/lib" "${GRDIR}/Applications/grplot.app/Contents/MacOS/grplot" "$@"' > bin/grplot
-    - chmod +x bin/grplot
-    # workaround for gr 0.73.22
-    - rm -rf Applications/grplot/Contents/Frameworks/Qt* && tar -xzf ../../vitess-data/qt6.tgz -C Applications/grplot.app/Contents/Frameworks/
     - cd ../..
   artifacts:
     paths:
