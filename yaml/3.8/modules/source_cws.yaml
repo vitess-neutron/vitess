@@ -49,6 +49,8 @@ source_cws:
   - *source_TargetDist
   - *source_TargetWidth
   - *source_TargetHeight
+  - *source_TargetShiftY
+  - *source_TargetShiftZ
 
   - *source_Title_Time
   - *source_TofDist

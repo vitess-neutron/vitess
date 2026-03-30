@@ -512,7 +512,10 @@ set cwsASET {
   {prop_width    float 10 {"window\nwidth [cm]" "width of propagation window in cm" "" w} gt0 "" 1}
   {prop_height   float 10 {"window\nheight [cm]" "height of propagation window in cm" "" h} gt0 "" 1}
   {}
-  {decl float 0 {"declination\n[deg]" "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
+  {decl   float 0 {"declination\n[deg]" "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
+  {h_shft float 0 {"hor. window\nshift [cm]" "horizontal position of the center of the propagation window (positive values: to the left)" "" u}}
+  {v_shft float 0 {"vert. window\nshift [cm]" "vertical position of the center of the propagation window (positive values: upwards)" "" U}}
+  {}
   {beamline string "" {"beamline" "name of the beamline\nFor the ESS Butterfly 1 moderator, it is used to determine the moderator characteristics and the declination; for other sources there is no effect" "" B}}
   {}
   {"Time window" header}
@@ -653,15 +656,16 @@ proc sore1 {f l} {
   return [concat $f $l]
 }
 
-proc sore2 {s p} {
+proc sore2 {s p pe} {
   set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for some sources\ncorresponding input parameters are ignored in this case" "" N} {- ESS HBS} {- ESS HBS}]]
   set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} gt0 "" 1]]
-  return [concat $s $p]
+  set pe [list [list energy float $pe {"proton energy\n[GeV]" "kinetic energy of the neutrons at the target" "" E} ge0 "" 1]]
+  return [concat $s $p $pe]
 }
 
 set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
 set fl [sore1 14 2.857]
-set sp [sore2 ESS 2.0 ]
+set sp [sore2 ESS 2.0 2.0]
 set source_ESS_LPTSESET [concat {
     {datvsn radio 2016_Butterfly1 {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
   } $fl $sp [list $al] $smASET $cwsASET]

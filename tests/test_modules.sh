@@ -29,7 +29,10 @@ run_pipelines() {
     P="${TESTS_DIR}/module_tests/${TEST_NAME}"
     PIPELINE_FAIL=0
     for PIPELINE in "${P}"/*.sh; do
-        [ -x "${PIPELINE}" ] || continue
+        if [ ! -x "${PIPELINE}" ]; then
+            echo "$(basename "${PIPELINE}") is not executable"
+            continue
+        fi
         [ "${PIPELINE%-win.sh}" = "${PIPELINE}" ] || continue
         SCRIPT="$(basename "${PIPELINE}")"
         [ -n "${FIX_SCRIPTS}" ] && _fix_scripts

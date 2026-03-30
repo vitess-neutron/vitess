@@ -13,11 +13,6 @@ gSet datvsn_1 {2016_Butterfly1}
 gSet opc_dt6_gt {1}
 gSet dist_dt4_gt {0}
 gSet dsd_gt {10}
-gSet rA {
-  {}
-  {reff pareditablefile "" {
-    "reference file" "reference file: it contains input data that serve to normalize the monitor data" "" R}}
-}
 gSet poldeg_1 {100}
 gSet max_time_1 {10}
 gSet filtLambdaMax_2 {}
@@ -28,7 +23,6 @@ gSet outcol_3trace {1}
 gSet polz_1 {1}
 gSet ttd_gt {10}
 gSet cph_dt4_gt {}
-gSet sp {{name radio ESS {"analytical flux\ncalculation for" "flux can be calculated analytically for some sources\ncorresponding input parameters are ignored in this case" "" N} {- ESS HBS} {- ESS HBS}} {power float 2.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} gt0 {} 1}}
 gSet prop_width_1 {2}
 gSet name_1 {ESS}
 gSet filtYMin_2 {}
@@ -82,8 +76,8 @@ gSet separate27 {hidden}
 gSet separate28 {hidden}
 gSet separate30 {hidden}
 gSet separate29 {hidden}
-gSet prop_height_1 {2}
 gSet mod1 {source_ESS_LPTS}
+gSet prop_height_1 {2}
 gSet separate31 {hidden}
 gSet mod2 {writeout}
 gSet separate32 {hidden}
@@ -117,16 +111,19 @@ gSet nac_dt3_gt {1}
 gSet gravity_ {off}
 gSet comode {action}
 gSet cph_dt3_gt {}
+gSet h_shft_1 {0}
 gSet min_wavelength_1 {1}
 gSet outsurf_2 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_2 {}
+gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}
 gSet cap_dt2_gt {}
 gSet outcol_2trace {1}
 gSet power_1 {2.0}
+gSet energy_1 {2.0}
 gSet max_the_1 {0.5}
 gSet outfilename_ {no_file}
 gSet opc_dt8_gt {1}
@@ -147,6 +144,7 @@ gSet reprate_gt {16.66667}
 gSet decl_1 {}
 gSet min_the_1 {0.0}
 gSet rpm_gt {}
+gSet v_shft_1 {0}
 gSet wofact_2 {1.0}
 gSet cap_dt5_gt {}
 gSet outcol_2position {1}
@@ -165,7 +163,7 @@ gSet separateW3 {}
 gSet opc_dt4_gt {1}
 gSet visM1 {source_ESS_LPTS}
 gSet separateW4 {}
-gSet visM2 {writeout}
+gSet visM2 {--inactive--}
 gSet separateW5 {}
 gSet visM3 {--inactive--}
 gSet separateW6 {}
@@ -220,7 +218,7 @@ gSet deswl_1 {}
 gSet cph_dt2_gt {}
 gSet outcol_7color {1}
 gSet separate1 {here}
-gSet separate2 {here}
+gSet separate2 {hidden}
 gSet separate3 {hidden}
 gSet outcol_4color {1}
 gSet separate4 {hidden}
@@ -236,7 +234,6 @@ gSet cap_dt1_gt {45}
 gSet outcol_4spin {1}
 gSet outcol_3counts {1}
 gSet outcol_2counts {1}
-gSet defaultPlotApp {}
 gSet opc_dt7_gt {1}
 gSet outcol_7trace {1}
 gSet filtZDiv_2 {}
@@ -264,7 +261,7 @@ gSet opc_dt3_gt {1}
 gSet outcol_2spin {1}
 gSet min_time_1 {0}
 gSet dist_dt1_gt {6}
-gSet modfile_1 {EssButterfly.mod}
+gSet modfile_1 {EssButterflyEW_auto.mod}
 gSet fmod_gt {stops no right neutron}
 gSet filtDivMax_2 {}
 gSet polx_1 {1}

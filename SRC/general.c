@@ -468,14 +468,14 @@ double InterpolQ(const double Q, const double* aQ, const double* aR, const int n
 double ReflInterpol(const double Lambda, const double Angle, const double* Rdata, long MaxData)
 {
   long   iw1;
-  double w,         // angle/wavelength
-         R=0.0;     // reflectivity
+  double w,         // [deg] angle giving the same Q value as 'Lambda' and 'Angle'
+         R=0.0;     //       reflectivity
 
-  w   = Angle*1000.0 / Lambda;
+  w   = 1000 * Degrees(asin(sin(Radians(Angle / Lambda))));
 
 #ifdef FAST_SIM
   iw1 = (long) floor(w+0.5);
-  R = Rdata[iw1];
+  R   = Rdata[iw1];
 #else
   iw1 = (long) floor(w);
 
@@ -820,6 +820,20 @@ void Error2(const char *text1, const char *text2)
 #endif
 
   fprintf(LogFilePtr, fmt, text1, text2);
+  fflush(LogFilePtr);
+  exit(-1);
+}
+
+void Error2F(const char *text, const double value)
+{
+  const char *fmt = "ERROR: %s! Input value: %11.4e\n";
+#ifndef WIN32
+  if (isatty(fileno(LogFilePtr))) {
+    fmt = "\033[31mERROR: %s! Input: %s\n\033[39m\n";
+  }
+#endif
+
+  fprintf(LogFilePtr, fmt, text, value);
   fflush(LogFilePtr);
   exit(-1);
 }

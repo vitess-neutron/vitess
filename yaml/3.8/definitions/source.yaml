@@ -119,8 +119,17 @@ source_SrcPower: &source_SrcPower
   unit: "MW"
   tooltip: "average source power"
   default: 2.0
-  column: 1
+  column: 0
   prefix: "-L"
+  required: false
+source_ProtonEnergy: &source_ProtonEnergy
+  name: "ProtonEnergy"
+  type: "float"
+  label: "proton energy"
+  unit: "GeV"
+  tooltip: "kinetic energy of the neutrons at the target"
+  column: 1
+  prefix: "-E"
   required: false
 source_ModDecl: &source_ModDecl
   name: "ModDecl"
@@ -209,7 +218,7 @@ source_TargetWidth: &source_TargetWidth
   type: "float"
   label: "window width"
   unit: "cm"
-  tooltip: "width of the target window"
+  tooltip: "width of the propagation window"
   min: 0.0
   default: 3.0
   column: 1
@@ -220,11 +229,31 @@ source_TargetHeight: &source_TargetHeight
   type: "float"
   label: "window height"
   unit: "cm"
-  tooltip: "height of the target window"
+  tooltip: "height of the propagation window"
   min: 0.0
   default: 3.0
   column: 2
   prefix: "-h"
+  required: false
+source_TargetShiftY: &source_TargetShiftY
+  name: "TargetShiftY"
+  type: "float"
+  label: "hor. window shift"
+  unit: "cm"
+  tooltip: "horizontal position of the center of the propagation window (positive values: to the left)"
+  default: 0.0
+  column: 1
+  prefix: "-u"
+  required: false
+source_TargetShiftZ: &source_TargetShiftZ
+  name: "TargetShiftZ"
+  type: "float"
+  label: "vert. window shift"
+  unit: "cm"
+  tooltip: "vertical position of the center of the propagation window (positive values: upwards)"
+  default: 0.0
+  column: 2
+  prefix: "-U"
   required: false
 
 source_Title_Time: &source_Title_Time

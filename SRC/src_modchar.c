@@ -39,49 +39,54 @@ static VtModType _eModType=0;        // _eModType   : decoupled POISONED, DECOUP
 /**********************************************/
 void InitSource(Source* pSrc)
 {
-  pSrc->eSrcKind   =NO_SRC_KIND;
-  pSrc->eSrcType   =NO_TYPE;
-  pSrc->pSrcName   =NULL;
-  pSrc->nSource    =ANYSOURCE;
-  pSrc->PulseFreq  =0.0;
-  pSrc->PulsePeriod=0.0;
-  pSrc->PulseLength=0.0;
-  pSrc->Power      =0.0;
+  pSrc->eSrcKind   = NO_SRC_KIND;
+  pSrc->eSrcType   = NO_TYPE;
+  pSrc->pSrcName   = NULL;
+  pSrc->nSource    = ANYSOURCE;
+  pSrc->PulseFreq  = 0.0;
+  pSrc->PulsePeriod= 0.0;
+  pSrc->PulseLength= 0.0;
+  pSrc->DutyCycle  = 0.0;
+  pSrc->Power      = 0.0;
+  pSrc->Voltage    = 0.0;
+  pSrc->CurrAvrg   = 0.0;
 }
 
 void InitModerator(Moderator*   pMod)
 {
-  pMod->ModTemp    =0.0;
+  pMod->ModTemp    = 0.0;
+  pMod->eModType   = NO_MOD_TYPE;
+  pMod->eIsisTS    = VT_NO_TS;
   pMod->nBackground=0;
-  pMod->nColour    =NO_COLOR;
-  pMod->bCircle    =FALSE;
-  pMod->CntrX      =0.0;
-  pMod->CntrY      =0.0;
-  pMod->CntrZ      =0.0;
-  pMod->Width      =0.0;
-  pMod->Height     =0.0;
-  pMod->Diameter   =0.0;
-  pMod->Area       =0.0;
-  pMod->DistModWnd =0.0;
-  pMod->WndFact    =0.0;
-  pMod->TotFluxMod =0.0;
-  pMod->Current    =0.0;
-  pMod->NormInt    =1.0;
-  pMod->PfmcFact   =1.0;
+  pMod->nColour    = NO_COLOR;
+  pMod->bModified  = FALSE;
+  pMod->bCircle    = FALSE;
+  pMod->CntrX      = 0.0;
+  pMod->CntrY      = 0.0;
+  pMod->CntrZ      = 0.0;
+  pMod->Diameter   = 0.0;
+  pMod->Width      = 0.0;
+  pMod->Height     = 0.0;
+  pMod->Area       = 0.0;
+  pMod->DistModWnd = 0.0;
+  pMod->WndFact    = 0.0;
+  pMod->PfmcFact   = 1.0;
   strcpy(pMod->sLFileName ,"");
   strcpy(pMod->sTFileName ,"");
   strcpy(pMod->sLTFileName,"");
-  pMod->eModType   = COUPLED;
-  pMod->TauAscMod  =  0.0;
-  pMod->TauDecMod  =  0.0;
-  pMod->FUAmpMod   =  0.0;
-  pMod->eIsisTS    = VT_NO_TS;
-  pMod->TotFluxUM  =  0.0;
-  pMod->Chi        =  0.0;
-  pMod->Kappa      =  2.2;
-  pMod->TauAscUM   =  0.0;
-  pMod->TauDecUM   =  0.0;
-  pMod->FUAmpUM    =  0.0;
+  pMod->TauAscMod  = 0.0;
+  pMod->TauDecMod  = 0.0;
+  pMod->Chi        = 0.0;
+  pMod->Kappa      = 2.2;
+  pMod->TauAscUM   = 0.0;
+  pMod->TauDecUM   = 0.0;
+  pMod->Current    = 0.0;
+  pMod->TotFluxMod = 0.0;
+  pMod->TotFluxUM  = 0.0;
+  pMod->FUAmpMod   = 0.0;
+  pMod->FUAmpUM    = 0.0;
+  pMod->NormTrj    = 0.0;
+  pMod->NormInt    = 1.0;
 }
 
 void InitTrajRange(TrajParam* pTrj)
@@ -129,7 +134,7 @@ double TotalFU(const double Temp,  const VtSrcName eSource, const VtModType eMod
      eSource   :      ESS, SNS,
      eModType  :      decoupled POISONED, DECOUPLED unpoisened, COUPLED
      Power     : [W]  average source power
-     Period    : [ms] time between 2 pulses
+     Period    : [s]  time between 2 pulses
      PulseLen  : [s]  pulse length                             */
   short  rc;
   double FUAmpl= 0.0,
@@ -138,7 +143,6 @@ double TotalFU(const double Temp,  const VtSrcName eSource, const VtModType eMod
          U0    = 2.5e9,   // [V] accelerator voltage: 2.5 GV
          Ep_std= 1.0e5,   // [J] standard energy of 1 pulse: 5 MW * 20 ms = 100 kJ (as for ESS SPTS)
          Epulse,          // [J] energy of 1 pulse
-         period,          // [s] time between 2 pulses
          CurrLimit=0.050, // [A] max. possible accelerator current
          CurrMax;         // [A] max. current for this set-up
   char   sBuffer[256];
@@ -159,8 +163,7 @@ double TotalFU(const double Temp,  const VtSrcName eSource, const VtModType eMod
 
   /* energy of pulse for normalization:
      standard values for energy of 1 pulse: E_pulse  */
-  period = Period/1000.0;   // ms -> s
-  Epulse = Power * period;
+  Epulse = Power * Period;
 
   switch(_eSource)
   {

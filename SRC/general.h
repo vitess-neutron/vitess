@@ -144,6 +144,7 @@ FILE*  fileOpen2         (const char* sName, const char* sMode, const char* sCon
 
 void   Error  (const char *text);
 void   Error2 (const char *text1, const char *text2);
+void   Error2F(const char *text,  const double value);
 void   Warning(const char *text);
 void   Note   (const char *text);
 void   Abort  ();
