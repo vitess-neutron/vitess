@@ -24,11 +24,6 @@ gSet dist_dt4_gt {0}
 gSet dsd_gt {10}
 gSet monitor_file_r_3 {0}
 gSet monitor_file_r_4 {0}
-gSet rA {
-  {}
-  {reff pareditablefile "" {
-    "reference file" "reference file: it contains input data that serve to normalize the monitor data" "" R}}
-}
 gSet monitor_file_r_5 {0}
 gSet monitor_file_r_6 {0}
 gSet monitor_file_r_7 {0}
@@ -50,7 +45,6 @@ gSet ttd_gt {10}
 gSet cph_dt4_gt {}
 gSet min_y_3 {-2}
 gSet min_y_4 {-1}
-gSet sp {{name radio ESS {"analytical flux\ncalculation for" "flux can be calculated analytically for some sources\ncorresponding input parameters are ignored in this case" "" N} {- ESS HBS} {- ESS HBS}} {power float 2.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} gt0 {} 1}}
 gSet prop_width_1 {2}
 gSet name_1 {ESS}
 gSet filtYMin_2 {}
@@ -72,7 +66,7 @@ gSet min_z_3 {-2}
 gSet min_z_4 {-1}
 gSet outcol_4lambda {1}
 gSet opc_dt2_gt {1}
-gSet number_of_neutrons_1 {1e3}
+gSet number_of_neutrons_1 {1e6}
 gSet dirx_10 {0}
 gSet dirx_11 {1}
 gSet dirx_12 {0}
@@ -106,7 +100,7 @@ gSet separate12 {hidden}
 gSet separate13 {hidden}
 gSet separate14 {hidden}
 gSet wdeterm_gt {average wavelength}
-gSet woActive_2 {yes}
+gSet woActive_2 {no}
 gSet separate15 {hidden}
 gSet separate16 {hidden}
 gSet separate17 {hidden}
@@ -170,16 +164,19 @@ gSet number_ybins_4 {100}
 gSet gravity_ {off}
 gSet comode {action}
 gSet cph_dt3_gt {}
+gSet h_shft_1 {0}
 gSet min_wavelength_1 {1}
 gSet outsurf_2 {}
 gSet cap_dt9_gt {}
 gSet filtZDivMin_2 {}
+gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}
 gSet cap_dt2_gt {}
 gSet outcol_2trace {1}
 gSet power_1 {2.0}
+gSet energy_1 {2.0}
 gSet max_the_1 {0.5}
 gSet mmm_10 {}
 gSet mmm_11 {}
@@ -216,6 +213,7 @@ gSet reprate_gt {16.66667}
 gSet decl_1 {}
 gSet min_the_1 {0.0}
 gSet rpm_gt {}
+gSet v_shft_1 {0}
 gSet wofact_2 {1.0}
 gSet cap_dt5_gt {}
 gSet outcol_2position {1}
@@ -320,7 +318,7 @@ gSet nac_dt2_gt {1}
 gSet deswl_1 {}
 gSet cph_dt2_gt {}
 gSet outcol_7color {1}
-gSet separate1 {here}
+gSet separate1 {hidden}
 gSet separate2 {here}
 gSet separate3 {hidden}
 gSet outcol_4color {1}
@@ -351,7 +349,6 @@ gSet monitor_file_5 {mon1D_time.dat}
 gSet outcol_2counts {1}
 gSet monitor_file_6 {mon1D_lambda.dat}
 gSet monitor_file_7 {mon1D_p_lambda.dat}
-gSet defaultPlotApp {}
 gSet monitor_file_8 {px_pos_y.dat}
 gSet monitor_file_9 {py_pos_y.dat}
 gSet opc_dt7_gt {1}
@@ -426,7 +423,7 @@ gSet outcol_2spin {1}
 gSet min_time_1 {0}
 gSet min_time_5 {0}
 gSet dist_dt1_gt {6}
-gSet modfile_1 {EssButterfly.mod}
+gSet modfile_1 {EssButterflyEW_auto.mod}
 gSet diry_10 {0}
 gSet fmod_gt {stops no right neutron}
 gSet diry_11 {0}
@@ -439,8 +436,8 @@ gSet polx_1 {1}
 gSet nac_dt8_gt {1}
 gSet mtrl_colour_5 {-1}
 gSet outcol_7spin {1}
-gSet mtrl_colour_6 {-1}
 gSet plen_1 {2.857}
+gSet mtrl_colour_6 {-1}
 gSet mtrl_colour_7 {-1}
 gSet mtrl_colour_8 {-1}
 gSet mtrl_colour_9 {-1}

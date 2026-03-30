@@ -16,13 +16,16 @@
 typedef struct
 {
   const char *pSrcName;   //             name of the source
-  VtSrcName   nSource;    //             enum defining the sourc
+  VtSrcName   nSource;    //             enum defining the source
   VtSrcKind   eSrcKind;   //             enum: source kind: uses 'SrcKind' (s.a.) to define the source type (Vitess 3)
   VtSrcType   eSrcType;   //             enum: source type: CWS SPSS LPSS    (Vitss 4)
-  double  PulseFreq;      //    [Hz]     repetition rate of the pulses in
-  double  PulsePeriod;    //    [ms]     period of pulse cycle         in
-  double  PulseLength;    //    [s]      LPSS pulse length             in
-  double  Power;          //    [W]      average power of the source   in
+  double  PulseFreq;      //    [Hz]     repetition rate of the pulses
+  double  PulsePeriod;    //    [s]      period of pulse cycle        
+  double  PulseLength;    //    [s]      LPSS pulse length
+  double  DutyCycle;      //    [ ]      duty cycle of the source
+  double  Power;          //    [W]      average power of the source  
+  double  Voltage;        //    [V]      accelerator voltage
+  double  CurrAvrg;       //    [A]      average proton current (corr. to beam power and proton energy) 
 }
 Source;
 
@@ -33,6 +36,7 @@ typedef struct
   VtTS   eIsisTS;          //             Target station 0: no ISIS moderator, 1: TS1, 2: TS2
   short  nBackground;     //     [-]     index: order of moderators: higher number is in background
   short  nColour;         //     [-]     neutrons leaving this moderator get this colour
+  short  bModified;       //     [-]     flag: moderator geometry changed
   char   bCircle;         //     [-]     flag: circular moderator
   double CntrX;           //     [cm]    x-component of the center fo the moderator
   double CntrY;           //     [cm]    y-component of the center fo the moderator
