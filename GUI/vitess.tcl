@@ -856,14 +856,14 @@ set read_inESET {
 set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
-  {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
-  {woHeader radio yes {"Header" "yes: Writes header to the ASCII file describing the column\n(Lines begin with symbol '#'.)" "" h} {no yes} {0 1}}
+  {woActive radio yes {"write out?" "no: no file written\nyes: write trajectories for a check\npart2: write trajectories for instrument pt.2" "" a} {no yes "part 2"} {0 1 2}}
+  {woHeader radio yes {"header" "yes: Writes header to the ASCII file describing the column\n(Lines begin with symbol '#'.)" "" h} {no yes} {0 1}}
   {}
   {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
   {outform radio float {"storage format" "format of float values in writeout file.\n(MCPL output is always binary.)" "" F} {exp float binary} {0 1 2}}
   {outSeparator radio Space {"separator" "Separator for ASCII output, 'space' or 'tab'.\n(Not for MCPL format.)" "" S} {Space Tabulator} {0 1}}
   {}
-  {wofact float "1.0" {"Intensity\nfactor" "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'" "" I}}
+  {wofact float "1.0" {"intensity\nfactor" "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'" "" I}}
   {outsurf int ""  {"surface\nID" "Only for MCNP6: Number written as surface ID to the output file" "" s}}
   {}
   {"SSW output reference file" header}
@@ -1395,89 +1395,78 @@ set BigFramebender 1
 
 set benderESET {
   {"Bender geometry characteristic" header}
-  {enter_height float 10 {
-    "entrance\nheight [cm]"
-    "entrance of guide: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
-  {exit_height float 10 {
-    "exit\nheight [cm]"
-    "exit of guide: height in cm (center of exit window = new origin)" "" H} gt0 "" 1}
-  {swidth float 0 {"blade\nwidth [cm]"
-    "thickness of material dividing the guide/bender into channels" "" s} ge0 "" 1}
-  {len_guide float 100 {
-    "length [cm]" "length of a guide [cm]. Specify either length or filename." "" l} gt0 "" 1}
-  {curvrad float 0 {"radius of\ncurvature [cm]"
-    " radius of curvature of base circle-axis of bender(if zero - straight line)" "" R} ge0 "" 1}
+  {enter_height float 10 {"entrance\nheight [cm]" "Height of the entrance of the bender" "" h} gt0 "" 1}
+  {exit_height float 10 {"exit\nheight [cm]" "Height of the exit of the bender" "" H} gt0 "" 1}
+  {swidth float 0 {"blade\nwidth [cm]" "Thickness of the material dividing the bender into channels" "" s} ge0 "" 1}
+  {len_bender float 100 {"Length [cm]" "Length of the bender" "" l} gt0 "" 1}
+  {curvrad float 0 {"radius of\ncurvature [cm]" "Radius of curvature of the central bender channel\nif zero, plane surfaces are assumed, otherwise they are bent to the left" "" R} ge0 "" 1}
+
   {"Reflectivity values for spin up" header}
-  {mLeftUp float 0 {
-    "left plane"
-    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" b}}
-  {mRightUp float 0 {
-    "right plane"
-    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" B}}
-  {mTopUp float 0 {
-    "top/bottom plane"
-    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" d}}
+  {mLeftUp float 0 {"left plane"
+    "m-value characterizing the reflectivity for spin-up neutrons of the wall on the left side.\nIt is not used if a reflectivity file is given for these neutrons and the same wall." "" b}}
+  {mRightUp float 0 {"right plane"
+    "m-value characterizing the reflectivity for spin-up neutrons of the wall on the right side.\nIt is not used if a reflectivity file is given for these neutrons and the same wall." "" B}}
+  {mTopUp float 0 {"top/bottom plane"
+    "m-value characterizing the reflectivity for spin-up neutrons of the top and the bottom wall.\nIt is not used if a reflectivity file is given for these neutrons and the same wall." "" d}}
+
   {"Reflectivity values for spin down" header}
-  {mLeftDo float 0 {
-    "left plane"
-    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" e}}
-  {mRightDo float 0 {
-    "right plane"
-    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" E}}
-  {mTopDo float 0 {
-    "top/bottom plane"
-    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" f}}
+  {mLeftDo float 0 {"left plane"
+    "m-value characterizing the reflectivity for spin-down neutrons of the wall on the left side.\nIt is not used if a reflectivity file is given for these neutrons and the same wall."  "" e}}
+  {mRightDo float 0 {"right plane"
+    "m-value characterizing the reflectivity for spin-down neutrons of the wall on the right side.\nIt is not used if a reflectivity file is given for these neutrons and the same wall."  "" E}}
+  {mTopDo float 0 {"top/bottom plane"
+    "m-value characterizing the reflectivity for spin-down neutrons of the top and the bottom wall.\nIt is not used if a reflectivity file is given for these neutrons and the same wall."  "" f}}
+
   {"Reflectivity files for spin up" header}
   {lrefl_filename pareditablefile mirr0.dat
-    {"left plane" "Reflectivity file for left plane (where y>0) and spin is up" "" i}}
+    {"left plane" "Reflectivity file for the left plane (where y>0) and spin-up neutrons" "" i}}
   {rrefl_filename pareditablefile mirr2linear.dat
-    {"right plane" "Reflectivity file for right plane (where y<0) and spin is up" "" m}}
+    {"right plane" "Reflectivity file for the right plane (where y<0) and spin-up neutrons" "" m}}
   {tbrefl_filename pareditablefile mirr0.dat
-    {"top/bot. plane" "Reflectivity file for top and bottom plane and spin is up" "" k}}
+    {"top/bot. plane" "Reflectivity file for the top and bottom plane and spin-up neutrons" "" k}}
 
   {"Reflectivity files for spin down" header}
   {dlrefl_filename pareditablefile mirr0.dat
-    {"left plane" "Reflectivity file for left plane (where y>0) and spin is down" "" I}}
+    {"left plane" "Reflectivity file for the left plane (where y>0) and spin-down neutrons" "" I}}
   {drrefl_filename pareditablefile mirr0.dat
-    {"right plane" "Reflectivity file for right plane (where y<0) and spin is down" "" M}}
+    {"right plane" "Reflectivity file for the right plane (where y<0) and spin-down neutrons" "" M}}
   {dtbrefl_filename pareditablefile mirr0.dat
-    {"top/bot. plane" "Reflectivity file for top and bottom plane and spin is down" "" K}}
+    {"top/bot. plane" "Reflectivity file for the top and bottom plane and spin-down neutrons" "" K}}
 
   {"Geometrical description of bender" header}
-  {sfile pareditablefile "" {"surface\nfile" " file which describes the bender geometry" "" u} r}
-  {ifile parbrowsefile "" {"information\nfile" " file which contains some information about the bender geometry" "" A} w}
+  {sfile pareditablefile "" {"surface\nfile" "input file describing the bender geometry" "" u} r}
+  {ifile parbrowsefile "" {"information\nfile" "output file containing information about the bender geometry" "" A} w}
 
   {"Special option" header}
-  {uref radio yes {"transmitted\nneutrons"
-    "no: ideal absorption between bender channels,\nyes: unreflected neutrons pass in the next bender channel" "" g}
+  {uref radio yes {"crossover\nof neutrons"
+    "no: ideal absorption between bender channels,\nyes: unreflected neutrons can pass into the next bender channel, but the intensity is reduced by attenuation given by the 'left/right side material'" "" g}
     {yes no} {1 0}}
-  {amat radio Vacuum {"Absorption\nmaterial"
-    "Attenuation of neutrons flux in the given material inside channels of bender.\n\"from file\" means data are read from a file specified as \"transmission file\"" "" c}
-    {"from file" Gadolinium Cadmium Bor10 Eu Silicon Vacuum} {0 1 2 3 4 5 6}}
+  {amat radio Vacuum {"channel\nmaterial"
+    "Material through which the neutrons travel inside the bender channels, which causes attenuation of the neutron flux\n 'from file' means that data are read from a file called 'attenuation file'" "" c}
+    {"from file" Silicon Vacuum} {0 5 6}}
   {}
   {amatl radio Gadolinium {"left side\nmaterial"
-    "Absorption material in the left side of channel. Unreflected neutrons pass in the next channel via absorbtion material in the inner(left) side of channel.\n\"from file\" means data are read from a file specified as \"left side file\"" "" z}
-    {"from file" Gadolinium Cadmium Bor10 Eu Silicon Vacuum} {0 1 2 3 4 5 6}}
+    "Material behind the reflecting surface on the left side of the channel. Unreflected neutrons pass through this material into the inner (left) side of the channel.\n'from file' means data that the are read from a file called 'left side file'" "" z}
+    {"from file" Gadolinium Cadmium Bor10 Eu Vacuum} {0 1 2 3 4 6}}
   {amatr radio Gadolinium {"right side\nmaterial"
-    "Absorption material in the right side of channel. Unreflected neutrons pass in the next channel via absorbtion material in the outer(right) side of channel.\n\"from file\" means data are read from that file specified as \"right side file\"" "" w}
-    {"from file" Gadolinium Cadmium Bor10 Eu Silicon Vacuum} {0 1 2 3 4 5 6}}
+    "Material behind the reflecting surface on the right side of the channel. Unreflected neutrons pass through this material into the outer (right) side of the channel.\n'from file' means that the data are read from a file called 'right side file'" "" w}
+    {"from file" Gadolinium Cadmium Bor10 Eu Vacuum} {0 1 2 3 4 6}}
   {}
-  {mfile pareditablefile "" {"transmission\nfile" "File which characterizes the transmission of bender channel material.\nInput this file name, if \"Absorption material\" has been set to \"from file\"" "" C} r}
-  {mfilel pareditablefile "" {"left side\nfile" "File which characterizes the transmission of material in the left side of the bender.\nInput this file name, if \"left side material\" has been set to \"from file\"" "" T} r}
-  {mfiler pareditablefile "" {"right side\nfile" "File which characterizes the transmission of material in the right side of the bender.\nInput this file name, if \"left side material\" has been set to \"from file\"" "" O} r}
+  {mfile  pareditablefile "" {"attenuation\nfile" "File characterizing the attenuation inside the bender channel material.\nThe file is used if 'Channel material' is set to 'from file'" "" C} r}
+  {mfilel pareditablefile "" {"left side\nfile" "File characterizing the attenuation of the material behind the reflecting surface on the left side of the channel.\nThe file is used if 'left side material' is set to 'from file'" "" T} r}
+  {mfiler pareditablefile "" {"right side\nfile" "File characterizing the attenuation of the material behind the reflecting surface on the right side of the channel.\n The file is used if 'right side material' is set to 'from file'" "" O} r}
   {}
   {surwav float 0 {"surface\nwaviness [deg]"
-    "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" r} ge0 "" 1}
-  {abut float 0 {"abutment\nloss length"
-    "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a} ge0 "" 1}
+    "This parameter controls the simulation of the surface waviness.\nThe given value is the maximal angle of deviation of the surface normal from the correct value." "" r} ge0 "" 1}
+  {abut float 0 {"abutment\nloss length" "Neutrons hitting the surface closer than this value to the exit of the bender are rejected" "" a} ge0 "" 1}
   {}
-  {visu radio no {visualisation "" "" y} {yes no} {1 0}}
-  {visdev radio file {visualisation\ndevice "" "" o} {display file display+file} {1 2 3}}
+  {visu radio no {visualisation "use of an internal trajectory visualization (in addition to the general instrument and trajectory visualization)" "" y} {yes no} {1 0}}
+  {visdev radio file {visualisation\ndevice "output of the internal visualization: display only, file only, or display and file" "" o} {display file display+file} {1 2 3}}
   {}
   {pola radio no {polarisation "yes: split into spin-down and spin-up reflectivity\nno: spin-up reflectivity for all neutrons" "" p} {yes no} {1 0}}
-  {spiqua radio OX {"neutron\nspin axis" "axis for spin quantisation" "" V} {OX OY OZ} {0 1 2}}
+  {spiqua radio OX {"neutron\nspin axis" "axis for spin quantisation: X axis, Y axis, or Z axis" "" V} {OX OY OZ} {0 1 2}}
   {}
-  {geotest radio no {"geometry test" "activate/deactivates geometry test" "" t} {no yes} {0 1}}
+  {geotest radio no {"geometry test" "activates or deactivates a geometry test of the bender in the beginning of the simulation" "" t} {no yes} {0 1}}
 }
 
 proc checkOFile {a b ts app} {
@@ -1493,7 +1482,7 @@ proc benderCheckErr  {{app _}} {
   set rc 0
   if [checkOFile amat mfile "" $app] {set rc 1}
   if [checkOFile amatl mfilel " for the left side" $app] {set rc 1}
-  if [checkOFile amatr mfilel " for the right side" $app] {set rc 1}
+  if [checkOFile amatr mfiler " for the right side" $app] {set rc 1}
   return $rc
 }
 

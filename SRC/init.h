@@ -15,7 +15,8 @@
 extern "C" {
 #endif
 
-extern char*         sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
+extern char*         sInstrInfIn;    /* instrument file that is read    (default 'instrument.inf') */
+extern char*         sInstrInfOut;   /* instrument file that is written (default 'instrument.inf') */
 
 extern McCompID      _eModule;       /* ID of the module                */
 extern double        BlowUp;         /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */

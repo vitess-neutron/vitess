@@ -488,17 +488,18 @@ void       AbsMat_ID2Txt(char* sText, const VtAbsMat eID)
 {
   switch (eID)
   {
-    case VT_NO_MAT   : strcpy(sText, "none"          ); break;
-    case VT_ABS_IDEAL: strcpy(sText, "ideal absorber"); break;
-    case VT_ABS_GD   : strcpy(sText, "Gadolinium"    ); break;
-    case VT_ABS_B10  : strcpy(sText, "Bor-10"        ); break;
-    case VT_ABS_FILE : strcpy(sText, "from file"     ); break;
+    case VT_NO_ABS_MAT: strcpy(sText, "none"          ); break;
+    case VT_ABS_IDEAL : strcpy(sText, "ideal absorber"); break;
+    case VT_ABS_GD    : strcpy(sText, "Gadolinium"    ); break;
+    case VT_ABS_B10   : strcpy(sText, "Bor-10"        ); break;
+    case VT_ABS_FILE  : strcpy(sText, "from file"     ); break;
+    case VT_ABS_ARRAY : strcpy(sText, "from array"    ); break;
     default          : strcpy(sText, "");
   }
 }
 VtAbsMat   AbsMat_Txt2ID(const char* sText)
 {
-  VtAbsMat eID=VT_NO_MAT;
+  VtAbsMat eID=VT_NO_ABS_MAT;
 
        if (strcmp(sText, "ideal"         )==0) eID=VT_ABS_IDEAL;
   else if (strcmp(sText, "ideal absorber")==0) eID=VT_ABS_IDEAL;
@@ -507,6 +508,7 @@ VtAbsMat   AbsMat_Txt2ID(const char* sText)
   else if (strcmp(sText, "Bor"           )==0) eID=VT_ABS_B10  ;
   else if (strcmp(sText, "bor10"         )==0) eID=VT_ABS_B10  ;
   else if (strcmp(sText, "from file"     )==0) eID=VT_ABS_FILE ;
+  else if (strcmp(sText, "from array"    )==0) eID=VT_ABS_ARRAY;
 
   return eID;
 }
@@ -753,6 +755,48 @@ VtTrace Trace_Txt2ID(const char* sText)
   return eID;
 }
 
+// output options  (wwriteout)
+void      WriteAct_ID2Txt(char* sText, const VtWriteAct eID)
+{
+  switch (eID)
+  {
+    case VT_WRITE_TRAJ: strcpy(sText, "yes"   ); break;
+    case VT_SPLIT_SIM : strcpy(sText, "part 2"); break;
+    default           : strcpy(sText, "no");
+  }
+}
+
+VtWriteAct   WriteAct_Txt2ID(const char* sText)
+{
+  VtWriteAct eID=VT_NO_WRITING;
+
+       if (strcmp(sText, "yes"   )==0) eID=VT_WRITE_TRAJ;
+  else if (strcmp(sText, "part 2")==0) eID=VT_SPLIT_SIM;
+
+  return eID;
+}
+
+// sampling options  (read:in)
+void      Sampling_ID2Txt(char* sText, const VtSampling eID)
+{
+  switch (eID)
+  {
+    case SAMPLING: strcpy(sText, "sampling");   break;
+    default      : strcpy(sText, "no sampling");
+  }
+}
+
+VtSampling   Sampling_Txt2ID(const char* sText)
+{
+  VtSampling eID=NO_SAMPLING;
+
+       if (strcmp(sText, "sampling"      )==0) eID=SAMPLING;
+  else if (strcmp(sText, "only trace trajectories")==0) eID=ONLY_TRC_TRAJ  ;
+
+  return eID;
+}
+
+
 // data format of the program (read_in and writeout)
 void        PrgFormat_ID2Txt(char* sText, const VtPrgFormat eID)
 {
@@ -860,34 +904,39 @@ VtTfmnSeq  TfmnSeq_Txt2ID(const char* sText)
 // WINDOWS and COLLIMATORS
 // -----------------------
 // absorbing window material
-void       WndAbs_ID2Txt(char* sText, const VtWndAbs eID)
+void       WndMat_ID2Txt(char* sText, const VtWndMat eID)
 {
   switch (eID)
   {
-    case VT_WABS_FILE : strcpy(sText, "from file"     ); break;
-    case VT_WABS_GD   : strcpy(sText, "gadolinium"    ); break;
-    case VT_WABS_CD   : strcpy(sText, "cadmium"       ); break;
-    case VT_WABS_B10  : strcpy(sText, "bor10"         ); break;
-    case VT_WABS_EU   : strcpy(sText, "europium"      ); break;
-    case VT_WABS_SI   : strcpy(sText, "silicon"       ); break;
-    case VT_WABS_IDEAL: strcpy(sText, "ideal absorber"); break;
-    default           : strcpy(sText, "");
+    case VT_WND_FILE : strcpy(sText, "from file"     ); break;
+    case VT_WND_ARRAY: strcpy(sText, "from array"    ); break;
+    case VT_WND_GD   : strcpy(sText, "gadolinium"    ); break;
+    case VT_WND_CD   : strcpy(sText, "cadmium"       ); break;
+    case VT_WND_B10  : strcpy(sText, "bor10"         ); break;
+    case VT_WND_EU   : strcpy(sText, "europium"      ); break;
+    case VT_WND_SI   : strcpy(sText, "silicon"       ); break;
+    case VT_WND_VAC  : strcpy(sText, "vacuum"        ); break;
+    case VT_WND_IDEAL: strcpy(sText, "ideal absorber"); break;
+    default          : strcpy(sText, "unknown");
   }
 }
-VtWndAbs   WndAbs_Txt2ID(const char* sText)
+VtWndMat   WndMat_Txt2ID(const char* sText)
 {
-  VtWndAbs eID=VT_WABS_IDEAL;
+  VtWndMat eID=VT_NO_WND_MAT;
 
-       if (strcmp(sText, "from file"     )==0) eID=VT_WABS_FILE ;
-  else if (strcmp(sText, "gadolinium"    )==0) eID=VT_WABS_GD   ;
-  else if (strcmp(sText, "cadmium"       )==0) eID=VT_WABS_CD   ;
-  else if (strcmp(sText, "bor10"         )==0) eID=VT_WABS_B10  ;
-  else if (strcmp(sText, "Bor10"         )==0) eID=VT_WABS_B10  ;
-  else if (strcmp(sText, "europium"      )==0) eID=VT_WABS_EU   ;
-  else if (strcmp(sText, "Eu"            )==0) eID=VT_WABS_EU   ;
-  else if (strcmp(sText, "silicon"       )==0) eID=VT_WABS_SI   ;
-  else if (strcmp(sText, "Silicon"       )==0) eID=VT_WABS_SI   ;
-  else if (strcmp(sText, "ideal absorber")==0) eID=VT_WABS_IDEAL;
+       if (strcmp(sText, "from file"     )==0) eID=VT_WND_FILE ;
+  else if (strcmp(sText, "from array"    )==0) eID=VT_WND_ARRAY;
+  else if (strcmp(sText, "gadolinium"    )==0) eID=VT_WND_GD   ;
+  else if (strcmp(sText, "cadmium"       )==0) eID=VT_WND_CD   ;
+  else if (strcmp(sText, "bor10"         )==0) eID=VT_WND_B10  ;
+  else if (strcmp(sText, "Bor10"         )==0) eID=VT_WND_B10  ;
+  else if (strcmp(sText, "europium"      )==0) eID=VT_WND_EU   ;
+  else if (strcmp(sText, "Eu"            )==0) eID=VT_WND_EU   ;
+  else if (strcmp(sText, "silicon"       )==0) eID=VT_WND_SI   ;
+  else if (strcmp(sText, "Silicon"       )==0) eID=VT_WND_SI   ;
+  else if (strcmp(sText, "vacuum"        )==0) eID=VT_WND_VAC  ;
+  else if (strcmp(sText, "Vacuum"        )==0) eID=VT_WND_VAC  ;
+  else if (strcmp(sText, "ideal absorber")==0) eID=VT_WND_IDEAL;
 
   return eID;
 }
@@ -1020,12 +1069,14 @@ void        MirrMat_ID2Txt(char* sText, const VtMirrMat eID)
 {
   switch (eID)
   {
-    case VT_NO_MIRR_MAT: strcpy(sText, "none"    ); break;
-    case VT_MIRR_OTHER : strcpy(sText, "other"   ); break;
-    case VT_MIRR_SI    : strcpy(sText, "silicon" ); break;
-    case VT_MIRR_SAPPH : strcpy(sText, "sapphire"); break;
-    case VT_MIRR_GLASS : strcpy(sText, "glass"   ); break;
-    case VT_MIRR_B4C   : strcpy(sText, "B4C"   ); break;
+    case VT_NO_MIRR_MAT: strcpy(sText, "none"      ); break;
+    case VT_MIRR_OTHER : strcpy(sText, "other"     ); break;
+    case VT_MIRR_SI    : strcpy(sText, "silicon"   ); break;
+    case VT_MIRR_SAPPH : strcpy(sText, "sapphire"  ); break;
+    case VT_MIRR_GLASS : strcpy(sText, "glass"     ); break;
+    case VT_MIRR_B4C   : strcpy(sText, "B4C"       ); break;
+    case VT_MIRR_FILE  : strcpy(sText, "from file" ); break;
+    case VT_MIRR_ARRAY : strcpy(sText, "from array"); break;
     default            : strcpy(sText, "");
   }
 }
@@ -1033,11 +1084,14 @@ VtMirrMat   MirrMat_Txt2ID(const char* sText)
 {
   VtMirrMat eID=VT_NO_MIRR_MAT;
 
-       if (strcmp(sText, "Other"   )==0 || strcmp(sText, "other"   )==0) eID=VT_MIRR_OTHER;
-  else if (strcmp(sText, "Silicon" )==0 || strcmp(sText, "silicon" )==0) eID=VT_MIRR_SI   ;
-  else if (strcmp(sText, "Sapphire")==0 || strcmp(sText, "sapphire")==0) eID=VT_MIRR_SAPPH;
-  else if (strcmp(sText, "Glass"   )==0 || strcmp(sText, "glass"   )==0) eID=VT_MIRR_GLASS;
-  else if (strcmp(sText, "B4C"     )==0                                ) eID=VT_MIRR_B4C;
+       if (strcmp(sText, "Other"     )==0 || strcmp(sText, "other"   )==0) eID=VT_MIRR_OTHER;
+  else if (strcmp(sText, "Silicon"   )==0 || strcmp(sText, "silicon" )==0) eID=VT_MIRR_SI   ;
+  else if (strcmp(sText, "Sapphire"  )==0 || strcmp(sText, "sapphire")==0) eID=VT_MIRR_SAPPH;
+  else if (strcmp(sText, "Glass"     )==0 || strcmp(sText, "glass"   )==0) eID=VT_MIRR_GLASS;
+  else if (strcmp(sText, "B4C"       )==0                                ) eID=VT_MIRR_B4C;
+  else if (strcmp(sText, "from file" )==0                                ) eID=VT_MIRR_FILE ;
+  else if (strcmp(sText, "from array")==0                                ) eID=VT_MIRR_ARRAY;
+  else  
 
   return eID;
 }
@@ -1517,7 +1571,7 @@ void       DetAbs_ID2Txt(char* sText, const VtDetAbs eID)
 }
 VtDetAbs   DetAbs_Txt2ID(const char* sText)
 {
-  VtDetAbs eID=VT_NO_ABS_MAT;
+  VtDetAbs eID=VT_NO_DET_MAT;
 
        if (strcmp(sText, "BF3 gas"  )==0) eID=VT_GAS_BF3  ;
   else if (strcmp(sText, "3He gas"  )==0) eID=VT_GAS_HE3  ;

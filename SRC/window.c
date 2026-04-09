@@ -19,6 +19,7 @@
 /* 2.24  Apr  2012  A. Houben       Treat only neutrons with a given color and phi angle     */
 /* 2.25  Aug  2019  K. Lieutenant   tidy up and compression option for visualization         */
 /* 3.0   Apr  2023  K. Lieutenant   re-written                                               */
+/* 3.1   Mar  2026  K. Lieutenant   use of improved functions in 'bender_inter_data'         */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -64,8 +65,8 @@ double   ThicknessO=0.0,        // -t  [cm]  thickness of the frame material
          ThicknessI=0.0;        // -T  [cm]  thickness of the pane material
 char    *sTransFileNameO=NULL;  // -C   [-]  file describing the transmission of the window frame material
 char    *sTransFileNameI=NULL;  // -m   [-]  file describing the transmission of the material in the open part of window
-VtWndAbs eMaterialO             // -c   [-]  Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
-          =VT_NO_WABS;          //                                  4 - europium,  5 - silicon,   99 - ideal absorber
+VtWndMat eMaterialO             // -c   [-]  Window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+          =VT_NO_WND_MAT;       //                                  4 - europium,  5 - silicon,   99 - ideal absorber
 
 
 // Variables determined from input parameters or trajectory data
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_WINDOW;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "3.0");
+  PrintModuleName(_eModule, "3.1");
   OwnInit(argc, argv);
   MsgInit();
   EvalInput();
@@ -242,11 +243,13 @@ int main(int argc, char *argv[])
           if (rcI==TRUE)
           {
             lenI = DistVector(Pos2, Pos3);
-            muI = Interpolation(lambda, VT_WABS_FILE, WavI, MuI, nValFI);
-
+            muI = Interpol(lambda, WavI, MuI, nValFI);
             if (muI == -10000.0)
             { CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
-              probI = 0.0;
+              probI = 1.0;    // ideal transmission assumed inside window for wavelenghts out of given range
+            }
+            else if (muI == 10000.0)
+            { probI = 0.0;
             }
             else
             { probI = exp(-muI*lenI);
@@ -311,7 +314,7 @@ int main(int argc, char *argv[])
           lenO = lenT - lenC;
 
           // complete absorption if length through ideal absorber is greater zero
-          if (eMaterialO == VT_WABS_IDEAL && lenO > 1.0e-06)     // allowing for rounding errors
+          if (eMaterialO == VT_WND_IDEAL && lenO > 1.0e-06)     // allowing for rounding errors
           {
             WriteIAP(&OutNeutron, VT_ABSORBED);
             OutNeutron.Probability = 0.0;
@@ -322,12 +325,13 @@ int main(int argc, char *argv[])
           {
             if (bPane && lenI > 0.0)
             {
-              muI = Interpolation(lambda, VT_WABS_FILE, WavI, MuI, nValFI);
+              muI = Interpol(lambda, WavI, MuI, nValFI);
               if (muI == -10000.0)
               { CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
-                WriteIAP(&OutNeutron, VT_NO_DATA);
-                OutNeutron.Probability = 0.0;
-                continue;
+                probI = 1.0;    // ideal transmission assumed inside window for wavelenghts out of given range
+              }
+              else if (muI == 10000.0)
+              { probI = 0.0;
               }
               else
               { probI = exp(-muI*lenI);
@@ -339,12 +343,15 @@ int main(int argc, char *argv[])
 
             if (lenO > 1.0e-06)
             {
-              muO = Interpolation(lambda, eMaterialO, WavO, MuO, nValFO);
+              muO = Interpol(lambda, WavO, MuO, nValFO);
               if (muO == -10000.0)
               { CountMessageID(WNDO_L_RANGE_TOO_SMALL, OutNeutron.ID);
                 WriteIAP(&OutNeutron, VT_NO_DATA);
-                OutNeutron.Probability = 0.0;
-                continue;
+                probO = 0.0;    // ideal absorption assumed inside window for wavelenghts out of given range
+              }
+              else if (muO == 10000.0)
+              { probO = 0.0;
+                WriteIAP(&OutNeutron, VT_ABSORBED);
               }
               else
               { probO = exp(-muO*lenO);
@@ -466,9 +473,9 @@ void  OwnInit(int argc, char *argv[])
       case 'c':
         eMat = atoi(&argv[i][2]);      // Material of window frame: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber
         if (eMat==6)
-          eMaterialO = VT_WABS_IDEAL;  // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Interpolation()')
+          eMaterialO = VT_WND_IDEAL;   // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Attenuation()')
         else                           // and for ideal absorption here, in 'grid' and 'window_mult'
-          eMaterialO = (VtWndAbs) eMat;
+          eMaterialO = (VtWndMat) eMat;
         break;
 
       case 'C':
@@ -529,7 +536,7 @@ void  OwnInit(int argc, char *argv[])
   // Set thicknesses and material
   if (bBeamStop==TRUE)
   {
-    eMaterialO = VT_WABS_VAC;
+    eMaterialO = VT_WND_VAC;
     if (ThicknessO > 0.0 && ThicknessO != ThicknessI)
       Note("Outer thickness not relevant, is ignored");
     ThicknessO = ThicknessI;
@@ -542,7 +549,7 @@ void  OwnInit(int argc, char *argv[])
 
     Thickness = Max(ThicknessO, ThicknessI);
     if (ThicknessO == 0.0)
-      eMaterialO = VT_WABS_IDEAL;
+      eMaterialO = VT_WND_IDEAL;
   }
 
   if (DistMove < 0.5 * Thickness)
@@ -617,21 +624,20 @@ void EvalInput()
   fprintf(LogFilePtr,"Outer material: ");
   switch (eMaterialO)
   {
-    case VT_WABS_FILE : fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
-    case VT_WABS_GD   : fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WavO, MuO, &nVal); break;
-    case VT_WABS_CD   : fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WavO, MuO, &nVal); break;
-    case VT_WABS_B10  : fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WavO, MuO, &nVal); break;
-    case VT_WABS_EU   : fprintf(LogFilePtr, "Eu         \n"); Eu        (WavO, MuO, &nVal); break;
-    case VT_WABS_SI   : fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WavO, MuO, &nVal); break;
-    case VT_WABS_VAC  : fprintf(LogFilePtr, "vacuum \n");                                    break;
-    case VT_WABS_IDEAL: fprintf(LogFilePtr, "Ideal absorber \n");                           break;
-    case VT_NO_WABS   : fprintf(LogFilePtr, "no outer material\n");                         break;
-    default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
+    case VT_WND_FILE  : fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
+    case VT_WND_GD    : fprintf(LogFilePtr, "Gadolinium \n");    nVal = Gadolinium (WavO, MuO, MAX_MU); break;
+    case VT_WND_CD    : fprintf(LogFilePtr, "Cadmium    \n");    nVal = Cadmium    (WavO, MuO, MAX_MU); break;
+    case VT_WND_B10   : fprintf(LogFilePtr, "Bor10      \n");    nVal = Bor10      (WavO, MuO, MAX_MU); break;
+    case VT_WND_EU    : fprintf(LogFilePtr, "Eu         \n");    nVal = Eu         (WavO, MuO, MAX_MU); break;
+    case VT_WND_SI    : fprintf(LogFilePtr, "Silicon    \n");    nVal = Silicon    (WavO, MuO, MAX_MU); break;
+    case VT_WND_IDEAL:  fprintf(LogFilePtr, "Ideal absorber\n"); nVal = IdealAbsorp(WavO, MuO);         break;
+    case VT_NO_WND_MAT: fprintf(LogFilePtr, "no outer material\n");                         break;
+    default: fprintf(LogFilePtr, "\n"); Error("No valid material chosen for window frame");
   }
 
   // window frame material from file
   // -------------------------------
-  if (eMaterialO == VT_WABS_FILE)
+  if (eMaterialO == VT_WND_FILE)
   {
     // Read transmission file for window frame
     if (sTransFileNameO !=NULL)
@@ -641,15 +647,16 @@ void EvalInput()
       {
         i=0;
         while (ReadLine(pTransFileO, sLine, CHAR_BUF_SMALL-1) > 0)
-        { i++;
+        { 
           sscanf(sLine, "%lf %lf", &WavO[i], &MuO[i]);
+          i++;
         }
         nVal  =i;
         nValFO=nVal;
         fclose(pTransFileO);
 
         /* check the input data */
-        for(i = 1; i <= (nValFO-1); i++)
+        for (i=0; i < (nValFO-1); i++)
         {
           if (WavO[i+1] < WavO[i])
           {
@@ -671,7 +678,7 @@ void EvalInput()
 
   if (ThicknessO > 0 && ThicknessO != Thickness)
     fprintf(LogFilePtr, "Thickness of outer material: %5.2f cm \n", ThicknessO);
-  if (eMaterialO != VT_WABS_IDEAL && eMaterialO != VT_NO_WABS && eMaterialO != VT_WABS_VAC)
+  if (eMaterialO != VT_WND_IDEAL && eMaterialO != VT_NO_WND_MAT && eMaterialO != VT_WND_VAC)
     fprintf(LogFilePtr, "Usable wavelength range    : %5.2f - %5.2f Ang \n", WavO[1], WavO[nValFO]);
 
   // window pane material from file
@@ -685,14 +692,14 @@ void EvalInput()
     if (pTransFileI!=NULL)
     { i=0;
       while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL-1) > 0)
-      { i++;
-        sscanf(sLine, "%lf %lf", &WavI[i], &MuI[i]);
+      { sscanf(sLine, "%lf %lf", &WavI[i], &MuI[i]);
+        i++;
       }
       nValFI=i;
       fclose(pTransFileI);
 
       /* check the input data */
-      for(i = 1; i <= (nValFI-1); i++)
+      for (i=0; i < (nValFI-1); i++)
       {
         if (WavI[i+1] < WavI[i])
         {

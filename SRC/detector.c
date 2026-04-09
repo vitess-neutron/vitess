@@ -793,7 +793,7 @@ void  InitDetector(DetectorType* pDetector)
   pDetector->eGeom  =VT_NO_DET_GEOM;
   pDetector->eType  =VT_NO_DET_TYPE;
   pDetector->eUsage =VT_NO_DET_USE;
-  pDetector->eAbsMat=VT_NO_ABS_MAT;
+  pDetector->eAbsMat=VT_NO_DET_MAT;
 
   for(i=0; i<3; i++)
   {
@@ -1434,7 +1434,7 @@ void CheckAndAdjustDetectorInput(VtDetType type, VtDetGeom geom)
   Detector.PixelWidth[1]=Detector.Width/Detector.NColumns;
   Detector.PixelWidth[2]=Detector.Height/Detector.NRows;
 
-  if (Detector.eAbsMat==VT_NO_ABS_MAT)
+  if (Detector.eAbsMat==VT_NO_DET_MAT)
   {
     Error("You have to specify an absorber/converter type with -m.");
   }

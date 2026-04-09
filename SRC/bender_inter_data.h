@@ -10,17 +10,31 @@
 
 #define MAX_MU 500 // size of arrays for wavelength and corresponding attenuation values
 
-double AttenuationAbs(const double Lambda, const VtAbsMat eID);      // chopper material
-double AttenuationMirr(const double Lambda, const VtMirrMat eMatID); // material used in SM ensemble or sample substrate
+// calculates attenuation of a material for a certain wavelength
+double AttenuationWnd(const double Lambda, const VtWndMat  eMatID, double* aLambda, double* aMu, const long nVals, const char* sAttFile); // used in bender and window modules
+double AttenuationAbs(const double Lambda, const VtAbsMat  eMatID, double* aLambda, double* aMu, const long nVals, const char* sAttFile); // used in chopper
+double AttenuationMir(const double Lambda, const VtMirrMat eMatID, double* aLambda, double* aMu, const long nVals, const char* sAttFile); // used in SM ensemble or sample substrate
 
-// material used in bender or windows
-double Interpolation(double WavelenIn, long Material, double *WavF, double *MuF, long nValFile);
+// reading of attenuation data 
+long   LoadAttenFile(double* aLambda, double* aMu, const char* pTransFileName, long nArrayLen);
+long   ReadAttenWnd (const VtWndMat  eMatID, double* aLambdaI, double* aMuI, const long nArrayLen, const char* sAttenFile);
+long   ReadAttenAbs (const VtAbsMat  eMatID, double* aLambdaI, double* aMuI, const long nArrayLen, const char* sAttenFile);
+long   ReadAttenMir (const VtMirrMat eMatID, double* aLambdaI, double* aMuI, const long nArrayLen, const char* sAttenFile);
 
-// These functions assess mu(lambda) for different materials
-void Gadolinium (double *wavelen, double *mu, long *pVal);
-void Cadmium    (double *wavelen, double *mu, long *pVal);
-void Bor10      (double *wavelen, double *mu, long *pVal);
-void Eu         (double *wavelen, double *mu, long *pVal);
-void Silicon    (double *wavelen, double *mu, long *pVal);
+// interpolation
+double Interpol(double lambda, double* aLambda, double* aMu, long nVal);
+
+// writeout functions
+void WriteMatInfo (VtWndMat eMaterial, char* pText);
+
+// functions to assess mu(lambda) for different materials
+long Gadolinium (double *pLambda, double *pMu, const long nArrayLen);
+long Cadmium    (double *pLambda, double *pMu, const long nArrayLen);
+long Bor10      (double *pLambda, double *pMu, const long nArrayLen);
+long Eu         (double *pLambda, double *pMu, const long nArrayLen);
+long Silicon    (double *pLambda, double *pMu, const long nArrayLen);
+long Vacuum     (double* pLambda, double* pMu);
+long IdealAbsorp(double* pLambda, double* pMu);
+
 
 #endif

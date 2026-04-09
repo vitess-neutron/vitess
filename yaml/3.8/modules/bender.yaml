@@ -12,7 +12,7 @@ bender:
     type: "float"
     label: "entrance height"
     unit: "cm"
-    tooltip: "entrance of guide: height in cm (center of entrance window = origin)"
+    tooltip: "Height of the entrance of the bender"
     default: 10
     column: 0
     prefix: "-h"
@@ -22,7 +22,7 @@ bender:
     type: "float"
     label: "exit height"
     unit: "cm"
-    tooltip: "exit of guide: height in cm (center of exit window = new origin)"
+    tooltip: "Height of the exit of the bender"
     default: 10
     column: 1
     prefix: "-H"
@@ -32,7 +32,7 @@ bender:
     type: "float"
     label: "blade width"
     unit: "cm"
-    tooltip: "thickness of material dividing the guide/bender into channels"
+    tooltip: "Thickness of the material dividing the bender into channels"
     default: 0
     column: 2
     prefix: "-s"
@@ -42,7 +42,7 @@ bender:
     type: "float"
     label: "length"
     unit: "cm"
-    tooltip: "length of a guide [cm]. Specify either length or filename."
+    tooltip: "Length of the bender"
     default: 100
     column: 0
     prefix: "-l"
@@ -52,7 +52,7 @@ bender:
     type: "float"
     label: "radius of curvature"
     unit: "cm"
-    tooltip: " radius of curvature of base circle-axis of bender(if zero - straight line)"
+    tooltip: "Radius of curvature of the central bender channel. If zero, plane surfaces are assumed, otherwise they are bent to the left"
     default: 0
     column: 1
     prefix: "-R"
@@ -66,7 +66,7 @@ bender:
     type: "float"
     label: "left plane"
     unit: ""
-    tooltip: "Reflectivity of the left plane is calculated based on the m-number given using fits to Swiss Neutronics mirror characteristics. It is not used if a reflectivity file is given for the same plane."
+    tooltip: "m-value characterizing the reflectivity for spin-up neutrons of the wall on the left side. It is not used if a reflectivity file is given for these neutrons and the same wall."
     default: 0
     column: 0
     prefix: "-b"
@@ -75,7 +75,7 @@ bender:
     type: "float"
     label: "right plane"
     unit: ""
-    tooltip: "Reflectivity of the right plane is calculated based on the m-number given using fits to Swiss Neutronics mirror characteristics. It is not used if a reflectivity file is given for the same plane."
+    tooltip: "m-value characterizing the reflectivity for spin-up neutrons of the wall on the right side. It is not used if a reflectivity file is given for these neutrons and the same wall."
     default: 0
     column: 1
     prefix: "-B"
@@ -84,7 +84,7 @@ bender:
     type: "float"
     label: "top/bottom plane"
     unit: ""
-    tooltip: "Reflectivity of the top plane is calculated based on the m-number given using fits to Swiss Neutronics mirror characteristics. It is not used if a reflectivity file is given for the same plane."
+    tooltip: "m-value characterizing the reflectivity for spin-up neutrons of the top and the bottom wall. It is not used if a reflectivity file is given for these neutrons and the same wall."
     default: 0
     column: 2
     prefix: "-d"
@@ -97,7 +97,7 @@ bender:
     type: "float"
     label: "left plane"
     unit: ""
-    tooltip: "Reflectivity of the left plane is calculated based on the m-number given using fits to Swiss Neutronics mirror characteristics. It is not used if a reflectivity file is given for the same plane."
+    tooltip: "m-value characterizing the reflectivity for spin-down neutrons of the wall on the left side. It is not used if a reflectivity file is given for these neutrons and the same wall."
     default: 0
     column: 0
     prefix: "-e"
@@ -106,7 +106,7 @@ bender:
     type: "float"
     label: "right plane"
     unit: ""
-    tooltip: "Reflectivity of the right plane is calculated based on the m-number given using fits to Swiss Neutronics mirror characteristics. It is not used if a reflectivity file is given for the same plane."
+    tooltip: "m-value characterizing the reflectivity for spin-down neutrons of the wall on the right side. It is not used if a reflectivity file is given for these neutrons and the same wall."
     default: 0
     column: 1
     prefix: "-E"
@@ -115,7 +115,7 @@ bender:
     type: "float"
     label: "top/bottom plane"
     unit: ""
-    tooltip: "Reflectivity of the top plane is calculated based on the m-number given using fits to Swiss Neutronics mirror characteristics. It is not used if a reflectivity file is given for the same plane."
+    tooltip: "m-value characterizing the reflectivity for spin-down neutrons of the top and the bottom wall. It is not used if a reflectivity file is given for these neutrons and the same wall."
     default: 0
     column: 2
     prefix: "-f"
@@ -129,7 +129,7 @@ bender:
     plottable: false
     editable: true
     label: "left plane"
-    tooltip: "Reflectivity file for left plane (where y>0) and spin is up"
+    tooltip: "Reflectivity file for the left plane (where y>0) and spin-up neutrons"
     default: "mirr0.dat"
     column: 0
     prefix: "-i"
@@ -139,7 +139,7 @@ bender:
     plottable: false
     editable: true
     label: "right plane"
-    tooltip: "Reflectivity file for right plane (where y<0) and spin is up"
+    tooltip: "Reflectivity file for the right plane (where y<0) and spin-up neutrons"
     default: "mirr2linear.dat"
     column: 0
     prefix: "-m"
@@ -149,7 +149,7 @@ bender:
     plottable: false
     editable: true
     label: "top/bot. plane"
-    tooltip: "Reflectivity file for top and bottom plane and spin is up"
+    tooltip: "Reflectivity file for the top and bottom plane and spin-up neutrons"
     default: "mirr0.dat"
     column: 0
     prefix: "-k"
@@ -163,7 +163,7 @@ bender:
     plottable: false
     editable: true
     label: "left plane"
-    tooltip: "Reflectivity file for left plane (where y>0) and spin is down"
+    tooltip: "Reflectivity file for the left plane (where y>0) and spin-down neutrons"
     default: "mirr0.dat"
     column: 0
     prefix: "-I"
@@ -173,7 +173,7 @@ bender:
     plottable: false
     editable: true
     label: "right plane"
-    tooltip: "Reflectivity file for right plane (where y<0) and spin is down"
+    tooltip: "Reflectivity file for the right plane (where y<0) and spin-down neutrons"
     default: "mirr0.dat"
     column: 0
     prefix: "-M"
@@ -183,7 +183,7 @@ bender:
     plottable: false
     editable: true
     label: "top/bot. plane"
-    tooltip: "Reflectivity file for top and bottom plane and spin is down"
+    tooltip: "Reflectivity file for the top and bottom plane and spin-down neutrons"
     default: "mirr0.dat"
     column: 0
     prefix: "-K"
@@ -197,7 +197,7 @@ bender:
     plottable: false
     editable: true
     label: "surface file"
-    tooltip: "file which describes the bender geometry"
+    tooltip: "input file describing the bender geometry"
     default: ""
     column: 0
     prefix: "-u"
@@ -207,7 +207,7 @@ bender:
     plottable: false
     editable: true
     label: "information file"
-    tooltip: "file which contains some information about the bender geometry"
+    tooltip: "output file containing information about the bender geometry"
     default: ""
     column: 0
     prefix: "-A"
@@ -219,15 +219,15 @@ bender:
   - name: "uref"
     type: "bool"
     label: "transmitted neutrons"
-    tooltip: "no: ideal absorption between bender channels, yes: unreflected neutrons pass in the next bender channel"
+    tooltip: "no: ideal absorption between bender channels, yes: unreflected neutrons can pass into the next bender channel, but the intensity is reduced by attenuation by the \"left/right side material\" "
     default: 1
     column: 0
     prefix: "-g"
 
   - name: "amat"
     type: "int"
-    label: "Absorption material"
-    tooltip: "Attenuation of neutrons flux in the given material inside channels of bender. \"from file\" means data are read from a file specified as \"transmission file\" "
+    label: "channel material"
+    tooltip: "Material through which the neutrons travel inside the bender channels, which causes attenuation of the neutron flux. \"from file\" means data are read from a file specified as \"attenuation file\" "
     min: 0
     max: 6
     default: 6
@@ -237,7 +237,7 @@ bender:
   - name: "amatl"
     type: "int"
     label: "left side material"
-    tooltip: "Absorption material in the left side of channel. Unreflected neutrons pass in the next channel via absorbtion material in the inner(left) side of channel. \"from file\" means data are read from a file specified as \"left side file\""
+    tooltip: "Material on the left side of the channel. Unreflected neutrons pass into the next channel through this material in the inner (left) side of the channel. \"from file\" means that the data are read from a file specified as \"left side file\""
     min: 0
     max: 6
     default: 1
@@ -247,7 +247,7 @@ bender:
   - name: "amatr"
     type: "int"
     label: "right side material"
-    tooltip: "Absorption material in the right side of channel. Unreflected neutrons pass in the next channel via absorbtion material in the outer(right) side of channel. \"from file\" means data are read from that file specified as \"right side file\""
+    tooltip: "Material in the right side of the channel. Unreflected neutrons pass into the next channel through this material in the outer (right) side of the channel. \"from file\" means that the data are read from that file specified as \"right side file\""
     min: 0
     max: 6
     default: 1
@@ -258,8 +258,8 @@ bender:
     type: "file"
     plottable: false
     editable: true
-    label: "transmission file"
-    tooltip: "File which characterizes the transmission of bender channel material. Input this file name, if \"Absorption material\" has been set to \"from file\""
+    label: "attenuation file"
+    tooltip: "File characterizing the attenuation of the bender channel material. The file is used if \"Channel material\" is set to \"from file\""
     default: ""
     column: 0
     prefix: "-C"
@@ -269,7 +269,7 @@ bender:
     plottable: false
     editable: true
     label: "left side file"
-    tooltip: "File which characterizes the transmission of material in the left side of the bender. Input this file name, if \"left side material\" has been set to \"from file\""
+    tooltip: "File characterizing the attenuation of the material behind the reflecting surface on the left side of the channel. The file is used if \"left side material\" is set to \"from file\""
     default: ""
     column: 0
     prefix: "-T"
@@ -279,7 +279,7 @@ bender:
     plottable: false
     editable: true
     label: "right side file"
-    tooltip: "File which characterizes the transmission of material in the right side of the bender. Input this file name, if \"left side material\" has been set to \"from file\""
+    tooltip: "File characterizing the attenuation of the material behind the reflecting surface on the right side of the channel. The file is used if \"right side material\" is set to \"from file\""
     default: ""
     column: 0
     prefix: "-O"
@@ -288,26 +288,16 @@ bender:
     type: "float"
     label: "surface waviness"
     unit: "deg"
-    tooltip: "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal."
+    tooltip: "This parameter controls the simulation of the surface waviness. The given value is the maximal angle of deviation of the surface normal from the correct value."
     default: 0
     column: 0
     prefix: "-r"
     min: 0
 
-  - name: "abut"
-    type: "float"
-    label: "abutment loss length"
-    unit: "cm"
-    tooltip: "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected."
-    default: 0
-    column: 1
-    prefix: "-a"
-    min: 0
-
   - name: "visu"
     type: "bool"
     label: "visualisation"
-    tooltip: ""
+    tooltip: "use of an internal trajectory visualization (in addition to the general instrument and trajectory visualization):  yes or no"
     default: false
     column: 0
     prefix: "-y"
@@ -315,7 +305,7 @@ bender:
   - name: "visdev"
     type: "int"
     label: "visualisation device"
-    tooltip: "1: display, 2: file, 3: display+file"
+    tooltip: "output of the internal visualization: display only, file only, or display and file"
     default: 2
     column: 1
     prefix: "-o"
@@ -323,7 +313,7 @@ bender:
   - name: "pola"
     type: "bool"
     label: "polarisation"
-    tooltip: "yes: split into spin-down and spin-up reflectivity no: spin-up reflectivity for all neutrons"
+    tooltip: "yes: split into spin-down and spin-up reflectivity   no: spin-up reflectivity for all neutrons"
     default: false
     column: 0
     prefix: "-p"
@@ -331,7 +321,7 @@ bender:
   - name: "spiqua"
     type: "bool"
     label: "neutron spin axis"
-    tooltip: "magnetic field direction: 0: axis X, 1: axis Y, 2: axis Z"
+    tooltip: "axis for spin quantisation: X axis, Y axis, or Z axis"
     min: 0
     max: 2
     default: 0
@@ -341,7 +331,7 @@ bender:
   - name: "geotest"
     type: "bool"
     label: "geometry test"
-    tooltip: "activate/deactivates geometry test"
+    tooltip: "activates or deactivates a geometry test of the bender in the beginning of the simulation"
     default: false
     column: 0
     prefix: "-t"

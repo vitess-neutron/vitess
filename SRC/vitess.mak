@@ -213,7 +213,7 @@ source_ai.exe: source_ai.cpp
 	$(CXX) $(CXXFLAGS) /wd4251 $(CPPFLAGS) /I "$(LIBTORCHPATH)\include" /I "$(LIBTORCHPATH)\include\torch\csrc\api\include" /Fe$@ $** $(LDLIBS) /link $(LDFLAGS) torch.lib torch_cpu.lib c10.lib /libpath:"$(LIBTORCHPATH)\lib"
 
 # additional dependencies
-bender.exe: bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c
+bender.exe: bender.c bendtest.c bender_path.c bender_inter_data.c
 
 chopper_disc.exe: chopper_disc.c bender_inter_data.c
 

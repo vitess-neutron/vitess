@@ -275,7 +275,7 @@ $(ALL): libvitess.a $(GSLPATH)/libgslran.a
 # additional dependencies
 init.o: CPPFLAGS+=-DVVERS='"$(FULLVERSION)"'
 
-bender: bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c
+bender: bender.c bendtest.c bender_path.c bender_inter_data.c
 
 chopper_disc: chopper_disc.c bender_inter_data.c
 

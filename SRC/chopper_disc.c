@@ -20,6 +20,7 @@
 /* 1.11  Jan 2012  K. Lieutenant  visualization                                              */
 /* 1.12  Feb 2020  K. Lieutenant  new central visualization parameters                       */
 /* 1.13  Aug 2020  K. Lieutenant  time of arrival can be set by random choice                */
+/* 1.14  Mar 2026  K. Lieutenant  use of improved functions in 'bender_inter_data'           */
 /*********************************************************************************************/
 
 #include <ctype.h>
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_CHOP_DISC;
 
   Init(argc, argv, _eModule);
-  PrintModuleName(_eModule, "1.13");
+  PrintModuleName(_eModule, "1.14");
   ChopInit(argc, argv);
 
   bVisInstalled = TRUE;
@@ -200,9 +201,8 @@ int main(int argc, char *argv[])
                 if (prob > 0.961) prob = 0.961;
               }
               else if ( OutNeutron.Wavelength < 6.0)
-              {  double *pLmbdList=NULL, *pMuList=NULL;
-
-                mu   = Interpolation(OutNeutron.Wavelength, 1, pLmbdList, pMuList, 44);
+              { 
+                mu   = AttenuationAbs(OutNeutron.Wavelength, VT_ABS_GD, NULL, NULL, 0, "");
                 prob = exp(-mu*0.02);  /* typical thickness 2 x 100 um */
               }
               else
@@ -221,9 +221,8 @@ int main(int argc, char *argv[])
                 prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
               }
               else if ( OutNeutron.Wavelength < 6.0)
-              {  double *pLmbdList=NULL, *pMuList=NULL;
-
-                mu   = Interpolation(OutNeutron.Wavelength, 3, pLmbdList, pMuList, 44);
+              { 
+                mu   = AttenuationAbs(OutNeutron.Wavelength, VT_ABS_B10, NULL, NULL, 0, "");
                 prob = exp(-mu*0.05);  /* typical thickness 2 x 250 um */
               }
               else
