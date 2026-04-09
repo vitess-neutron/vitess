@@ -589,7 +589,7 @@ void OwnInit(int argc, char *argv[])
     Error("The new file format cannot be used with 'Other' mirror substrate material");
   if (bNewFormat == FALSE && (eMirrMaterial==VT_MIRR_SI || eMirrMaterial==VT_MIRR_SAPPH))
   { eMirrMaterial = VT_MIRR_OTHER;
-    Note("The new file format can only work with 'Other' mirror substrate material. Choice ignored");
+    Note("The old file format can only work with 'Other' mirror substrate material. Choice ignored");
   }
 
   if (eVisual==1)

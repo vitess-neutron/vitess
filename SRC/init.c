@@ -54,7 +54,6 @@
 extern FILE*    LogFilePtr;  /* pointer to the log file stream  */
 
 
-const
 char *sInstrInfOut = "instrument.inf"; /* instrument file that is written ('instrument.inf')      */
 char *sInstrInfIn  = "instrument.inf"; /* instrument file that is read (default 'instrument.inf') */
 
@@ -1565,26 +1564,28 @@ void WriteGeomData(VectorType vBegPos, double Length)
 void WriteInstrData(VectorType Pos)
 {
   FILE*  pFile=NULL;
-  char   *pBuffer;
-  long   iModId=iModuleId;
+  char   *pBuffer,
+         cNF=' ';
+  // long   iModId=iModuleId;
   int    m=0, mFst=0;
 
+  if (bOldFrame) cNF='F';
 
   if (nModuleNo==0)  // if 'instrument.inf' does not exist
   {
-    // 'source' module writes header with line number '0', 'read_in' with 'iModuleId'=1
-    if (_eModule==MCN_SOURCE)
-      iModId=0;
-    else
+    // 'source' module writes header with line number '0', 'read_in' with '1'
+    if (_eModule==MCN_READ_IN)
       nModuleNo++;
+
     pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
     fprintf(pFile,
             "# No ID    module            len [m]    x [m]     y [m]     z [m]     hor. [deg] ver. \n"
             "# ------------------------------------------------------------------------------------\n");
   }
-  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN)
+  else if ((InputFilePtr!=NULL && InputFilePtr!=stdin) || _eModule==MCN_READ_IN || _eModule==MCN_WRITEOUT && strcmp(sInstrInfOut, "instr_out.inf")==0)
   {
-    // first module of 2nd, 3rd ... part copy content from old to new instrument.inf file
+    // first module of 2nd, 3rd ... part copies content from old to new instrument info file
+    //                          writeout copies content from instrument info file to 'instr_out.inf' in the option "writeout for part 2"
     char *inp;
     pBuffer = inp = (char*) malloc(CHAR_BUF_XS*(nModuleNo+3+NUM_EOP));
     pFile = OpenInputFile(sInstrInfIn, FALSE, "r");
@@ -1610,13 +1611,17 @@ void WriteInstrData(VectorType Pos)
       fclose(pFile);
     }
     pFile = OpenOutputFile(sInstrInfOut, FALSE, "w");
-    if (pFile) {
+    if (pFile)
+    {
       char *p = pBuffer;
-      while (p != inp) {
+      while (p != inp)
+      {
         fputs(p, pFile);
         p += CHAR_BUF_XS;
       }
-      fputs("EOP\n", pFile);
+      // the first module addds an 'EOP' mark
+      if (_eModule!=MCN_WRITEOUT)
+        fputs("EOP\n", pFile);
     }
     free(pBuffer);
     pBuffer=0;
@@ -1630,15 +1635,26 @@ void WriteInstrData(VectorType Pos)
   // each module appends a line
   if (pFile)
   {
-    char cNF=' ';
-    if (bOldFrame) cNF='F';
     fprintf(pFile, "%3ld %3d %-18.18s %9.5f %9.5f %9.5f %9.5f  %8.3f %8.3f %c\n",
-                   iModId, _eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
+                   nModuleNo, _eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
                    180.0/M_PI*RotZ, 180.0/M_PI*RotY, cNF);
     /* mark end of actual part */
     if (OutputFilePtr!=NULL && OutputFilePtr!=stdout && nModuleNo > 0)
       fputs("EOP\n", pFile);
     fclose(pFile);
+  }
+
+  // if the module 'writeout' writes 'instr_out.inf', it also appends a line in 'instrument.inf' 
+  if (_eModule==MCN_WRITEOUT && strcmp(sInstrInfOut, "instr_out.inf")==0)
+  {
+    pFile = OpenOutputFile(sInstrInfIn, FALSE, "a");
+    if (pFile)
+    { fprintf(pFile, "%3ld %3d %-18.18s %9.5f %9.5f %9.5f %9.5f  %8.3f %8.3f %c\n",
+                     nModuleNo, _eModule, sModuleName, BlnLen/100., Pos[0]/100., Pos[1]/100., Pos[2]/100.,
+                     180.0/M_PI*RotZ, 180.0/M_PI*RotY, cNF);
+      if (OutputFilePtr!=NULL && OutputFilePtr!=stdout && nModuleNo > 0) fputs("EOP\n", pFile);
+      fclose(pFile);
+    }
   }
 }
 

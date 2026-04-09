@@ -20,6 +20,7 @@
 /* 1.2   Aug 2019  K. Lieutenant  tidy up and visualization                                   */
 /* 1.2a  Sep 2022  K. Lieutenant  visualization corrected and minor improvements              */
 /* 1.3   Dec 2024  K. Lieutenant  color setting corrected and log file output improved        */
+/* 1.4   Mar 2026  K. Lieutenant  use of improved functions in 'bender_inter_data'            */
 /**********************************************************************************************/
 #include "init.h"
 #include "softabort.h"
@@ -44,8 +45,8 @@ void  SetGeometry (char* sColor, int nHoles);  // Fills the structure stGeometry
 // Input parameters
 char   *sCollFileName=NULL;     // -I  [-]  file describing the grid geometry
 char   *sTransFileName=NULL;    // -C  [-]  file describing the transmission of the grid material
-VtWndAbs  eMaterialO            // -c  [-]  material of the grids: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
-           =VT_WABS_IDEAL;      //                                 4 - Eu,        5 - Silicon,   99 - ideal absorber
+VtWndMat eMaterialO            // -c  [-]  material of the grids: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+           =VT_WND_IDEAL;      //                                 4 - Eu,        5 - Silicon,   99 - ideal absorber
 VtShape eKeyShape=VT_NO_SHAPE;  // -N  [-]  Form of grid elements 0 - square form; 1 - circle form
 long    eKeyColorTrack=0;       // -K  [-]  Activate color tracking = cross-talk analysis, default no (0)
 
@@ -114,7 +115,7 @@ int main(int argc, char *argv[])
   _eModule=MCN_GRID;
 
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "1.3");
+  PrintModuleName(_eModule, "1.4");
   OwnInit(argc, argv);
   MsgInit();
   NumberOfHoles=ReadGridFile();
@@ -232,16 +233,21 @@ int main(int argc, char *argv[])
         // -------------------------------------------------------
         if (key_abs == 1)
         {
-          if (eMaterialO == VT_WABS_IDEAL)
+          if (eMaterialO == VT_WND_IDEAL)
             continue;
           /* Attenuation during pass through grid material */
           N_Wavelength = Output.Wavelength;
-          mu = Interpolation(N_Wavelength, eMaterialO, WAVS, MUS, nValF);
+          mu = Interpol(N_Wavelength, WAVS, MUS, nValF);
           if (mu == -10000.0)
-          {
-            CountMessageID(WNDO_L_RANGE_TOO_SMALL, Output.ID);
+          { CountMessageID(WNDO_L_RANGE_TOO_SMALL, Output.ID);
+            prob = 0.0;
           }
-          prob = exp(-mu*TimeOF*VelocityReal);
+          else if (mu == 10000.0)
+          { prob = 0.0;
+          }
+          else
+          { prob = exp(-mu*TimeOF*VelocityReal);
+          }
           Output.Probability = Output.Probability*prob;
           if (Output.Probability <= wei_min)
             continue;
@@ -345,9 +351,9 @@ void   OwnInit   (int argc, char *argv[])
         case 'c':
           eMat = atoi(&argv[i][2]);      // Material of window frame: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber
           if (eMat==6)
-            eMaterialO = VT_WABS_IDEAL;  // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Interpolation()')
+            eMaterialO = VT_WND_IDEAL;   // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Attenuation()')
           else                           // and for ideal absorption here, in 'window' and 'window_mult'
-            eMaterialO = (VtWndAbs) eMat;
+            eMaterialO = (VtWndMat) eMat;
           break;
 
         // Deviations
@@ -431,7 +437,7 @@ void  EvalInput()
 
   if (Thickness < 0.0)
     Error("Thickness of the disk < 0.0");
-  if (Thickness == 0.0 && eMaterialO!=VT_WABS_IDEAL)
+  if (Thickness == 0.0 && eMaterialO!=VT_WND_IDEAL)
     Error("Thickness of the disk can only be zero for ideal absorber");
 
   if (DistanceDev < 0.0)
@@ -492,21 +498,21 @@ void  EvalInput()
   {
     fprintf(LogFilePtr, "Tracking of crosstalk is activated => Ideal absorption assumed  \n");
     // Warning("This feature only works correctly, if the neutron trajectories have color 0 at the first grid");
-    eMaterialO = VT_WABS_IDEAL ;
+    eMaterialO = VT_WND_IDEAL ;
   }
 
   if (eKeyShape == VT_CIRCLE)
     OuterRadius = OuterA;
 
   switch (eMaterialO)
-  { case VT_WABS_FILE :  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileName); break;
-    case VT_WABS_GD   :  fprintf(LogFilePtr, "Window frame material: Gadolinium \n"); Gadolinium(WAVS, MUS, &nValF); break;
-    case VT_WABS_CD   :  fprintf(LogFilePtr, "Window frame material: Cadmium    \n"); Cadmium   (WAVS, MUS, &nValF); break;
-    case VT_WABS_B10  :  fprintf(LogFilePtr, "Window frame material: Bor10      \n"); Bor10     (WAVS, MUS, &nValF); break;
-    case VT_WABS_EU   :  fprintf(LogFilePtr, "Window frame material: Eu         \n"); Eu        (WAVS, MUS, &nValF); break;
-    case VT_WABS_SI   :  fprintf(LogFilePtr, "Window frame material: Silicon    \n"); Silicon   (WAVS, MUS, &nValF); break;
-    case VT_WABS_IDEAL:  break;
-    default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
+  { case VT_WND_FILE :  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileName); break;
+    case VT_WND_GD   :  fprintf(LogFilePtr, "Window frame material: Gadolinium \n");   nValF = Gadolinium (WAVS, MUS, MAX_MU); break;
+    case VT_WND_CD   :  fprintf(LogFilePtr, "Window frame material: Cadmium    \n");   nValF = Cadmium    (WAVS, MUS, MAX_MU); break;
+    case VT_WND_B10  :  fprintf(LogFilePtr, "Window frame material: Bor10      \n");   nValF = Bor10      (WAVS, MUS, MAX_MU); break;
+    case VT_WND_EU   :  fprintf(LogFilePtr, "Window frame material: Eu         \n");   nValF = Eu         (WAVS, MUS, MAX_MU); break;
+    case VT_WND_SI   :  fprintf(LogFilePtr, "Window frame material: Silicon    \n");   nValF = Silicon    (WAVS, MUS, MAX_MU); break;
+    case VT_WND_IDEAL:  fprintf(LogFilePtr, "Ideal absorption set in window frame\n"); nValF = IdealAbsorp(WAVS, MUS);         break;
+    default: fprintf(LogFilePtr, "\n"); Error("No valid material chosen for window frame");
   }
 
 
@@ -564,16 +570,17 @@ void  EvalInput()
   }
 
 
-  if (eMaterialO == VT_WABS_FILE)
+  if (eMaterialO == VT_WND_FILE)
   {
     // Read transmission file for grid element
     if (sTransFileName != NULL)
     {
       trans_file = OpenParameterFile2(sTransFileName, "transmission data", "r");
       i = 0;
-      while (ReadLine(trans_file, sLine, sizeof(sLine) - 1) > 0) {
-        i++;
+      while (ReadLine(trans_file, sLine, sizeof(sLine) - 1) > 0) 
+      {
         sscanf(sLine, "%lf %lf", &WAVS[i], &MUS[i]);
+        i++;
       }
       nValF = i;
       fclose(trans_file);

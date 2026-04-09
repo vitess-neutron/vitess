@@ -255,6 +255,8 @@ void OwnInit(int argc, char *argv[])
 {
   int i=0,m=0;
 
+  sInstrInfIn = "instr_out.inf";
+
   for (m=0; m < NF_MAX; m++)
   {
     if (m==0) Weight [m]=1.0;

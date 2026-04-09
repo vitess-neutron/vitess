@@ -69,6 +69,7 @@
 /* 3.10  Sep 2019  K. Lieutenant  new standard reflectivities                               */
 /* 3.11  Mar 2020  A. Szakal      Calculating prompt gamma production, storing in MCPL file */
 /* 3.12  Feb 2021  K. Lieutenant  corrections 'LengthFromFile' and coating from R(Q) file   */
+/* 3.12a Apr 2026  K. Lieutenant  correction trajectory visualization (for curved guide)    */
 /********************************************************************************************/
 
 #include <stdio.h>
@@ -428,8 +429,6 @@ void OwnInit   (int argc, char *argv[])
   char fullMCPLName[CHAR_BUF_SMALL];
 
   MsgInit();
-  InitVector(BegPosM);
-  InitVector(BegPosS);
 
   // guide parameter character usage:
   //free                                                                                                  y

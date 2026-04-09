@@ -31,6 +31,7 @@
 /* 1.14  Sep 2022  P. Zakalek      Added writeout of SSW files                               */
 /* 1.14a Feb 2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
 /* 1.15  Jan 2024  K. Lieutenant   order of choosing type of output file corrected           */
+/* 1.16  Nov 2025  K. Lieutenant   new option: write trajectories for next instrument part   */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -100,8 +101,8 @@ char* FullParName(const char* filename);                                        
 /******************************/
 // Input parameters
 char*        sOutFileName=NULL;         //  -A   [-]   output file name
-short        bActive=TRUE;              //  -a   [-]   flag: YES: writeout is active   NO: output file is not written
 short        bHeader=TRUE;              //  -h   [-]   flag: YES: write header         NO: write only data, no header
+VtWriteAct   eActive   =VT_WRITE_TRAJ;  //  -a   [-]   enum: VT_NO_WRITING: no file written  VT_WRITE_TRAJ: write out events  VT_SPLIT_SIM: write out traj. for next instrument part
 VtPrgFormat  ePrgFormat=VT_VITESS_FMT;  //  -f   [-]   output format: VT_VITESS_FMT: VITESS format   VT_MCSTAS_FMT: McStas   VT_MCPL_FMT: MCPL   VT_MCNP6_FMT: MCNP6   VT_MCNPX_FMT: MCNPX  )
 VtDataFormat eDatFormat=VT_FLOAT;       //  -F   [-]   data format (exponential, float, binary)
 VtSeparator  eSeparator=VT_BLANK;       //  -S   [-]   separator between columns (space, tab)
@@ -154,7 +155,7 @@ char*          sHeader =NULL;           //             header: parameters of the
 char*          sUnits  =NULL;           //             header: units used in the event file
 short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence
 bCalcDivZ = FALSE;       //                               or vert. divergence necessary
-char           sVsn[5]="1.15",
+char           sVsn[5]="1.16",
         form[15][15]={"","","","","","","","","","","","","","",""};
 // formats to print data of the different parameters using VITESS
 
@@ -192,7 +193,7 @@ int main(int argc, char **argv)
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
-  if (bActive)
+  if (eActive!=VT_NO_WRITING)
     HeaderAndParameters();
 
   DECLARE_ABORT;
@@ -209,7 +210,7 @@ int main(int argc, char **argv)
       WriteNeutron(&(InputNeutrons[i]));
 
       // skip the rest if the module is not active
-      if (!bActive) continue;
+      if (eActive==VT_NO_WRITING) continue;
 
       // Filter wavelength and position
       if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
@@ -417,7 +418,7 @@ int main(int argc, char **argv)
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-  int         i=0;         // index of parameter list
+  int i=0;         // index of parameter list
 
   for(i=1; i<argc; i++)
   {
@@ -430,7 +431,7 @@ void  OwnInit(int argc, char *argv[])
           break;
 
         case 'a':
-          bActive= (short) atoi(&argv[i][2]);
+          eActive= (VtWriteAct) atoi(&argv[i][2]);
           break;
         case 'h':
           bHeader= (short) atoi(&argv[i][2]);
@@ -515,9 +516,13 @@ void  OwnInit(int argc, char *argv[])
   bCalcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
   bCalcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
 
+  // if the written data are intermediate data for a split simulation, write an instrument file that will be used by 'read_in' 
+  if (eActive==VT_SPLIT_SIM)
+    sInstrInfOut = "instr_out.inf";
+
   if (sOutFileName != NULL)
   {
-    if (bActive)
+    if (eActive!=VT_NO_WRITING)
     {
       char sFullName[CHAR_BUF_SMALL];
       TotalPath(sFullName, sOutFileName, "", OUT_DIR);
@@ -761,7 +766,7 @@ void HeaderAndParameters(void)
 void OwnCleanup()
 {
   /* close the file if it was openend */
-  if (bActive)
+  if (eActive!=VT_NO_WRITING)
   { if (ePrgFormat== VT_MCPL_FMT)
     {
       mcpl_close_outfile(hOutFile);

@@ -118,12 +118,12 @@ window:
     type: "title"
     label: "Outer Material"
   - name: "eMatOut"
-    <<: *VtWndAbs
+    <<: *VtWndMat
     label: "frame material"
     tooltip: "Material used for the absorbing window frame"
     column: 1
-    options: ["VT_WABS_FILE", "VT_WABS_GD", "VT_WABS_CD", "VT_WABS_B10", "VT_WABS_EU", "VT_WABS_SI", "VT_WABS_IDEAL"]
-    default: "VT_WABS_IDEAL"
+    options: ["VT_WND_FILE", "VT_WND_GD", "VT_WND_CD", "VT_WND_B10", "VT_WND_EU", "VT_WND_SI", "VT_WND_IDEAL"]
+    default: "VT_WND_IDEAL"
     prefix: "-c"
     required: true
   - name: "ThicknOut"

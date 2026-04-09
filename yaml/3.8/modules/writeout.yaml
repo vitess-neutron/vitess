@@ -16,12 +16,13 @@ writeout:
     default: "events.out"
     prefix: "-A"
     required: true
-  - name: "bActive"
-    type: "bool"
-    label: "Active?"
-    tooltip: "YES: output file is written   NO: output file is not written"
+  - name: "eActivity"
+    label: "writeout activity"
+    tooltip: "yes: output file containing trajectories is written   no: no output file is written   part 2: trajectories are written for a 2nd (or next) instrument part"
+    <<: *VtWriteAct
+    options: ["VT_NO_WRITING", "VT_WRITE_TRAJ", "VT_SPLIT_SIM"]
+    default: "VT_WRITE_TRJ"
     column: 0
-    default: yes
     prefix: "-a"
     required: true
   - name: "bHeader"

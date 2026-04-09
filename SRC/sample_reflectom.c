@@ -898,7 +898,7 @@ short PassThrough(Neutron* OutNeutron, double PathLen, VtMirrMat eMat, short bWr
   else if (eMat==VT_MIRR_OTHER)
     mu_tot = SubstrMuScaT + SubstrMuAbs*OutNeutron->Wavelength/1.798;
   else
-    mu_tot = AttenuationMirr(OutNeutron->Wavelength, eMat);
+    mu_tot = AttenuationMir(OutNeutron->Wavelength, eMat, NULL, NULL, 0, NULL);
 
   ProbOut = ProbIn * exp(-PathLen * mu_tot);
   OutNeutron->Probability = ProbOut;

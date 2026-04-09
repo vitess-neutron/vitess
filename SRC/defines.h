@@ -418,6 +418,15 @@ typedef enum
 }
 VtTrace;
 
+// writeout activity
+typedef enum
+{
+  VT_NO_WRITING = 0,
+  VT_WRITE_TRAJ = 1,
+  VT_SPLIT_SIM  = 2
+}
+VtWriteAct;
+
 // random sampling
 typedef enum
 {
@@ -474,30 +483,32 @@ VtTfmnSeq;
 // window absorber material
 typedef enum
 {
-  VT_NO_MAT    = -1,
+  VT_NO_ABS_MAT= -1,
   VT_ABS_IDEAL =  0,
   VT_ABS_GD    =  1,
   VT_ABS_B10   =  2,
   VT_ABS_CD    =  3,
   VT_ABS_EU    =  4,
-  VT_ABS_FILE  = 10
+  VT_ABS_FILE  = 10,
+  VT_ABS_ARRAY = 88,
 }
 VtAbsMat;
 
 // absorber material
 typedef enum
 {
-  VT_NO_WABS    =-1,
-  VT_WABS_FILE  = 0,
-  VT_WABS_GD    = 1,
-  VT_WABS_CD    = 2,
-  VT_WABS_B10   = 3,
-  VT_WABS_EU    = 4,
-  VT_WABS_SI    = 5,
-  VT_WABS_VAC   = 6,
-  VT_WABS_IDEAL = 99,
+  VT_NO_WND_MAT=-1,
+  VT_WND_FILE  = 0,
+  VT_WND_GD    = 1,
+  VT_WND_CD    = 2,
+  VT_WND_B10   = 3,
+  VT_WND_EU    = 4,
+  VT_WND_SI    = 5,
+  VT_WND_VAC   = 6,
+  VT_WND_ARRAY = 88,
+  VT_WND_IDEAL = 99,
 }
-VtWndAbs;
+VtWndMat;
 
 
 // oscillation (of the radial collimator)
@@ -561,7 +572,9 @@ typedef enum
   VT_MIRR_SAPPH  = 2,
   VT_MIRR_GLASS  = 3,
   VT_MIRR_B4C    = 4,
-  VT_MIRR_VACUUM = 6
+  VT_MIRR_VACUUM = 6,
+  VT_MIRR_FILE   = 77,
+  VT_MIRR_ARRAY  = 88,
 }
 VtMirrMat;
 
@@ -799,7 +812,7 @@ VtDetUse;
 // absorbing detector material
 typedef enum
 {
-  VT_NO_ABS_MAT=-1,
+  VT_NO_DET_MAT=-1,
   VT_GAS_BF3   = 0,
   VT_GAS_HE3   = 1,
   VT_SOLID_B10 = 2,
