@@ -14,7 +14,10 @@ GUI and plotting improvements:
 Fixes and improvements:
 - Monochromator: fixed issues with geometry and movements.
 - Monitors: the calculation of k_y and k_z is now more consistent.
+- Bender: corrected option "transmitted neutrons".
 - KDSource now finds its MCPL and bandwith files relative to the xml file.
 - sample_ncrystal is available on windows.
 - source_ai available as MacOS universal binary.
+- polarizer_sm: fixed NaN output.
+- Filtering out low-intensity events now works in all modules.
 - Various memory leaks have been fixed.

@@ -8,7 +8,10 @@ Welcome to the GitLab repository of **VITESS** (Virtual Instrumentation Tool for
 
 **VITESS** is a tool for the simulation of neutron scattering instruments and experiments at pulsed and continuous sources. Using **VITESS**, you can simulate a large variety of instruments at any of the major current and future neutron sources, including the European Spallation Source, which is currently being designed. **VITESS** is supported by a graphical user interface (GUI), making it simple for you to compose your instrument and run simulations. You can use **VITESS** on a **Windows**, **Linux** or **Macintosh** computer. Simply choose the appropriate [download file](https://iffgit.fz-juelich.de/vitess/vitess/-/releases) and install **VITESS** on your computer. The **VITESS** installation includes some example instruments to demonstrate the main features of the program. You can also use the [examples](./FILES/EXAMPLES/) as an initial aid for your own instruments. For any questions and feedback of all kind you may contact the **VITESS** developers team, vitess@fz-juelich.de, and we will help you as quickly as possible.
 
-Version 3.7 contains two new source modules for better integration with neutronic simulation software: KDSource, which increases the number of neutron trajectories using the kernel density estimator method, and AISource; which creates a function to define the moderator characteristic using AI. It also offers a new module to simulate prisms and one to use the NCrystal library. The monochromator module allows simulating monochromator rotations and oscillations. The modules treating inelastic scattering can now handle spin dependent scattering. NeXus output is included to enable processing simulated data just as real data.
+Version 3.8 contains a many improvements and corrections.
+Plotting is done with [GR](https://gr-framework.org) by default; python/matplotlib and gnuplot options are also available if installed.
+The modules `kdsource` and `sample_ncrystal` are now compiled for windows.
+There are major fixes for some options of the `monochromator` and `bender` modules.
 
 **VITESS** 4.0 is in active development. If you are interested in testing it, checkout the develop branch or download an [up-to-date snapshot](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package). Feel free to contact us if you encounter any issues.
 
@@ -28,7 +31,8 @@ Download the and run the installer from the links above.
 ### MacOS
 - Install [XQuartz](https://xquartz.org)
 - Download and unpack VITESS: run `curl -L https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/1074589/artifacts/raw/Downloads/Vitess3.7-Darwin-universal.tar.gz | tar xz` in the terminal.
-- If you used a download link from above, you might get an error message about running unknown code. In that case, run `xattr -c -r vitess3.7/`
+- If you used a download link from above, you might get an error message about running unknown code. In that case, run `xattr -c -r vitess3.8/`
+- Run the script `Vitess-MacOS` to start the GUI
 - For older versions (Vitess 3.7 or below): Install Tcl/Tk 8.6, e.g. from homebrew: `brew install tcl-tk@8.6`
 
 ### Linux
