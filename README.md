@@ -30,7 +30,7 @@ Download the and run the installer from the links above.
 
 ### MacOS
 - Install [XQuartz](https://xquartz.org)
-- Download and unpack VITESS: run `curl -L https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/1074589/artifacts/raw/Downloads/Vitess3.7-Darwin-universal.tar.gz | tar xz` in the terminal.
+- Download and unpack VITESS: run `curl -L https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/1178196/artifacts/raw/Downloads/Vitess3.8-Darwin-universal.tar.gz | tar xz` in the terminal.
 - If you used a download link from above, you might get an error message about running unknown code. In that case, run `xattr -c -r vitess3.8/`
 - Run the script `Vitess-MacOS` to start the GUI
 - For older versions (Vitess 3.7 or below): Install Tcl/Tk 8.6, e.g. from homebrew: `brew install tcl-tk@8.6`
