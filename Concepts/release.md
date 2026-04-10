@@ -31,3 +31,7 @@
 - Add links ("Windows Binaries" etc.) to the artifacts from the "package" job of the release tag.
 - Add a link "All Compiled Binaries" to the download folder of the artifacts
 - Add the release notes
+
+## After release
+
+- Check links in README.md
