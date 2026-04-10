@@ -1,0 +1,217 @@
+sample_elasticisotr:
+  executable: "sample_elasticisotr"
+  label: "sample_elasticisotr"
+  category: "sample"
+
+  parameters:
+  - name: "sParFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "parameter file"
+    tooltip: "File containing parameters of the sample These parameters are only used if they are not given as direct input parameters."
+    prefix: "-P"
+
+  - name: "Title_options"
+    type: "title"
+    label: "Special Options"
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "if != -1, only neutrons of this colour are treated"
+    column: 0
+    default: -1
+    prefix: "-c"
+  - name: "nRep"
+    type: "int"
+    label: "repetition"
+    tooltip: "repetitions (number of trajectories generated per incoming trajectory)"
+    column: 1
+    min: 1
+    default: 1
+    prefix: "-A"
+
+  - name: "Title_scattering"
+    type: "title"
+    label: "Scattering parameters"
+  - name: "ScatHor"
+    type: "float"
+    label: "angle horiz final"
+    unit: "deg"
+    tooltip: "Horizontal rotation Theta defining the main scattering direction"
+    column: 0
+    min: -180.0
+    max: 180.0
+    default: 0.0
+    prefix: "-E"
+  - name: "ScatVert"
+    type: "float"
+    label: "angle vert final"
+    unit: "deg"
+    tooltip: "Vertical rotation Phi defining the main scattering direction"
+    column: 1
+    min: -180.0
+    max: 180.0
+    default: 0.0
+    prefix: "-F"
+  - name: "DelScatHor"
+    type: "float"
+    label: "delta angle horiz"
+    unit: "deg"
+    tooltip: "Horizontal range DelTheta around the mean scattering dirction determining the horizontal scattering range [Theta-DelTheta, Theta+DelTheta]."
+    column: 0
+    min: 0.0
+    max: 180.0
+    prefix: "-e"
+  - name: "DelScatVert"
+    type: "float"
+    label: "delta angle vert"
+    unit: "deg"
+    tooltip: "Vertical range DelPhi around the mean scattering dirction determining the vertical scattering range [Phi-DelPhi, Phi+DelPhi]."
+    column: 1
+    min: 0.0
+    max: 180.0
+    prefix: "-f"
+
+  - name: "MuScatTotal"
+    type: "float"
+    label: "scattering coeff"
+    unit: "1/cm"
+    tooltip: "User defined macroscopic total scattering cross section of the sample"
+    column: 0
+    min: 0.0
+    default: 0.0
+    prefix: "-T"
+  - name: "MuAbsorb"
+    type: "float"
+    label: "absorption coeff"
+    unit: "1/cm/Ang"
+    tooltip: "User defined macroscopic absorption cross section of the sample per wavelength"
+    column: 1
+    min: 0.0
+    default: 0.0
+    prefix: "-m"
+
+  - name: "Title_position"
+    type: "title"
+    label: "Position, orientation and geometry of the sample"
+  - name: "SmplPosX"
+    type: "float"
+    label: "X"
+    unit: "cm"
+    tooltip: "center x position of the sample"
+    column: 0
+    default: 20.0
+    prefix: "-x"
+  - name: "SmplPosY"
+    type: "float"
+    label: "Y"
+    unit: "cm"
+    tooltip: "center y position of the sample"
+    column: 1
+    default: 0.0
+    prefix: "-y"
+  - name: "SmplPosZ"
+    type: "float"
+    label: "Z"
+    unit: "cm"
+    tooltip: "center z position of the sample"
+    column: 2
+    default: 0.0
+    prefix: "-z"
+
+  - name: "eSmplGeom"
+    <<: *VtSmplGeom
+    label: "sample geometry"
+    tooltip: "Shape of the sample: cylinder, sphere, cuboid (=rectangular) or hollow cylinder"
+    options: ["VT_CYL", "VT_SPHERE", "VT_CUBE", "VT_HOL_CYL"]
+    default: "VT_CYL"
+    column: 0
+    prefix: "-G"
+
+  - name: "SizePar1"
+    type: "float"
+    label: "thickness or diameter"
+    unit: "cm"
+    tooltip: "thickness of a cuboid or (outer) diameter of a sphere or cylinder"
+    column: 0
+    default: 0.5
+    prefix: "-t"
+  - name: "Height"
+    type: "float"
+    label: "height"
+    unit: "cm"
+    tooltip: "height of a cuboid or cylinder"
+    column: 1
+    default: 2.0
+    prefix: "-h"
+  - name: "Width"
+    type: "float"
+    label: "inner diameter or width"
+    unit: "cm"
+    tooltip: "width of a cuboid or inner diameter of a hollow cylinder"
+    column: 2
+    default: 0.0
+    prefix: "-w"
+
+  - name: "RotSmplHor"
+    type: "float"
+    label: "horizontal angle"
+    unit: "deg"
+    tooltip: "Rotation of the sample about the z-axis in a horizontal plane (first rotation)"
+    column: 0
+    default: 0.0
+    prefix: "-o"
+  - name: "RotSmplVert"
+    type: "float"
+    label: "vertical angle"
+    unit: "deg"
+    tooltip: "Rotation of the sample about the (new) y-axis in a vertical plane (second rotation)"
+    column: 1
+    default: 0.0
+    prefix: "-O"
+
+  - name: "Title_frame"
+    type: "title"
+    label: "Output frame"
+  - name: "FrameOutX"
+    type: "float"
+    label: "X'"
+    unit: "cm"
+    tooltip: "x coordinate of the output frame"
+    column: 0
+    default: 0.0
+    prefix: "-X"
+  - name: "FrameOutY"
+    type: "float"
+    label: "Y'"
+    unit: "cm"
+    tooltip: "y coordinate of the output frame"
+    column: 1
+    default: 0.0
+    prefix: "-Y"
+  - name: "FrameOutZ"
+    type: "float"
+    label: "Z'"
+    unit: "cm"
+    tooltip: "z coordinate of the output frame"
+    column: 2
+    default: 0.0
+    prefix: "-Z"
+
+  - name: "FrameOutHor"
+    type: "float"
+    label: "horiz. angle"
+    unit: "deg"
+    tooltip: "Rotation angle of the output frame in horizontal direction (first rotation) (0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
+    column: 0
+    default: 0.0
+    prefix: "-u"
+  - name: "FrameOutVert"
+    type: "float"
+    label: "vert. angle"
+    unit: "deg"
+    tooltip: "Rotation angle of the output frame in vertical direction (first rotation) (0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
+    column: 1
+    default: 0.0
+    prefix: "-U"

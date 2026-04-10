@@ -12,11 +12,11 @@ TOOLS
 Vitess
 Vitess-MacOS
 WWW
-YAML
+yaml
 callVitess
 darwin_gnuplot.txt
 filelist.txt
 gridrun
 install-unix.txt
 install-windows.txt
-license.txt
+LICENSE.txt

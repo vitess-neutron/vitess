@@ -1,0 +1,275 @@
+sample_reflectom:
+  executable: "sample_reflectom"
+  label: "sample_reflectom"
+  category: "sample"
+
+  parameters:
+  - name: "sSampleFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "parameter file"
+    tooltip: "name of the file containing the sample parameters"
+    prefix: "-P"
+  - name: "sReflFile"
+    type: "file"
+    plottable: true
+    editable: true
+    label: "reflectivity file"
+    tooltip: "name of the file containing the sample reflectometry"
+    prefix: "-I"
+
+  - name: "Title_Geom"
+    type: "title"
+    label: "Geometry and options"
+  - name: "eMeasMod"
+    <<: *VtMeasMode
+    label: "mode"
+    tooltip: "Select between sample (reflectivity data from the 'reflectivity file') and reference (reflectivity R=1 for all angles)"
+    options: ["VT_SAMPLE", "VT_REFERENCE"]
+    default: "VT_SAMPLE"
+    column: 0
+    prefix: "-O"
+  - name: "eRotAxis"
+    <<: *VtRotAxis
+    label: "axis of rotation"
+    tooltip: "rotation axis of the sample, Y or Z"
+    options: ["VT_ROT_Y", "VT_ROT_Z"]
+    default: "VT_ROT_Y"
+    column: 1
+    prefix: "-R"
+  - name: "bTreatAll"
+    type: "bool"
+    label: "treat neutrons not reflected"
+    tooltip: "yes: neutrons that are not reflected by the sample are treated  no: neutrons that are not reflected by the sample are removed (default)"
+    default: no
+    column: 2
+    prefix: "-A"
+
+  - name: "RotAngle"
+    type: "float"
+    label: "reflection angle"
+    unit: "deg"
+    tooltip: "The sample is rotated by this angle around the 'axis of rotation'. zero means: parallel to x-axis,i.e. surface normal in z-direction; (small) positive angles cause flight directions after reflection with positive y or z components resp."
+    default: 1.0
+    min: -90.0
+    max: 90.0
+    column: 0
+    prefix: "-a"
+
+  - name: "Title_Substrate"
+    type: "title"
+    label: "Substrate"
+  - name: "eSubstrMat"
+    <<: *VtMirrMat
+    label: "substrate material"
+    tooltip: "Material of the substrate (for a treatment of the neutron absorption while passing through the substrate)."
+    options: ["VT_MIRR_OTHER","VT_MIRR_SI","VT_MIRR_GLASS","VT_MIRR_B4C"]
+    default: "VT_MIRR_SI"
+    column: 0
+    prefix: "-M"
+  - name: "SubstrThickn"
+    type: "float"
+    label: "substrate thickn"
+    unit: "cm"
+    tooltip: "Thickness of the substrate on which the sample is put"
+    default: 0.0
+    min: 0.0
+    prefix: "-h"
+    column: 0
+  - name: "SubstrMuScat"
+    type: "float"
+    label: "total scat. coeff"
+    unit: "1/cm"
+    tooltip: "Macroscopic total scattering cross-section of the substrate material to calculate the attenation inside the substrate. Only needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
+    default: 0.0
+    min: 0.0
+    column: 1
+    prefix: "-s"
+  - name: "SubstrMuAbsorb"
+    type: "float"
+    label: "absorption coeff"
+    unit: "1/cm/Ang"
+    tooltip: "Macroscopic absorption cross-section of the substrate material (with respect for a wavelength of 1.798 Ang) to calculate the attenation inside the substrate. Only needed for 'Other' substrate material in case of 'treating not reflected neutrons'."
+    default: 0.0
+    min: 0.0
+    column: 2
+    prefix: "-m"
+
+  - name: "Title_SampleGeom"
+    type: "title"
+    label: "Sample position and size"
+  - name: "SamplePosX"
+    type: "float"
+    label: "pos x"
+    unit: "cm"
+    tooltip: "center x position of the sample"
+    default: 0.0
+    prefix: "-x"
+    column: 0
+  - name: "SamplePosY"
+    type: "float"
+    label: "pos y"
+    unit: "cm"
+    tooltip: "center y position of the sample"
+    default: 0.0
+    prefix: "-y"
+    column: 1
+  - name: "SamplePosZ"
+    type: "float"
+    label: "pos z"
+    unit: "cm"
+    tooltip: "center z position of the sample"
+    default: 0.0
+    prefix: "-z"
+    column: 2
+
+  - name: "SampleThickn"
+    type: "float"
+    label: "thickness"
+    unit: "cm"
+    tooltip: "Thickness of the reflecting sample. It determines the range of depth in which the reflection is supposed to take place."
+    default: 0.00001
+    min: 0.0
+    prefix: "-T"
+    column: 0
+  - name: "SampleWidth"
+    type: "float"
+    label: "sample width"
+    unit: "cm"
+    tooltip: "width of the sample  (along y-/z-axis)"
+    default: 2.0
+    min: 0.0
+    prefix: "-W"
+    column: 1
+  - name: "SampleLength"
+    type: "float"
+    label: "sample length"
+    unit: "cm"
+    tooltip: "length of the sample (along x-axis for reflection angle 0)."
+    default: 5.0
+    min: 0.0
+    prefix: "-L"
+    column: 2
+
+  - name: "Title_OffSpecular"
+    type: "title"
+    label: "Offspecular and incoherent scattering"
+  - name: "bOffSpecular"
+    type: "bool"
+    label: "offspecular scattering"
+    tooltip: "Flag: offspecular scattering is simulated (yes, no)"
+    default: no
+    column: 0
+    prefix: "-o"
+
+  - name: "bIncohScat"
+    type: "bool"
+    label: "incoherent scattering"
+    tooltip: "Flag: incoherent scattering is simulated (yes, no)"
+    default: no
+    column: 0
+    prefix: "-B"
+  - name: "MuScatIncoh"
+    type: "float"
+    label: "inc. cross-section"
+    unit: "1/cm"
+    tooltip: "macroscopic incoherent scattering cross section of the sample"
+    default: 0.0
+    min: 0.0
+    column: 1
+    prefix: "-X"
+  - name: "IncohNormFact"
+    type: "float"
+    label: "norm factor"
+    unit: ""
+    tooltip: "If incoherent scattering from sample is taken into account, the norm factor describes the fraction of the detector where the specular signal is expected with respect to the whole detector area."
+    default: 1.0
+    min: 0.0
+    column: 2
+    prefix: "-S"
+
+  - name: "Title_Det"
+    type: "title"
+    label: "Detector Geometry"
+  - name: "DetDist"
+    type: "float"
+    label: "detector distance"
+    unit: "cm"
+    tooltip: "distance to the detector (to calculate the solid angle for incoherent scattering)"
+    default: 1.0
+    min: 0.0
+    column: 0
+    prefix: "-d"
+  - name: "DetWidth"
+    type: "float"
+    label: "detector width"
+    unit: "cm"
+    tooltip: "width of the detector (to calculate the solid angle for incoherent scattering)"
+    default: 0.0
+    min: 0.0
+    column: 1
+    prefix: "-p"
+  - name: "DetHeight"
+    type: "float"
+    label: "detector height"
+    unit: "cm"
+    tooltip: "height of the detector (to calculate solid angle for incoherent scattering)"
+    default: 0.0
+    min: 0.0
+    column: 2
+    prefix: "-t"
+
+  - name: "Title_OutFrame"
+    type: "title"
+    label: "Output frame"
+  - name: "eOutFrame"
+    <<: *VtFrameGen
+    label: "frame generation"
+    tooltip: "'user defined frame': output frame defined by the values below 'standard frame generation': puts output direction along the reflected beam"
+    options: ["VT_FRAME_USER", "VT_FRAME_STD"]
+    default: "VT_FRAME_STD"
+    column: 0
+    prefix: "-g"
+
+  - name: "FrameOutX"
+    type: "float"
+    label: "out x"
+    unit: "cm"
+    tooltip: "x coordinate in output frame"
+    default: 0.0
+    prefix: "-u"
+    column: 0
+  - name: "FrameOutY"
+    type: "float"
+    label: "out y"
+    unit: "cm"
+    tooltip: "y coordinate in output frame"
+    default: 0.0
+    prefix: "-v"
+    column: 1
+  - name: "FrameOutZ"
+    type: "float"
+    label: "out z"
+    unit: "cm"
+    tooltip: "z coordinate in output frame"
+    default: 0.0
+    prefix: "-w"
+    column: 2
+
+  - name: "FrameOutHor"
+    type: "float"
+    label: "horizontal angle"
+    unit: "deg"
+    tooltip: "horizontal angular coordinate in output frame"
+    default: 0.0
+    prefix: "-k"
+    column: 0
+  - name: "FrameOutVert"
+    type: "float"
+    label: "vertical angle"
+    unit: "deg"
+    tooltip: "vertical angular coordinate in output frame"
+    default: 0.0
+    prefix: "-K"
+    column: 1

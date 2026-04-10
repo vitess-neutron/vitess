@@ -3,29 +3,44 @@
 # nmake /f vitess.mak all
 # nmake /f vitess.mak install
 # after cd to the SRC directory of the Vitess tree
-# from a Microsoft VS 2017 cmd.exe
+# from a Microsoft VS 2022 cmd.exe
+
+!if "$(VSCMD_ARG_TGT_ARCH)" == "x86"
+WINARCH=win32
+!else
+WINARCH=win64
+!endif
 
 VERSION_MAJOR = 3
-VERSION_MINOR = 7
+VERSION_MINOR = 8
 GSLPATH = .\rng
 G2PATH = .\g2-0.72
-KDSOURCEPATH = .\kdsource\win32
+NCRYSTALPATH = .\ncrystal\$(WINARCH)
+KDSOURCEPATH = .\libkdsource\$(WINARCH)
 
 CC = cl.exe
-CFLAGS = /nologo /MT /W3 /Ox /Oy /GF /I "$(GSLPATH)" /I "$(KDSOURCEPATH)\include" /FD /EHsc
 CXX = cl.exe
-CXXFLAGS = $(CFLAGS)
-CPPFLAGS = /DNDEBUG /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR)
+CCFLAGS = /MT /nologo /W3 /GF /EHsc /wd5105
+CFLAGS = /std:c11 $(CCFLAGS)
+CXXFLAGS = /std:c++17 $(CCFLAGS)
+CPPFLAGS = /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR) /I "$(GSLPATH)"
 LD = link.exe
-LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /libpath:"$(KDSOURCEPATH)\lib" /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmt.lib
-LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib msvcrt.lib vitess.lib libgsl.lib kdsource.lib mcpl.lib libxml2.lib
+LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmt.lib
+LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib msvcrt.lib vitess.lib libgsl.lib
 
 !ifndef NOG2
-CFLAGS = $(CFLAGS) /DDO_PS /DVT_GRAPH /I "$(G2PATH)\src" /I "$(G2PATH)\src\Win32" /I "$(G2PATH)\src\PS"
-LDFLAGS = $(LDFLAGS) /libpath:"$(G2PATH)"
+CPPFLAGS = $(CPPFLAGS) /DDO_PS /DVT_GRAPH /I "$(G2PATH)\src" /I "$(G2PATH)\src\Win32" /I "$(G2PATH)\src\PS"
+LDFLAGS = $(LDFLAGS) /libpath:"$(G2PATH)\src"
 LDLIBS = $(LDLIBS) libg2.lib
 !endif
 
+!ifdef DEBUG
+CCFLAGS = $(CCFLAGS) /Od
+CPPFLAGS = $(CPPFLAGS) /DDEBUG=1
+!else
+CCFLAGS = $(CCFLAGS) /Ox /Oy
+CPPFLAGS = $(CPPFLAGS) /DNDEBUG
+!endif
 
 # Vitess modules to build
 ALL = ascii2bin.exe \
@@ -62,8 +77,10 @@ guide.exe \
 guide_elliptic.exe \
 guide_parallel.exe \
 guide_shape.exe \
+kdsource.exe \
 lattice_dist.exe \
 lenses.exe \
+merge.exe \
 merge_spectra.exe \
 mirror_coating.exe \
 mirror_elliptical.exe \
@@ -89,6 +106,7 @@ pol_mirror.exe \
 polariser_he3.exe \
 polariser_sm.exe \
 precessionfield.exe \
+prism.exe \
 read_in.exe \
 resonator_drabkin.exe \
 rotating_field.exe \
@@ -96,6 +114,7 @@ runtime.exe \
 sample_elasticisotr.exe \
 sample_environment.exe \
 sample_inelast.exe \
+sample_ncrystal.exe \
 sample_nxs.exe \
 sample_powder.exe \
 sample_reflectom.exe \
@@ -119,7 +138,10 @@ velselect.exe \
 window.exe \
 writeout.exe
 !ifndef NOG2
-ALL = $(ALL) visual.exe
+ALL = $(ALL) visual.exe dist_time.exe
+!endif
+!ifdef LIBTORCHPATH
+ALL = $(ALL) source_ai.exe
 !endif
 
 # objects used by multiple modules
@@ -144,23 +166,54 @@ sswread.obj
 COMMON = $(COMMON) cpgplot.obj
 !endif
 
+DEPS = $(GSLPATH)\libgsl.lib
+!ifndef NOG2
+DEPS = $(DEPS) $(G2PATH)\src\libg2.lib
+!endif
+
 # general make targets
-all: vitess.lib $(ALL)
+all: $(DEPS) vitess.lib $(ALL)
 
 clean:
 	-del *.lib *.obj $(ALL)
 
-# Note: DLLs are required because of MSVC limitations
+distclean: clean
+	cd "$(GSLPATH)"
+	$(MAKE) /f gsl.mak clean
+	cd "$(MAKEDIR)"
+	cd "$(G2PATH)\src"
+	$(MAKE) /f g2.mak clean
+	cd "$(MAKEDIR)"
+
 install: $(ALL)
 	copy /Y *.exe ..\MODULES\\
-	copy /Y $(KDSOURCEPATH)\lib\*.dll ..\MODULES\\
 
 vitess.lib: $(COMMON)
 	lib /OUT:vitess.lib $(COMMON)
 
+$(GSLPATH)\libgsl.lib:
+	cd "$(GSLPATH)"
+	$(MAKE) /f gsl.mak
+	cd "$(MAKEDIR)"
+
+$(G2PATH)\src\libg2.lib:
+	cd "$(G2PATH)\src"
+	$(MAKE) /f g2.mak
+	cd "$(MAKEDIR)"
+
+# KDSource for module kdsource
+kdsource.exe: kdsource.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) /I "$(KDSOURCEPATH)\include" /Fe$@ $** $(LDLIBS) kdsource.lib bcrypt.lib /link $(LDFLAGS) /libpath:"$(KDSOURCEPATH)\lib"
+
+# NCrystal for sample_ncrystal
+sample_ncrystal.exe: sample_ncrystal.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) /I "$(NCRYSTALPATH)\include" /Fe$@ $** $(LDLIBS) NCrystal.lib /link $(LDFLAGS) /libpath:"$(NCRYSTALPATH)\lib"
+
+source_ai.exe: source_ai.cpp
+	$(CXX) $(CXXFLAGS) /wd4251 $(CPPFLAGS) /I "$(LIBTORCHPATH)\include" /I "$(LIBTORCHPATH)\include\torch\csrc\api\include" /Fe$@ $** $(LDLIBS) /link $(LDFLAGS) torch.lib torch_cpu.lib c10.lib /libpath:"$(LIBTORCHPATH)\lib"
 
 # additional dependencies
-bender.exe: bender.c bendtest.c bendchtr.c bendertr.c bender_inter_data.c
+bender.exe: bender.c bendtest.c bender_path.c bender_inter_data.c
 
 chopper_disc.exe: chopper_disc.c bender_inter_data.c
 
@@ -218,19 +271,19 @@ spacewindow.exe: window.exe
 
 
 # suffix rules
-.SUFFIXES: .c .cpp. obj .exe
+.SUFFIXES: .c .cpp .obj .exe
 
 .c.obj:
-	$(CC) $(CPPFLAGS) $(CFLAGS) /c /Fo$@ $**
+	$(CC) $(CFLAGS) $(CPPFLAGS) /c /Fo$@ $**
 
 .cpp.obj:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) /c /Fo$@ $**
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) /c /Fo$@ $**
 
 .c.exe:
-	$(CC) $(CPPFLAGS) $(CFLAGS) /Fe$@ $** $(LDLIBS) /link $(LDFLAGS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fe$@ $** $(LDLIBS) /link $(LDFLAGS)
 
 .cpp.exe:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) /Fe$@ $** $(LDLIBS) /link $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) /Fe$@ $** $(LDLIBS) /link $(LDFLAGS)
 
 .obj.exe:
 	$(LD) $(LDLIBS) $(LDFLAGS) /OUT:$@ $**

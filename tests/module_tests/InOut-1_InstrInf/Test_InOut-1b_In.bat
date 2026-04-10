@@ -1,0 +1,9 @@
+subst V: /d
+subst V: N:\MODULES
+subst P: /d
+subst P: T:\InOut-1_InstrInf
+set GSL_RNG_SEED=1
+set GSL_RNG_TYPE=ran3
+V:\read_in.exe --Z1 --U1.0e-25 --G1 --T0 --B10000 --PP:\ --N1 --LP:\lieuten69cd201bvpipelog1 -f1 -F1 -AP:\in_out-1a_out.dat -a1.0 -b0.0 -d0.0 -R1 -J0 -I1.0 -C-1 -t0 | V:\space.exe --Z1 --U1.0e-25 --G1 --T0 --B10000 --PP:\ --N2 --LP:\lieuten69cd201bvpipelog2 -d100 -M0 -m0 | V:\writeout.exe --Z1 --U1.0e-25 --G1 --T0 --B10000 --PP:\ --N3 --LP:\lieuten69cd201bvpipelog3 -AP:\in_out-1b_out.dat -a1 -h1 -f1 -F1 -S0 -I1.0 -c111111111 -C-1 --Fno_file
+type P:\lieuten69cd201bvpipelog* > P:\result.txt
+del P:\lieuten69cd201bvpipelog*

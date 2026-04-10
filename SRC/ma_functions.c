@@ -8,7 +8,7 @@
 
 
 /*********************************/
-/*			Functions			 */
+/*      Functions       */
 /*********************************/
 
 
@@ -19,27 +19,27 @@ double Mosaicity(VectorType Mosaic)
 {
 double thm, phm, fwhm_fact, arg, p ;
 
-	thm = phm = 0. ; /* initialising */
+  thm = phm = 0. ; /* initialising */
 
 
-	CartesianToSpherical(Mosaic, &thm, &phm) ;
+  CartesianToSpherical(Mosaic, &thm, &phm) ;
 
-	fwhm_fact = sq((double) cos(phm) / mosaic_fwhm[0]) + sq((double) sin(phm) / mosaic_fwhm[1]) ;
+  fwhm_fact = sq((double) cos(phm) / mosaic_fwhm[0]) + sq((double) sin(phm) / mosaic_fwhm[1]) ;
 
-	if(thm != 0.)
-	{
+  if(thm != 0.)
+  {
 
-	arg = - sq( thm * (double) sqrt(8*log(2))) / 2 * fwhm_fact ;
+  arg = - sq( thm * (double) sqrt(8*log(2))) / 2 * fwhm_fact ;
 
-	if(arg < - 100.) arg = -100. ;
+  if(arg < - 100.) arg = -100. ;
 
-	p = (double) exp(arg) ;
+  p = (double) exp(arg) ;
 
-	}
+  }
 
-	else	p = 1. ;
+  else  p = 1. ;
 
-	return p ;
+  return p ;
 
 
 }/* End Mosaicity */
@@ -48,20 +48,20 @@ double thm, phm, fwhm_fact, arg, p ;
 /* probability of finding a d-spacing in Lorentzian approximation.
 Maximum probability amplitude = 1 */
 
-double	dSpreadLorentzian(double d_ran)
+double  dSpreadLorentzian(double d_ran)
 {
 double p ;
 
-	if(d_fwhm == 0.)
-	{
-		p = 1. ;
+  if(d_fwhm == 0.)
+  {
+    p = 1. ;
 
-	}else{
+  }else{
 
-		p = sq(d_fwhm) / ( 4.*sq(d_ran - d_spacing) + sq(d_fwhm) ) ;
-	}
+    p = sq(d_fwhm) / ( 4.*sq(d_ran - d_spacing) + sq(d_fwhm) ) ;
+  }
 
-	return p ;
+  return p ;
 
 }/* End dSpreadLorentzian */
 
@@ -69,25 +69,24 @@ double p ;
 /* probability of finding a d-spacing in Gaussian approximation.
 Maximum probability amplitude = 1 */
 
-double	dSpreadGaussian(double d_ran)
+double  dSpreadGaussian(double d_ran)
 {
 double p, argd ;
 
-	if(d_fwhm == 0.)
-	{
-		p = 1. ;
+  if(d_fwhm == 0.)
+  {
+    p = 1. ;
 
-	}else{
+  }else{
 
-	argd = - sq( (d_ran - d_spacing) * (double) sqrt(8.*log(2.))) / 2. / sq(d_fwhm) ;
+  argd = - sq( (d_ran - d_spacing) * (double) sqrt(8.*log(2.))) / 2. / sq(d_fwhm) ;
 
-	if(argd < - 100.) argd = -100. ;
+  if(argd < - 100.) argd = -100. ;
 
-	p = (double) exp(argd) ;
+  p = (double) exp(argd) ;
 
-	}
+  }
 
-	return p ;
+  return p ;
 
 }/* End dSpreadGaussian */
-

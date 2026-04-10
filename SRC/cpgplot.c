@@ -115,7 +115,7 @@ static void GetFormat(char* format, double beg, double ampl)
   while (rest > 1e-2 && nks < 4)
   { nks++;
     rest *= 10.0;
-    rest -= floor(rest); 
+    rest -= floor(rest);
   }
 
   dif = beg+ampl;
@@ -216,7 +216,7 @@ void cpgclos (void)
   for (i=0; i<MAXDEVICES; i++)
     if (stored_set[i]) {
       dev = stored_dev[i];
-      gdev = stored_gdev[i];  
+      gdev = stored_gdev[i];
       G0(g2_flush);
       G0(g2_close);
       stored_set[i] = 0;

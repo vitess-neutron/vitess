@@ -8,44 +8,44 @@
 /****************************************************************/
 /* Propagation of the neutron to the end of the lense (system)  */
 /****************************************************************/
-double  PathThroughLenseOrder2(Neutron *ThisNeutron, LenseSecond MyLense, double Radius1, 
+double  PathThroughLenseOrder2(Neutron *ThisNeutron, LenseSecond MyLense, double Radius1,
                                double Radius2, double RadiusMain, double Thickness, double Refract, double Atten, double AttScat,
-                               VectorType PosMain, VectorType TransOut , double WeightMin, double surfacerough,long keyGrav, 
-                               long NeutronLoss, long Attenkey,  long CurrentLense, long LenseForOut, long LenseForOutVis, 
-                               long ServiceInfoK, FILE *COLLFILE, long LenseType)	      				    
-{ 
-  /* Note! The function returns Time Of Flight					   */ 
-  
-  int i, ThisCollision=0; 
-  double  TimeOF, TimeOFmin; 
-  double  TimeOFTotal=0.0; 
+                               VectorType PosMain, VectorType TransOut , double WeightMin, double surfacerough,long keyGrav,
+                               long NeutronLoss, long Attenkey,  long CurrentLense, long LenseForOut, long LenseForOutVis,
+                               long ServiceInfoK, FILE *COLLFILE, long LenseType)
+{
+  /* Note! The function returns Time Of Flight             */
+
+  int i, ThisCollision=0;
+  double  TimeOF, TimeOFmin;
+  double  TimeOFTotal=0.0;
   double  VelocityReal, Refr, Att, signl, stepp, temp;
-  
-  /* Local copy of neutrons for cylce.. */ 
-  Neutron TempNeutron, NearestNeutron; 
+
+  /* Local copy of neutrons for cylce.. */
+  Neutron TempNeutron, NearestNeutron;
 
   /* Neutron is lossed, other (next) lenses are excluded */
   if (NeutronLoss == 1) return(-1.0);
-  
-  /* illegal velocity */ 
+
+  /* illegal velocity */
   if (ThisNeutron->Vector[0] <= 0.0)  return(-1.0);
-  
-  /* illegal wavelength */  
+
+  /* illegal wavelength */
   if (ThisNeutron->Wavelength <= 0.0)  return(-1.0);
 
   /* Calculate refraction and attenuation coeff for given wavelength */
   Refr = 1.0 - ((ThisNeutron->Wavelength)*(ThisNeutron->Wavelength)*Refract);
   if (Refr <= 0.0) return(-1.0);
-  
+
   Att = Atten*(ThisNeutron->Wavelength);
   if (Att < 0.0) return(-1.0);
-  
+
   /* Choose small constat for movement*/
-		   
+
   stepp = 0.01; /* in cm */
   /* Convert stepp in time ms */
-  VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength)); 	
-	    
+  VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength));
+
   if (VelocityReal != 0.0)
   {
     stepp = stepp/VelocityReal;
@@ -55,480 +55,482 @@ double  PathThroughLenseOrder2(Neutron *ThisNeutron, LenseSecond MyLense, double
     fprintf(LogFilePtr,"WARNING! Neutron Velocity is ZERO!!!, Wavelength is INFINITY! \n");
     return(-1);
   }
-	    
-  /*    set initial tof for lense */      
+
+  /*    set initial tof for lense */
   TimeOFTotal=0.0;
-      
-  /* Moving into additional plane if necessary */         
+
+  /* Moving into additional plane if necessary */
   if (LenseType == 0)
   {
     if ((MyLense.Surf[4].W < 0.0)&&(Radius1 > 0.0))
     {
       TimeOF = NeutronSurfaceSecIntersectionGrav(ThisNeutron, MyLense.Surf[4], keyGrav);
       if (TimeOF <= 0.0) return(-1.0);
-      TimeOFTotal = TimeOFTotal + TimeOF; 
+      TimeOFTotal = TimeOFTotal + TimeOF;
     }
-  }    
-      
-  /* Starting of moving into the first surface (number 0 -> [0]) of the lense */  
+  }
+
+  /* Starting of moving into the first surface (number 0 -> [0]) of the lense */
   if (keyGrav == 1)
   {
-    TimeOF = NeutronSurfaceSecIntersectionGravLen(ThisNeutron, MyLense.Surf[0]);            
+    TimeOF = NeutronSurfaceSecIntersectionGravLen(ThisNeutron, MyLense.Surf[0]);
   }
   else
   {
-    TimeOF = NeutronSurfaceSecIntersectionGrav(ThisNeutron, MyLense.Surf[0], 0);      
+    TimeOF = NeutronSurfaceSecIntersectionGrav(ThisNeutron, MyLense.Surf[0], 0);
   }
-          
+
   if (TimeOF <= 0.0) return(-1.0);
-  TimeOFTotal = TimeOFTotal + TimeOF; 
-  if (ThisNeutron->Probability <= WeightMin)  return(-1.0);       
+  TimeOFTotal = TimeOFTotal + TimeOF;
+  if (ThisNeutron->Probability <= WeightMin)  return(-1.0);
 
-  /* check the neutron inside cylinder, otherwise neutron loss  */ 
-  signl = 
-    MyLense.Surf[2].A*ThisNeutron->Position[0]*ThisNeutron->Position[0] + 
-    MyLense.Surf[2].B*ThisNeutron->Position[0] + 
-    MyLense.Surf[2].C*ThisNeutron->Position[1]*ThisNeutron->Position[1]+ 
-    MyLense.Surf[2].D*ThisNeutron->Position[1] + 
-    MyLense.Surf[2].E*ThisNeutron->Position[2]*ThisNeutron->Position[2]+ 
-    MyLense.Surf[2].F*ThisNeutron->Position[2] + 
-    MyLense.Surf[2].W + 
-    MyLense.Surf[2].P*ThisNeutron->Position[0]*ThisNeutron->Position[1]+ 
-    MyLense.Surf[2].Q*ThisNeutron->Position[1]*ThisNeutron->Position[2]+ 
-    MyLense.Surf[2].R*ThisNeutron->Position[2]*ThisNeutron->Position[0] ; 
-    
-  /* particle outside cylinder surface */ 
-  if ((signl) >= 0.0) return(-1.0);  
+  /* check the neutron inside cylinder, otherwise neutron loss  */
+  signl =
+    MyLense.Surf[2].A*ThisNeutron->Position[0]*ThisNeutron->Position[0] +
+    MyLense.Surf[2].B*ThisNeutron->Position[0] +
+    MyLense.Surf[2].C*ThisNeutron->Position[1]*ThisNeutron->Position[1]+
+    MyLense.Surf[2].D*ThisNeutron->Position[1] +
+    MyLense.Surf[2].E*ThisNeutron->Position[2]*ThisNeutron->Position[2]+
+    MyLense.Surf[2].F*ThisNeutron->Position[2] +
+    MyLense.Surf[2].W +
+    MyLense.Surf[2].P*ThisNeutron->Position[0]*ThisNeutron->Position[1]+
+    MyLense.Surf[2].Q*ThisNeutron->Position[1]*ThisNeutron->Position[2]+
+    MyLense.Surf[2].R*ThisNeutron->Position[2]*ThisNeutron->Position[0] ;
 
-  /* Move a neutron a little bit and check the outside cylynder */  
-  CopyNeutron(ThisNeutron, &TempNeutron); 
-  
-  TempNeutron.Position[0] = TempNeutron.Position[0] + VelocityReal*stepp*(TempNeutron.Vector[0]); 
-  TempNeutron.Position[1] = TempNeutron.Position[1] + VelocityReal*stepp*(TempNeutron.Vector[1]); 
-  TempNeutron.Position[2] = TempNeutron.Position[2] + VelocityReal*stepp*(TempNeutron.Vector[2]); 
-	
-  /* check the neutron inside cylinder, otherwise neutron loss  */ 
-  signl = 
-    MyLense.Surf[2].A*TempNeutron.Position[0]*TempNeutron.Position[0] + 
-    MyLense.Surf[2].B*TempNeutron.Position[0] + 
-    MyLense.Surf[2].C*TempNeutron.Position[1]*TempNeutron.Position[1]+ 
-    MyLense.Surf[2].D*TempNeutron.Position[1] + 
-    MyLense.Surf[2].E*TempNeutron.Position[2]*TempNeutron.Position[2]+ 
-    MyLense.Surf[2].F*TempNeutron.Position[2] + 
-    MyLense.Surf[2].W + 
-    MyLense.Surf[2].P*TempNeutron.Position[0]*TempNeutron.Position[1]+ 
-    MyLense.Surf[2].Q*TempNeutron.Position[1]*TempNeutron.Position[2]+ 
-    MyLense.Surf[2].R*TempNeutron.Position[2]*TempNeutron.Position[0] ; 
-    
-  /* particle outside cylinder surface */ 
-  if ((signl) >= 0.0) return(-1.0);    
+  /* particle outside cylinder surface */
+  if ((signl) >= 0.0) return(-1.0);
+
+  /* Move a neutron a little bit and check the outside cylynder */
+  CopyNeutron(ThisNeutron, &TempNeutron);
+
+  TempNeutron.Position[0] = TempNeutron.Position[0] + VelocityReal*stepp*(TempNeutron.Vector[0]);
+  TempNeutron.Position[1] = TempNeutron.Position[1] + VelocityReal*stepp*(TempNeutron.Vector[1]);
+  TempNeutron.Position[2] = TempNeutron.Position[2] + VelocityReal*stepp*(TempNeutron.Vector[2]);
+
+  /* check the neutron inside cylinder, otherwise neutron loss  */
+  signl =
+    MyLense.Surf[2].A*TempNeutron.Position[0]*TempNeutron.Position[0] +
+    MyLense.Surf[2].B*TempNeutron.Position[0] +
+    MyLense.Surf[2].C*TempNeutron.Position[1]*TempNeutron.Position[1]+
+    MyLense.Surf[2].D*TempNeutron.Position[1] +
+    MyLense.Surf[2].E*TempNeutron.Position[2]*TempNeutron.Position[2]+
+    MyLense.Surf[2].F*TempNeutron.Position[2] +
+    MyLense.Surf[2].W +
+    MyLense.Surf[2].P*TempNeutron.Position[0]*TempNeutron.Position[1]+
+    MyLense.Surf[2].Q*TempNeutron.Position[1]*TempNeutron.Position[2]+
+    MyLense.Surf[2].R*TempNeutron.Position[2]*TempNeutron.Position[0] ;
+
+  /* particle outside cylinder surface */
+  if ((signl) >= 0.0) return(-1.0);
 
 
-#ifdef VT_GRAPH 
-  if (do_visualise) 
-  { 
-    double tempx, tempy; 
- 
-    /* set point */ 
+#ifdef VT_GRAPH
+  if (do_visualise)
+  {
+    double tempx, tempy;
+
+    /* set point */
     if (LenseForOutVis == 0)
     {
-      cpgsci(6); 
-      tempx = ThisNeutron->Position[0]; 
-      tempy = ThisNeutron->Position[2]; 
-      cpgpt1( (float) tempx,(float) tempy,-2 ); 
+      cpgsci(6);
+      tempx = ThisNeutron->Position[0];
+      tempy = ThisNeutron->Position[2];
+      cpgpt1( (float) tempx,(float) tempy,-2 );
     }
     else
     {
       if ( CurrentLense == LenseForOutVis )
       {
-        cpgsci(6); 
-        tempx = ThisNeutron->Position[0]; 
-        tempy = ThisNeutron->Position[2]; 
-        cpgpt1( (float) tempx,(float) tempy,-2 ); 	       
+        cpgsci(6);
+        tempx = ThisNeutron->Position[0];
+        tempy = ThisNeutron->Position[2];
+        cpgpt1( (float) tempx,(float) tempy,-2 );
       }
     }
-        
-  } 
-#endif 
 
-  if( ServiceInfoK == 1 ) 
+  }
+#endif
+
+  if( ServiceInfoK == 1 )
   {
-	
+
     if (LenseForOut == 0)
     {
-      fprintf(COLLFILE, " %ld  %12.5f  %12.5f  %12.5f  %d \n", 
-      CurrentLense, 
-      ThisNeutron->Position[0], 
-      ThisNeutron->Position[1], 
-      ThisNeutron->Position[2], 
-      ThisNeutron->Color);      
+      fprintf(COLLFILE, " %ld  %12.5f  %12.5f  %12.5f  %d \n",
+      CurrentLense,
+      ThisNeutron->Position[0],
+      ThisNeutron->Position[1],
+      ThisNeutron->Position[2],
+      ThisNeutron->Color);
     }
     else
     {
       if ( CurrentLense == LenseForOut )
       {
-        fprintf(COLLFILE, " %ld  %12.5f  %12.5f  %12.5f  %d \n", 
-        CurrentLense, 
-        ThisNeutron->Position[0], 
-        ThisNeutron->Position[1], 
-        ThisNeutron->Position[2], 
-        ThisNeutron->Color);      	       
+        fprintf(COLLFILE, " %ld  %12.5f  %12.5f  %12.5f  %d \n",
+        CurrentLense,
+        ThisNeutron->Position[0],
+        ThisNeutron->Position[1],
+        ThisNeutron->Position[2],
+        ThisNeutron->Color);
       }
     }
-	    		
-  }   	        
 
-  /* TEMPORARY STOP see above two signl 
+  }
+
+  /* TEMPORARY STOP see above two signl
      return(-1.0); */
 
   /* make refraction at the first surface */
   temp = MakeRefract(ThisNeutron, MyLense, Refr, surfacerough, 0);
-  if (temp == -1.0) return(-1.0); 
+  if (temp == -1.0) return(-1.0);
 
-  TimeOFmin = 99999999999999999999999.9; 
-  /* Loop through all 2 surface */                                              
-  for(i=1;i<3;i++) 
-  { 
-    CopyNeutron(ThisNeutron, &TempNeutron); 
-      
+  TimeOFmin = 99999999999999999999999.9;
+  /* Loop through all 2 surface */
+  for(i=1;i<3;i++)
+  {
+    CopyNeutron(ThisNeutron, &TempNeutron);
+
     if (keyGrav == 1)
     {
-      TimeOF = NeutronSurfaceSecIntersectionGravLen(&TempNeutron, MyLense.Surf[i]);            
+      TimeOF = NeutronSurfaceSecIntersectionGravLen(&TempNeutron, MyLense.Surf[i]);
     }
     else
     {
-      TimeOF = NeutronSurfaceSecIntersectionGrav(&TempNeutron, MyLense.Surf[i], 0);      
-    }          
-      
-    /* ILLEGAL NEUTRON PARAMETERS */  
-    if (TempNeutron.Position[0] < ThisNeutron->Position[0]) continue; 
-    if (TempNeutron.Vector[0] < 0.0) continue;	 
-    if (TimeOF <= 0.0) continue;				 
- 
-    /***********************************************************************************/ 
-    /* If this calculated distance is not the shortest so far, return to the top of the*/ 
-    /* loop.  TimeOF -> min                                                            */ 
-    /***********************************************************************************/ 
-    if(TimeOF > TimeOFmin) continue; 
- 
-    /***********************************************************************************/ 
-    /* The intercept of the neutron with this wall is the nearest so far, so accept it */ 
-    /* temporarily.                                                                    */ 
-    /***********************************************************************************/ 
- 
-    CopyNeutron(&TempNeutron, &NearestNeutron); 
-    TimeOFmin = TimeOF; 
-    ThisCollision = i; 
-  } 
+      TimeOF = NeutronSurfaceSecIntersectionGrav(&TempNeutron, MyLense.Surf[i], 0);
+    }
+
+    /* ILLEGAL NEUTRON PARAMETERS */
+    if (TempNeutron.Position[0] < ThisNeutron->Position[0]) continue;
+    if (TempNeutron.Vector[0] < 0.0) continue;
+    if (TimeOF <= 0.0) continue;
+
+    /***********************************************************************************/
+    /* If this calculated distance is not the shortest so far, return to the top of the*/
+    /* loop.  TimeOF -> min                                                            */
+    /***********************************************************************************/
+    if(TimeOF > TimeOFmin) continue;
+
+    /***********************************************************************************/
+    /* The intercept of the neutron with this wall is the nearest so far, so accept it */
+    /* temporarily.                                                                    */
+    /***********************************************************************************/
+
+    CopyNeutron(&TempNeutron, &NearestNeutron);
+    TimeOFmin = TimeOF;
+    ThisCollision = i;
+  }
 
   /* Neutron is hitted the cylindrical surface */
-  if (ThisCollision == 2) 
+  if (ThisCollision == 2)
   {
-      
-    CopyNeutron(&NearestNeutron, ThisNeutron); 
-    TimeOFTotal =  TimeOFTotal + TimeOFmin; 
-            
+
+    CopyNeutron(&NearestNeutron, ThisNeutron);
+    TimeOFTotal =  TimeOFTotal + TimeOFmin;
+
     /* Attenuation inside lense */
     if (Attenkey == 1)
     {
       ThisNeutron->Probability = ThisNeutron->Probability*exp(-1.0*(Att+AttScat)*VelocityReal*TimeOFmin);
     }
     /* check weight */
-    if (ThisNeutron->Probability <= WeightMin)  return(-1.0);       
+    if (ThisNeutron->Probability <= WeightMin)  return(-1.0);
 
-#ifdef VT_GRAPH 
-  if (do_visualise) 
-    { 
-    double tempx, tempy; 
- 
-    /* set point */ 
-    
-    cpgsci(4); 
-    
-    tempx = ThisNeutron->Position[0]; 
-    tempy = ThisNeutron->Position[2]; 
-    
-    cpgpt1( (float) tempx,(float) tempy,-2 ); 
-  } 
-#endif 
-            
+#ifdef VT_GRAPH
+  if (do_visualise)
+    {
+    double tempx, tempy;
+
+    /* set point */
+
+    cpgsci(4);
+
+    tempx = ThisNeutron->Position[0];
+    tempy = ThisNeutron->Position[2];
+
+    cpgpt1( (float) tempx,(float) tempy,-2 );
+  }
+#endif
+
     temp = MakeRefract(ThisNeutron, MyLense, (1.0/Refr), surfacerough, 2);
-    if (temp == -1.0) return(-1.0); 
-            
-    TimeOF = NeutronSurfaceSecIntersectionGrav(ThisNeutron, MyLense.Surf[3], keyGrav);
-    if (TimeOF <= 0.0) return(-1.0);            
-    TimeOFTotal = TimeOFTotal + TimeOF; 
-            
-    /* Convert position into output frame */     
-    ThisNeutron->Position[0] = ThisNeutron->Position[0]  - TransOut[0];
-	    	    
-    return(-1.0);
-  }	
+    if (temp == -1.0) return(-1.0);
 
-  /* Neutrons going in the second surface of lense with refraction */  
-  CopyNeutron(&NearestNeutron, ThisNeutron); 
-  TimeOFTotal =  TimeOFTotal + TimeOFmin; 
-      
+    TimeOF = NeutronSurfaceSecIntersectionGrav(ThisNeutron, MyLense.Surf[3], keyGrav);
+    if (TimeOF <= 0.0) return(-1.0);
+    TimeOFTotal = TimeOFTotal + TimeOF;
+
+    /* Convert position into output frame */
+    ThisNeutron->Position[0] = ThisNeutron->Position[0]  - TransOut[0];
+
+    return(-1.0);
+  }
+
+  /* Neutrons going in the second surface of lense with refraction */
+  CopyNeutron(&NearestNeutron, ThisNeutron);
+  TimeOFTotal =  TimeOFTotal + TimeOFmin;
+
   /* attenuation inside lense */
   if (Attenkey == 1)
   {
     ThisNeutron->Probability = ThisNeutron->Probability*exp(-1.0*(Att+AttScat)*VelocityReal*TimeOFmin);
   }
-      
-  /* check weight */
-  if (ThisNeutron->Probability <= WeightMin)  return(-1.0);       
 
-#ifdef VT_GRAPH 
-  if (do_visualise) 
-  { 
-    double tempx, tempy; 
- 
-    /* set point */ 
-	
+  /* check weight */
+  if (ThisNeutron->Probability <= WeightMin)  return(-1.0);
+
+#ifdef VT_GRAPH
+  if (do_visualise)
+  {
+    double tempx, tempy;
+
+    /* set point */
+
     if (LenseForOutVis == 0)
     {
-      cpgsci(5); 
-      tempx = ThisNeutron->Position[0]; 
-      tempy = ThisNeutron->Position[2]; 
-      cpgpt1( (float) tempx,(float) tempy,-2 ); 	    
+      cpgsci(5);
+      tempx = ThisNeutron->Position[0];
+      tempy = ThisNeutron->Position[2];
+      cpgpt1( (float) tempx,(float) tempy,-2 );
     }
     else
     {
       if ( CurrentLense == LenseForOutVis )
       {
-        cpgsci(5); 
-        tempx = ThisNeutron->Position[0]; 
-        tempy = ThisNeutron->Position[2]; 
-        cpgpt1( (float) tempx,(float) tempy,-2 ); 	       
+        cpgsci(5);
+        tempx = ThisNeutron->Position[0];
+        tempy = ThisNeutron->Position[2];
+        cpgpt1( (float) tempx,(float) tempy,-2 );
       }
     }
-  } 
-#endif 
+  }
+#endif
 
-  if( ServiceInfoK == 1 ) 
+  if( ServiceInfoK == 1 )
   {
     if (LenseForOut == 0)
     {
-      fprintf(COLLFILE, " %ld  %12.5f  %12.5f  %12.5f  %d \n", 
-      CurrentLense, 
-      ThisNeutron->Position[0], 
-      ThisNeutron->Position[1], 
-      ThisNeutron->Position[2], 
-      ThisNeutron->Color);      
+      fprintf(COLLFILE, " %ld  %12.5f  %12.5f  %12.5f  %d \n",
+      CurrentLense,
+      ThisNeutron->Position[0],
+      ThisNeutron->Position[1],
+      ThisNeutron->Position[2],
+      ThisNeutron->Color);
     }
     else
     {
       if ( CurrentLense == LenseForOut )
       {
-        fprintf(COLLFILE, " %ld  %12.5f  %12.5f  %12.5f  %d \n", 
-        CurrentLense, 
-        ThisNeutron->Position[0], 
-        ThisNeutron->Position[1], 
-        ThisNeutron->Position[2], 
-        ThisNeutron->Color);      	       
+        fprintf(COLLFILE, " %ld  %12.5f  %12.5f  %12.5f  %d \n",
+        CurrentLense,
+        ThisNeutron->Position[0],
+        ThisNeutron->Position[1],
+        ThisNeutron->Position[2],
+        ThisNeutron->Color);
       }
     }
-  }   	        
-      
-  /* refraction at the exit surface */    
+  }
+
+  /* refraction at the exit surface */
   temp = MakeRefract(ThisNeutron, MyLense, (1.0/Refr), surfacerough, 1);
-  if (temp == -1.0) return(-1.0); 
-      
-  /* check the neutron inside cylinder, otherwise neutron loss  */ 
-  signl = 
-    MyLense.Surf[2].A*ThisNeutron->Position[0]*ThisNeutron->Position[0] + 
-    MyLense.Surf[2].B*ThisNeutron->Position[0] + 
-    MyLense.Surf[2].C*ThisNeutron->Position[1]*ThisNeutron->Position[1]+ 
-    MyLense.Surf[2].D*ThisNeutron->Position[1] + 
-    MyLense.Surf[2].E*ThisNeutron->Position[2]*ThisNeutron->Position[2]+ 
-    MyLense.Surf[2].F*ThisNeutron->Position[2] + 
-    MyLense.Surf[2].W + 
-    MyLense.Surf[2].P*ThisNeutron->Position[0]*ThisNeutron->Position[1]+ 
-    MyLense.Surf[2].Q*ThisNeutron->Position[1]*ThisNeutron->Position[2]+ 
-    MyLense.Surf[2].R*ThisNeutron->Position[2]*ThisNeutron->Position[0] ; 
-    
-  /* particle outside cylinder surface */ 
-  if ((signl) >= 0.0) return(-1.0);        
+  if (temp == -1.0) return(-1.0);
+
+  /* check the neutron inside cylinder, otherwise neutron loss  */
+  signl =
+    MyLense.Surf[2].A*ThisNeutron->Position[0]*ThisNeutron->Position[0] +
+    MyLense.Surf[2].B*ThisNeutron->Position[0] +
+    MyLense.Surf[2].C*ThisNeutron->Position[1]*ThisNeutron->Position[1]+
+    MyLense.Surf[2].D*ThisNeutron->Position[1] +
+    MyLense.Surf[2].E*ThisNeutron->Position[2]*ThisNeutron->Position[2]+
+    MyLense.Surf[2].F*ThisNeutron->Position[2] +
+    MyLense.Surf[2].W +
+    MyLense.Surf[2].P*ThisNeutron->Position[0]*ThisNeutron->Position[1]+
+    MyLense.Surf[2].Q*ThisNeutron->Position[1]*ThisNeutron->Position[2]+
+    MyLense.Surf[2].R*ThisNeutron->Position[2]*ThisNeutron->Position[0] ;
+
+  /* particle outside cylinder surface */
+  if ((signl) >= 0.0) return(-1.0);
 
   /* neutron is out of lense */
   /* transport neutrons into output plane */
 
   TimeOF = NeutronSurfaceSecIntersectionGrav(ThisNeutron, MyLense.Surf[3], keyGrav);
-  if (TimeOF <= 0.0) return(-1.0);      
-  TimeOFTotal = TimeOFTotal + TimeOF; 
+  if (TimeOF <= 0.0) return(-1.0);
+  TimeOFTotal = TimeOFTotal + TimeOF;
 
-#ifdef VT_GRAPH 
-  if (do_visualise) 
-  { 
-    double tempx, tempy; 
-    /* set point */ 
-     
+#ifdef VT_GRAPH
+  if (do_visualise)
+  {
+    double tempx, tempy;
+    /* set point */
+
     if (LenseForOutVis == 0)
     {
-      cpgsci(3); 
-      tempx = ThisNeutron->Position[0]; 
-      tempy = ThisNeutron->Position[2]; 
-      cpgpt1( (float) tempx,(float) tempy,-2 );         
+      cpgsci(3);
+      tempx = ThisNeutron->Position[0];
+      tempy = ThisNeutron->Position[2];
+      cpgpt1( (float) tempx,(float) tempy,-2 );
     }
     else
     {
       if ( CurrentLense == LenseForOutVis )
       {
-        cpgsci(3); 
-        tempx = ThisNeutron->Position[0]; 
-        tempy = ThisNeutron->Position[2]; 
-        cpgpt1( (float) tempx,(float) tempy,-2 );             
+        cpgsci(3);
+        tempx = ThisNeutron->Position[0];
+        tempy = ThisNeutron->Position[2];
+        cpgpt1( (float) tempx,(float) tempy,-2 );
       }
     }
-  } 
-#endif       
- 
+  }
+#endif
+
   ThisNeutron->Position[0] = ThisNeutron->Position[0]  - TransOut[0];
-      
+
   return(TimeOFTotal);
-} 
+}
 
 
 /****************************************************************/
 /* Function for refraction procedure                            */
-/*         (refraction formula has taken from wikipedia)        */    
+/*         (refraction formula has taken from wikipedia)        */
 /****************************************************************/
 double MakeRefract(Neutron *ThisNeutron, LenseSecond MyLense, double Refr, double surfacerough, long sn)
-{   
+{
   double AP, BP, CP, FP, DOTP, DOTPnew;
   double coss, cossn, cossn1, sinn, temp;
- 
-  /* illegal velocity */ 
+
+  /* illegal velocity */
   if (ThisNeutron->Vector[0] < 0.0)  return(-1.0);
-    
+
   /* No refraction -> any velocity components change */
   if (Refr == 1.0) return(1.0);
   /* Refr - ratio(new/old) of indices of refraction */
-	    
-  /* calculate the normal vector in surface which will be refracted/reflected 
-     sn - is the number of surface in lense */ 
- 
-  AP = 2.0*MyLense.Surf[sn].A*ThisNeutron->Position[0] 
-         + MyLense.Surf[sn].B 
-         + MyLense.Surf[sn].P*ThisNeutron->Position[1] 
-         + MyLense.Surf[sn].R*ThisNeutron->Position[2]; 
- 
- 
-  BP = 2.0*MyLense.Surf[sn].C*ThisNeutron->Position[1] 
-         + MyLense.Surf[sn].D 
-         + MyLense.Surf[sn].P*ThisNeutron->Position[0] 
-         + MyLense.Surf[sn].Q*ThisNeutron->Position[2]; 
- 
- 
-  CP = 2.0*MyLense.Surf[sn].E*ThisNeutron->Position[2] 
-         + MyLense.Surf[sn].F 
-         + MyLense.Surf[sn].Q*ThisNeutron->Position[1] 
-         + MyLense.Surf[sn].R*ThisNeutron->Position[0]; 
- 
- 
-  /* Normalize normale vector to the reflection plane */	 
- 
-  FP = sqrt(AP*AP + BP*BP + CP*CP); 
-  /*	FP = -1.0*FP; */
-  if (FP == 0.0) return(-1.0); 
-  AP = AP/FP; 
-  BP = BP/FP; 
-  CP = CP/FP; 
-  
-  /* influence of rough surface */		 
+
+  /* calculate the normal vector in surface which will be refracted/reflected
+     sn - is the number of surface in lense */
+
+  AP = 2.0*MyLense.Surf[sn].A*ThisNeutron->Position[0]
+         + MyLense.Surf[sn].B
+         + MyLense.Surf[sn].P*ThisNeutron->Position[1]
+         + MyLense.Surf[sn].R*ThisNeutron->Position[2];
+
+
+  BP = 2.0*MyLense.Surf[sn].C*ThisNeutron->Position[1]
+         + MyLense.Surf[sn].D
+         + MyLense.Surf[sn].P*ThisNeutron->Position[0]
+         + MyLense.Surf[sn].Q*ThisNeutron->Position[2];
+
+
+  CP = 2.0*MyLense.Surf[sn].E*ThisNeutron->Position[2]
+         + MyLense.Surf[sn].F
+         + MyLense.Surf[sn].Q*ThisNeutron->Position[1]
+         + MyLense.Surf[sn].R*ThisNeutron->Position[0];
+
+
+  /* Normalize normale vector to the reflection plane */
+
+  FP = sqrt(AP*AP + BP*BP + CP*CP);
+  /*  FP = -1.0*FP; */
+  if (FP == 0.0) return(-1.0);
+  AP = AP/FP;
+  BP = BP/FP;
+  CP = CP/FP;
+
+  /* influence of rough surface */
   temp = SurfaceRough(&AP, &BP, &CP, surfacerough) ;
-  if (temp == -1.0) return(-1.0); 
-	
+  if (temp == -1.0) return(-1.0);
+
   /* Velocity components normalisation */
-  DOTP = ThisNeutron->Vector[0]*ThisNeutron->Vector[0] + 
-    ThisNeutron->Vector[1]*ThisNeutron->Vector[1] + 
-    ThisNeutron->Vector[2]*ThisNeutron->Vector[2];   
-  DOTP = sqrt(DOTP);       
-  if (DOTP == 0.0) return(-1.0);               
-  ThisNeutron->Vector[0] = (ThisNeutron->Vector[0]/DOTP); 
-  ThisNeutron->Vector[1] = (ThisNeutron->Vector[1]/DOTP); 
-  ThisNeutron->Vector[2] = (ThisNeutron->Vector[2]/DOTP);		 
-	
-  coss =  AP*ThisNeutron->Vector[0] 
-        + BP*ThisNeutron->Vector[1] 
-        + CP*ThisNeutron->Vector[2]; /* scalar production -> cos angle of incidence */       
-	
+  DOTP = ThisNeutron->Vector[0]*ThisNeutron->Vector[0] +
+    ThisNeutron->Vector[1]*ThisNeutron->Vector[1] +
+    ThisNeutron->Vector[2]*ThisNeutron->Vector[2];
+  DOTP = sqrt(DOTP);
+  if (DOTP == 0.0) return(-1.0);
+  ThisNeutron->Vector[0] = (ThisNeutron->Vector[0]/DOTP);
+  ThisNeutron->Vector[1] = (ThisNeutron->Vector[1]/DOTP);
+  ThisNeutron->Vector[2] = (ThisNeutron->Vector[2]/DOTP);
+
+  coss =  AP*ThisNeutron->Vector[0]
+        + BP*ThisNeutron->Vector[1]
+        + CP*ThisNeutron->Vector[2]; /* scalar production -> cos angle of incidence */
+
   /* No refraction: vectors of velocity and of normal are colinnear
      scalar production = +/- 1.0 -> Moving later : for lense */
-  if (fabs(coss) == 1.0) return(1.0);      
-	
+  if (fabs(coss) == 1.0) return(1.0);
+
   /* No refraction: vectors of velocity and of normal are perpindicular
      scalar production = 0.0  -> disregard such neutron */
   if (fabs(coss) == 0.0) return(-1.0);
-               
+
   /*        fprintf(LogFilePtr,"====================================\n");
-	    fprintf(LogFilePtr,"00 cos of incidence = %f acos = %f velmod = %f \n", coss, acos(coss), DOTP);	   */
-	
+      fprintf(LogFilePtr,"00 cos of incidence = %f acos = %f velmod = %f \n", coss, acos(coss), DOTP);
+   */
+
   if (Refr > 0.0)
   {
     sinn = (1.0 - coss*coss)/Refr/Refr ; /* square of sine of refr. angle*/
-    if (sinn < 1.0) 
+    if (sinn < 1.0)
     {
       /* refraction */
       cossn = sqrt(1.0 - sinn); /* cos angle of refraction */
-	        	    
-      /*	        	    OLD kind of ident: if (coss < 0.0)  cossn = -1.0*cossn ;  if cos angle of refraction negative */
-                            
+
+      /*                OLD kind of ident: if (coss < 0.0)  cossn = -1.0*cossn ;  if cos angle of refraction negative */
+
       if (coss > 0.0)  /* new kind of identification */
       {
-        ThisNeutron->Vector[0] = (ThisNeutron->Vector[0]/Refr) + AP*(cossn - (coss/Refr));         	   
-        ThisNeutron->Vector[1] = (ThisNeutron->Vector[1]/Refr) + BP*(cossn - (coss/Refr)); 
-        ThisNeutron->Vector[2] = (ThisNeutron->Vector[2]/Refr) + CP*(cossn - (coss/Refr));		 
+        ThisNeutron->Vector[0] = (ThisNeutron->Vector[0]/Refr) + AP*(cossn - (coss/Refr));
+        ThisNeutron->Vector[1] = (ThisNeutron->Vector[1]/Refr) + BP*(cossn - (coss/Refr));
+        ThisNeutron->Vector[2] = (ThisNeutron->Vector[2]/Refr) + CP*(cossn - (coss/Refr));
       }
       else
       {
-        ThisNeutron->Vector[0] = (ThisNeutron->Vector[0]/Refr) - AP*(cossn + (coss/Refr));         	   
-        ThisNeutron->Vector[1] = (ThisNeutron->Vector[1]/Refr) - BP*(cossn + (coss/Refr)); 
-        ThisNeutron->Vector[2] = (ThisNeutron->Vector[2]/Refr) - CP*(cossn + (coss/Refr));		
+        ThisNeutron->Vector[0] = (ThisNeutron->Vector[0]/Refr) - AP*(cossn + (coss/Refr));
+        ThisNeutron->Vector[1] = (ThisNeutron->Vector[1]/Refr) - BP*(cossn + (coss/Refr));
+        ThisNeutron->Vector[2] = (ThisNeutron->Vector[2]/Refr) - CP*(cossn + (coss/Refr));
       }
-		    
+
       /* Velocity normalisation after refraction*/
-			    
-      DOTPnew = ThisNeutron->Vector[0]*ThisNeutron->Vector[0] + 
-      ThisNeutron->Vector[1]*ThisNeutron->Vector[1] + 
-      ThisNeutron->Vector[2]*ThisNeutron->Vector[2];   
-      DOTPnew = sqrt(DOTPnew);               	 
-      if (DOTPnew == 0.0) return(-1.0);          
-      ThisNeutron->Vector[0] = (ThisNeutron->Vector[0]/DOTPnew); 
-      ThisNeutron->Vector[1] = (ThisNeutron->Vector[1]/DOTPnew); 
-      ThisNeutron->Vector[2] = (ThisNeutron->Vector[2]/DOTPnew);		 
-      cossn1 = AP*ThisNeutron->Vector[0] + BP*ThisNeutron->Vector[1] + 
-      CP*ThisNeutron->Vector[2]; 
-		                       
-      /*        			fprintf(LogFilePtr,"1 cos of refraction = %f acos = %f   Refr = %f  \n", cossn, acos(cossn), Refr);
-      fprintf(LogFilePtr,"2 cos of refraction = %f acos = %f velmodnew = %f  \n", cossn1, acos(cossn1), DOTPnew);		    
-      fprintf(LogFilePtr,"----------------------------------------\n");	                  */
+
+      DOTPnew = ThisNeutron->Vector[0]*ThisNeutron->Vector[0] +
+      ThisNeutron->Vector[1]*ThisNeutron->Vector[1] +
+      ThisNeutron->Vector[2]*ThisNeutron->Vector[2];
+      DOTPnew = sqrt(DOTPnew);
+      if (DOTPnew == 0.0) return(-1.0);
+      ThisNeutron->Vector[0] = (ThisNeutron->Vector[0]/DOTPnew);
+      ThisNeutron->Vector[1] = (ThisNeutron->Vector[1]/DOTPnew);
+      ThisNeutron->Vector[2] = (ThisNeutron->Vector[2]/DOTPnew);
+      cossn1 = AP*ThisNeutron->Vector[0] + BP*ThisNeutron->Vector[1] +
+      CP*ThisNeutron->Vector[2];
+
+      /*              fprintf(LogFilePtr,"1 cos of refraction = %f acos = %f   Refr = %f  \n", cossn, acos(cossn), Refr);
+      fprintf(LogFilePtr,"2 cos of refraction = %f acos = %f velmodnew = %f  \n", cossn1, acos(cossn1), DOTPnew);
+      fprintf(LogFilePtr,"----------------------------------------\n");
+      */
     }
     else
     {
       /* Critical angle reflection */
-		    
-      coss = AP*ThisNeutron->Vector[0] + BP*ThisNeutron->Vector[1] + 
-      CP*ThisNeutron->Vector[2]; 
-      ThisNeutron->Vector[0] = ThisNeutron->Vector[0] - 2.0*coss*AP; 
-      ThisNeutron->Vector[1] = ThisNeutron->Vector[1] - 2.0*coss*BP; 
-      ThisNeutron->Vector[2] = ThisNeutron->Vector[2] - 2.0*coss*CP;		 
+
+      coss = AP*ThisNeutron->Vector[0] + BP*ThisNeutron->Vector[1] +
+      CP*ThisNeutron->Vector[2];
+      ThisNeutron->Vector[0] = ThisNeutron->Vector[0] - 2.0*coss*AP;
+      ThisNeutron->Vector[1] = ThisNeutron->Vector[1] - 2.0*coss*BP;
+      ThisNeutron->Vector[2] = ThisNeutron->Vector[2] - 2.0*coss*CP;
       fprintf(LogFilePtr,"WARNING: critical angle reflection takes place \n");
     }
   }
   else
   {
       /* refraction coeff <= 0.0 ->>> reflection */
-      coss =  AP*ThisNeutron->Vector[0] 
-            + BP*ThisNeutron->Vector[1] 
-            + CP*ThisNeutron->Vector[2]; 
-      ThisNeutron->Vector[0] = ThisNeutron->Vector[0] - 2.0*coss*AP; 
-      ThisNeutron->Vector[1] = ThisNeutron->Vector[1] - 2.0*coss*BP; 
-      ThisNeutron->Vector[2] = ThisNeutron->Vector[2] - 2.0*coss*CP;		 
+      coss =  AP*ThisNeutron->Vector[0]
+            + BP*ThisNeutron->Vector[1]
+            + CP*ThisNeutron->Vector[2];
+      ThisNeutron->Vector[0] = ThisNeutron->Vector[0] - 2.0*coss*AP;
+      ThisNeutron->Vector[1] = ThisNeutron->Vector[1] - 2.0*coss*BP;
+      ThisNeutron->Vector[2] = ThisNeutron->Vector[2] - 2.0*coss*CP;
       fprintf(LogFilePtr,"WARNING: reflection takes place on negative refraction coeff. \n");
   }
-    
-  return(1.0);    
+
+  return(1.0);
 }
 
 
@@ -540,46 +542,46 @@ double NeutronMove(Neutron *ThisNeutron, double Time)
 
   double  VelocityReal;
   double  NewWavelength, OldWavelength, DOTP, DOTPnew;
-		
-  /*	Make the koefficients of quadratic equation    */
-  /*	G = 9.8 m/c**2, we need to cm/ms**2 (100/1000/1000)  */
-  /*	Velocity cm/ms, Time ms, Position cm	*/
 
-  /*	Calculating real velocity, cm/ms  */
-		
+  /*  Make the koefficients of quadratic equation    */
+  /*  G = 9.8 m/c**2, we need to cm/ms**2 (100/1000/1000)  */
+  /*  Velocity cm/ms, Time ms, Position cm  */
+
+  /*  Calculating real velocity, cm/ms  */
+
   VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength));
   OldWavelength = ThisNeutron->Wavelength ;
   if (Time <= 0.0) return(-1.0);
-		
+
   ThisNeutron->Position[0] = ThisNeutron->Position[0] + VelocityReal*Time*(ThisNeutron->Vector[0]);
   ThisNeutron->Position[1] = ThisNeutron->Position[1] + VelocityReal*Time*(ThisNeutron->Vector[1]);
   ThisNeutron->Position[2] = ThisNeutron->Position[2] + VelocityReal*Time*(ThisNeutron->Vector[2]);
   ThisNeutron->Position[2] = ThisNeutron->Position[2] - 0.5*(G*1.0e-4)*Time*Time;
-				
+
   DOTP = ThisNeutron->Vector[0]*ThisNeutron->Vector[0] +
          ThisNeutron->Vector[1]*ThisNeutron->Vector[1] +
          ThisNeutron->Vector[2]*ThisNeutron->Vector[2] ;
-		
+
   DOTP = sqrt(DOTP);
   if (DOTP == 0.0) return(-1.0);
-		
-  ThisNeutron->Vector[0] = (ThisNeutron->Vector[0])*VelocityReal ;	
+
+  ThisNeutron->Vector[0] = (ThisNeutron->Vector[0])*VelocityReal ;
   ThisNeutron->Vector[1] = (ThisNeutron->Vector[1])*VelocityReal ;
-  ThisNeutron->Vector[2] = (ThisNeutron->Vector[2])*VelocityReal - ((G*1.0e-4)*Time) ;	
-	
+  ThisNeutron->Vector[2] = (ThisNeutron->Vector[2])*VelocityReal - ((G*1.0e-4)*Time) ;
+
   DOTPnew = ThisNeutron->Vector[0]*ThisNeutron->Vector[0] +
             ThisNeutron->Vector[1]*ThisNeutron->Vector[1] +
             ThisNeutron->Vector[2]*ThisNeutron->Vector[2] ;
-		
+
   DOTPnew = sqrt(DOTPnew);
   if (DOTPnew == 0.0) return(-1.0);
 
   NewWavelength = LAMBDA_FROM_V(DOTPnew);
-  ThisNeutron->Wavelength	= NewWavelength;	
-  ThisNeutron->Vector[0] = (ThisNeutron->Vector[0])/DOTPnew ;	
+  ThisNeutron->Wavelength  = NewWavelength;
+  ThisNeutron->Vector[0] = (ThisNeutron->Vector[0])/DOTPnew ;
   ThisNeutron->Vector[1] = (ThisNeutron->Vector[1])/DOTPnew ;
   ThisNeutron->Vector[2] = (ThisNeutron->Vector[2])/DOTPnew ;
-	
+
   return(1.0);
 }
 
@@ -590,24 +592,24 @@ double NeutronMove(Neutron *ThisNeutron, double Time)
 double SurfaceRough(double *AP, double *BP, double *CP, double surfacerough)
 {
   double VX, VY, VZ, FP;
-      
+
   /* check datas */
   if (surfacerough == 0.0) return(1.0);
-  if (surfacerough < 0.0)  surfacerough = fabs(surfacerough);   
-	  
+  if (surfacerough < 0.0)  surfacerough = fabs(surfacerough);
+
   // len = vector3rand(&VX, &VY, &VZ);
   gsl_ran_dir_3d( vit_gsl_rng, &VX, &VY, &VZ);
-  /*fprintf(LogFilePtr,"vx vy vz %f  %f  %f  %f  %f \n",VX,VY,VZ,len,surfacerough);*/		 
-  *AP = *AP + surfacerough*VX; 
-  *BP = *BP + surfacerough*VY; 
-  *CP = *CP + surfacerough*VZ; 
+  /*fprintf(LogFilePtr,"vx vy vz %f  %f  %f  %f  %f \n",VX,VY,VZ,len,surfacerough);*/
+  *AP = *AP + surfacerough*VX;
+  *BP = *BP + surfacerough*VY;
+  *CP = *CP + surfacerough*VZ;
 
-  /* Renormalize normale vector to the reflection plane */	 
-  FP = sqrt((*AP)*(*AP) + (*BP)*(*BP) + (*CP)*(*CP)); 
-  if (FP == 0.0) return(-1.0); 
-  *AP = *AP/FP; 
-  *BP = *BP/FP; 
-  *CP = *CP/FP; 
+  /* Renormalize normale vector to the reflection plane */
+  FP = sqrt((*AP)*(*AP) + (*BP)*(*BP) + (*CP)*(*CP));
+  if (FP == 0.0) return(-1.0);
+  *AP = *AP/FP;
+  *BP = *BP/FP;
+  *CP = *CP/FP;
   return(1.0);
 }
 
@@ -618,34 +620,34 @@ double SurfaceRough(double *AP, double *BP, double *CP, double surfacerough)
 double NeutronSurfaceSecIntersectionGrav(Neutron *ThisNeutron, SurfaceSecond ThisSurfaceSecond, long keyGrav)
 {
   // This part calculates the time of flight of the neutron to the plane INCLUDING gravity
-  // This functions is a core part of the neutron transporting neutrons!								
+  // This functions is a core part of the neutron transporting neutrons!
 
   double  Time, AA, BB, CC, VelocityReal;
   double  VX, VY, VZ, X, Y, Z;
   double  NewWavelength, OldWavelength, DOTP, DOTPnew;
-		
-  /*	Make the koefficients of quadratic equation    */
-  /*	G = 9.8 m/c**2, we need to cm/ms**2 (100/1000/1000)  */
-  /*	Velocity cm/ms, Time ms, Position cm	*/
 
-  /*	Calculating real velocity, cm/ms  */
-		
+  /*  Make the koefficients of quadratic equation    */
+  /*  G = 9.8 m/c**2, we need to cm/ms**2 (100/1000/1000)  */
+  /*  Velocity cm/ms, Time ms, Position cm  */
+
+  /*  Calculating real velocity, cm/ms  */
+
   VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength));
   OldWavelength = ThisNeutron->Wavelength ;
-		
-  /*	Components of velocity, projections, and position coordinats */
-  /*	Local copy */
-		
+
+  /*  Components of velocity, projections, and position coordinats */
+  /*  Local copy */
+
   X = ThisNeutron->Position[0];
   Y = ThisNeutron->Position[1];
   Z = ThisNeutron->Position[2];
-		
+
   VX = VelocityReal*ThisNeutron->Vector[0];
   VY = VelocityReal*ThisNeutron->Vector[1];
   VZ = VelocityReal*ThisNeutron->Vector[2];
-		
-  /*	Find the coefficients of the quadratic equation */	
-		
+
+  /*  Find the coefficients of the quadratic equation */
+
   if (keyGrav == 1)
   {
     if ((ThisSurfaceSecond.A == 0.0) && (ThisSurfaceSecond.C == 0.0) &&
@@ -653,7 +655,7 @@ double NeutronSurfaceSecIntersectionGrav(Neutron *ThisNeutron, SurfaceSecond Thi
         (ThisSurfaceSecond.Q == 0.0) && (ThisSurfaceSecond.R == 0.0))
     {
       AA = -0.5*(G*1.0e-4)*ThisSurfaceSecond.F;
-    }	
+    }
     else
     {
       return(-1.0);
@@ -675,15 +677,15 @@ double NeutronSurfaceSecIntersectionGrav(Neutron *ThisNeutron, SurfaceSecond Thi
             ThisSurfaceSecond.P*(X*VY+Y*VX) +
             ThisSurfaceSecond.Q*(Y*VZ+Z*VY) +
             ThisSurfaceSecond.R*(X*VZ+Z*VX);
-	
+
 
   CC = ThisSurfaceSecond.A*X*X + ThisSurfaceSecond.B*X+
        ThisSurfaceSecond.C*Y*Y + ThisSurfaceSecond.D*Y+
        ThisSurfaceSecond.E*Z*Z + ThisSurfaceSecond.F*Z + ThisSurfaceSecond.W +
        ThisSurfaceSecond.P*X*Y + ThisSurfaceSecond.Q*Y*Z + ThisSurfaceSecond.R*X*Z;
 
-	
-  //	fprintf(LogFilePtr,"AA = %f  BB = %f  CC = %f  \n", AA, BB, CC);
+
+  //  fprintf(LogFilePtr,"AA = %f  BB = %f  CC = %f  \n", AA, BB, CC);
 
   /***********************************************************************************/
   /* Now we must solve a quadratic equation to get the time */
@@ -692,7 +694,7 @@ double NeutronSurfaceSecIntersectionGrav(Neutron *ThisNeutron, SurfaceSecond Thi
 
   Time = SolveQuadraticEq(AA,BB,CC);
   if (Time <= 0.0) return(-1.0);
-		
+
 
   ThisNeutron->Position[0] = ThisNeutron->Position[0] + VelocityReal*Time*(ThisNeutron->Vector[0]);
   ThisNeutron->Position[1] = ThisNeutron->Position[1] + VelocityReal*Time*(ThisNeutron->Vector[1]);
@@ -700,41 +702,41 @@ double NeutronSurfaceSecIntersectionGrav(Neutron *ThisNeutron, SurfaceSecond Thi
 
   /* Include gravity */
   if (keyGrav == 1)
-  {	
+  {
     ThisNeutron->Position[2] = ThisNeutron->Position[2] - 0.5*(G*1.0e-4)*Time*Time;
-				
-    /*OLD:		ThisNeutron->Vector[2] = ThisNeutron->Vector[2] - ((G*1.0e-4)*Time/VelocityReal);	*/	
-	
+
+    /*OLD:    ThisNeutron->Vector[2] = ThisNeutron->Vector[2] - ((G*1.0e-4)*Time/VelocityReal);  */
+
     DOTP = ThisNeutron->Vector[0]*ThisNeutron->Vector[0] +
            ThisNeutron->Vector[1]*ThisNeutron->Vector[1] +
            ThisNeutron->Vector[2]*ThisNeutron->Vector[2] ;
-		
+
     DOTP = sqrt(DOTP);
     if (DOTP == 0.0) return(-1.0);
-		
-    //		fprintf(LogFilePtr,"DOTPold = %f VelocityReal = %f \n", DOTP, VelocityReal);	
-	
-    ThisNeutron->Vector[0] = (ThisNeutron->Vector[0])*VelocityReal ;	
+
+    //    fprintf(LogFilePtr,"DOTPold = %f VelocityReal = %f \n", DOTP, VelocityReal);
+
+    ThisNeutron->Vector[0] = (ThisNeutron->Vector[0])*VelocityReal ;
     ThisNeutron->Vector[1] = (ThisNeutron->Vector[1])*VelocityReal ;
-    ThisNeutron->Vector[2] = (ThisNeutron->Vector[2])*VelocityReal - ((G*1.0e-4)*Time) ;	
-	
+    ThisNeutron->Vector[2] = (ThisNeutron->Vector[2])*VelocityReal - ((G*1.0e-4)*Time) ;
+
     DOTPnew = ThisNeutron->Vector[0]*ThisNeutron->Vector[0] +
               ThisNeutron->Vector[1]*ThisNeutron->Vector[1] +
               ThisNeutron->Vector[2]*ThisNeutron->Vector[2] ;
-		
+
     DOTPnew = sqrt(DOTPnew);
     if (DOTPnew == 0.0) return(-1.0);
-	
+
     NewWavelength = LAMBDA_FROM_V(DOTPnew);
-	
-    //		fprintf(LogFilePtr,"DOTPnew = %f  Wave_old = %f  Wave_new = %f \n", DOTPnew, OldWavelength, NewWavelength);
-    //		fprintf(LogFilePtr,"---------------------------------------------------\n");
-		
-    ThisNeutron->Wavelength	= NewWavelength;	
-    ThisNeutron->Vector[0] = (ThisNeutron->Vector[0])/DOTPnew ;	
+
+    //    fprintf(LogFilePtr,"DOTPnew = %f  Wave_old = %f  Wave_new = %f \n", DOTPnew, OldWavelength, NewWavelength);
+    //    fprintf(LogFilePtr,"---------------------------------------------------\n");
+
+    ThisNeutron->Wavelength  = NewWavelength;
+    ThisNeutron->Vector[0] = (ThisNeutron->Vector[0])/DOTPnew ;
     ThisNeutron->Vector[1] = (ThisNeutron->Vector[1])/DOTPnew ;
     ThisNeutron->Vector[2] = (ThisNeutron->Vector[2])/DOTPnew ;
-	
+
   }
   /* return Time; ms */
 
@@ -751,46 +753,46 @@ double NeutronSurfaceSecIntersectionGravLen(Neutron *ThisNeutron, SurfaceSecond 
   double  TimeInit, TimeInit1, TimeCalc, diss, disscalc, di;
   double  VX, VY, VZ, X, Y, Z;
   double  Xnew, Ynew, Znew, AP, BP, CP, FP;
-  long	countt, countt_more, countt_less;
+  long  countt, countt_more, countt_less;
   SurfaceSecond NormalPlane ;
   Neutron TempNeutron, TempNeutron1 ;
-		
-  /* Some constants */	
+
+  /* Some constants */
   diss = 0.01; /* in cm */
   countt_more = 50;
   countt_less = 500;
   TimeCalc = 0.0; /* total time of flight -> returned by the func */
-	
-  countt = 1; /* variable for while cycles */
-	
-  /*	Make the koefficients of quadratic equation    */
-  /*	G = 9.8 m/c**2, we need to cm/ms**2 (100/1000/1000)  */
-  /*	Velocity cm/ms, Time ms, Position cm	*/
 
-  /*	Calculating real velocity, cm/ms  */
-		
-	
+  countt = 1; /* variable for while cycles */
+
+  /*  Make the koefficients of quadratic equation    */
+  /*  G = 9.8 m/c**2, we need to cm/ms**2 (100/1000/1000)  */
+  /*  Velocity cm/ms, Time ms, Position cm  */
+
+  /*  Calculating real velocity, cm/ms  */
+
+
   VelocityReal = (double)(V_FROM_LAMBDA(ThisNeutron->Wavelength));
   if (VelocityReal == 0.0) return(-1.0);
-		
-  /*	Components of velocity, projections, and position coordinats */
-  /*	Local copy */
-		
+
+  /*  Components of velocity, projections, and position coordinats */
+  /*  Local copy */
+
   X = ThisNeutron->Position[0];
   Y = ThisNeutron->Position[1];
   Z = ThisNeutron->Position[2];
-		
+
   VX = VelocityReal*ThisNeutron->Vector[0];
   VY = VelocityReal*ThisNeutron->Vector[1];
   VZ = VelocityReal*ThisNeutron->Vector[2];
 
 
   /* First task: find the coordinates of the point, where the current neutron path is crossed with
-     surface WITHOUT gravity	*/		
-   
-  /*	Find the coefficients of the quadratic equation */	
-		
-	    
+     surface WITHOUT gravity  */
+
+  /*  Find the coefficients of the quadratic equation */
+
+
   AA = ThisSurfaceSecond.A*VX*VX +
        ThisSurfaceSecond.C*VY*VY +
        ThisSurfaceSecond.E*VZ*VZ +
@@ -803,50 +805,50 @@ double NeutronSurfaceSecIntersectionGravLen(Neutron *ThisNeutron, SurfaceSecond 
             ThisSurfaceSecond.P*(X*VY+Y*VX) +
             ThisSurfaceSecond.Q*(Y*VZ+Z*VY) +
             ThisSurfaceSecond.R*(X*VZ+Z*VX);
-	
+
   CC = ThisSurfaceSecond.A*X*X + ThisSurfaceSecond.B*X+
        ThisSurfaceSecond.C*Y*Y + ThisSurfaceSecond.D*Y+
        ThisSurfaceSecond.E*Z*Z + ThisSurfaceSecond.F*Z + ThisSurfaceSecond.W +
        ThisSurfaceSecond.P*X*Y + ThisSurfaceSecond.Q*Y*Z + ThisSurfaceSecond.R*X*Z;
-  
+
   Time = SolveQuadraticEq(AA,BB,CC);
   if (Time <= 0.0) return(-1.0);
-		
+
   Xnew = ThisNeutron->Position[0] + VelocityReal*Time*(ThisNeutron->Vector[0]);
   Ynew = ThisNeutron->Position[1] + VelocityReal*Time*(ThisNeutron->Vector[1]);
   Znew = ThisNeutron->Position[2] + VelocityReal*Time*(ThisNeutron->Vector[2]);
 
-  /* Cross Point (Xnew, Ynew, Znew) is found, next step is to find the equation of the plane, 
-     perpindicular of this point -> calculate the normal	 */
+  /* Cross Point (Xnew, Ynew, Znew) is found, next step is to find the equation of the plane,
+     perpindicular of this point -> calculate the normal   */
 
-  AP = 2.0*ThisSurfaceSecond.A*Xnew 
-          + ThisSurfaceSecond.B 
+  AP = 2.0*ThisSurfaceSecond.A*Xnew
+          + ThisSurfaceSecond.B
           + ThisSurfaceSecond.P*Ynew
-          + ThisSurfaceSecond.R*Znew; 
- 
- 
+          + ThisSurfaceSecond.R*Znew;
+
+
   BP = 2.0*ThisSurfaceSecond.C*Ynew
-         + ThisSurfaceSecond.D 
+         + ThisSurfaceSecond.D
          + ThisSurfaceSecond.P*Xnew
-         + ThisSurfaceSecond.Q*Znew; 
- 
- 
+         + ThisSurfaceSecond.Q*Znew;
+
+
   CP = 2.0*ThisSurfaceSecond.E*Znew
-         + ThisSurfaceSecond.F 
+         + ThisSurfaceSecond.F
          + ThisSurfaceSecond.Q*Ynew
-         + ThisSurfaceSecond.R*Xnew; 
- 
- 
-  /* Normalize normale vector to the reflection plane */	 
-  FP = sqrt(AP*AP + BP*BP + CP*CP); 
-  if (FP == 0.0) return(-1.0); 
-  AP = AP/FP; 
-  BP = BP/FP; 
-  CP = CP/FP;   
-        
+         + ThisSurfaceSecond.R*Xnew;
+
+
+  /* Normalize normale vector to the reflection plane */
+  FP = sqrt(AP*AP + BP*BP + CP*CP);
+  if (FP == 0.0) return(-1.0);
+  AP = AP/FP;
+  BP = BP/FP;
+  CP = CP/FP;
+
   /* Normal vector (AP, BP, CP) is calculated */
 
-  /* Find the plane */	
+  /* Find the plane */
   NormalPlane.A = 0.0;
   NormalPlane.B = AP;
   NormalPlane.C = 0.0;
@@ -857,58 +859,58 @@ double NeutronSurfaceSecIntersectionGravLen(Neutron *ThisNeutron, SurfaceSecond 
   NormalPlane.P = 0.0;
   NormalPlane.Q = 0.0;
   NormalPlane.R = 0.0;
-    
+
 
   /* Move the neutron into plane WITH GRAVUTY  */
-  
-  CopyNeutron(ThisNeutron, &TempNeutron); 
-  Time1 = NeutronSurfaceSecIntersectionGrav(&TempNeutron, NormalPlane, 1); 
+
+  CopyNeutron(ThisNeutron, &TempNeutron);
+  Time1 = NeutronSurfaceSecIntersectionGrav(&TempNeutron, NormalPlane, 1);
   if (Time1 <= 0.0) return(-1.0);
   TimeInit = Time1;
-  disscalc = VelocityReal*TimeInit;                  
-  disscalc = 0.01*disscalc; 
+  disscalc = VelocityReal*TimeInit;
+  disscalc = 0.01*disscalc;
   if (disscalc >= diss) disscalc = diss;
   if (disscalc <= (0.01*diss)) disscalc = 50.0*disscalc;
-      
-  CopyNeutron(&TempNeutron, &TempNeutron1); 
-  Time2 = NeutronSurfaceSecIntersectionGrav(&TempNeutron1, ThisSurfaceSecond, 0);       
+
+  CopyNeutron(&TempNeutron, &TempNeutron1);
+  Time2 = NeutronSurfaceSecIntersectionGrav(&TempNeutron1, ThisSurfaceSecond, 0);
   Time22 = Time2;
 
   if (Time22 == 0.0)
   {
-    CopyNeutron(&TempNeutron, ThisNeutron); 
+    CopyNeutron(&TempNeutron, ThisNeutron);
     TimeCalc = TimeInit ;
     return(TimeCalc);
   }
 
-      
+
   if (Time22 > 0.0)
   {
     countt = 1 ;
-    TimeInit1 = TimeInit - (disscalc/VelocityReal);   
+    TimeInit1 = TimeInit - (disscalc/VelocityReal);
     /* protect TimeInit against negative value */
     while(TimeInit1 <= 0.0)
     {
-	    if (countt == countt_more) return(-1.0); /* protect agains cycling*/	    
-	    TimeInit1 = TimeInit - (disscalc/(((double)(countt))*VelocityReal));   
-	    countt++;
+      if (countt == countt_more) return(-1.0); /* protect agains cycling*/
+      TimeInit1 = TimeInit - (disscalc/(((double)(countt))*VelocityReal));
+      countt++;
     }
     TimeInit = TimeInit1 ;
-	    
-    CopyNeutron(ThisNeutron, &TempNeutron1); 
+
+    CopyNeutron(ThisNeutron, &TempNeutron1);
     di = NeutronMove(&TempNeutron1, TimeInit);
     if (di < 0.0) return(-1.0);
-    Time2 = NeutronSurfaceSecIntersectionGrav(&TempNeutron1, ThisSurfaceSecond, 0);                       
+    Time2 = NeutronSurfaceSecIntersectionGrav(&TempNeutron1, ThisSurfaceSecond, 0);
     if (Time2 <= 0.0) return(-1.0);
-    CopyNeutron(&TempNeutron1, ThisNeutron); 
-    /*              fprintf(LogFilePtr,"FINAL POINT :  Xfffff =  %f   Yffff =  %f  Zffff =  %f  Time2 = %f \n", TempNeutron1.Position[0], 
-		    TempNeutron1.Position[1], TempNeutron1.Position[2], Time22);      
-		    fprintf(LogFilePtr,"==================================================\n"); */
-    TimeCalc = TimeInit + Time2 ;  
+    CopyNeutron(&TempNeutron1, ThisNeutron);
+    /*              fprintf(LogFilePtr,"FINAL POINT :  Xfffff =  %f   Yffff =  %f  Zffff =  %f  Time2 = %f \n", TempNeutron1.Position[0],
+        TempNeutron1.Position[1], TempNeutron1.Position[2], Time22);
+        fprintf(LogFilePtr,"==================================================\n"); */
+    TimeCalc = TimeInit + Time2 ;
     return(TimeCalc);
   }
 
-      
+
   if (Time22 < 0.0)
   {
     countt = 1 ;
@@ -916,25 +918,24 @@ double NeutronSurfaceSecIntersectionGravLen(Neutron *ThisNeutron, SurfaceSecond 
     {
       //            fprintf(LogFilePtr,"Moving back: Cycle \n");
       /* decrease a time a litte bit step by step until time2 > 0.0 */
-      TimeInit = TimeInit - (disscalc/VelocityReal);   
+      TimeInit = TimeInit - (disscalc/VelocityReal);
       if ((TimeInit <= 0.0)&&(Time2 < 0.0)) return(-1.0);/* illegal time */
       if (countt == countt_less) return(-1.0); /* protect agains cycling*/
-      CopyNeutron(ThisNeutron, &TempNeutron1); 
+      CopyNeutron(ThisNeutron, &TempNeutron1);
       di = NeutronMove(&TempNeutron1, TimeInit);
       if (di < 0.0) return(-1.0);
-      Time2 = NeutronSurfaceSecIntersectionGrav(&TempNeutron1, ThisSurfaceSecond, 0);                   
+      Time2 = NeutronSurfaceSecIntersectionGrav(&TempNeutron1, ThisSurfaceSecond, 0);
       countt++;
     }
-    if (Time2 <= 0.0) return(-1.0);  
-    CopyNeutron(&TempNeutron1, ThisNeutron); 
-    /*              fprintf(LogFilePtr,"FINAL POINT :  Xfffff =  %f   Yffff =  %f  Zffff =  %f  Time2 = %f \n", TempNeutron1.Position[0], 
-		    TempNeutron1.Position[1], TempNeutron1.Position[2], Time2);      
-		    fprintf(LogFilePtr,"==================================================\n"); */
+    if (Time2 <= 0.0) return(-1.0);
+    CopyNeutron(&TempNeutron1, ThisNeutron);
+    /*              fprintf(LogFilePtr,"FINAL POINT :  Xfffff =  %f   Yffff =  %f  Zffff =  %f  Time2 = %f \n", TempNeutron1.Position[0],
+        TempNeutron1.Position[1], TempNeutron1.Position[2], Time2);
+        fprintf(LogFilePtr,"==================================================\n"); */
     TimeCalc = TimeInit + Time2 ;
     return(TimeCalc);
-  }	  
-      
+  }
+
   /* bad situation */
   return(-1.0);
 }
-

@@ -31,6 +31,7 @@
 /* 1.14  Sep 2022  P. Zakalek      Added writeout of SSW files                               */
 /* 1.14a Feb 2023  K. Lieutenant   'bBlowUp' instead of 'bLengthCmpr'                        */
 /* 1.15  Jan 2024  K. Lieutenant   order of choosing type of output file corrected           */
+/* 1.16  Nov 2025  K. Lieutenant   new option: write trajectories for next instrument part   */
 /*********************************************************************************************/
 
 #include <stdio.h>
@@ -81,10 +82,10 @@ void ssw_update_nparticles(FILE* f, int64_t np1pos, int32_t np1,                
                            int64_t nrsspos, int32_t nrss);
 short CalcDivergence(double *pFullDiv, double *pHorDiv, double *pVertDiv,        // calculation of divergence from flight direction
                      const VectorType Direction);
-void  VitessParameters();                                                        // Defines format for variables and headline in output file 
-void  McStasParameters();                                                        // Sets output parameters for McStas  
-void  MCNP6Parameters();                                                         // Sets output parameters for MCNP6  
-void  MCNPXParameters();                                                         // Sets output parameters for MCNPX  
+void  VitessParameters();                                                        // Defines format for variables and headline in output file
+void  McStasParameters();                                                        // Sets output parameters for McStas
+void  MCNP6Parameters();                                                         // Sets output parameters for MCNP6
+void  MCNPXParameters();                                                         // Sets output parameters for MCNPX
 short ConvertVitess2McStas(McNeutron*       pMcNeut,   const Neutron* pVitNeut); // Conversion from VITESS to McStas trajectory
 short ConvertVitess2MCPL  (mcpl_particle_t* pMcplNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCPL  trajectory
 short ConvertVitess2MCNP6 (Mcnp6Neutron*    pMcnpNeut, const Neutron* pVitNeut); // Conversion from VITESS to MCNP6  trajectory
@@ -92,7 +93,7 @@ short ConvertVitess2MCNPX (McnpxNeutron*    pMcnpNeut, const Neutron* pVitNeut);
 
 void  RotVit2Mc(VectorType* pMcVector, const VectorType* pVitVector);            // Vector transfer from VITESS to McStas co-ordinate system
 
-char* FullParName(const char* filename);                                         // function in init.c, adds parameter directory to file name 
+char* FullParName(const char* filename);                                         // function in init.c, adds parameter directory to file name
 
 
 /******************************/
@@ -100,8 +101,8 @@ char* FullParName(const char* filename);                                        
 /******************************/
 // Input parameters
 char*        sOutFileName=NULL;         //  -A   [-]   output file name
-short        bActive=TRUE;              //  -a   [-]   flag: YES: writeout is active   NO: output file is not written
 short        bHeader=TRUE;              //  -h   [-]   flag: YES: write header         NO: write only data, no header
+VtWriteAct   eActive   =VT_WRITE_TRAJ;  //  -a   [-]   enum: VT_NO_WRITING: no file written  VT_WRITE_TRAJ: write out events  VT_SPLIT_SIM: write out traj. for next instrument part
 VtPrgFormat  ePrgFormat=VT_VITESS_FMT;  //  -f   [-]   output format: VT_VITESS_FMT: VITESS format   VT_MCSTAS_FMT: McStas   VT_MCPL_FMT: MCPL   VT_MCNP6_FMT: MCNP6   VT_MCNPX_FMT: MCNPX  )
 VtDataFormat eDatFormat=VT_FLOAT;       //  -F   [-]   data format (exponential, float, binary)
 VtSeparator  eSeparator=VT_BLANK;       //  -S   [-]   separator between columns (space, tab)
@@ -118,7 +119,7 @@ bF_cTrc=TRUE,
 
 double       FactInt   = 1.0;           //  -I   [-]   factor to normalize to the source intensity from MCNP data
 int          iSurface  = MISSING;       //  -s   [-]   surface ID written to the event file
-char*        pTitle=NULL;               //  -T   [-]   title of the simulation 
+char*        pTitle=NULL;               //  -T   [-]   title of the simulation
 
 double       filtLambdaMin=-1.0,        //  -l  [Ang]  minimal wavelength to be taken into account
 filtLambdaMax= 1.0e10,     //  -L  [Ang]  maximal wavelength to be taken into account
@@ -152,9 +153,9 @@ int32_t orig_np1;
 char*          sOutform=NULL;           //             format for the whole line using McStas, MCNP6 or MCNPX
 char*          sHeader =NULL;           //             header: parameters of the event file
 char*          sUnits  =NULL;           //             header: units used in the event file
-short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence 
+short          bCalcDivY = FALSE,       //             flag: calculation of hor. divergence
 bCalcDivZ = FALSE;       //                               or vert. divergence necessary
-char           sVsn[5]="1.15",
+char           sVsn[5]="1.16",
         form[15][15]={"","","","","","","","","","","","","","",""};
 // formats to print data of the different parameters using VITESS
 
@@ -181,7 +182,7 @@ int main(int argc, char **argv)
   memset(&OutParticle,  '\0', sizeof(mcpl_particle_t));
 
 
-  // Initialization 
+  // Initialization
   // --------------
   _eModule=MCN_WRITEOUT;
 
@@ -192,7 +193,7 @@ int main(int argc, char **argv)
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
-  if (bActive)
+  if (eActive!=VT_NO_WRITING)
     HeaderAndParameters();
 
   DECLARE_ABORT;
@@ -208,8 +209,8 @@ int main(int argc, char **argv)
       // write all trajectories to pipe
       WriteNeutron(&(InputNeutrons[i]));
 
-      // skip the rest if the module is not active 
-      if (!bActive) continue;
+      // skip the rest if the module is not active
+      if (eActive==VT_NO_WRITING) continue;
 
       // Filter wavelength and position
       if (filtLambdaMin >= 0. && InputNeutrons[i].Wavelength < filtLambdaMin) continue;
@@ -329,6 +330,7 @@ int main(int argc, char **argv)
 
             ssw_writerecord(pOutFile,ssw_reclen,sizeof(double)*ssw_ssblen,(char*)&ssb[0]);
             used += 1;
+            break;
 
           case VT_MCNPX_FMT:
             if (eDatFormat==VT_BINARY)
@@ -416,7 +418,7 @@ int main(int argc, char **argv)
 /*******************************************************/
 void  OwnInit(int argc, char *argv[])
 {
-  int         i=0;         // index of parameter list
+  int i=0;         // index of parameter list
 
   for(i=1; i<argc; i++)
   {
@@ -429,7 +431,7 @@ void  OwnInit(int argc, char *argv[])
           break;
 
         case 'a':
-          bActive= (short) atoi(&argv[i][2]);
+          eActive= (VtWriteAct) atoi(&argv[i][2]);
           break;
         case 'h':
           bHeader= (short) atoi(&argv[i][2]);
@@ -514,14 +516,19 @@ void  OwnInit(int argc, char *argv[])
   bCalcDivY = (filtYDivMin >= 0. || filtYDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
   bCalcDivZ = (filtZDivMin >= 0. || filtZDivMax >= 0. || filtDivMin >= 0. || filtDivMax >= 0.);
 
+  // if the written data are intermediate data for a split simulation, write an instrument file that will be used by 'read_in' 
+  if (eActive==VT_SPLIT_SIM)
+    sInstrInfOut = "instr_out.inf";
+
   if (sOutFileName != NULL)
   {
-    if (bActive)
+    if (eActive!=VT_NO_WRITING)
     {
-      char *sFullOutName = FullParName(sOutFileName); /* TODO should this be an output file? */
+      char sFullName[CHAR_BUF_SMALL];
+      TotalPath(sFullName, sOutFileName, "", OUT_DIR);
       if (ePrgFormat== VT_MCPL_FMT)
       {
-        hOutFile = mcpl_create_outfile(sFullOutName);
+        hOutFile = mcpl_create_outfile(sFullName);
       }
       else if (ePrgFormat== VT_SSW_FMT)
       {
@@ -569,10 +576,7 @@ void  OwnInit(int argc, char *argv[])
         printf("Creating (or overwriting) output SSW file.\n");
 
         //Open new ssw file:
-        pOutFile = fopen(sOutFileName,"wb");
-
-        if (!pOutFile)
-          Error("Problems opening new SSW file");
+        pOutFile = OpenOutputFile(sOutFileName, TRUE, "wb");
 
         //Write header:
         int nb = fwrite(hdrbuf, 1, ssw_hdrlen, pOutFile);
@@ -591,23 +595,18 @@ void  OwnInit(int argc, char *argv[])
         ssb[0] = 0.0;
 
         assert(iSurface>=0&&iSurface<1000000);
+      } else if (eDatFormat == VT_BINARY) {
+        pOutFile = OpenOutputFile(sOutFileName, TRUE, "wb");
+      } else {
+        pOutFile = OpenOutputFile(sOutFileName, TRUE, "wt");
       }
-      else if (eDatFormat== VT_BINARY)
-      { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wb");
-      }
-      else
-      { pOutFile=OpenOutputFile(sOutFileName, TRUE, "wt");
-      }
-      fprintf(LogFilePtr,"Trajectories written to output file %s\n", sFullOutName);
-      free(sFullOutName);
-    }
-    else
-    { Note("writeout inactive, no file written");
+      fprintf(LogFilePtr,"Trajectories written to output file %s\n", sFullName);
+    } else {
+      Note("writeout inactive, no file written");
       bHeader = FALSE;
     }
-  }
-  else
-  { Error("File name missing");
+  } else {
+    Error("File name missing");
   }
 
   if (ePrgFormat==VT_MCPL_FMT && eDatFormat!=VT_BINARY)
@@ -767,7 +766,7 @@ void HeaderAndParameters(void)
 void OwnCleanup()
 {
   /* close the file if it was openend */
-  if (bActive)
+  if (eActive!=VT_NO_WRITING)
   { if (ePrgFormat== VT_MCPL_FMT)
     {
       mcpl_close_outfile(hOutFile);
@@ -862,9 +861,9 @@ void VitessParameters()
         if (bF_cDirection) { SP(form[cDirX],   "%9.6f");     FP("  dir_x  ");
                              SP(form[cDirY],   "%9.6f");     FP("  dir_y  ");
                              SP(form[cDirZ],   "%9.6f");     FP("  dir_z  "); }
-        if (bF_cSpin)      { SP(form[cSpinX],  "%4.1f");     FP("sp_x");
-                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "%6.3f");     FP("spin_x");
+                             SP(form[cSpinY],  "%6.3f");     FP("spin_y");
+                             SP(form[cSpinZ],  "%6.3f");     FP("spin_z"); }
       }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
@@ -901,9 +900,9 @@ void VitessParameters()
         if (bF_cDirection) { SP(form[cDirX],   " %9.6f");    FP("   dir_x  ");
                              SP(form[cDirY],   "%9.6f");     FP("  dir_y  ");
                              SP(form[cDirZ],   "%9.6f");     FP("  dir_z  "); }
-        if (bF_cSpin)      { SP(form[cSpinX],  "  %4.1f");   FP("  sp_x");
-                             SP(form[cSpinY],  "%4.1f");     FP("sp_y");
-                             SP(form[cSpinZ],  "%4.1f");     FP("sp_z"); }
+        if (bF_cSpin)      { SP(form[cSpinX],  "  %6.3f");   FP("  spin_x");
+                             SP(form[cSpinY],  "%6.3f");     FP("spin_y");
+                             SP(form[cSpinZ],  "%6.3f");     FP("spin_z"); }
       }
       else if (eDatFormat==VT_EXPONENTIAL)
       { // exp
@@ -939,24 +938,24 @@ void McStasParameters()
 
   if (eSeparator==VT_BLANK)
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "#   weight        pos_x     pos_y     pos_z     speed_x  speed_y   speed_z      TOF       P_x  P_y  P_z \n";
-      sUnits   = "#    [n/s]         [m]       [m]       [m]       [m/s]    [m/s]     [m/s]       [s]       [1]  [1]  [1] \n";
-      sOutform = "%13.6e  %9.6f %9.6f %9.6f  %8.3f %8.3f %10.3f  %11.9f  %4.1f %4.1f %4.1f";
+    { sHeader  = "#   weight        pos_x     pos_y     pos_z     speed_x  speed_y   speed_z      TOF        P_x    P_y    P_z \n";
+      sUnits   = "#    [n/s]         [m]       [m]       [m]       [m/s]    [m/s]     [m/s]       [s]        [1]    [1]    [1] \n";
+      sOutform = "%13.6e  %9.6f %9.6f %9.6f  %8.3f %8.3f %10.3f  %11.9f  %6.3f %6.3f %6.3f";
     }
     else
-    { sHeader  = "#   weight         pos_x         pos_y         pos_z         speed_x       speed_y       speed_z          TOF            P_X           P_Y           P_Z \n";
+    { sHeader  = "#   weight         pos_x         pos_y         pos_z         speed_x       speed_y       speed_z          TOF            P_x           P_y           P_z \n";
       sUnits   = "#    [n/s]          [cm]          [cm]          [cm]          [m/s]         [m/s]         [m/s]           [s]            [1]           [1]           [1] \n";
       sOutform = "%13.6e  %13.6e %13.6e %13.6e  %13.6e %13.6e %13.6e  %13.6e  %13.6e %13.6e %13.6e";
     }
   }
   else
   { if (eDatFormat==VT_FLOAT)
-    { sHeader  = "#   weight\t   pos_x\t   pos_y\t   pos_z\t  speed_x\t  speed_y\t   speed_z\t    TOF \t  P_x\t P_y\t P_z \n";
-      sUnits   = "#    [n/s]\t    [m] \t    [m] \t    [m] \t   [m/s] \t   [m/s] \t    [m/s] \t    [s] \t  [1]\t [1]\t [1] \n";
-      sOutform = "%13.6e\t%9.6f\t%9.6f\t%9.6f\t%8.3f\t%8.3f\t%10.3f\t%11.9f\t %4.1f\t%4.1f\t%4.1f";
+    { sHeader  = "#   weight\t   pos_x\t   pos_y\t   pos_z\t  speed_x\t  speed_y\t   speed_z\t    TOF \t   P_x\t  P_y\t  P_z \n";
+      sUnits   = "#    [n/s]\t    [m] \t    [m] \t    [m] \t   [m/s] \t   [m/s] \t    [m/s] \t    [s] \t   [1]\t  [1]\t  [1] \n";
+      sOutform = "%13.6e\t%9.6f\t%9.6f\t%9.6f\t%8.3f\t%8.3f\t%10.3f\t%11.9f\t %6.3f\t%6.3f\t%6.3f";
     }
     else
-    { sHeader  = "#    weight\t    pos_x\t     pos_y\t    pos_z\t   speed_x\t   speed_y\t   speed_z\t      TOF\t      P_X\t      P_Y\t      P_Z \n";
+    { sHeader  = "#    weight\t    pos_x\t     pos_y\t    pos_z\t   speed_x\t   speed_y\t   speed_z\t      TOF\t      P_x\t      P_y\t      P_z \n";
       sUnits   = "#     [n/s]\t     [cm]\t      [cm]\t     [cm]\t    [m/s] \t    [m/s] \t    [m/s] \t      [s]\t      [1]\t      [1]\t      [1] \n";
       sOutform = "%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e\t%13.6e";
     }

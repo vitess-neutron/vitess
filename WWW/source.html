@@ -89,8 +89,17 @@
         <td valign="middle" align="center">---</td>
         <td valign="middle" align="center"> x </td>
         <td valign="middle" align="center"> X </td>
-        <td>power of the source to determining the moderator flux<br /> only implemented for ESS and SNS, for all other sources the flux of the moderator has to be given</td>
-        <td>&nbsp;&gt;= 0.0</td>
+        <td>power of the source determining the moderator flux<br /> only implemented for ESS and SNS, for all other sources the flux of the moderator has to be given</td>
+        <td>&nbsp;&ge; 0.0</td>
+        <td valign="top">-L</td>
+      </tr>
+      <tr>
+        <td width="15%">proton energy<br>[GeV]</td>
+        <td valign="middle" align="center">---</td>
+        <td valign="middle" align="center"> x </td>
+        <td valign="middle" align="center"> X </td>
+        <td>energy of the protons hitting the sample<br /> meant for ESS Butterfly moderators, but not yet implemented</td>
+        <td>&nbsp;&ge; 0.0</td>
         <td valign="top">-L</td>
       </tr>
       <tr>
@@ -107,7 +116,7 @@
         <td valign="middle" align="center">---<br> </td>
         <td valign="middle" align="center"> X <br> </td>
         <td valign="middle" align="center"> X <br> </td>
-        <td>Version of moderator characteristics, available for ESS and SNS, see the paragraph &nbsp;"ESS and SNS" below.</td>
+        <td>Version of the moderator characteristics, available for ESS and SNS, see the paragraph &nbsp;"ESS and SNS" below.</td>
         <td>6 choices for ESS</td>
         <td valign="top">-v</td>
       </tr>
@@ -239,10 +248,16 @@
         <td valign="top">-w<br>-h  </td>
       </tr>
       <tr>
+        <td valign="top">hor./vert. window shift<br>[cm]</td>
+        <td valign="top">Center position of the (virtual) target window (positive values: to the left or upwards resp.)</td>
+        <td valign="top">&gt;= 0   </td>
+        <td valign="top">-u<br>-U  </td>
+      </tr>
+      <tr>
         <td valign="top">beamline<br> </td>
         <td valign="top">
           Name of the beamline or beam-port <br />
-          For the ESS Butterfly-1 moderator, it is used to determine the declination and thus the moderator characteristics.
+          For the ESS Butterfly-1 moderator, it is used to determine the moderator characteristics.
           For all other sources and the other ESS moderator models, it has no effect.
         </td>
         <td valign="top"> examples: S3, N2, W7 </td>
@@ -255,7 +270,7 @@
           the intensity is supposed to be isotropic and is thus not influenced by this angle,
           but short pulses will be stretched
         </td>
-        <td valign="top">-90� ... 90� </td>
+        <td valign="top">-90Â° ... 90Â° </td>
         <td valign="top">-i<br>       </td>
       </tr>
       <tr>
@@ -667,7 +682,7 @@
         <td valign="middle" align="center">0.0 - 1.0 </td>
       </tr>
       <tr>
-        <td valign="top">tau_1, tau_2<br>[�s]<br>  </td>
+        <td valign="top">tau_1, tau_2<br>[Âµs]<br>  </td>
         <td valign="middle" align="center">---<br>    </td>
         <td valign="middle" align="center">X<br>      </td>
         <td valign="middle" align="center">X<br>      </td>
@@ -711,7 +726,7 @@
         <td valign="middle" align="center">&gt; 0.0, default: 2.2</td>
       </tr>
       <tr>
-        <td valign="top">tau_1, tau_2<br>undermoderated<br>[�s]<br>  </td>
+        <td valign="top">tau_1, tau_2<br>undermoderated<br>[Âµs]<br>  </td>
         <td valign="middle" align="center">---<br>    </td>
         <td valign="middle" align="center">X<br>      </td>
         <td valign="middle" align="center">X<br>      </td>
@@ -792,7 +807,7 @@
   </div>
   <p>
     <b>The ESS "butterfly" moderator</b><br>
-    The database version 2015_Butterfly selects the ESS moderator baseline as specified in the beginning of 2015. According to the specifications, there are two moderators: a 3 cm high moderator on top and a 6 cm high moderator on the bottom side of the target wheel. Both have a central thermal moderator and cold wings, as shown in the left-hand figure below. The only input parameter taken from the moderator description file is the <b>height</b>, which has to be either 3 cm or 6 cm. The <b>declination</b> angle sets the orientation of the beamport w.r.t. a reference direction chosen such that 0� is rectangular to the proton beam. The declination angle can be set between 0� and pm 55�. The origin of the coordinate system is the center of the thermal moderator. Note that, according to the current baseline, the monolith inserts point at the separation between the cold and thermal moderator (red crosses is figure below): this can be modelled by an additional frame module. In the same way, the viewpoint of the beamline can be adjusted to look at the cold moderator instead (or at another point on the thermal moderator than the center).  The moderator is symmetric for pos. and neg. declination angles. Only the closer cold moderator can be viewed from a given declination angle. The only exception is a declination of 0�, from which both cold moderators are visible (cf brightness curves below).
+    The database version 2015_Butterfly selects the ESS moderator baseline as specified in the beginning of 2015. According to the specifications, there are two moderators: a 3 cm high moderator on top and a 6 cm high moderator on the bottom side of the target wheel. Both have a central thermal moderator and cold wings, as shown in the left-hand figure below. The only input parameter taken from the moderator description file is the <b>height</b>, which has to be either 3 cm or 6 cm. The <b>declination</b> angle sets the orientation of the beamport w.r.t. a reference direction chosen such that 0Â° is rectangular to the proton beam. The declination angle can be set between 0Â° and pm 55Â°. The origin of the coordinate system is the center of the thermal moderator. Note that, according to the current baseline, the monolith inserts point at the separation between the cold and thermal moderator (red crosses is figure below): this can be modelled by an additional frame module. In the same way, the viewpoint of the beamline can be adjusted to look at the cold moderator instead (or at another point on the thermal moderator than the center).  The moderator is symmetric for pos. and neg. declination angles. Only the closer cold moderator can be viewed from a given declination angle. The only exception is a declination of 0Â°, from which both cold moderators are visible (cf brightness curves below).
   </p>
   <p> The moderator description uses functions developed by T. Schoenfeldt, which are described in more detail in "Phenomenological Study of Expected Cold and Thermal Brightness Phase-Space at ESS" by T. Schoenfeld et. al (in preparation). The functions were fitted to the 3 cm top moderator and extended to the 6 cm bottom moderator based on previous fits to the pancake moderator of different heights. Hence the model of the 6 cm moderator has to be regarded with a slightly larger systematic uncertainty than the 3 cm moderator. The spatial dependence (horizontally) of the brightness of the 3 cm top moderator, which is one of the functions provided by T. Schoenfeldt, is shown in the right-hand side figure below for different viewpoints. The moderator width given in the VITESS log file is the one derived from these functions, without further projection of this width onto the viewpoint.</p>
   <p> Engineering details which will reduce the performance were not part of the original model, but have been investigated since and found to decrease the brightness by 20-30%. Therefore, a factor of 0.75 is applied to the moderator brightness in VITESS. If the user desires a different factor, simulation results can simply be re-scaled.</p>

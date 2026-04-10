@@ -25,7 +25,7 @@
 /************************************/
 /** Definitions, structures, enums **/
 /************************************/
-#define	FLD_SIZE	    5000
+#define  FLD_SIZE      5000
 
 
 /**************************/
@@ -33,9 +33,9 @@
 /**************************/
 void  OwnInit(int argc, char *argv[]);              // Reads input parameters and sets global parameters
 void  OwnCleanup();                                 // Does module specific cleanup
-void  SetGeometry(char* sColor);                    // Fills the structure stGeometry for visualization 
-void  WritePolAndTrans();                           // Writes polarization and transmission data from file  
-void  ReadPolAndTrans();                            // Reads polarization and transmission data from file  
+void  SetGeometry(char* sColor);                    // Fills the structure stGeometry for visualization
+void  WritePolAndTrans();                           // Writes polarization and transmission data from file
+void  ReadPolAndTrans();                            // Reads polarization and transmission data from file
 double AbsorptionProbability(double wavelength, int spinState);   // calculates absorption (returns 0) or transmission (returns 1)
 
 /******************************/
@@ -45,32 +45,32 @@ double AbsorptionProbability(double wavelength, int spinState);   // calculates 
 short      bCalc=FALSE;                  // -a        [-]    flag: analytical calculation of polarization and tranmission data
 double     polHe3=0.0,                   // -b        [%]    polarisation of the He3 (for analytical calculation)
            polXsection=2945.0,           // -c       [barn]  polarisation cross section of 1 Ang neutrons in He3
-           density=0.0;                  // -d      [1/cm3]  density of the He3 gas 
+           density=0.0;                  // -d      [1/cm3]  density of the He3 gas
 char      *sPolFile  ="polarization.dat",// -P        [-]    pointer to the name of the data file of the wavelength dependent polarisation
           *sTransFile="transmission.dat";// -T        [-]    pointer to the name of the data file of the wavelength dependent transmission
 VectorType PosMain,                      // -k -l -m  [cm]   center position of the cylindrical polariser
            DimMain,                      // -X    -Y  [cm]   length and diameter of the cylindrical polariser
            field_guide,                  // -G -H -K  [Oe]   strength of the magnetic guide field
-           field_pol,                    // -M -N -O  [Oe]   field in the polarization chamber (which is added to the guide) 
+           field_pol,                    // -M -N -O  [Oe]   field in the polarization chamber (which is added to the guide)
            TranslOut;                    // -p -r -s  [cm]   position of the new origin  (in the co-ordinate of the old origin)
 
 // Input parameters that are currently not used
 double     AngleMainHoriz=0.0,           //          [deg]   horizontal rotation angle (about z axis) of the polarizer
            AngleMainVert=0.0;            //          [deg]   vertical (second) rotation angle of the polarizer
 double     AnglOutHoriz=0.0,             //          [deg]   horizontal angle of the output frame, relative to input orientation
-           AnglOutVert=0.0;              //          [deg]   vertical angle of the output frame, relative to input orientation    
+           AnglOutVert=0.0;              //          [deg]   vertical angle of the output frame, relative to input orientation
 
 // Variables determined from input parameters or trajectory data
-char       sOption[13]="";               //                  text for origin of transmission and polarization data (from -a bCalc) 
+char       sOption[13]="";               //                  text for origin of transmission and polarization data (from -a bCalc)
 VectorType guide_field_pol;              //           [Oe]   sum of polarization and guide field
 double     RotMatrixMain[3][3],          //           [-]    rotation matrix to tranform into the frame of the polarizer
-           RotMatrixOut [3][3],          //           [-]    rotation matrix to tranform into the output frame  
+           RotMatrixOut [3][3],          //           [-]    rotation matrix to tranform into the output frame
            RotMatrixG_Field [3][3],      //           [-]    rotation matrix to tranform into frame of the guide field
            RotMatrixGM_Field[3][3],      //           [-]    rotation matrix to tranform into frame of guide + polarization field
            ProbCutoff=0.0;               //           [-]    = wei_min: minimal accepted weight of the neutron trajectory
 
 // Data read from file
-double     aPolData  [FLD_SIZE], 
+double     aPolData  [FLD_SIZE],
            aTransData[FLD_SIZE];
 
 // value of Polarisation at the neutron wavelentgth taken from datafile when option numerical is given
@@ -83,19 +83,19 @@ double aPolData_wl;
 int main(int argc, char **argv)
 {
   long   NumOut=0, i=0 , datanumber=0;
-  double TOF=0.0, TOF1=0.0, TOF2=0.0, TOF3=0.0, 
-         WL=0.0, Prob=0.0, PhaseShift=0.0, 
-         nPrecessions1=0.0, nTraj1=0, nTotPrec1=0,  // number of precessions of a neutron, 
+  double TOF=0.0, TOF1=0.0, TOF2=0.0, TOF3=0.0,
+         WL=0.0, Prob=0.0, PhaseShift=0.0,
+         nPrecessions1=0.0, nTraj1=0, nTotPrec1=0,  // number of precessions of a neutron,
          nPrecessions2=0.0, nTraj2=0, nTotPrec2=0,  //   number of trajectories (=neutrons)
-         nPrecessions3=0.0, nTraj3=0, nTotPrec3=0;  //   total number of precessions of the neutrons passing through field i (1,2,3) 
-  double TotIntensityIn =0.0, TotIntensityOut=0.0,  // incoming and outgoing beam intensity 
-         IntPolarization=0.0,                       // integration of all polarization values 
-         T_avrg, P_avrg;                            // average transmission and polarization 
+         nPrecessions3=0.0, nTraj3=0, nTotPrec3=0;  //   total number of precessions of the neutrons passing through field i (1,2,3)
+  double TotIntensityIn =0.0, TotIntensityOut=0.0,  // incoming and outgoing beam intensity
+         IntPolarization=0.0,                       // integration of all polarization values
+         T_avrg, P_avrg;                            // average transmission and polarization
   double LarmorMatrix[3][3];
   VectorType Pos, Dir, SpinVector, Pos1, Pos2;
   VectorType Path;     /* Path = displacement vector */
-  VectorType pos, dir;	
-  VectorType V;	
+  VectorType pos, dir;
+  VectorType V;
   Neutron    OutNeutron, ScatNeutron;
   int spinState = 0;
   int n_abs = 0;
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   InitVector(pos);    InitVector(dir);
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
   while ((ReadNeutrons())!= 0)
   {
     for (i=0;i<NumNeutGot;i++)
-    { 
+    {
       CHECK;
 
       // Only write out event if EOB line is found, otherwise process trajectory
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
       }
       else
       {
-        InputNeutrons[i].Vector[0]	= (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
+        InputNeutrons[i].Vector[0]  = (double) sqrt(1 - sq(InputNeutrons[i].Vector[1]) - sq(InputNeutrons[i].Vector[2]));
 
         TOF  = InputNeutrons[i].Time;
         WL   = InputNeutrons[i].Wavelength;
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
         CopyVector(InputNeutrons[i].Position, Pos);
         CopyVector(InputNeutrons[i].Vector, Dir);
         CopyVector(InputNeutrons[i].Spin, SpinVector);
-        CopyVector(InputNeutrons[i].Spin, Spin_dir); 
+        CopyVector(InputNeutrons[i].Spin, Spin_dir);
 
         /* Check whether the neutron is absorbed or transmitted */
         CopyVector(guide_field_pol, pol_dir);
@@ -162,9 +162,9 @@ int main(int argc, char **argv)
 
         dot_product = ScalarProduct(Spin_dir, pol_dir);
         if (fabs(dot_product - 1.0) < cutoff)   // Close to 1 → Parallel
-          spinState = 1;  
+          spinState = 1;
         else if (fabs(dot_product + 1.0) < cutoff)  // Close to -1 → Antiparallel
-          spinState = -1;  
+          spinState = -1;
         else
           spinState = 0;  // Neither fully aligned nor fully anti-aligned
 
@@ -179,7 +179,7 @@ int main(int argc, char **argv)
 
         /* compute polarization and transmission location corresponding to the wavelength */
         datanumber = (int) (WL * 100.);
-        if(datanumber > FLD_SIZE) goto getlost; 
+        if(datanumber > FLD_SIZE) goto getlost;
         if(!bCalc) aPolData_wl = aPolData[datanumber];
 
 
@@ -189,36 +189,36 @@ int main(int argc, char **argv)
         }
 
         /* translates into frame of the field domain */
-        SubVector(Pos, PosMain); 
+        SubVector(Pos, PosMain);
 
         /* calculate entrance end exit coordinates of domain*/
 
         /* rotates into the frame of the field domain   */
-        CopyVector(Pos, pos);	
+        CopyVector(Pos, pos);
         CopyVector(Dir, dir);
-	
-        RotVector(RotMatrixMain, pos); 	
-        RotVector(RotMatrixMain, dir); 
 
-        /* gives intersection positions with domain */	
-        if(IntersectionWithCylinder(DimMain, pos, dir, Pos1, Pos2) == 0) goto getlost; 
+        RotVector(RotMatrixMain, pos);
+        RotVector(RotMatrixMain, dir);
+
+        /* gives intersection positions with domain */
+        if(IntersectionWithCylinder(DimMain, pos, dir, Pos1, Pos2) == 0) goto getlost;
 
         /* rotates coordinates to previous frame */
         RotBackVector(RotMatrixMain, Pos1);
         RotBackVector(RotMatrixMain, Pos2);
 
         /* ordering */
-        if(Pos1[0] > Pos2[0]) 	
-        {	CopyVector(Pos1, V);	CopyVector(Pos2, Pos1);	CopyVector(V, Pos2);}
+        if(Pos1[0] > Pos2[0])
+        {  CopyVector(Pos1, V);  CopyVector(Pos2, Pos1);  CopyVector(V, Pos2);}
 
         /* time of precession in the guide field - precession calculated in the field frame */
         TOF1 = fabs(Pos1[0] - Pos[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-        PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide)); 
+        PhaseShift = TOF1 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));
         nPrecessions1 = PhaseShift/2./M_PI;
         nTotPrec1 += nPrecessions1;
         nTraj1++;
 
-        FillRotMatrixX(LarmorMatrix, PhaseShift); 
+        FillRotMatrixX(LarmorMatrix, PhaseShift);
 
         RotVector(RotMatrixG_Field, SpinVector);
         RotVector(LarmorMatrix, SpinVector);
@@ -233,12 +233,12 @@ int main(int argc, char **argv)
         RotVector(RotMatrixGM_Field, SpinVector);
 
         TOF2 = fabs(Pos1[0] - Pos2[0])  / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-        PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(LengthVector(guide_field_pol));  
+        PhaseShift = TOF2 * FREQUENCY_FROM_FIELD(LengthVector(guide_field_pol));
         nPrecessions2 = PhaseShift/2./M_PI;
         nTotPrec2 += nPrecessions2;
         nTraj2++;
 
-        FillRotMatrixX(LarmorMatrix, PhaseShift); 
+        FillRotMatrixX(LarmorMatrix, PhaseShift);
 
         RotVector(LarmorMatrix, SpinVector);
         RotBackVector(RotMatrixGM_Field, SpinVector);
@@ -249,11 +249,11 @@ int main(int argc, char **argv)
         CopyVector(Pos2, Pos);
 
         /* translates into original frame */
-        AddVector(Pos, PosMain); 
+        AddVector(Pos, PosMain);
 
         /* Write point of exit from field */
-        if (bVisTraj)        
-        { 
+        if (bVisTraj)
+        {
           CopyNeutron(&InputNeutrons[i], &ScatNeutron);
           CopyVector(Pos, ScatNeutron.Position);
           CopyVector(SpinVector, ScatNeutron.Spin);
@@ -271,38 +271,40 @@ int main(int argc, char **argv)
 
         CopyVector(Dir, Path);
         MultiplyByScalar(Path, - Pos[0]/ Dir[0] );
-        AddVector(Pos, Path);  
-        
+        AddVector(Pos, Path);
+
 
         /* time of precession in the guide field - precession calculated in the field frame */
         RotVector(RotMatrixG_Field, SpinVector);
-      
-        PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));  
+
+        PhaseShift = TOF3 * FREQUENCY_FROM_FIELD(LengthVector(field_guide));
         nPrecessions3 = PhaseShift/2./M_PI;
         nTotPrec3 += nPrecessions3;
         nTraj3++;
 
-        FillRotMatrixX(LarmorMatrix, PhaseShift); 
+        FillRotMatrixX(LarmorMatrix, PhaseShift);
         RotVector(LarmorMatrix, SpinVector);
         RotBackVector(RotMatrixG_Field, SpinVector);
 
         /* Output matters */
-        Prob *= aTransData[datanumber]; 
+        Prob *= aTransData[datanumber];
         if(Prob <= ProbCutoff) goto getlost;
 
         TotIntensityOut += Prob;
         IntPolarization += Prob*aPolData[datanumber];
-        NumOut++;							/*goto jumpwrite;	jumpwrite :;*/
+        NumOut++;              /*goto jumpwrite;  jumpwrite :;*/
 
         /* transmit coordinates which were not changed, the rest overwrite below */
-        OutNeutron = InputNeutrons[i]; 
+        OutNeutron = InputNeutrons[i];
         OutNeutron.Time = TOF+TOF3;
         OutNeutron.Probability = Prob;
+        if (Prob <= wei_min)
+          continue;
 
         CopyVector(Pos, OutNeutron.Position);
         CopyVector(SpinVector, OutNeutron.Spin);
 
-        /* writes output binary file */ 
+        /* writes output binary file */
         WriteNeutron(&OutNeutron);
 
         /* point of exit for trajectory visualization */
@@ -312,12 +314,12 @@ int main(int argc, char **argv)
       }
     }
   }
-   
+
   // Finish: write log, geometry and instrument file, free memory
   // ------------------------------------------------------------
 my_exit:
   P_avrg = IntPolarization/TotIntensityOut;
-  T_avrg = TotIntensityOut/TotIntensityIn; 
+  T_avrg = TotIntensityOut/TotIntensityIn;
   fprintf(LogFilePtr, "Polarization file: %s %s\n",                      sPolFile,   sOption);
   fprintf(LogFilePtr, "Transmission file: %s %s\n",                      sTransFile, sOption);
   if (NumOut > 0) fprintf(LogFilePtr,"Average polarization P: %7.5lf\n", P_avrg);
@@ -330,12 +332,12 @@ my_exit:
   fprintf(LogFilePtr, "Number of neutrons absorbed: %d\n",n_abs);
   /* write geometry file */
   SetGeometry("orange");
-  
+
   /* Do module specific cleanups */
   OwnCleanup();
 
   /* Do the general cleanup */
-  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], 0.0, 0.0);	
+  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], 0.0, 0.0);
 
   return 0;
 }
@@ -346,8 +348,8 @@ my_exit:
 /*******************************************************/
 void OwnInit(int argc, char *argv[])
 {
-  double     roty_g =0.0, rotz_g =0.0; 
-  double     roty_gm=0.0, rotz_gm=0.0; 
+  double     roty_g =0.0, rotz_g =0.0;
+  double     roty_gm=0.0, rotz_gm=0.0;
   int j;
 
   /* initial values */
@@ -385,7 +387,7 @@ void OwnInit(int argc, char *argv[])
         sscanf(&argv[1][2], "%lf", &polXsection);
         break;
       case 'd':
-        sscanf(&argv[1][2], "%lf", &density);  
+        sscanf(&argv[1][2], "%lf", &density);
         break;
 
       case 'P':
@@ -394,7 +396,7 @@ void OwnInit(int argc, char *argv[])
       case 'T':
         sTransFile=&argv[1][2];
         break;
-				
+
       case 'k':
         sscanf(&argv[1][2], "%lf", &PosMain[0]);
         break;
@@ -434,7 +436,7 @@ void OwnInit(int argc, char *argv[])
 
       case 'p':
         sscanf(&argv[1][2], "%lf", &TranslOut[0]);
-        if (TranslOut[0] < (PosMain[0] + DimMain[2]/2.)) 
+        if (TranslOut[0] < (PosMain[0] + DimMain[2]/2.))
         {fprintf(LogFilePtr,"\nERROR: output position must be beyond the polarizer ! \n\n"); exit (-1);}
         break;
       case 'r':
@@ -447,32 +449,32 @@ void OwnInit(int argc, char *argv[])
     argc--;
     argv++;
   }
-	
+
   AngleMainHoriz = 0.0;
-  AngleMainVert	 = - M_PI/2. *(1+0.1e-10);
+  AngleMainVert   = - M_PI/2. *(1+0.1e-10);
 
   FillRotMatrixZY(RotMatrixMain, AngleMainVert, AngleMainHoriz);
   FillRotMatrixZY(RotMatrixOut,  AnglOutVert, AnglOutHoriz);
 
   /* calculate field matrixes */
-  if (LengthVector(field_guide) !=0) 
-  { CartesianToEulerZY(field_guide, &roty_g, &rotz_g); 
+  if (LengthVector(field_guide) !=0)
+  { CartesianToEulerZY(field_guide, &roty_g, &rotz_g);
   }
-  else  
-  { roty_g = 0.0; rotz_g = 0.0; 
+  else
+  { roty_g = 0.0; rotz_g = 0.0;
   }
-  FillRotMatrixZY(RotMatrixG_Field,roty_g,rotz_g); 
+  FillRotMatrixZY(RotMatrixG_Field,roty_g,rotz_g);
 
-  CopyVector(field_guide,     guide_field_pol); 
+  CopyVector(field_guide,     guide_field_pol);
   AddVector (guide_field_pol, field_pol);
-  
-  if (LengthVector(guide_field_pol) !=0) 
-  { CartesianToEulerZY(guide_field_pol, &roty_gm, &rotz_gm); 
+
+  if (LengthVector(guide_field_pol) !=0)
+  { CartesianToEulerZY(guide_field_pol, &roty_gm, &rotz_gm);
   }
-  else 
-  { roty_gm = 0; rotz_gm = 0; 
+  else
+  { roty_gm = 0; rotz_gm = 0;
   }
-  FillRotMatrixZY(RotMatrixGM_Field, roty_gm, rotz_gm); 
+  FillRotMatrixZY(RotMatrixGM_Field, roty_gm, rotz_gm);
 
   /* case: calculation of polarization and transmissiom */
   if (bCalc == TRUE)
@@ -484,7 +486,7 @@ void OwnInit(int argc, char *argv[])
   }
 
   ReadPolAndTrans();
- 
+
 }/* End OwnInit */
 
 
@@ -503,7 +505,7 @@ void SetGeometry(char* sColor)
 {
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
@@ -527,9 +529,9 @@ void SetGeometry(char* sColor)
 /** writes polarization and transmission file  **/
 /************************************************/
 void WritePolAndTrans()
-{ 
+{
   long   l=0;
-  double Polarization=0.0, Transmission=0.0, 
+  double Polarization=0.0, Transmission=0.0,
          wavel=0.0, Mue=0.0, Nue=0.0;
   FILE  *pFileP=NULL,
         *pFileT=NULL;
@@ -543,14 +545,14 @@ void WritePolAndTrans()
 
     Mue = (polXsection * wavel )*1.E-24  * density;  /* 5327 * sqrt(0.025/energy)  polarization cross section, barn->cm^2, 2.7E19 particle density cm-3 per atm pressure */
     Nue = (polHe3/100.0) * Mue;                      /* Polarization of He3*/
-					
+
     Polarization = tanh(Nue * DimMain[2]);
     Transmission = exp(-Mue * DimMain[2]) * cosh(Nue * DimMain[2]);
 
     fprintf(pFileP, "  %le \n", Polarization);
     fprintf(pFileT, "  %le \n", Transmission);
   }
-			
+
   fclose(pFileP);
   fclose(pFileT);
 }
@@ -563,8 +565,8 @@ void ReadPolAndTrans()
 {
   long  count=0;
   FILE* pFile=NULL;
-  
-  pFile=OpenInputFile2(sPolFile, "polarization data", "r");
+
+  pFile = OpenParameterFile2(sPolFile, "polarization data", "r");
 
   for(count=0; count<FLD_SIZE; count++)
   {
@@ -574,7 +576,7 @@ void ReadPolAndTrans()
   fclose(pFile);
 
 
-  pFile = OpenInputFile2(sTransFile, "transmission data", "r");
+  pFile = OpenParameterFile2(sTransFile, "transmission data", "r");
 
   for(count=0; count<FLD_SIZE; count++)
   {
@@ -591,14 +593,14 @@ double AbsorptionProbability(double wavelength, int spinState) {
     double tmp_rand = 0.0;
 
     tmp_rand = MonteCarlo(0.,1.);
-    
-    if (bCalc) {  
+
+    if (bCalc) {
         /* Analytical Calculation */
-        Mue = (polXsection * wavelength) * 1.E-24 * density;  
-        Nue = (polHe3 / 100.0) * Mue;  
-        
+        Mue = (polXsection * wavelength) * 1.E-24 * density;
+        Nue = (polHe3 / 100.0) * Mue;
+
         Polarization = tanh(Nue * DimMain[2]);
-    } else {  
+    } else {
         /* Uses Polarisation from file */
         Polarization = aPolData_wl;
     }

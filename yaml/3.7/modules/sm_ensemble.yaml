@@ -1,0 +1,124 @@
+sm_ensemble:
+  executable: "sm_ensemble"
+  label: "sm_ensemble"
+  category: "mirror"
+
+  parameters:
+  - name: "sParFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "mirror file"
+    tooltip: "name of the input file containing the geometry and properties of the mirrors"
+    prefix: "-P"
+  - name: "sCollisionFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "collision file"
+    tooltip: "name of the output file containing all points of collisions with mirrors"
+    prefix: "-C"
+  - name: "nMaxCollision"
+    type: "int"
+    label: "max. number of collisions"
+    tooltip: "After this number of collision, simulation stops and the coordinates are written out"
+    column: 0
+    min: 0
+    default: 100
+    prefix: "-M"
+  - name: "ePolAxis"
+    <<: *VtAxis
+    label: "spin quant. direction"
+    tooltip: "direction of spin quantisation in accordance with input data (e.g. source module)"
+    column: 1
+    options: ["X_AXIS","Y_AXIS","Z_AXIS","NO_AXIS"]
+    default: "NO_AXIS"
+    prefix: "-Q"
+
+  - name: "bNewFormat"
+    # TODO this might become an enum
+    type: "bool"
+    label: "new file format"
+    tooltip: "yes: choose the new format of the geometry file using m-values no: use the old file format (see Help|sm_ensemble for details)"
+    column: 0
+    default: yes
+    prefix: "-F"
+  - name: "bIncrColor"
+    type: "bool"
+    label: "Modify color"
+    tooltip: "YES: Increase the neutron color by 1 for each mirror reflection no: Keep the color as it is)"
+    column: 1
+    default: no
+    prefix: "-R"
+  - name: "eMirrMat"
+    <<: *VtMirrMat
+    label: "substrate material"
+    tooltip: "Material of the mirror substrate for a treatment of the neutron absorption by passing through the mirror. Available: Silicon, Sapphire and 'Other'  Beware that 'Other' only works with the old file format"
+    column: 2
+    options: ["VT_MIRR_OTHER","VT_MIRR_SI","VT_MIRR_SAPPH"]
+    default: "VT_MIRR_SI"
+    prefix: "-S"
+
+  - name: "Title_Collision"
+    type: "title"
+    label: "Collision File"
+  - name: "bCollisionFile"
+    type: "bool"
+    label: "output in file"
+    tooltip: "yes: write out all positions, where neutrons hit one of the mirrors, into the collision file no: do not write out anything"
+    default: yes
+    column: 0
+    prefix: "-T"
+  - name: "MinWeight"
+    type: "float"
+    label: "min. weight for collision file"
+    unit: ""
+    tooltip: "minimal neutron weight to write the trajectory ot the collision file"
+    column: 1
+    min: 0.0
+    default: 0.0
+    prefix: "-b"
+
+  - name: "Title_Frame"
+    type: "title"
+    label: "Output Frame"
+  - name: "FrameOutX"
+    type: "float"
+    label: "X'"
+    unit: "cm"
+    tooltip: "x coordinate of the output frame"
+    column: 0
+    default: 20.0
+    prefix: "-r"
+  - name: "FrameOutY"
+    type: "float"
+    label: "Y'"
+    unit: "cm"
+    tooltip: "y coordinate of the output frame"
+    column: 1
+    default: 0.0
+    prefix: "-s"
+  - name: "FrameOutZ"
+    type: "float"
+    label: "Z'"
+    unit: "cm"
+    tooltip: "z coordinate of the output frame"
+    column: 2
+    default: 0.0
+    prefix: "-t"
+  - name: "FrameOutHor"
+    type: "float"
+    label: "horiz. angle"
+    unit: "deg"
+    tooltip: "Rotation angle of the output frame in horizontal direction (first rotation) (0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
+    column: 0
+    default: 0.0
+    prefix: "-h"
+  - name: "FrameOutVert"
+    type: "float"
+    label: "vert. angle"
+    unit: "deg"
+    tooltip: "Rotation angle of the output frame in vertical direction (first rotation) (0, 0) means parallel to the original x-direction, i.e. the incoming beam (cf. 'Help|sample')"
+    column: 1
+    default: 0.0
+    prefix: "-v"

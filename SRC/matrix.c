@@ -7,8 +7,8 @@
 /*                                                             */
 /* The free non-commercial use of these routines is granted    */
 /* providing due credit is given to the authors:               */
-/* Friedrich Streffer, Géza Zsigmond, Dietmar Wechsler,        */
-/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin           */ 
+/* Friedrich Streffer, GÃ©za Zsigmond, Dietmar Wechsler,        */
+/* Michael Fromme, Klaus Lieutenant, Sergey Manoshin           */
 /*                                                             */
 
 
@@ -40,21 +40,21 @@ void   MatrixIndexDown(double Matrix[3][3]);
 /* 'OutputRotMatrix' computes the default matrix of the output angles */
 /* after reflection                                                   */
 /* Author: G. Zsigmond                                                */
-void	OutputRotMatrix(double Matrix[3][3], double OutMatrix[3][3])
+void  OutputRotMatrix(double Matrix[3][3], double OutMatrix[3][3])
 {
 double n[3] ;
 
-	n[0] = 1. ;
-	n[1] = 0. ;
-	n[2] = 0. ;
+  n[0] = 1. ;
+  n[1] = 0. ;
+  n[2] = 0. ;
 
-	RotVector(Matrix, n) ;     /* components of a vector parallel to X in the frame of the CE */
+  RotVector(Matrix, n) ;     /* components of a vector parallel to X in the frame of the CE */
 
-	n[0] *= -1. ;              /* reflection */
+  n[0] *= -1. ;              /* reflection */
 
-	RotBackVector(Matrix, n) ; /* new components in the frame of input */
+  RotBackVector(Matrix, n) ; /* new components in the frame of input */
 
-	RotMatrixX(n, OutMatrix) ; /* calculates the rotation matrix corresponding to the new default direction */
+  RotMatrixX(n, OutMatrix) ; /* calculates the rotation matrix corresponding to the new default direction */
 }
 
 
@@ -64,10 +64,10 @@ double n[3] ;
 /* Author: G. Zsigmond                                              */
 void RotMatrixX(VectorType Vector, double Matrix[3][3])
 {
-	double roty, rotz;
-  
-	CartesianToEulerZY(Vector, &roty, &rotz) ;
-	FillRotMatrixZY(Matrix, roty, rotz) ;
+  double roty, rotz;
+
+  CartesianToEulerZY(Vector, &roty, &rotz) ;
+  FillRotMatrixZY(Matrix, roty, rotz) ;
 }
 
 
@@ -110,29 +110,29 @@ void FillRotMatrixXZ(double RotMatrix[3][3], double rotz, double rotx)
 /*  Change: G. Zs. 16 JUL 2002  rotation convention                        */
 void FillRotMatrixYX(double RotMatrix[3][3], double rotx, double roty)
 {
-	double sx, cx, sy, cy;
-	int   i,j;
+  double sx, cx, sy, cy;
+  int   i,j;
 
-	sx= (double) sin(rotx);
-	cx= (double) cos(rotx);
-	sy= (double) sin(roty);
-	cy= (double) cos(roty);
+  sx= (double) sin(rotx);
+  cx= (double) cos(rotx);
+  sy= (double) sin(roty);
+  cy= (double) cos(roty);
 
-	/* now, fill the matrix */
-	RotMatrix[0][0] =  cy;
-	RotMatrix[0][1] =  0.0;
-	RotMatrix[0][2] =  sy;
-	RotMatrix[1][0] =  -sy*sx;
-	RotMatrix[1][1] =  cx;
-	RotMatrix[1][2] =  cy*sx;
-	RotMatrix[2][0] =  -sy*cx;
-	RotMatrix[2][1] =  -sx;
-	RotMatrix[2][2] =  cy*cx;
+  /* now, fill the matrix */
+  RotMatrix[0][0] =  cy;
+  RotMatrix[0][1] =  0.0;
+  RotMatrix[0][2] =  sy;
+  RotMatrix[1][0] =  -sy*sx;
+  RotMatrix[1][1] =  cx;
+  RotMatrix[1][2] =  cy*sx;
+  RotMatrix[2][0] =  -sy*cx;
+  RotMatrix[2][1] =  -sx;
+  RotMatrix[2][2] =  cy*cx;
 
-	/* cutoff very small matrix elements */
-	for(i=0; i<3; i++)
-	  for(j=0; j<3; j++)
-	    if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
+  /* cutoff very small matrix elements */
+  for(i=0; i<3; i++)
+    for(j=0; j<3; j++)
+      if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
 }
 
 
@@ -141,9 +141,9 @@ void FillRotMatrixYX(double RotMatrix[3][3], double rotx, double roty)
 /*  Author: G. Zsigmond                                                                  */
 void FillRotMatrixZY(double RotMatrix[3][3], double roty, double rotz)
 {
-	FillRotMatrixYX(RotMatrix, -roty, -rotz) ;
+  FillRotMatrixYX(RotMatrix, -roty, -rotz) ;
 
-	MatrixIndexUp(RotMatrix) ;
+  MatrixIndexUp(RotMatrix) ;
 }
 
 
@@ -153,77 +153,77 @@ void FillRotMatrixZY(double RotMatrix[3][3], double roty, double rotz)
 
 void FillRotMatrixX(double RotMatrix[3][3], double rotx)
 {
-	double sx, cx;
-	int   i,j;
+  double sx, cx;
+  int   i,j;
 
-	sx=(double) sin(rotx);
-	cx=(double) cos(rotx);
+  sx=(double) sin(rotx);
+  cx=(double) cos(rotx);
 
-	/* now, fill the matrix */
-	RotMatrix[0][0] =  1.;
-	RotMatrix[0][1] =  0.;
-	RotMatrix[0][2] =  0.;
-	RotMatrix[1][0] =  0.;
-	RotMatrix[1][1] =  cx;
-	RotMatrix[1][2] =  sx;
-	RotMatrix[2][0] =  0.;
-	RotMatrix[2][1] =  - sx;
-	RotMatrix[2][2] =  cx;
+  /* now, fill the matrix */
+  RotMatrix[0][0] =  1.;
+  RotMatrix[0][1] =  0.;
+  RotMatrix[0][2] =  0.;
+  RotMatrix[1][0] =  0.;
+  RotMatrix[1][1] =  cx;
+  RotMatrix[1][2] =  sx;
+  RotMatrix[2][0] =  0.;
+  RotMatrix[2][1] =  - sx;
+  RotMatrix[2][2] =  cx;
 
-	/* cutoff very small matrix elements */
-	for(i=0; i<3; i++)
-	  for(j=0; j<3; j++)
-	    if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
+  /* cutoff very small matrix elements */
+  for(i=0; i<3; i++)
+    for(j=0; j<3; j++)
+      if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
 }
 
 void FillRotMatrixY(double RotMatrix[3][3], double roty)
 {
-	double sy, cy;
-	int   i,j;
+  double sy, cy;
+  int   i,j;
 
-	sy=(double) sin(roty);
-	cy=(double) cos(roty);
+  sy=(double) sin(roty);
+  cy=(double) cos(roty);
 
-	/* now, fill the matrix */
-	RotMatrix[0][0] =  cy;
-	RotMatrix[0][1] =  0.;
-	RotMatrix[0][2] =  sy;
-	RotMatrix[1][0] =  0.;
-	RotMatrix[1][1] =  1.;
-	RotMatrix[1][2] =  0.;
-	RotMatrix[2][0] =  - sy;
-	RotMatrix[2][1] =  0.;
-	RotMatrix[2][2] =  cy;
+  /* now, fill the matrix */
+  RotMatrix[0][0] =  cy;
+  RotMatrix[0][1] =  0.;
+  RotMatrix[0][2] =  sy;
+  RotMatrix[1][0] =  0.;
+  RotMatrix[1][1] =  1.;
+  RotMatrix[1][2] =  0.;
+  RotMatrix[2][0] =  - sy;
+  RotMatrix[2][1] =  0.;
+  RotMatrix[2][2] =  cy;
 
-	/* cutoff very small matrix elements */
-	for(i=0; i<3; i++)
-	  for(j=0; j<3; j++)
-	    if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
+  /* cutoff very small matrix elements */
+  for(i=0; i<3; i++)
+    for(j=0; j<3; j++)
+      if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
 }
 
 void FillRotMatrixZ(double RotMatrix[3][3], double rotz)
 {
-	double sz, cz;
-	int   i,j;
+  double sz, cz;
+  int   i,j;
 
-	sz=(double) sin(rotz);
-	cz=(double) cos(rotz);
+  sz=(double) sin(rotz);
+  cz=(double) cos(rotz);
 
-	/* now, fill the matrix */
-	RotMatrix[0][0] =  cz;
-	RotMatrix[0][1] =  sz;
-	RotMatrix[0][2] =  0.;
-	RotMatrix[1][0] =  - sz;
-	RotMatrix[1][1] =  cz;
-	RotMatrix[1][2] =  0.;
-	RotMatrix[2][0] =  0.;
-	RotMatrix[2][1] =  0.;
-	RotMatrix[2][2] =  1.;
+  /* now, fill the matrix */
+  RotMatrix[0][0] =  cz;
+  RotMatrix[0][1] =  sz;
+  RotMatrix[0][2] =  0.;
+  RotMatrix[1][0] =  - sz;
+  RotMatrix[1][1] =  cz;
+  RotMatrix[1][2] =  0.;
+  RotMatrix[2][0] =  0.;
+  RotMatrix[2][1] =  0.;
+  RotMatrix[2][2] =  1.;
 
-	/* cutoff very small matrix elements */
-	for(i=0; i<3; i++)
-	  for(j=0; j<3; j++)
-	    if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
+  /* cutoff very small matrix elements */
+  for(i=0; i<3; i++)
+    for(j=0; j<3; j++)
+      if(fabs(RotMatrix[i][j]) < 1e-12) RotMatrix[i][j] = 0.0;
 }
 
 
@@ -232,9 +232,9 @@ void FillRotMatrixZ(double RotMatrix[3][3], double rotz)
 /*  Author: G. Zsigmond                                                                   */
 void RotMatrixToAnglesZY(double RotMatrix[3][3], double *roty, double *rotz)
 {
-	*rotz = (double) atan2(- RotMatrix[1][0], RotMatrix[1][1]) ;
+  *rotz = (double) atan2(- RotMatrix[1][0], RotMatrix[1][1]) ;
 
-	*roty = (double) atan2(RotMatrix[0][2], RotMatrix[2][2]) ;
+  *roty = (double) atan2(RotMatrix[0][2], RotMatrix[2][2]) ;
 }
 
 
@@ -245,12 +245,12 @@ void RotMatrixToAnglesZY(double RotMatrix[3][3], double *roty, double *rotz)
 /*  Author: G. Zsigmond                                              */
 void CartesianToSpherical(VectorType Vector, double *Theta, double *Phi)
 {
-	if (Vector[0] < 0.999)
-	  *Theta = acos(Vector[0]) ;
-	else
-		*Theta = acos(sqrt(1.0 - sq(Vector[1])- sq(Vector[2])));  // this is more precise for small angles
+  if (Vector[0] < 0.999)
+    *Theta = acos(Vector[0]) ;
+  else
+    *Theta = acos(sqrt(1.0 - sq(Vector[1])- sq(Vector[2])));  // this is more precise for small angles
 
-	*Phi   = atan2(Vector[2], Vector[1]) ;
+  *Phi   = atan2(Vector[2], Vector[1]) ;
 }
 
 
@@ -259,9 +259,9 @@ void CartesianToSpherical(VectorType Vector, double *Theta, double *Phi)
 /*  Author: G. Zsigmond                                              */
 void SphericalToCartesian(VectorType Vector, double *Theta, double *Phi)
 {
-	Vector[0]= (double) cos(*Theta) ;
-	Vector[1]= (double) sin(*Theta) * (double) cos(*Phi) ;
-	Vector[2]= (double) sin(*Theta) * (double) sin(*Phi) ;
+  Vector[0]= (double) cos(*Theta) ;
+  Vector[1]= (double) sin(*Theta) * (double) cos(*Phi) ;
+  Vector[2]= (double) sin(*Theta) * (double) sin(*Phi) ;
 }
 
 /* compare two vectors and return 1 if they coincide */
@@ -279,43 +279,42 @@ else return 0;
 
 /* 'MatrixIndexUp' drops matrix indexes by "1"                        */
 /*  Author: G. Zsigmond                                               */
-void	MatrixIndexUp(double Matrix[3][3])
+void  MatrixIndexUp(double Matrix[3][3])
 {
-	int i ;
-	double Result[3][3] ;
+  int i ;
+  double Result[3][3] ;
 
-	for(i=0; i<3; i++)
-	{
-	  Result[0][i]=Matrix[2][i] ;
-	  Result[1][i]=Matrix[0][i] ;
-	  Result[2][i]=Matrix[1][i] ;
-	}
-	for(i=0; i<3; i++)
-	{
-	  Matrix[i][0]=Result[i][2] ;
-	  Matrix[i][1]=Result[i][0] ;
-	  Matrix[i][2]=Result[i][1] ;
-	}
+  for(i=0; i<3; i++)
+  {
+    Result[0][i]=Matrix[2][i] ;
+    Result[1][i]=Matrix[0][i] ;
+    Result[2][i]=Matrix[1][i] ;
+  }
+  for(i=0; i<3; i++)
+  {
+    Matrix[i][0]=Result[i][2] ;
+    Matrix[i][1]=Result[i][0] ;
+    Matrix[i][2]=Result[i][1] ;
+  }
 }
 
 /* 'MatrixIndexUp' rises matrix indexes by "1"                        */
 /*  Author: G. Zsigmond                                               */
-void	MatrixIndexDown(double Matrix[3][3])
+void  MatrixIndexDown(double Matrix[3][3])
 {
-	int i ;
-	double Result[3][3] ;
+  int i ;
+  double Result[3][3] ;
 
-	for(i=0; i<3; i++)
-	{
-	  Result[i][0]=Matrix[i][1] ;
-	  Result[i][1]=Matrix[i][2] ;
-	  Result[i][2]=Matrix[i][0] ;
-	}
-	for(i=0; i<3; i++)
-	{
-	  Matrix[0][i]=Result[1][i] ;
-	  Matrix[1][i]=Result[2][i] ;
-	  Matrix[2][i]=Result[0][i] ;
-	}
+  for(i=0; i<3; i++)
+  {
+    Result[i][0]=Matrix[i][1] ;
+    Result[i][1]=Matrix[i][2] ;
+    Result[i][2]=Matrix[i][0] ;
+  }
+  for(i=0; i<3; i++)
+  {
+    Matrix[0][i]=Result[1][i] ;
+    Matrix[1][i]=Result[2][i] ;
+    Matrix[2][i]=Result[0][i] ;
+  }
 }
-

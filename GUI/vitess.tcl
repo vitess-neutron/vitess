@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme  
+### M. Fromme
 ### June 1999
 
 ### control variables lists and procedures for
@@ -32,20 +32,22 @@
 # 3 The global TempVars contains names of temporary variables which are deleted
 #   at the end of sourcing vitess.tcl, and are excluded from load/store operations.
 
-if {$tcl_platform(os) == "Darwin"} {
-  set darkMode [exec osascript -e {tell application "System Events" to get dark mode of appearance preferences}]
-} else {
-  set darkMode false
-}
-if {$darkMode eq "true"} {
-  set fgColor black
-  set bgColor #f2f2fb
-} else {
-  set fgColor black
-  set bgColor #f2f2fb
-}
+# deactivated, because of problems with permissions on MacOS (Issue #104)
+# and it has no effect anyway
+# if {$tcl_platform(os) == "Darwin"} {
+#   set darkMode [exec osascript -e {tell application "System Events" to get dark mode of appearance preferences}]
+# } else {
+#   set darkMode false
+# }
+# if {$darkMode eq "true"} {
+#   set fgColor black
+#   set bgColor #f2f2fb
+# } else {
+#   set fgColor black
+#   set bgColor #f2f2fb
+# }
 
-set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active)$}
+set DoNotSaveRegexp {^([A-Z_.]|error|auto_|arg|tk|tcl|blt_)|env|(SET|Add|Outstring|\.active|Color|ColorFont)$}
 set DoNotSaveSettingRegexp {^([A-Z.]|error|arg|tk|tcl|separate|visM|mod[0-9]+|data$)|env|_|(\.active|SET|Add|Outstring|_)$}
 
 # Some variables for settings begin with a capital letter, or are otherwise rejected by
@@ -86,6 +88,7 @@ set DoNotSave [concat $DoNotSaveSetting {
   radioColor
   scrollWidth simulation serif sserif
   timeout x3dapp_
+  defaultPlotApp
 }]
 
 foreach s {b h l m t} {
@@ -114,6 +117,8 @@ set TempVars {
   vsn
   pow
   tA
+  rA
+  sp
 }
 
 
@@ -123,7 +128,7 @@ set globalDescriptionSET {
   inputESET xcontolDefaultsESET
 }
 
-#   Type names		        Extension(s)	Mac File Type(s)
+#   Type names                        Extension(s)        Mac File Type(s)
 
 set fileDialogSET {
   {"All files" *}
@@ -196,7 +201,7 @@ proc makeModuleSets {} {
       source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS source_ai} source}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
-    {trajectories {read_in writeout spin_reset} {writeout writeout spin_reset}}
+    {trajectories {read_in writeout spin_reset kdsource} {writeout writeout spin_reset ""}}
     {velselect {} velselect}
     {monitor {
       visual
@@ -218,9 +223,9 @@ proc makeModuleSets {} {
     set h [lindex $line 2]
     if {$s != ""} {
       foreach t $s m $h {
-	if {$m == ""} {set m $h}
-	append aglob " [set m ${t}ESET]"
-	lappend a [list $t active $m "" "" $m]
+        if {$m == ""} {set m $h}
+        append aglob " [set m ${t}ESET]"
+        lappend a [list $t active $m "" "" $m]
       }
     } else {
       set n [lindex $line 0]
@@ -507,7 +512,10 @@ set cwsASET {
   {prop_width    float 10 {"window\nwidth [cm]" "width of propagation window in cm" "" w} gt0 "" 1}
   {prop_height   float 10 {"window\nheight [cm]" "height of propagation window in cm" "" h} gt0 "" 1}
   {}
-  {decl float 0 {"declination\n[deg]" "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
+  {decl   float 0 {"declination\n[deg]" "declination of the aperture center (= beam direction) to the normal of the moderator surface (in the horizontal plane)" "" i}}
+  {h_shft float 0 {"hor. window\nshift [cm]" "horizontal position of the center of the propagation window (positive values: to the left)" "" u}}
+  {v_shft float 0 {"vert. window\nshift [cm]" "vertical position of the center of the propagation window (positive values: upwards)" "" U}}
+  {}
   {beamline string "" {"beamline" "name of the beamline\nFor the ESS Butterfly 1 moderator, it is used to determine the moderator characteristics and the declination; for other sources there is no effect" "" B}}
   {}
   {"Time window" header}
@@ -648,15 +656,16 @@ proc sore1 {f l} {
   return [concat $f $l]
 }
 
-proc sore2 {s p} {
+proc sore2 {s p pe} {
   set s [list [list name radio $s {"analytical flux\ncalculation for" "flux can be calculated analytically for some sources\ncorresponding input parameters are ignored in this case" "" N} {- ESS HBS} {- ESS HBS}]]
   set p [list [list power float $p {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} gt0 "" 1]]
-  return [concat $s $p]
+  set pe [list [list energy float $pe {"proton energy\n[GeV]" "kinetic energy of the neutrons at the target" "" E} ge0 "" 1]]
+  return [concat $s $p $pe]
 }
 
 set al [list modfile pareditablefile EssLPMs.mod $li w lmo 1]
 set fl [sore1 14 2.857]
-set sp [sore2 ESS 2.0 ]
+set sp [sore2 ESS 2.0 2.0]
 set source_ESS_LPTSESET [concat {
     {datvsn radio 2016_Butterfly1 {"data base" "choose the version of the data base - see help file!" "" v} {2001_Mezei 2012_Zanini 2013_Schoenfeldt 2013_VarHeight 2015_Butterfly2 2016_Butterfly1} {1 2 3 4 5 6}}
   } $fl $sp [list $al] $smASET $cwsASET]
@@ -692,7 +701,7 @@ foreach s {long_pulsed ESS_LPTS ESS_2012 HBS} {
 set screenESET {
     {"Basic parameters" header}
     {scr_file mon2editablefile screen.pos {"monitor file" "name of the 2D monitor output file" "" O}}
-    {scr_geom radio flat {"geometry" "Geometry of the screen, rectangular or cylindrical (about vertical axis)" "" G}	{flat cylindrical} {2 1}}
+    {scr_geom radio flat {"geometry" "Geometry of the screen, rectangular or cylindrical (about vertical axis)" "" G}        {flat cylindrical} {2 1}}
     {scr_format radio matrix {"file\nformat" "file format for the 2D output: matrix or 'xyz' representation using float or integer values of different length\nfor details see 'Help|detector'" "" F} {matrix xyz "matrix compact" "xyz compact" "matrix integer"} {0 1 2 3 4}}
     {}
     {"Screen size" header}
@@ -715,7 +724,7 @@ set detectorESET {
     {"Basic detector properties" header}
     {array select array {"array (first or intermediate part)" "Select if detector is first or intermediate part of detector array. Do not select for single detector." "" B} {{"" 0}}}
     {}
-    {geom radio flat {geometry "The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}	{flat cylindrical} {2 1}}
+    {geom radio flat {geometry "The geometry parameter specifies the geometry of the detector. There are rectangular or cylindrical detectors." "" G}        {flat cylindrical} {2 1}}
     {type radio "area/volume" {"type" "detector type: gas tubes (only when 'flat') or area/volume detector" "" a} {"tubes" "area/volume"} {0 1}}
     {use radio normal { usage "If 'monitor only' is selected, use detector geometry only as a monitor, i.e. the weight and flight direction of the trajectory are unchanged; otherwise thickness, efficiency and wavelength are used to calculate a count rate that can be expected in experiments. If 'grid off' is selected, the neutron position is written before taking the segmentation into account (including resolution effects if resolution is not set to 0, true interaction position if resolution is 0), including the probability modification." "" U}  {normal "monitor only" "grid off"} {0 1 2}}
     {}
@@ -777,7 +786,7 @@ proc detectorCheckErr {{app _}} {
       showText "!Please specify the full width for a flat detector"
       return 1
     }
-  } else {				# $geom == "cylindrical"
+  } else {                                # $geom == "cylindrical"
     if {$phi != 0 && $phi != 180 && $cylaxis != "x" } {
       showText "!Please specify phi as either 0 or 180 for a cylindrical geometry if the cylinder axis is not pointing along x"
       return 1
@@ -815,7 +824,7 @@ set template_moduleESET {
 ### Read_In
 ###
 set read_inESET {
-  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW KDSource} {1 2 3 5 6 7}}
+  {inprgf radio VITESS {"data format" "Format in which the input was written" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
   {inform radio float {"storage format" "format of float values in writeout file" "" F} {exp float binary} {0 1 2}}
   {}
   {fname pareditablefile "ascii_in.dat" {"input\nfile 1" "Specifies the name of the ASCII 1st Input file containing trajectories." "" A} r "" 1}
@@ -847,14 +856,14 @@ set read_inESET {
 set writeoutESET {
   {fname pareditablefile noutascii.dat {
     "ASCII\noutput file" "Specifies the name of the ASCII output file for the trajectories." "" A} "" "" 1}
-  {woActive radio yes {"Active?" "Writeout is active?" "" a} {no yes} {0 1}}
-  {woHeader radio yes {"Header" "yes: Writes header to the ASCII file describing the column\n(Lines begin with symbol '#'.)" "" h} {no yes} {0 1}}
+  {woActive radio yes {"write out?" "no: no file written\nyes: write trajectories for a check\npart2: write trajectories for instrument pt.2" "" a} {no yes "part 2"} {0 1 2}}
+  {woHeader radio yes {"header" "yes: Writes header to the ASCII file describing the column\n(Lines begin with symbol '#'.)" "" h} {no yes} {0 1}}
   {}
   {outprgf radio VITESS {"data format" "format of the output data" "" f} {VITESS McStas MCPL MCNP6 SSW} {1 2 3 5 6}}
   {outform radio float {"storage format" "format of float values in writeout file.\n(MCPL output is always binary.)" "" F} {exp float binary} {0 1 2}}
   {outSeparator radio Space {"separator" "Separator for ASCII output, 'space' or 'tab'.\n(Not for MCPL format.)" "" S} {Space Tabulator} {0 1}}
   {}
-  {wofact float "1.0" {"Intensity\nfactor" "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'" "" I}}
+  {wofact float "1.0" {"intensity\nfactor" "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation:.\nShould equal the value in 'read_in'" "" I}}
   {outsurf int ""  {"surface\nID" "Only for MCNP6: Number written as surface ID to the output file" "" s}}
   {}
   {"SSW output reference file" header}
@@ -886,7 +895,7 @@ set writeoutESET {
   {filtDivMax float "" {"filter div.\nmax [deg]" "max divergency, -1.0 means any" "" G}}
 }
 
-### Read_In
+### source_AI
 ###
 set source_aiESET {
   {"Variational Autoencoder Source - Experimental" header}
@@ -910,6 +919,13 @@ set spin_resetESET {
   {"Colour Reset" header}
   {sccolor int 0
     {"number of\ncolours" "if greater zero, the colour of the trajectories will be reset (to a value between 1 and this number)" "" c}}
+}
+
+### KDSource
+###
+set kdsourceESET {
+  {fname pareditablefile "" {"input\nfile 1" "Specifies the name of the ASCII 1st Input file containing trajectories." "" A} r "" 1}
+  {maxEv float "" {"max events" "Maximum number of trajectories that are read. If 'No', then the whole file will be read." "" M}}
 }
 
 ### Frame
@@ -1379,89 +1395,78 @@ set BigFramebender 1
 
 set benderESET {
   {"Bender geometry characteristic" header}
-  {enter_height float 10 {
-    "entrance\nheight [cm]"
-    "entrance of guide: height in cm (center of entrance window = origin)" "" h} gt0 "" 1}
-  {exit_height float 10 {
-    "exit\nheight [cm]"
-    "exit of guide: height in cm (center of exit window = new origin)" "" H} gt0 "" 1}
-  {swidth float 0 {"blade\nwidth [cm]"
-    "thickness of material dividing the guide/bender into channels" "" s} ge0 "" 1}
-  {len_guide float 100 {
-    "length [cm]" "length of a guide [cm]. Specify either length or filename." "" l} gt0 "" 1}
-  {curvrad float 0 {"radius of\ncurvature [cm]"
-    " radius of curvature of base circle-axis of bender(if zero - straight line)" "" R} ge0 "" 1}
+  {enter_height float 10 {"entrance\nheight [cm]" "Height of the entrance of the bender" "" h} gt0 "" 1}
+  {exit_height float 10 {"exit\nheight [cm]" "Height of the exit of the bender" "" H} gt0 "" 1}
+  {swidth float 0 {"blade\nwidth [cm]" "Thickness of the material dividing the bender into channels" "" s} ge0 "" 1}
+  {len_bender float 100 {"Length [cm]" "Length of the bender" "" l} gt0 "" 1}
+  {curvrad float 0 {"radius of\ncurvature [cm]" "Radius of curvature of the central bender channel\nif zero, plane surfaces are assumed, otherwise they are bent to the left" "" R} ge0 "" 1}
+
   {"Reflectivity values for spin up" header}
-  {mLeftUp float 0 {
-    "left plane"
-    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" b}}
-  {mRightUp float 0 {
-    "right plane"
-    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" B}}
-  {mTopUp float 0 {
-    "top/bottom plane"
-    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" d}}
+  {mLeftUp float 0 {"left plane"
+    "m-value characterizing the reflectivity for spin-up neutrons of the wall on the left side.\nIt is not used if a reflectivity file is given for these neutrons and the same wall." "" b}}
+  {mRightUp float 0 {"right plane"
+    "m-value characterizing the reflectivity for spin-up neutrons of the wall on the right side.\nIt is not used if a reflectivity file is given for these neutrons and the same wall." "" B}}
+  {mTopUp float 0 {"top/bottom plane"
+    "m-value characterizing the reflectivity for spin-up neutrons of the top and the bottom wall.\nIt is not used if a reflectivity file is given for these neutrons and the same wall." "" d}}
+
   {"Reflectivity values for spin down" header}
-  {mLeftDo float 0 {
-    "left plane"
-    "Reflectivity of the left plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" e}}
-  {mRightDo float 0 {
-    "right plane"
-    "Reflectivity of the right plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" E}}
-  {mTopDo float 0 {
-    "top/bottom plane"
-    "Reflectivity of the top plane is calculated based on the\nm-number given using fits to Swiss Neutronics mirror characteristics.\nIt is not used if a reflectivity file is given for the same plane."  "" f}}
+  {mLeftDo float 0 {"left plane"
+    "m-value characterizing the reflectivity for spin-down neutrons of the wall on the left side.\nIt is not used if a reflectivity file is given for these neutrons and the same wall."  "" e}}
+  {mRightDo float 0 {"right plane"
+    "m-value characterizing the reflectivity for spin-down neutrons of the wall on the right side.\nIt is not used if a reflectivity file is given for these neutrons and the same wall."  "" E}}
+  {mTopDo float 0 {"top/bottom plane"
+    "m-value characterizing the reflectivity for spin-down neutrons of the top and the bottom wall.\nIt is not used if a reflectivity file is given for these neutrons and the same wall."  "" f}}
+
   {"Reflectivity files for spin up" header}
   {lrefl_filename pareditablefile mirr0.dat
-    {"left plane" "Reflectivity file for left plane (where y>0) and spin is up" "" i}}
+    {"left plane" "Reflectivity file for the left plane (where y>0) and spin-up neutrons" "" i}}
   {rrefl_filename pareditablefile mirr2linear.dat
-    {"right plane" "Reflectivity file for right plane (where y<0) and spin is up" "" m}}
+    {"right plane" "Reflectivity file for the right plane (where y<0) and spin-up neutrons" "" m}}
   {tbrefl_filename pareditablefile mirr0.dat
-    {"top/bot. plane" "Reflectivity file for top and bottom plane and spin is up" "" k}}
+    {"top/bot. plane" "Reflectivity file for the top and bottom plane and spin-up neutrons" "" k}}
 
   {"Reflectivity files for spin down" header}
   {dlrefl_filename pareditablefile mirr0.dat
-    {"left plane" "Reflectivity file for left plane (where y>0) and spin is down" "" I}}
+    {"left plane" "Reflectivity file for the left plane (where y>0) and spin-down neutrons" "" I}}
   {drrefl_filename pareditablefile mirr0.dat
-    {"right plane" "Reflectivity file for right plane (where y<0) and spin is down" "" M}}
+    {"right plane" "Reflectivity file for the right plane (where y<0) and spin-down neutrons" "" M}}
   {dtbrefl_filename pareditablefile mirr0.dat
-    {"top/bot. plane" "Reflectivity file for top and bottom plane and spin is down" "" K}}
+    {"top/bot. plane" "Reflectivity file for the top and bottom plane and spin-down neutrons" "" K}}
 
   {"Geometrical description of bender" header}
-  {sfile pareditablefile "" {"surface\nfile" " file which describes the bender geometry" "" u} r}
-  {ifile parbrowsefile "" {"information\nfile" " file which contains some information about the bender geometry" "" A} w}
+  {sfile pareditablefile "" {"surface\nfile" "input file describing the bender geometry" "" u} r}
+  {ifile parbrowsefile "" {"information\nfile" "output file containing information about the bender geometry" "" A} w}
 
   {"Special option" header}
-  {uref radio yes {"transmitted\nneutrons"
-    "no: ideal absorption between bender channels,\nyes: unreflected neutrons pass in the next bender channel" "" g}
+  {uref radio yes {"crossover\nof neutrons"
+    "no: ideal absorption between bender channels,\nyes: unreflected neutrons can pass into the next bender channel, but the intensity is reduced by attenuation given by the 'left/right side material'" "" g}
     {yes no} {1 0}}
-  {amat radio Vacuum {"Absorption\nmaterial"
-    "Attenuation of neutrons flux in the given material inside channels of bender.\n\"from file\" means data are read from a file specified as \"transmission file\"" "" c}
-    {"from file" Gadolinium Cadmium Bor10 Eu Silicon Vacuum} {0 1 2 3 4 5 6}}
+  {amat radio Vacuum {"channel\nmaterial"
+    "Material through which the neutrons travel inside the bender channels, which causes attenuation of the neutron flux\n 'from file' means that data are read from a file called 'attenuation file'" "" c}
+    {"from file" Silicon Vacuum} {0 5 6}}
   {}
   {amatl radio Gadolinium {"left side\nmaterial"
-    "Absorption material in the left side of channel. Unreflected neutrons pass in the next channel via absorbtion material in the inner(left) side of channel.\n\"from file\" means data are read from a file specified as \"left side file\"" "" z}
-    {"from file" Gadolinium Cadmium Bor10 Eu Silicon Vacuum} {0 1 2 3 4 5 6}}
+    "Material behind the reflecting surface on the left side of the channel. Unreflected neutrons pass through this material into the inner (left) side of the channel.\n'from file' means data that the are read from a file called 'left side file'" "" z}
+    {"from file" Gadolinium Cadmium Bor10 Eu Vacuum} {0 1 2 3 4 6}}
   {amatr radio Gadolinium {"right side\nmaterial"
-    "Absorption material in the right side of channel. Unreflected neutrons pass in the next channel via absorbtion material in the outer(right) side of channel.\n\"from file\" means data are read from that file specified as \"right side file\"" "" w}
-    {"from file" Gadolinium Cadmium Bor10 Eu Silicon Vacuum} {0 1 2 3 4 5 6}}
+    "Material behind the reflecting surface on the right side of the channel. Unreflected neutrons pass through this material into the outer (right) side of the channel.\n'from file' means that the data are read from a file called 'right side file'" "" w}
+    {"from file" Gadolinium Cadmium Bor10 Eu Vacuum} {0 1 2 3 4 6}}
   {}
-  {mfile pareditablefile "" {"transmission\nfile" "File which characterizes the transmission of bender channel material.\nInput this file name, if \"Absorption material\" has been set to \"from file\"" "" C} r}
-  {mfilel pareditablefile "" {"left side\nfile" "File which characterizes the transmission of material in the left side of the bender.\nInput this file name, if \"left side material\" has been set to \"from file\"" "" T} r}
-  {mfiler pareditablefile "" {"right side\nfile" "File which characterizes the transmission of material in the right side of the bender.\nInput this file name, if \"left side material\" has been set to \"from file\"" "" O} r}
+  {mfile  pareditablefile "" {"attenuation\nfile" "File characterizing the attenuation inside the bender channel material.\nThe file is used if 'Channel material' is set to 'from file'" "" C} r}
+  {mfilel pareditablefile "" {"left side\nfile" "File characterizing the attenuation of the material behind the reflecting surface on the left side of the channel.\nThe file is used if 'left side material' is set to 'from file'" "" T} r}
+  {mfiler pareditablefile "" {"right side\nfile" "File characterizing the attenuation of the material behind the reflecting surface on the right side of the channel.\n The file is used if 'right side material' is set to 'from file'" "" O} r}
   {}
   {surwav float 0 {"surface\nwaviness [deg]"
-    "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal." "" r} ge0 "" 1}
-  {abut float 0 {"abutment\nloss length"
-    "Neutrons that hit the surface close to one of the ends of the guide/bender (or a guide segment) are rejected." "" a} ge0 "" 1}
+    "This parameter controls the simulation of the surface waviness.\nThe given value is the maximal angle of deviation of the surface normal from the correct value." "" r} ge0 "" 1}
+  {abut float 0 {"abutment\nloss length" "Neutrons hitting the surface closer than this value to the exit of the bender are rejected" "" a} ge0 "" 1}
   {}
-  {visu radio no {visualisation "" "" y} {yes no} {1 0}}
-  {visdev radio file {visualisation\ndevice "" "" o} {display file display+file} {1 2 3}}
+  {visu radio no {visualisation "use of an internal trajectory visualization (in addition to the general instrument and trajectory visualization)" "" y} {yes no} {1 0}}
+  {visdev radio file {visualisation\ndevice "output of the internal visualization: display only, file only, or display and file" "" o} {display file display+file} {1 2 3}}
   {}
   {pola radio no {polarisation "yes: split into spin-down and spin-up reflectivity\nno: spin-up reflectivity for all neutrons" "" p} {yes no} {1 0}}
-  {spiqua radio OX {"neutron\nspin axis" "axis for spin quantisation" "" V} {OX OY OZ} {0 1 2}}
+  {spiqua radio OX {"neutron\nspin axis" "axis for spin quantisation: X axis, Y axis, or Z axis" "" V} {OX OY OZ} {0 1 2}}
   {}
-  {geotest radio no {"geometry test" "activate/deactivates geometry test" "" t} {no yes} {0 1}}
+  {geotest radio no {"geometry test" "activates or deactivates a geometry test of the bender in the beginning of the simulation" "" t} {no yes} {0 1}}
 }
 
 proc checkOFile {a b ts app} {
@@ -1477,7 +1482,7 @@ proc benderCheckErr  {{app _}} {
   set rc 0
   if [checkOFile amat mfile "" $app] {set rc 1}
   if [checkOFile amatl mfilel " for the left side" $app] {set rc 1}
-  if [checkOFile amatr mfilel " for the right side" $app] {set rc 1}
+  if [checkOFile amatr mfiler " for the right side" $app] {set rc 1}
   return $rc
 }
 
@@ -1613,19 +1618,19 @@ proc chpCheckErr {{app _}} {
     }
     if {$i < $nwindows} {
       if {$winpos == "" || $winheight == "" || $width == "" \
-	      || $ldeviation == "" || $rdeviation == ""} {
-	showText "!Please specify all entries for window  [expr $i + 1]"
-	set err 1
+              || $ldeviation == "" || $rdeviation == ""} {
+        showText "!Please specify all entries for window  [expr $i + 1]"
+        set err 1
       } elseif {"" == $winheight < 0 || $winheight > $radius} {
-	if {$radius == ""} {set rr radius} else {set rr $radius}
-	showText "!0 <= winheigth$i <= $rr"
-	set err 1
+        if {$radius == ""} {set rr radius} else {set rr $radius}
+        showText "!0 <= winheigth$i <= $rr"
+        set err 1
       }
     } else {
       if {$winpos != "" || $winheight != "" || $width != "" \
-	      || $ldeviation != "" || $rdeviation != ""} {
-	showText "!Did you want [expr $i + 1] windows? Then specify number of windows accordingly."
-	set err 1
+              || $ldeviation != "" || $rdeviation != ""} {
+        showText "!Did you want [expr $i + 1] windows? Then specify number of windows accordingly."
+        set err 1
       }
     }
   }
@@ -1717,9 +1722,9 @@ proc refCheckErr {{app _}} {
   if {[entryVal gen $app] == "user defined frame"} {
     foreach l {horang vertang x y z} {
       if {[entryVal $l $app] == ""} {
-	showText "!Please specify all values for user defined frame"
-	set err 1
-	break
+        showText "!Please specify all values for user defined frame"
+        set err 1
+        break
       }
     }
   }
@@ -1759,7 +1764,7 @@ set ma_flat_newESET {
   {mo_rndt radio no {"randomize\nTOF" "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored.\nUseful for a PST on a continuous source" "" K} {yes no} {1 0}}
   {}
   {mo_freq float 0 {"frequency\n[Hz]" "Frequency of the monochromator rotation/oscillation" "" f}}
-  {mo_phas float 0 {"initial\nphase [deg]" "Phase of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection" "" p}}
+  {mo_phas float 0 {"initial\nphase [deg]" "Phase of the monochromator at t=0 [deg]\nphase=0 means that the crystal orientations relative to the beam is        defined by the offset of the Bragg reflection" "" p}}
   {mo_ampl float 0 {"drive\namplitude[cm]" "For Doppler drive only: Amplitude of the Doppler drive along the x axis" "" Q}}
   {}
   {mo_nwnd float 0 {"number\nof areas" "For PST only: number of identical areas, where the monochromator is mounted on the chopper" "" n}}
@@ -1841,8 +1846,8 @@ proc crs_newCheckErr {{app _}} {
     upvar #0 $l$app $l
   }
   if {$oframedef == "user defined frame" && \
-	  ($oframehang == "" || $oframevang == "" || \
-	       $oframex == "" || $oframey == "" || $oframez == "")} {
+          ($oframehang == "" || $oframevang == "" || \
+               $oframex == "" || $oframey == "" || $oframez == "")} {
     showText "!Please specify last five entries for user defined frame"
     return 1
   }
@@ -1936,8 +1941,8 @@ proc crsCheckErr {{app _}} {
     upvar #0 $l$app $l
   }
   if {$oframedef == "user defined frame" && \
-	  ($oframehang == "" || $oframevang == "" || \
-	       $oframex == "" || $oframey == "" || $oframez == "")} {
+          ($oframehang == "" || $oframevang == "" || \
+               $oframex == "" || $oframey == "" || $oframez == "")} {
     showText "!Please specify last five entries for user defined frame"
     return 1
   }
@@ -2199,7 +2204,7 @@ set precessionfieldESET {
   {y float 0 {"position\nmain Y [cm]" "center y position of the field map " "" l}}
   {z float 0 {"position\nmain Z [cm]" "center z position of the field map " "" m}}
   {ho float 0 {"offset\nhoriz. [deg]" "horizontal (first rotation) rotation angle of the field map" "" i}}
-  {vo float 0 {"offset\nvert. [deg]"  "vertical (first rotation) rotation angles of the	field map" "" j}}
+  {vo float 0 {"offset\nvert. [deg]"  "vertical (first rotation) rotation angles of the        field map" "" j}}
   {"Output frame" header}
   {ox float 10 {"output\nX [cm]" "x position of the output frame (in the input frame)" "" p}}
   {oy float 0  {"output\nY [cm]" "y position of the output frame (in the input frame)" "" r}}
@@ -3166,8 +3171,8 @@ proc samplefilesCheckErr {type {app _}} {
   switch $cyl {
       cylinder {checkMv $hei height rc}
       cuboid {
-	checkMv $hei height rc
-	checkMv $wid width rc
+        checkMv $hei height rc
+        checkMv $wid width rc
       }
     default {set mchecks 0}
   }
@@ -3914,7 +3919,7 @@ proc collimator_sollerCheckErr {{app _}} {
     upvar #0 $l$app $l
   }
   if {$angcoll == "yes" && \
-	  ($minang == "" || $ncent == "" || $spang == "")} {
+          ($minang == "" || $ncent == "" || $spang == "")} {
     showText "!Please give minimum angle, number of coll.centers, and angle spacing"
     return 1
   }
@@ -4091,10 +4096,10 @@ set prismESET {
   {prh float 0.025 {"Prism base\nheight [cm]" "Dimension of each prism along the vertical direction z [cm]" "" h} gt0}
   {eaw float 3 {"Prism height [cm]" "Width of each prism along the horizontal direction y [cm]" "" z} gt0}
 
-  {"Description of the prisms matrix" header}  
+  {"Description of the prisms matrix" header}
   {noc int 16 {"Number of columns" "Number of prisms columns along the neutron beam direction x [#]" "" P} gt0}
   {nor int 40 {"Number of rows" "Number of vertical layers of prisms [#]" "" k} gt0}
-  
+
   {"Special option" header}
   {abs radio yes {"Layer can absorb"
     "no: Layer absorption is neglected,\nyes: Non refracted neutrons pass to the next layer" "" y}
@@ -4297,7 +4302,7 @@ The pipe command looks as follows (the experienced user might tune this
 directly without using the GUI):
 
 module1 --f<inputfilename> -a<value> ... | module2 -a<value> ... |
-	moduleN -a<value> ... --F<outputfilename>
+        moduleN -a<value> ... --F<outputfilename>
 
 The 'pipe' ('|') command is part of the command shell and is common in Unix
 and Windows systems.
@@ -4315,16 +4320,16 @@ gzip -cd <inputfilename> | module1 --c<inputfilesize> -a<value> ...
 Several command line options are common for all modules in the program
 package VITESS, i.e they have a common meaning. These options are
 
-		          	<boption>       <bdefault>
-1. neutron input filename	--f<filename>	stdin
-2. neutron output filename	--F<filename>	stdout
-3. rng init			--Z<value>	1
-4. neutron buffer size	        --B<value>	10000
-5. logfilename		        --L<filename>	stderr
-6. dotter			--J
-7. gravity 			--G		1
-8. min. neutron weight	        --U		1.0e-6
-9. parameter directory	        --P
+                                  <boption>       <bdefault>
+1. neutron input filename       --f<filename>     stdin
+2. neutron output filename      --F<filename>     stdout
+3. rng init                     --Z<value>        1
+4. neutron buffer size          --B<value>        10000
+5. logfilename                  --L<filename>     stderr
+6. dotter                       --J
+7. gravity                      --G                1
+8. min. neutron weight          --U                1.0e-6
+9. parameter directory          --P
 10.helper threads               --T
 11.read potentially compressed  --c<bytesize>
 12.write compressed             --C<mode>       0
@@ -4422,7 +4427,7 @@ First Xcontrol was adopted to the NEAT neutron scattering experiment,
 developed at HMI department I/DN.
 
 
-Contact:  
+Contact:
 }
 
 helpItem External-Commands {
@@ -4434,18 +4439,6 @@ resulting neutron data to standard output.
 The external command may be supplied with (argc, argv)-style options,
 which are specified by option string. This option string is given
 as the contents of a text file.
-
-Neutron data have the following C structure type:
-
-typedef struct {
-  double 	Time;
-  double        Wavelength;
-  double        Probability;
-  VectorType    Position;
-  VectorType    Vector;
-  VectorType    Spin;
-} Neutron;
-
 }
 
 helpItem Compression {
@@ -4531,7 +4524,7 @@ proc checkModVar {i {wishedmode ""}} {
     set r _$i\$
     foreach n [info globals] {
       if [regexp $r $n] {
-	lappend delist $n
+        lappend delist $n
       }
     }
   }
@@ -4539,26 +4532,26 @@ proc checkModVar {i {wishedmode ""}} {
   cleanupModView
 
   switch $sep {
-    here {				# normal entries in main window
+    here {                                # normal entries in main window
       catch {destroy $sepw}
       set sepw ""
-      set wm $Amf;			# actual module frame
+      set wm $Amf;                        # actual module frame
       if {$visible == $DummyEntry} {set n $wm.label} else {set n $wm.$visible}
       catch {destroy $n}
       set visible $var
       if {$var == $DummyEntry} {
-	helpFrame $wm
+        helpFrame $wm
       } else {
-	fGroup $wm.h $wm.$var
-	label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor -fg $fgColor
+        fGroup $wm.h $wm.$var
+        label $wm.h.head -text "Module $i $var" -font [headerFont] -bg $bgColor -fg $fgColor
         entry $wm.h.mname -width 6 -bg $bgColor -fg $fgColor -textvariable mmm_$i
         bind  $wm.h.mname <KeyRelease> "showModName $i"
         bind  $wm.h.mname <Leave> "showModName $i"
         pack $wm.h.mname -side left
-	pack $wm.h.head -side left -expand yes -fill both
+        pack $wm.h.head -side left -expand yes -fill both
 
-	generateEntries $wm.$var ${var}ESET $delist _$i
-	set needMoreModules 1
+        generateEntries $wm.$var ${var}ESET $delist _$i
+        set needMoreModules 1
 
         adjustScrollRegion $Amf $wm.$var
 
@@ -4571,25 +4564,25 @@ proc checkModVar {i {wishedmode ""}} {
     separate {
       set sepw $Mlf.w$i
       if [winfo exists $wm.$visible] {
-	destroy $wm.$visible
+        destroy $wm.$visible
       } else {
-	catch {destroy $sepw}
+        catch {destroy $sepw}
       }
       set visible $var
       if {$var == $DummyEntry} {
-	set sepw ""
+        set sepw ""
       } else {
-	set name "$var module $i"
-	if {[getSystem] == "unix"} {set name "VITESS module $i $var"}
-	generateToplevel $sepw $name
-	frame $sepw.$var
-	pack $sepw.$var
-	set ww [giveRoom $sepw.$var BigFrame$var]
-	fGroup $ww.e $ww.b
-	generateEntries $ww.e ${var}ESET $delist _$i
-	bButton $ww.b.done Done "destroy $sepw"
-	pack $ww.b.done
-	set needMoreModules 1
+        set name "$var module $i"
+        if {[getSystem] == "unix"} {set name "VITESS module $i $var"}
+        generateToplevel $sepw $name
+        frame $sepw.$var
+        pack $sepw.$var
+        set ww [giveRoom $sepw.$var BigFrame$var]
+        fGroup $ww.e $ww.b
+        generateEntries $ww.e ${var}ESET $delist _$i
+        bButton $ww.b.done Done "destroy $sepw"
+        pack $ww.b.done
+        set needMoreModules 1
       }
       catch {emptyFrame $wm}
       helpFrame $Amf
@@ -4600,8 +4593,8 @@ proc checkModVar {i {wishedmode ""}} {
       catch {destroy $wm.$visible}
       catch {emptyFrame $wm}
       foreach l $delist {
-	global $l
-	unset $l
+        global $l
+        unset $l
       }
       set needMoreModules 1
     }
@@ -4616,7 +4609,7 @@ proc checkModVar {i {wishedmode ""}} {
   if {!$needMoreModules} return
   set nexti [expr $i + 1]
   if [winfo exists $Mlf.g$nexti.label] return
-  moduleMenus $nexti;			# if next module menu is invisible
+  moduleMenus $nexti;                        # if next module menu is invisible
 }
 
 proc serializeChpFile {f mode var app} {
@@ -4642,7 +4635,7 @@ proc serializeChpFile {f mode var app} {
     for {set i 0} {$i < $n} {incr i} {
       if {[nextNumItems $f 5 ni] < 5} return
       foreach li $ni it {winpos winheight width ldeviation rdeviation} {
-	set $it$i $li
+        set $it$i $li
       }
     }
   } else {
@@ -4650,7 +4643,7 @@ proc serializeChpFile {f mode var app} {
     for {set i 0} {$i < $nwindows} {incr i} {
       set c [entryVal winpos$i $app]
       foreach it {winheight width ldeviation rdeviation} {
-	append c " [entryVal $it$i $app]"
+        append c " [entryVal $it$i $app]"
       }
       puts $f $c
     }
@@ -4696,56 +4689,56 @@ proc serializeSampleFile {f mode var app submodule} {
     foreach l $nlist {catch {unset $l}}
     if {$f == "0"} return
     if {[gets $f line] < 0 || [gets $f l1] < 0 || \
-	    [gets $f l2] < 0} return
+            [gets $f l2] < 0} return
     scan $line "%g%g%g" x y z
     switch [string range [string tolower $l1] 0 2] {
       cyl {
-	set cyl cylinder
-	scan $l2 "%g%g" thick hei
-	if {[gets $f l2] < 0} return
-	scan $l2 "%g%g%g" cx cy cz
+        set cyl cylinder
+        scan $l2 "%g%g" thick hei
+        if {[gets $f l2] < 0} return
+        scan $l2 "%g%g%g" cx cy cz
       }
       bal {
-	set cyl sphere
-	scan $l2 "%g" thick
+        set cyl sphere
+        scan $l2 "%g" thick
       }
       default {
-	set cyl cuboid
-	scan $l2 "%g%g%g" thick hei wid
-	if {[gets $f l2] < 0} return
-	scan $l2 "%g%g%g" cx cy cz
+        set cyl cuboid
+        scan $l2 "%g%g%g" thick hei wid
+        if {[gets $f l2] < 0} return
+        scan $l2 "%g%g%g" cx cy cz
       }
     }
     if {[gets $f l1] < 0} return
     switch $submodule {
       san {
-	catch {scan $l1 "%s%g%g%g" s hsrad sobv2 sobv3}
-	switch $s {
-	  S {set sob spheres}
-	  D {set sob "polydispersive spheres"}
-	  E {set sob ellipsoids}
-	  P {set sob parallelepipeds}
-	  C {set sob cylinders}
-	  default {set sob "isotropic scattering"}
-	}
-	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
-	scan $l1 "%g%g%g" rho1 rho2 fpkl
-	scan $l2 "%g%g%g" miscs mtscs mabcs
+        catch {scan $l1 "%s%g%g%g" s hsrad sobv2 sobv3}
+        switch $s {
+          S {set sob spheres}
+          D {set sob "polydispersive spheres"}
+          E {set sob ellipsoids}
+          P {set sob parallelepipeds}
+          C {set sob cylinders}
+          default {set sob "isotropic scattering"}
+        }
+        if {[gets $f l1] < 0 || [gets $f l2] < 0} return
+        scan $l1 "%g%g%g" rho1 rho2 fpkl
+        scan $l2 "%g%g%g" miscs mtscs mabcs
       }
       pow {
-	set sfactfile $l1
-	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
-	scan $l1 "%g%g%g" tscat cscat absorp
-	scan $l2 "%g" vol
-	if {[gets $f l3] > 0} {scan $l3 "%d%d%d%d%d%f" cD cF cF2 cM cDW sFactor}
+        set sfactfile $l1
+        if {[gets $f l1] < 0 || [gets $f l2] < 0} return
+        scan $l1 "%g%g%g" tscat cscat absorp
+        scan $l2 "%g" vol
+        if {[gets $f l3] > 0} {scan $l3 "%d%d%d%d%d%f" cD cF cF2 cM cDW sFactor}
       }
       psq {
-	if {$l1 == "D"} {set sfac "from file"} else {set sfac "as function"}
-	if {[gets $f l1] < 0 || [gets $f l2] < 0} return
-	set sfactfile $l1
-	scan $l2 "%g%g%g" tscat cscat absorp
+        if {$l1 == "D"} {set sfac "from file"} else {set sfac "as function"}
+        if {[gets $f l1] < 0 || [gets $f l2] < 0} return
+        set sfactfile $l1
+        scan $l2 "%g%g%g" tscat cscat absorp
       }
-      default {	scan $l1 "%g%g%g%g" tscat cscat absorp vol}
+      default {        scan $l1 "%g%g%g%g" tscat cscat absorp vol}
     }
   } else {
     puts $f "$x $y $z"
@@ -4756,22 +4749,22 @@ proc serializeSampleFile {f mode var app submodule} {
     }
     switch $submodule {
       san {
-	switch $sob {
-	  spheres {set s S}
-	  "polydispersive spheres" {set s D}
-	  ellipsoids {set s E}
-	  parallelepipeds {set s P}
-	  cylinders {set s C}
-	  default {set s I}
-	}
-	puts $f "$s $hsrad $sobv2 $sobv3\n$rho1 $rho2 $fpkl\n$miscs $mtscs $mabcs"
+        switch $sob {
+          spheres {set s S}
+          "polydispersive spheres" {set s D}
+          ellipsoids {set s E}
+          parallelepipeds {set s P}
+          cylinders {set s C}
+          default {set s I}
+        }
+        puts $f "$s $hsrad $sobv2 $sobv3\n$rho1 $rho2 $fpkl\n$miscs $mtscs $mabcs"
       }
       pow {puts $f "$sfactfile\n$tscat $cscat $absorp\n$vol\n$cD $cF $cF2 $cM $cDW $sFactor"}
       psq {
-	if {$sfac == "from file"} {set s D} else {set s F}
-	puts $f "$s\n$sfactfile\n$tscat $cscat $absorp"
+        if {$sfac == "from file"} {set s D} else {set s F}
+        puts $f "$s\n$sfactfile\n$tscat $cscat $absorp"
       }
-      default {	puts $f "$tscat $cscat $absorp $vol"}
+      default {        puts $f "$tscat $cscat $absorp $vol"}
     }
   }
 }
@@ -4792,20 +4785,20 @@ proc serializeNxsFile {f mode var app} {
     scan $line "%g%g%g" x y z
     switch [string range [string tolower $l1] 0 2] {
       cyl {
-	set cyl cylinder
-	scan $l2 "%g%g" thick hei
-	if {[gets $f l2] < 0} return
-	scan $l2 "%g%g%g" cx cy cz
+        set cyl cylinder
+        scan $l2 "%g%g" thick hei
+        if {[gets $f l2] < 0} return
+        scan $l2 "%g%g%g" cx cy cz
       }
       bal {
-	set cyl sphere
-	scan $l2 "%g" thick
+        set cyl sphere
+        scan $l2 "%g" thick
       }
       default {
-	set cyl cuboid
-	scan $l2 "%g%g%g" thick hei wid
-	if {[gets $f l2] < 0} return
-	scan $l2 "%g%g%g" cx cy cz
+        set cyl cuboid
+        scan $l2 "%g%g%g" thick hei wid
+        if {[gets $f l2] < 0} return
+        scan $l2 "%g%g%g" cx cy cz
       }
     }
     if {[gets $f l1] < 0} return
@@ -4838,7 +4831,7 @@ proc serializeEnvFile {f mode var app} {
     foreach l $nlist {catch {unset $l}}
     if {$f == "0"} return
     if {[gets $f l0] < 0 || [gets $f l1] < 0 || \
-	    [gets $f l2] < 0 || [gets $f l3] < 0 } return
+            [gets $f l2] < 0 || [gets $f l3] < 0 } return
     scan $l0 "%g%g%g" env_thick env_wid env_hei
     set env_sffile $l1
     scan $l2 "%g%g%g" env_inc env_sca env_abs
@@ -4905,24 +4898,24 @@ proc serializeIneFile {f mode var app} {
     if {$f == "0"} return
     if [readNumItems $f $alist $app] {
       if {[gets $f l1] >= 0} {
-	set fitem [string tolower [lindex [split $l1] 0]]
-	switch [string range $fitem 0 2] {
-	  cyl {set cyl cylinder}
-	  hol {set cyl hollow-cylinder}
-	  bal {set cyl sphere}
-	  default {set cyl rectangular}
-	}
-	if [readNumItems $f $blist $app] {
-	  if {$gen} {set gen "user defined frame"} else {
-	    set gen "standard frame generation"}
-	}
+        set fitem [string tolower [lindex [split $l1] 0]]
+        switch [string range $fitem 0 2] {
+          cyl {set cyl cylinder}
+          hol {set cyl hollow-cylinder}
+          bal {set cyl sphere}
+          default {set cyl rectangular}
+        }
+        if [readNumItems $f $blist $app] {
+          if {$gen} {set gen "user defined frame"} else {
+            set gen "standard frame generation"}
+        }
       }
     }
   } else {
     puts $f "$lf $ahf $avf\n$dlf $dah $dav\n$scc $asc\n$x1 $y1 $z1\n$hoff $voff"
     switch $cyl {
       cylinder {puts $f cyl}
-	  hollow-cylinder {puts $f holcyl}
+          hollow-cylinder {puts $f holcyl}
       sphere   {puts $f bal}
       default  {puts $f cub}
     }
@@ -4945,9 +4938,9 @@ proc serializeSscFile {f mode var app} {
     if [readNumItems $f $alist $app] {
       if {[gets $f line] < 0} return
       switch [string range [string tolower $line] 0 2] {
-	cyl {set geom cylindrical}
-	cub {set geom cubic}
-	default {set geom ball}
+        cyl {set geom cylindrical}
+        cub {set geom cubic}
+        default {set geom ball}
       }
       readNumItems $f $clist $app
       readNumItems $f $dlist $app
@@ -4975,11 +4968,11 @@ proc serializeRefFile {f mode var app} {
     if {$f == "0"} return
     if [readNumItems $f $alist $app] {
       if $gen {
-	# user frame
-	set gen "user defined frame"
-	readNumItems $f $blist $app
+        # user frame
+        set gen "user defined frame"
+        readNumItems $f $blist $app
       } else {
-	set gen "standard defined frame"
+        set gen "standard defined frame"
       }
     }
   } else {
@@ -5009,16 +5002,16 @@ proc convert2String {ll} {
     if {[incr i] == 2} {
       # shape on position 2, must be C or R
       if {$e == 1 || $e == "C"} {
-	lappend l circular
+        lappend l circular
       } else {
-	lappend l rectangular
+        lappend l rectangular
       }
     } elseif {$i >= 11 && $i <=13} {
       # filenames on positions 11 12 13, may be none
       if {$e == "none" || $e == 0} {
-	lappend l {}
+        lappend l {}
       } else {
-	lappend l $e
+        lappend l $e
       }
     } elseif {$i == 14} {
       # modtype on position 14, must be from 0 to 4
@@ -5039,20 +5032,20 @@ proc convert2Code {ll app} {
   foreach e $ll {
     set v [entryVal $e $app]
     if {[incr i] == 2} {
-	  #2:shape
+          #2:shape
       if {$v == "circular"} {set v C} else {set v R}
     } elseif {$i >= 11 && $i <= 13} {
-	  #11:wfile..13:wtfile
+          #11:wfile..13:wtfile
       if {$v == "" || $v == "0"} {set v none}
     } elseif {$i == 14} {
-	  #14:modtype
+          #14:modtype
       # be careful: v might have - as value
       switch -- $v {
-	"decoupled poisoned" {set v 1}
-	"decoupled unpoisoned" {set v 2}
-	coupled {set v 3}
-	multi-spectral {set v 4}
-	default {set v 0}
+        "decoupled poisoned" {set v 1}
+        "decoupled unpoisoned" {set v 2}
+        coupled {set v 3}
+        multi-spectral {set v 4}
+        default {set v 0}
       }
     } elseif {$v == ""} {
       set v 0
@@ -5092,10 +5085,10 @@ proc serializeModFile {f mode var app} {
       switch [incr imode] {
         0 {set tl $il1}
         1 {set tl $il2
-	        set umod2 used
+                set umod2 used
         }
         2 {set tl $il3
-	        set umod3 used
+                set umod3 used
         }
       }
       set len1 [llength $ll]
@@ -5251,10 +5244,10 @@ proc editFile {var param ext app} {
   if {[set serializeproc [getSerializeProc $ext]] == ""} {
     global bgColor fgColor
     text $w.v.text -relief raised -bd 2 \
-	-height 32 -width 80\
-	-font [monoFont] -bg $bgColor -fg $fgColor\
-	-setgrid 1\
-	-yscrollcommand "$w.v.yscroll set"
+        -height 32 -width 80\
+        -font [monoFont] -bg $bgColor -fg $fgColor\
+        -setgrid 1\
+        -yscrollcommand "$w.v.yscroll set"
     yscroll $w.v "$w.v.text yview"
     pack $w.v.text -side left -fill both -expand yes
   }
@@ -5345,7 +5338,7 @@ proc moveDown {oldi} {
     if {[globVal mod$i] != $DummyEntry} {
       incr i
       if {![winfo exists $w.g$i.label]} {
-	moduleMenus $i
+        moduleMenus $i
       }
     }
   }
@@ -5361,10 +5354,10 @@ proc moveDown {oldi} {
     set r _$i\$
     foreach n $allglob {
       if [regexp $r $n] {
-	lappend rmlist $n
-	regsub $r $n _$newi newr
-	# save entry variable settings of these modules
-	lappend deflist [list $newr [globVal $n]]
+        lappend rmlist $n
+        regsub $r $n _$newi newr
+        # save entry variable settings of these modules
+        lappend deflist [list $newr [globVal $n]]
       }
     }
   }
@@ -5505,12 +5498,12 @@ proc removeMod {oldi} {
     set r _$i\$
     foreach n $allglob {
       if [regexp $r $n] {
-	lappend rmlist $n
-	if {$i > $oldi} {
-	  regsub $r $n _$newi newr
-	  # save entry variable settings of these modules
-	  lappend deflist [list $newr [globVal $n]]
-	}
+        lappend rmlist $n
+        if {$i > $oldi} {
+          regsub $r $n _$newi newr
+          # save entry variable settings of these modules
+          lappend deflist [list $newr [globVal $n]]
+        }
       }
     }
     if {$i > $oldi} {
@@ -5723,7 +5716,7 @@ proc moduleMenus {{n 1}} {
     button $w.cross -image fcross -command removeDigest
     button $w.right -image fright -command digestView -bg $bgColor -fg $fgColor
     label $w.l -text "Instrument Digest"\
-	-font $lfn -bg $bgColor -fg $fgColor
+        -font $lfn -bg $bgColor -fg $fgColor
     pack $w.cross -side left  -anchor w
     pack $w.right -side right -padx 1 -anchor w
     pack $w.l -side top -fill x -anchor w
@@ -5732,8 +5725,9 @@ proc moduleMenus {{n 1}} {
   for {set i 1} {$i <= $maxi} {incr i} {
     set w $Mlf.g$i
     set cm "checkModVar $i"
-    if [winfo exists $w.label] continue
+    set skip [winfo exists $w.label]
     addModMenu $w.label $i
+    if $skip continue
 
     set varName mod$i
     upvar #0 $varName var
@@ -5759,24 +5753,24 @@ proc moduleMenus {{n 1}} {
 
     set wm $w.opt.menu
     menubutton $w.opt -textvariable $varName -indicatoron 1 \
-	-menu $wm -font $lfn -bg $bgColor -fg $fgColor -relief raised -bd 2 -width 18 \
-	-highlightthickness 2 -anchor c
+        -menu $wm -font $lfn -bg $bgColor -fg $fgColor -relief raised -bd 2 -width 18 \
+        -highlightthickness 2 -anchor c
     menu $wm -tearoff 0 -bg $bgColor -fg $fgColor
     $wm add radiobutton -label $DummyEntry -variable $varName \
-	-command $cm -font $lfn
+        -command $cm -font $lfn
     foreach label $AvailableSET {
       set j [lindex $label 0]
       if {[set subl [lindex $label 1]] == ""} {
-	$wm add radiobutton -label $j -variable $varName \
-	    -command $cm -font $lfn
+        $wm add radiobutton -label $j -variable $varName \
+            -command $cm -font $lfn
       } else {
-	set subm $wm.$j
-	$wm add cascade -label $j -menu $subm -font $lfn
-	menu $subm -tearoff 0 -bg $bgColor -fg $fgColor
-	foreach jj $subl {
-	  $subm add radiobutton -label $jj -variable $varName \
-	      -command $cm -font $lfn
-	}
+        set subm $wm.$j
+        $wm add cascade -label $j -menu $subm -font $lfn
+        menu $subm -tearoff 0 -bg $bgColor -fg $fgColor
+        foreach jj $subl {
+          $subm add radiobutton -label $jj -variable $varName \
+              -command $cm -font $lfn
+        }
       }
     }
     pack $w.label $w.opt $w.right $w.nlabel -side left -padx 1 -anchor w

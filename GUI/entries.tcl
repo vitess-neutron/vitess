@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme  
+### M. Fromme
 ### June 1999
 
 proc showRange {name e op} {
@@ -20,14 +20,14 @@ proc generateExplanation {w list {descr ""}} {
   if {$more != ""} {
     foreach s [split $more "\n"] {
       while {[string length $s] > $mlen} {
-	set ts [string range $s 0 $mlen]
-	if {[set j [string last " " $ts]] < 0} {
-	  append explanation "\n\t[string range $s 0 $mlen]"
-	  set j $mlen
-	} else {
-	  append explanation "\n\t[string range $ts 0 $j]"
-	}
-	set s [string range $s [incr j] end]
+        set ts [string range $s 0 $mlen]
+        if {[set j [string last " " $ts]] < 0} {
+          append explanation "\n\t[string range $s 0 $mlen]"
+          set j $mlen
+        } else {
+          append explanation "\n\t[string range $ts 0 $j]"
+        }
+        set s [string range $s [incr j] end]
       }
       append explanation "\n\t$s"
     }
@@ -37,20 +37,20 @@ proc generateExplanation {w list {descr ""}} {
     append explanation "\n\tinternal variable name : [lindex $descr 0]"
     switch [lindex $descr 1] {
       int - float {
-	set arg4 [lindex $descr 4]
-	set arg5 [lindex $descr 5]
-	if {$arg4 == "1" && $arg5 == ""} {
-	  append explanation "\n\tmandatory;"
-	} else {
-	  if {[lindex $descr 6] == "1"} {
-	    append explanation "\n\tmandatory; restrictions: "
-	  } else {
-	    append explanation "\n\trestrictions:"
-	  }
-	  set name [lindex $descr 0]
-	  append explanation [showRange $name $arg4 ge]
-	  append explanation [showRange $name $arg5 le]
-	}
+        set arg4 [lindex $descr 4]
+        set arg5 [lindex $descr 5]
+        if {$arg4 == "1" && $arg5 == ""} {
+          append explanation "\n\tmandatory;"
+        } else {
+          if {[lindex $descr 6] == "1"} {
+            append explanation "\n\tmandatory; restrictions: "
+          } else {
+            append explanation "\n\trestrictions:"
+          }
+          set name [lindex $descr 0]
+          append explanation [showRange $name $arg4 ge]
+          append explanation [showRange $name $arg5 le]
+        }
       }
     }
   }
@@ -117,9 +117,16 @@ proc myEntry {w variable width {app ""} {line ""}} {
 
 proc optEntry {w var items} {
   global bgColor radioColor buttonColorFont
+  set len 1
+  foreach i $items {
+    set ltmp [string length $i]
+    if {$ltmp > $len } {
+      set len $ltmp
+    }
+  }
   menubutton $w -textvariable $var -indicatoron 1 -menu $w.menu \
-	    -relief raised -bd 2 -highlightthickness 2 -anchor c \
-	    -direction flush -bg $radioColor -fg $buttonColorFont -font [textFont]
+            -relief raised -bd 2 -highlightthickness 2 -anchor w -width $len \
+            -direction flush -bg $radioColor -fg $buttonColorFont -font [textFont]
   menu $w.menu -tearoff 0
   foreach i $items {
     $w.menu add radiobutton -label $i -variable $var
@@ -147,7 +154,7 @@ proc fileEntry {w line labelwidth width {app _}} {
   set dirtype [lindex $line 7]
   if {$dirtype != "d"} {set dirtype f}
   set entype ""
-  set mondefault 1
+  set mondefault 0
   switch [lindex $line 1] {
     browsedir        {set dirtype d}
     editablefile     {set entype 0}
@@ -180,11 +187,11 @@ proc fileEntry {w line labelwidth width {app _}} {
 
   if {$entype == 3} {
     button $w.p -text Plot -background $bgColor -width $ww2 -font $fnt\
-	  -command [list plotMonFile $variable $app]
+          -command [list plotMonFile $variable $app]
     # template radio selection
     forceDef [set var ${variable}_o$app] -
     frame $w.u -bg $bgColor
-    optEntry $w.u.r $var [concat {-} [getPlotTemplates]]
+    optEntry $w.u.r $var [concat - [getPlotApps]]
     pack $w.u.r
     label $w.lu -text using -bg $bgColor
     pack $w.l $w.e $w.b $w.p $w.lu $w.u -side left -anchor w
@@ -197,21 +204,21 @@ proc fileEntry {w line labelwidth width {app _}} {
 
   if {$entype != ""} {
     button $w.x -text Edit -background $bgColor -width $ww2 -font $fnt\
-	-command "editFile $variable $entype $ext $app"
+        -command "editFile $variable $entype $ext $app"
     if {$entype < 2} {
       pack $w.l $w.e $w.b $w.bn $w.x -side left -anchor w
     } else {
       button $w.p -text Plot -background $bgColor -width $ww2 -font $fnt\
-	  -command [list plotMonFile $variable $app]
+          -command [list plotMonFile $variable $app]
       # Autoplot selection
       # toggle has a special _r_app variable name
       forceDef [set var ${variable}_r$app] $mondefault
       checkbutton $w.r -text AutoPlot -variable $var -bg $bgColor
       # template radio selection
-      set tlist [getPlotTemplates]
+      set tlist [getPlotApps]
       if {[llength $tlist] > 0} {
         # selection has a special _o_app variable name
-        set var ${variable}_o$app
+        forceDef [set var ${variable}_o$app] -
         frame $w.u -bg $bgColor
         # add a default - option as first choice
         # which means do not select a template as default
@@ -279,8 +286,8 @@ proc strEntryVal {v {app _}} {
   }
   switch [lindex $line 1] {
     string - longstring - filename - parfilename - editablefile - browsefile - browsedir -\
-	pareditablefile - parbrowsefile -\
-	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile { return "\"$locv\""}
+        pareditablefile - parbrowsefile -\
+        moneditablefile - mon2editablefile - mneditablefile - mn2editablefile { return "\"$locv\""}
     default { return $locv}
   }
 }
@@ -315,7 +322,7 @@ proc radioRowlpar {w line app {lwidth 12}} {
   pack $w.f$c -side top
   foreach f [lindex $line 4] {
     radiobutton $w.f$c.b$i -text $f -font $font \
-	-variable $var -value $f -bg $radioColor -fg $buttonColorFont
+        -variable $var -value $f -bg $radioColor -fg $buttonColorFont
     pack $w.f$c.b$i -in $w.f$c -padx 0.5m -side left -anchor w
     incr i
     incr testlen [expr 4 + [string length $f]]
@@ -340,7 +347,7 @@ proc radioRowlpar_down {w line app {lwidth 12}} {
   set i 0
   foreach f [lindex $line 4] {
     radiobutton $w.b$i -font $font \
-	-text $f -variable $var -value $f -bg $radioColor -fg $buttonColorFont
+        -text $f -variable $var -value $f -bg $radioColor -fg $buttonColorFont
     pack $w.b$i -in $w -padx 0.5m -side top -anchor w
     incr i
   }
@@ -411,7 +418,7 @@ proc generateEntries {w globalset {delist {}} {app _}} {
 
   foreach l $delist {
     global $l
-    unset $l;				# unset old entry variables
+    unset $l;                                # unset old entry variables
   }
   global bgColor fileentrywidth itemlabwidth
   set gs [string trim $globalset]
@@ -427,6 +434,12 @@ proc generateEntries {w globalset {delist {}} {app _}} {
 
     for {set i 0} {$i < 3} {incr i} {
       fileEntry $w.$i.e [lindex $all $i] $itemlabwidth $fileentrywidth $app
+    }
+    # disable input/output file entries
+    foreach i {0 1} {
+      $w.$i.e.e configure -state disabled
+      $w.$i.e.b configure -state disabled
+      $w.$i.e.bn configure -state disabled
     }
 
     foreach i {3 4} o {"" opt} {
@@ -449,25 +462,25 @@ proc generateEntries {w globalset {delist {}} {app _}} {
 
     for {set k $item} {$k < $allitems} {incr k} {
       switch [lindex [set line [lindex $all $k]] 1] {
-	editablefile - browsefile - browsedir - pareditablefile - parbrowsefile -\
-	moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
-	                   incr editfile;    lappend leditfile $line}
-	string - filename {incr filestring;  lappend lfilestring $line}
-	longstring        {incr longstring;  lappend llongstring $line}
-	radio             {incr radio; lappend lradio $line}
-	select            {incr select; lappend lselect $line}
-	int - float       {incr intfloat;    lappend lintfloat $line}
-	header            {
-	  set header [lindex $line 0]
-	  break
-	}
-	default           break
+        editablefile - browsefile - browsedir - pareditablefile - parbrowsefile -\
+        moneditablefile - mon2editablefile - mneditablefile - mn2editablefile {
+                           incr editfile;    lappend leditfile $line}
+        string - filename {incr filestring;  lappend lfilestring $line}
+        longstring        {incr longstring;  lappend llongstring $line}
+        radio             {incr radio; lappend lradio $line}
+        select            {incr select; lappend lselect $line}
+        int - float       {incr intfloat;    lappend lintfloat $line}
+        header            {
+          set header [lindex $line 0]
+          break
+        }
+        default           break
       }
     }
     if {$header == ""} {set total 0} else {set total 1}
     incr total [expr ($intfloat + 2)/3 + $editfile + \
-		    ($radio + 2)/3 + $select + \
-		    ($filestring + 1)/2 + $longstring]
+                    ($radio + 2)/3 + $select + \
+                    ($filestring + 1)/2 + $longstring]
     set i $item
     for {set j $i} {$j < $total + $i} {incr j} {
       tFrame $w.$j

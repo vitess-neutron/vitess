@@ -1,5 +1,6 @@
 variables:
-  VITESS_VERSION: "3.7"
+  VITESS_VERSION: "3.8"
+  GR_VERSION: "0.73.24"
 
 stages:
   - build
@@ -33,7 +34,7 @@ workflow:
     - make all LTO=1
     - make install
     - cd ..
-    - mkdir artifacts-${OS}-${ARCH}
+    - mkdir -p artifacts-${OS}-${ARCH}
     - cp -r MODULES artifacts-${OS}-${ARCH}
   artifacts:
     paths:
@@ -56,8 +57,6 @@ workflow:
 
 compile-rocky8:
   extends: .compile-linux
-  rules:
-    - when: on_success
   image: rockylinux:8
   variables:
     OS: Rocky8
@@ -65,37 +64,22 @@ compile-rocky8:
     LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
   before_script:
     - dnf install -y epel-release
-    - dnf install -y make gcc-toolset-12 libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - dnf install -y make gcc-toolset-12 libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3.12
     - . /opt/rh/gcc-toolset-12/enable
     - *linux_before_script
 
 compile-rocky9:
   extends: .compile-linux
+  rules:
+    - when: on_success
   image: rockylinux:9
   variables:
     OS: Rocky9
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - dnf install -y --nobest glibc-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3
     - *linux_before_script
-
-compile-centos7:
-  extends: .compile-linux
-  image: centos:7
-  variables:
-    OS: CentOS7
-    ARCH: x86_64
-    NONCRYSTAL: 1
-    LIBTORCHPATH:
-  before_script:
-    - sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS*.repo
-    - sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS*.repo
-    - sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS*.repo
-    - yum install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip libxml2-devel
-    - *linux_before_script
-    - cd vitess-data
-    - ./cmake-3.28.5-linux-x86_64.sh --skip-license --prefix=/usr/local
-    - cd ..
 
 compile-ubuntu:
   extends: .compile-linux
@@ -105,7 +89,7 @@ compile-ubuntu:
     ARCH: x86_64
   before_script:
     - apt-get update
-    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev python3
     - *linux_before_script
 
 compile-fedora40:
@@ -115,7 +99,7 @@ compile-fedora40:
     OS: Fedora40
     ARCH: x86_64
   before_script:
-    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip cmake libxml2-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libXpm-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3
     - *linux_before_script
 
 compile-debian:
@@ -126,7 +110,7 @@ compile-debian:
     ARCH: x86_64
   before_script:
     - apt-get update
-    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev
+    - apt-get install -y make gcc 'g++' libxpm-dev libpng-dev libgd-dev zlib1g-dev git unzip cmake libxml2-dev python3
     - *linux_before_script
 
 compile-darwin:
@@ -142,7 +126,10 @@ compile-darwin:
     DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
     DARWIN_DATA_USER: "gitlab+deploy-token-92"
     DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
+    LIBTORCHVERSION: "2.2.2"
+    LIBTORCHPATH: "${CI_PROJECT_DIR}/vitess-data/libtorch"
     NOGD: 0
+    DARWIN_UNIVERSAL: 1
   before_script:
     - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
     - cd vitess-data
@@ -158,13 +145,25 @@ compile-darwin:
     - tar xzf cmake.tgz
     - sudo cp -a CMake.app /Applications/
     - sudo ln -s /Applications/CMake.app/Contents/bin/cmake /usr/local/bin/cmake
+    - mkdir libtorch
+    - cd libtorch
+    - unzip "../libtorch-macos-arm64-${LIBTORCHVERSION}.zip"
+    - mv libtorch arm64
+    - unzip "../libtorch-macos-x86_64-${LIBTORCHVERSION}.zip"
+    - mv libtorch x86_64
     - cd ..
+    - mkdir -p ../artifacts-${OS}-${ARCH}
+    - tar -xzf tcltk.tgz -C ../artifacts-${OS}-${ARCH}
+    - curl -LOv https://gr-framework.org/downloads/gr-${GR_VERSION}-Darwin-universal.tar.gz
+    - tar -xzf gr-${GR_VERSION}-Darwin-universal.tar.gz -C ../artifacts-${OS}-${ARCH}
+    - cd ../artifacts-${OS}-${ARCH}/gr
+    - rm -rf Applications/gksqt.app Applications/GKSTerm.app
+    - cd ../..
   artifacts:
     paths:
       - artifacts-Darwin-universal/
 
-
-compile-windows:
+.compile-windows-base:
   extends: .compile-base
   rules:
     - when: on_success
@@ -173,79 +172,114 @@ compile-windows:
     - libvirt
   variables:
     OS: Windows10
-    ARCH: x86
     WINDOWS_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-windows-data.git"
     WINDOWS_DATA_USER: "gitlab+deploy-token-91"
     WINDOWS_DATA_PASSWORD: "NzWKCpEizPVzMEUSgxGA"
-  script:
+  before_script:
     - cd /c
     - git clone -b vitess${VITESS_VERSION} https://${WINDOWS_DATA_USER}:${WINDOWS_DATA_PASSWORD}@${WINDOWS_DATA_REPO} vitess-data
     - mv vitess-data/tcl /c/
-    - mv vitess-data/gnuplot /c/
+    - curl -LOv https://gr-framework.org/downloads/gr-${GR_VERSION}-Windows-x86_64-msvc.tar.gz
+    - tar -xzf gr-${GR_VERSION}-Windows-x86_64-msvc.tar.gz -C /c/
     - cd -
+
+.windows_package_script: &windows_package_script
+  - mkdir artifacts-${OS}-${ARCH}
+  - cp -r MODULES artifacts-${OS}-${ARCH}/
+  - mkdir -p /c/vitess${VITESS_VERSION}
+  - cp -r `cat filelist.txt` /c/vitess${VITESS_VERSION}/
+  - /c/vitess-data/innosetup/ISCC.exe TOOLS/Win10Vitess${VITESS_VERSION}.iss
+  - cp TOOLS/Output/mysetup.exe artifacts-${OS}-${ARCH}/Vitess${VITESS_VERSION}-${OS}-${ARCH}.exe
+
+compile-windows32:
+  extends: .compile-windows-base
+  variables:
+    ARCH: x86
+  script:
     - cd SRC
-    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak
+    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak all
     - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak install
-    - /c/vitess-data/vcvars_cmd32 nmake -f vitess.mak clean
     - cd ..
-    - mkdir artifacts-${OS}-${ARCH}
-    - cp -r MODULES artifacts-${OS}-${ARCH}/
-    - mkdir -p /c/vitess${VITESS_VERSION}
-    - cp -r `cat filelist.txt` /c/vitess${VITESS_VERSION}/
-    - /c/vitess-data/innosetup/ISCC.exe TOOLS/Win10Vitess${VITESS_VERSION}.iss
-    - cp TOOLS/Output/mysetup.exe artifacts-${OS}-${ARCH}/Vitess${VITESS_VERSION}-${OS}-${ARCH}.exe
+    - *windows_package_script
   artifacts:
     paths:
       - artifacts-Windows10-x86/
 
-test-rocky8:
-  stage: test
-  image: rockylinux:8
-  needs:
-    - job: compile-rocky8
+compile-windows64:
+  extends: .compile-windows-base
   variables:
-    LINUX_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-linux-data.git"
-    LINUX_DATA_USER: "gitlab+deploy-token-147"
-    LINUX_DATA_PASSWORD: "gldt-UDysz-dxdz-iXsSPQRy-"
-    LIBTORCHFILE: "libtorch-2.2.2-rocky8.zip"
-    LD_LIBRARY_PATH: "${CI_PROJECT_DIR}/vitess-data/libtorch/lib"
+    ARCH: x86_64
+  script:
+    - cd SRC
+    - vcvars_cmd nmake -f vitess.mak all
+    - vcvars_cmd nmake -f vitess.mak install
+    - cd ..
+    - *windows_package_script
+  artifacts:
+    paths:
+      - artifacts-Windows10-x86_64/
+
+test-rocky9:
+  extends: compile-rocky9
+  stage: test
+  rules:
+    - when: on_success
+  needs: []
   before_script:
-    - dnf install -y epel-release
-    - dnf install -y make gcc-toolset-12 libXpm gd zlib git unzip python3 python3-pyyaml libxml2
-    - . /opt/rh/gcc-toolset-12/enable
+    - dnf install -y --nobest glibc-devel
+    - dnf install -y make gcc 'gcc-c++' libXpm-devel libpng-devel gd-devel zlib-devel git unzip cmake libxml2-devel python3 diffutils libasan libubsan
     - *linux_before_script
   script:
-    - cp -rf artifacts-Rocky8-x86_64/MODULES .
-    - python3 tests/check_yaml.py
-    - tests/check_examples.sh
+    - cd SRC
+    - make install DEBUG=2 NOG2=1
+    - cd ..
+    - tests/test_examples.sh
+    - tests/test_modules.sh
+  artifacts:
+    paths: []
 
 test-darwin:
+  extends: compile-darwin
   stage: test
-  image: macos:sonoma-xcode
-  tags:
-    - utm
-  needs:
-    - job: compile-darwin
-  variables:
-    DARWIN_DATA_REPO: "iffgit.fz-juelich.de/vitess/vitess-darwin-data.git"
-    DARWIN_DATA_USER: "gitlab+deploy-token-92"
-    DARWIN_DATA_PASSWORD: "4rGWsgBgYvzNeCK6mek6"
-  before_script:
-    - git clone -b vitess${VITESS_VERSION} https://${DARWIN_DATA_USER}:${DARWIN_DATA_PASSWORD}@${DARWIN_DATA_REPO} vitess-data
-    - cd vitess-data
-    - sudo hdiutil attach XQuartz-2.8.2.dmg
-    - sudo installer -package /Volumes/XQuartz-2.8.2/XQuartz.pkg -target /
-    - sudo hdiutil detach /Volumes/XQuartz-2.8.2
-    - cd ..
-  script:
-    - cp -rf artifacts-Darwin-universal/MODULES .
-    - tests/check_examples.sh
-
-test-largefiles:
-  stage: test
-  image: rockylinux:9
+  rules:
+    - when: on_success
   needs: []
   script:
+    - cd SRC
+    - make install DEBUG=2 NOG2=1
+    - cd ..
+    - tests/test_examples.sh
+    - tests/test_modules.sh
+  artifacts:
+    paths: []
+
+test-windows64:
+  extends: compile-windows64
+  stage: test
+  rules:
+    - when: on_success
+  needs: []
+  script:
+    - pacman -S --noconfirm diffutils
+    - cd SRC
+    - vcvars_cmd nmake -f vitess.mak DEBUG=1 all
+    - vcvars_cmd nmake -f vitess.mak DEBUG=1 install
+    - cd ..
+    - tests/test_modules.sh
+  artifacts:
+    paths: []
+
+test-files:
+  stage: test
+  image: rockylinux:9
+  needs:
+    - job: compile-rocky9
+  before_script:
+    - dnf install -y python3 python3-pyyaml
+  script:
+    - cp -rf artifacts-Rocky9-x86_64/MODULES .
+    - python3 tests/coverage.py || true
+    - python3 tests/test_yaml_format.py -v
     - LARGEFILES="$(find . -type f -size +100M -not -path './.git/*' -print)";
       if [ -n "${LARGEFILES}" ]; then
         echo "The following files exceed the github limit of 100MB:";
@@ -263,13 +297,15 @@ package:
       allow_failure: true
   script:
     - mkdir Downloads
-    - for OSARCH in Rocky8-x86_64 CentOS7-x86_64 Ubuntu-x86_64 Darwin-universal Windows10-x86 Rocky9-x86_64 Fedora40-x86_64 Debian-x86_64; do
+    - for OSARCH in Rocky8-x86_64 Ubuntu-x86_64 Darwin-universal Windows10-x86 Windows10-x86_64 Rocky9-x86_64 Fedora40-x86_64 Debian-x86_64; do
         mkdir -p ${OSARCH}/vitess${VITESS_VERSION};
         cp -r `cat filelist.txt` ${OSARCH}/vitess${VITESS_VERSION}/;
         cp -rf artifacts-${OSARCH}/MODULES ${OSARCH}/vitess${VITESS_VERSION}/;
+        [ ${OSARCH} = Darwin-universal ] && cp -r artifacts-${OSARCH}/Wish.app ${OSARCH}/vitess${VITESS_VERSION}/ && cp -r artifacts-${OSARCH}/gr ${OSARCH}/vitess${VITESS_VERSION}/;
         tar -czf Downloads/Vitess${VITESS_VERSION}-${OSARCH}.tar.gz -C ${OSARCH} vitess${VITESS_VERSION};
       done
     - cp artifacts-Windows10-x86/Vitess${VITESS_VERSION}-Windows10-x86.exe Downloads/
+    - cp artifacts-Windows10-x86_64/Vitess${VITESS_VERSION}-Windows10-x86_64.exe Downloads/
   artifacts:
     paths:
       - Downloads/

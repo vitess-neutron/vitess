@@ -1,0 +1,225 @@
+mon_brilliance:
+  executable: "mon_brilliance"
+  label: "mon_brilliance"
+  category: "compatibility"
+  deprecated: true
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "monitor file"
+    tooltip: "Monitor output file containing brilliance or brilliance transfer as a function of the chosen parameter"
+    default: "monitor.brl"
+    prefix: "-O"
+  - name: "sRefFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "reference file"
+    tooltip: "Brilliance file used as reference (it is used to calculate the brilliance transfer)"
+    prefix: "-S"
+  - name: "sFluxFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "flux file"
+    tooltip: "This file is used to monitor the average and max. brilliance as a function of the given parameter set. 1 line is written in each simulation"
+    prefix: "-F"
+
+  - name: "eBrlPar"
+    label: "variable parameter"
+    tooltip: "ID for the parameter, as a function of which the brilliance is shown"
+    <<: *VtBrlPar
+    options: ["VT_TIME","VT_LAMBDA","VT_ENERGY","VT_POS_Y","VT_POS_Z","VT_POS_R","VT_DIV_HOR","VT_DIV_VERT","VT_DIV_RAD"]
+    default: "VT_TIME"
+    column: 0
+    prefix: "-k"
+  - name: "eBrlNorm"
+    label: "norm. type"
+    tooltip: "absolute: absolute brilliance [n/(cm²s sr Ang)] transfer: relative brilliance (= brilliance transfer) 1% lambda  brilliance within 1% DelLamdba/Lambda [n/(cm²s sr)]"
+    <<: *VtBrlNorm
+    options: ["BRL_ABS","BRL_TRANSF","BRL_PCT"]
+    default: "BRL_ABS"
+    column: 1
+    prefix: "-N"
+
+  - name: "bLogBin"
+    type: "bool"
+    label: "logarithmic binning"
+    tooltip: "yes: bin size increases exponentially no: bin size is constant"
+    default: no
+    column: 0
+    prefix: "-B"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only neutrons meeting the monitor conditions are written no: all are written"
+    default: no
+    column: 1
+    prefix: "-e"
+
+  - name: "nBins"
+    type: "int"
+    label: "number of bins"
+    tooltip: "number of monitor channels"
+    default: 100
+    min: 1
+    column: 0
+    prefix: "-n"
+  - name: "iColor"
+    type: "int"
+    label: "color"
+    tooltip: "color of the trajectories condidered by the monitor"
+    min: -1
+    default: -1
+    column: 1
+    prefix: "-C"
+
+  - name: "MinTime"
+    type: "float"
+    label: "min. time"
+    unit: "ms"
+    tooltip: "minimal time-of-flight to be taken into account"
+    column: 0
+    prefix: "-t"
+
+  - name: "MaxTime"
+    type: "float"
+    label: "max. time"
+    unit: "ms"
+    tooltip: "maximal time-of-flight to be taken into account"
+    column: 1
+    prefix: "-T"
+
+  - name: "MinLambda"
+    type: "float"
+    label: "min. lambda"
+    unit: "Ang"
+    tootip: "minimal wavelength to be taken into account"
+    min: 0.0
+    column: 0
+    prefix: "-l"
+  - name: "MaxLambda"
+    type: "float"
+    label: "max. lambda"
+    unit: "Ang"
+    tooltip: "maximal wavelength to be taken into account"
+    min: 0.0
+    column: 1
+    prefix: "-L"
+  - name: "MinE"
+    type: "float"
+    label: "min. energy"
+    unit: "meV"
+    tooltip: "minimal energy to be taken into account"
+    min: 0.0
+    column: 0
+    prefix: "-m"
+  - name: "MaxE"
+    type: "float"
+    label: "max. energy"
+    unit: "meV"
+    tooltip: "maximal energy to be taken into account"
+    min: 0.0
+    column: 1
+    prefix: "-M"
+
+  - name: "MinY"
+    type: "float"
+    label: "min. hor. pos."
+    unit: "cm"
+    tooltip: "minimal horizontal position to be taken into account"
+    column: 0
+    prefix: "-y"
+  - name: "MaxY"
+    type: "float"
+    label: "max. hor. pos."
+    unit: "cm"
+    tooltip: "maximal horizontal position to be taken into account"
+    column: 1
+    prefix: "-Y"
+  - name: "MinZ"
+    type: "float"
+    label: "min. vert. pos."
+    unit: "cm"
+    tooltip: "minimal vertical position to be taken into account"
+    column: 0
+    prefix: "-z"
+  - name: "MaxZ"
+    type: "float"
+    label: "max. vert. pos."
+    unit: "cm"
+    tooltip: "maximal vertical position to be taken into account"
+    column: 1
+    prefix: "-Z"
+  - name: "MinRadius"
+    type: "float"
+    label: "min. radius"
+    unit: "cm"
+    tooltip: "minimal radial position to be taken into account"
+    min: 0.0
+    column: 0
+    prefix: "-d"
+  - name: "MaxRadius"
+    type: "float"
+    label: "max. radius"
+    unit: "cm"
+    tooltip: "maximal radial position to be taken into account"
+    min: 0.0
+    column: 1
+    prefix: "-D"
+
+  - name: "MinDivY"
+    type: "float"
+    label: "min. hor. div."
+    unit: "deg"
+    tooltip: "minimal hor. div. to be taken into account"
+    column: 0
+    prefix: "-h"
+  - name: "MaxDivY"
+    type: "float"
+    label: "max. hor. div."
+    unit: "deg"
+    tooltip: "maximal hor. div. to be taken into account"
+    column: 1
+    prefix: "-H"
+  - name: "MinDivZ"
+    type: "float"
+    label: "min. vert. div."
+    unit: "deg"
+    tooltip: "minimal vert. div. to be taken into account"
+    column: 0
+    prefix: "-v"
+  - name: "MaxDivZ"
+    type: "float"
+    label: "max. vert. div."
+    unit: "deg"
+    tooltip: "minimal vert. div. to be taken into account"
+    column: 1
+    prefix: "-V"
+  - name: "MinDivR"
+    type: "float"
+    label: "min. radial div."
+    unit: "deg"
+    tooltip: "minimal radial div. to be taken into account"
+    min: 0.0
+    column: 0
+    prefix: "-r"
+  - name: "MaxDivR"
+    type: "float"
+    label: "max. radial  div."
+    unit: "deg"
+    tooltip: "maximal radial div. to be taken into account"
+    min: 0.0
+    column: 1
+    prefix: "-R"
+
+  - name: "Freq"
+    type: "float"
+    label: "frequency"
+    unit: "Hz"
+    tooltip: "source frequency"
+    column: 0
+    prefix: "-f"

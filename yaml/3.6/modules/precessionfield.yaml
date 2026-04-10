@@ -1,0 +1,153 @@
+precessionfield:
+  executable: "precessionfield"
+  label: "precessionfield"
+  category: "magnetic_field"
+
+  parameters:
+  - name: "Title_param"
+    type: "title"
+    label: "Field options"
+
+  - name: "bf"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "field map file"
+    tooltip: "data file giving the field map which is read in externally"
+    default: "magneticmap.dat"
+    column: 0
+    prefix: "-P"
+
+  - name: "inh"
+    type: "int"
+    label: "field option"
+    tooltip: "magnetic field option: 0: homogenenous, 1: inhomogeneous"
+    min: 0
+    max: 1
+    default: 1
+    column: 0
+    prefix: "-O"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Homogeneous field case"
+
+  - name: "dx"
+    type: "float"
+    label: "dimension field X [cm]"
+    tooltip: "active if homogeneous field, gives x dimension of the precession volume"
+    default: 10
+    column: 0
+    prefix: "-X"
+
+  - name: "dy"
+    type: "float"
+    label: "dimension field Y [cm]"
+    tooltip: "active if homogeneous field, gives y dimension of the precession volume"
+    default: 10
+    column: 1
+    prefix: "-Y"
+
+  - name: "dz"
+    type: "float"
+    label: "dimension field Z [cm]"
+    tooltip: "active if homogeneous field, gives z dimension of the precession volume"
+    default: 10
+    column: 2
+    prefix: "-V"
+
+  - name: "mx"
+    type: "float"
+    label: "magnetic field X [Gs]"
+    tooltip: "x component of the magnetic field in Gauss"
+    default: 1
+    column: 0
+    prefix: "-T"
+
+  - name: "my"
+    type: "float"
+    label: "magnetic field Y [Gs]"
+    tooltip: "y component of the magnetic field in Gauss"
+    default: 0
+    column: 1
+    prefix: "-G"
+
+  - name: "mz"
+    type: "float"
+    label: "magnetic field Z [Gs]"
+    tooltip: "z component of the magnetic field in Gauss"
+    default: 0
+    column: 2
+    prefix: "-H"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Geometry"
+
+  - name: "x"
+    type: "float"
+    label: "position main X [cm]"
+    tooltip: "center x position of the field map "
+    default: 5
+    column: 0
+    prefix: "-k"
+
+  - name: "y"
+    type: "float"
+    label: "position main Y [cm]"
+    tooltip: "center y position of the field map "
+    default: 0
+    column: 1
+    prefix: "-l"
+
+  - name: "z"
+    type: "float"
+    label: "position main Z [cm]"
+    tooltip: "center z position of the field map "
+    default: 0
+    column: 2
+    prefix: "-m"
+
+  - name: "ho"
+    type: "float"
+    label: "offset horiz. [deg]"
+    tooltip: "horizontal (first rotation) rotation angle of the field map"
+    default: 0
+    column: 0
+    prefix: "-i"
+
+  - name: "vo"
+    type: "float"
+    label: "offset vert. [deg]"
+    tooltip: "vertical (first rotation) rotation angles of the	field map"
+    default: 0
+    column: 1
+    prefix: "-j"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Output frame"
+
+  - name: "ox"
+    type: "float"
+    label: "output X [cm]"
+    tooltip: "x position of the output frame (in the input frame)"
+    default: 10
+    column: 0
+    prefix: "-p"
+
+  - name: "oy"
+    type: "float"
+    label: "output Y [cm]"
+    tooltip: "y position of the output frame (in the input frame)"
+    default: 0
+    column: 1
+    prefix: "-r"
+
+  - name: "oz"
+    type: "float"
+    label: "output Z [cm]"
+    tooltip: "z position of the output frame (in the input frame)"
+    default: 0
+    column: 2
+    prefix: "-s"

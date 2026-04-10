@@ -320,7 +320,6 @@ gSet series8.137_ {}
 gSet series3.178_ {}
 gSet enter_height_2 {10}
 gSet seriest2.198_ {tofile}
-gSet entryColor {#aedace}
 gSet series10.116_ {}
 gSet series4.33_ {}
 gSet series9.28_ {}
@@ -1022,7 +1021,6 @@ gSet series1.34_ {tofsp.eva}
 gSet seriest1.13_ {21:E}
 gSet series6.29_ {}
 gSet series6.30_ {}
-gSet headerColor {#0b4e66}
 gSet series1.195_ {tofsp.eva}
 gSet series1.205_ {tofsp.eva}
 gSet series6.154_ {}
@@ -1779,7 +1777,6 @@ gSet series8.24_ {}
 gSet seriest1.101_ {21:E}
 gSet series9.125_ {}
 gSet series4.166_ {}
-gSet fgColor {black}
 gSet series11.55_ {}
 gSet tbrefl_m_12 {1}
 gSet series3.29_ {}
@@ -3249,7 +3246,6 @@ gSet series10.40_ {}
 gSet ha_23 {0}
 gSet series2.14_ {}
 gSet series7.10_ {2.100}
-gSet buttonColorFont {white}
 gSet keyreflmaxZ_12 {0}
 gSet max_w_20 {3}
 gSet series5.143_ {}

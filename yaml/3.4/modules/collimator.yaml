@@ -1,0 +1,64 @@
+collimator:
+  executable: "collimator"
+  label: "collimator"
+  category: "collimator"
+
+  parameters:
+  - name: "EntrWidth"
+    type: "float"
+    label: "entrance width [cm]"
+    tooltip: "Width of the entrance of the collimator (center at y=0)"
+    default: 4.0
+    min: 0.0001
+    column: 0
+    prefix: "-w"
+  - name: "EntrHeight"
+    type: "float"
+    label: "entrance height [cm]"
+    tooltip: "Height of the entrance of the collimator (center at z=0)"
+    default: 5.0
+    min: 0.0001
+    column: 0
+    prefix: "-h"
+
+  - name: "ExitWidth"
+    type: "float"
+    label: "exit width [cm]"
+    tooltip: "Width of the exit of the collimator (center at y=0)"
+    default: 4.0
+    min: 0.0001
+    column: 1
+    prefix: "-W"
+  - name: "ExitHeight"
+    type: "float"
+    label: "exit height [cm]"
+    tooltip: "Height of the exit of the collimator (center at z=0)"
+    default: 5.0
+    min: 0.0001
+    column: 1
+    prefix: "-H"
+
+  - name: "Length"
+    type: "float"
+    label: "length [cm]"
+    tooltip: "Length of the collimator channels"
+    default: 40.0
+    min: 0.0
+    column: 0
+    prefix: "-l"
+  - name: "nChannels"
+    type: "int"
+    label: "number of channels"
+    tooltip: "Number of the collimator channels"
+    default: 20
+    min: 1
+    column: 1
+    prefix: "-n"
+  - name: "BladeThickn"
+    type: "float"
+    label: "wall thickness [cm]"
+    tooltip: "Thickness of the blades separating two channels of the collimator"
+    default: 0.01
+    min: 0.0
+    column: 2
+    prefix: "-s"

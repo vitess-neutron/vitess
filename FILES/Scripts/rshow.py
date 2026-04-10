@@ -1,173 +1,239 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import numpy as np
-from numpy import ma
+from pathlib import Path
+from typing import Any, List, Optional, Tuple, Union
+
 import matplotlib.pyplot as plt
+import numpy as np
 
-def plot2D(counts, xaxis, yaxis, by, bz, fname, cmap="viridis"):
+
+class MonitorFile:
     """
-    Plots a 2D heatmap of `counts` with axes labeled.
+    A Monitor output file.
 
-    Parameters:
-    - counts (2D array-like): Data to be visualized as an image.
-    - xaxis (str): Label for the x-axis.
-    - yaxis (str): Label for the y-axis.
-    - by (array-like): Bin edges or midpoints for the x-axis.
-    - bz (array-like): Bin edges or midpoints for the y-axis.
-    - fname (str): File name or descriptor; can influence saving behavior.
-    - cmap (str, optional): Colormap for the image. Default is "viridis".
+    Attributes:
+        x: X values
+        y: Y values (2-dimensional data only)
+        value: measured intensity
+        error: absolute error estimate (optional)
+        events: number of events (optional)
+        title: title from the file header
+        x_label: x_label from the file header
+        y_label: y_label from the file header
+        x_range: x_range from the file header
+        y_range: y_range from the file header
+        dimension: 2 or 3
     """
-    
-    plt.figure()
-    plt.imshow(counts, origin="lower", extent=[np.min(by), np.max(by), np.min(bz), np.max(bz)], cmap=cmap, aspect='auto')
-    plt.xlabel(xaxis)
-    plt.ylabel(yaxis)
-    plt.title(fname)
-    plt.colorbar(label="Counts")
-    plt.tight_layout()
-    plt.show()
 
-def plot1D(x, counts, error, xaxis, yaxis, fname):
-    """
-    Plots a 1D histogram with error bars.
+    path: Path
+    title: str
+    x_label: str
+    y_label: str
+    x_range: Optional[Tuple[float, float]]
+    y_range: Optional[Tuple[float, float]]
+    dimension: int
+    comments: List[str]
+    x: np.ndarray
+    y: Optional[np.ndarray]
+    value: np.ndarray
+    error: Optional[np.ndarray]
+    events: Optional[np.ndarray]
 
-    Parameters:
-    - x (array-like): Bin centers for the histogram.
-    - counts (array-like): Heights of the histogram bars.
-    - error (array-like): Uncertainty values for each bin.
-    - xaxis (str): Label for the x-axis.
-    - yaxis (str): Label for the y-axis.
-    - fname (str): File name or descriptor; can influence log scaling.
-    """
-    
-    if len(x) == 0 or len(counts) == 0 or len(error) == 0:
-        raise ValueError("Input arrays must not be empty.")
-    
-    if (any(error<0)):
-        print("Check your data because some error values are below zero!")
-        error = np.abs(error)
-    
-    plt.figure()
-    plt.bar(x, counts, width=x[1]-x[0], color="black", alpha=0.3)
-    plt.errorbar(x, counts, yerr=error, ls="dotted", marker=None, capsize=2,alpha=0.2)
-    plt.xlabel(xaxis.capitalize())
-    plt.ylabel(yaxis.capitalize())
-    plt.title(fname)
-    plt.grid()
-    plt.tight_layout()
-    plt.show()
+    def __init__(self, path: Union[str, Path]):
+        self.path = Path(path)
+        self.title = ""
+        self.x_label = ""
+        self.y_label = ""
+        self.x_range = None
+        self.y_range = None
+        self.dimension = 0
+        self.comments = list()
+        self.y = None
+        self.error = None
+        self.events = None
+        with self.path.open("r") as f:
+            skip = -1
+            for line in f:
+                skip += 1
+                line = line.strip()
+                if not line:
+                    continue
+                if not line.startswith("#"):
+                    firstline = np.loadtxt([line])
+                    if len(firstline) > 5:  # matrix format
+                        self.x = firstline
+                        skip += 1
+                    break
+                line = line[1:]
+                for part in line.split("#"):  # old files with bugged header
+                    part = part.strip()
+                    if not part:
+                        continue
+                    key, value = part.split(":", 1)
+                    key = key.strip()
+                    value = value.strip()
+                    if key.lower() == "title":
+                        self.title = value
+                    elif key.lower() == "x_label":
+                        self.x_label = value
+                    elif key.lower() == "y_label":
+                        self.y_label = value
+                    elif key.lower() == "x_range":
+                        lo, hi = value.split(",")
+                        self.x_range = (float(lo), float(hi))
+                    elif key.lower() == "y_range":
+                        lo, hi = value.split(",")
+                        self.y_range = (float(lo), float(hi))
+                    else:
+                        self.comments.append(part)
+            f.seek(0)
+            data = np.loadtxt(f, skiprows=skip)
+            if len(data.shape) < 2:
+                # matrix format, one line
+                self.dimension = 2
+                self.y = data[0:1]
+                self.value = data[1:].reshape((1, self.x.shape[0]))
+                if (
+                    len(self.x) != self.value.shape[1]
+                    or len(self.y) != self.value.shape[0]
+                ):
+                    raise ValueError("Could not parse Matrix format")
+            elif data.shape[1] == 4:
+                # 1D XYZ
+                self.dimension = 1
+                self.x = data[:, 0]
+                self.value = data[:, 1]
+                self.error = data[:, 2]
+                self.events = data[:, 3]
+            elif data.shape[1] == 5:
+                # 2D XYZ
+                self.dimension = 2
+                self.x = np.sort(np.unique(data[:, 0]))
+                nx = len(self.x)
+                self.y = np.sort(np.unique(data[:, 1]))
+                ny = len(self.y)
+                if data.shape[0] != nx * ny:
+                    raise ValueError("Could not determine image size")
+                ix = np.searchsorted(self.x, data[:, 0], side="left")
+                iy = np.searchsorted(self.y, data[:, 1], side="left")
+                self.value = np.zeros((ny, nx))
+                self.value[(iy, ix)] = data[:, 2]
+                self.error = np.zeros((ny, nx))
+                self.error[(iy, ix)] = data[:, 3]
+                self.events = np.zeros((ny, nx))
+                self.events[(iy, ix)] = data[:, 4]
+            elif data.shape[1] > 5:
+                # 2D matrix
+                self.dimension = 2
+                self.y = data[:, 0]
+                self.value = data[:, 1:]
+                if (
+                    len(self.x) != self.value.shape[1]
+                    or len(self.y) != self.value.shape[0]
+                ):
+                    raise ValueError("Could not parse Matrix format")
 
-def get_info(line):
-    parts = line.split(":")
-    nbin = parts[1].strip().split(" ")[0]
-    axis = parts[2]
-    return float(nbin), axis
+    def plot(self, **kwargs: Any) -> Any:
+        """
+        Plot the data using matplotlib.
 
-def get_value(line, key):
-    try:
-        i = line.index(key)
-        i = line.index(":", i) + 1
-        try:
-            j = line.index("#", i)
-        except ValueError:
-            j = len(line)
-        return line[i:j].strip()
-    except ValueError:
-        return None
+        1-dimensional: line plot with errorbar (errorbar)
+        2-dimensional: color mesh (pcolormesh)
 
-def read_mfile(fn):
-    """
-    Reads data from a 2D monitor file and extracts relevant information.
+        Parameters:
+            show: immidiately show the figure
+            axes: (optional) matplotlib axes
+            figure: (optional) matplotlib figure
+            **kwargs: additional parameters for the matplotlib function
 
-    Parameters:
-    - fn (str): File path of the monitor file to be read.
+        Returns:
+            the Figure
+        """
+        show = kwargs.pop("show", False)
+        axes = kwargs.pop("axes", None)
+        if axes is None:
+            fig = kwargs.pop("figure", None)
+            if fig is None:
+                fig = plt.figure()
+            axes = fig.gca()
+        if self.title:
+            axes.set_title(self.title + " " + self.path.name)
+        else:
+            axes.set_title(self.path.name)
+        if self.x_label:
+            axes.set_xlabel(self.x_label)
+        if self.y_label:
+            axes.set_ylabel(self.y_label)
+        if self.x_range:
+            axes.set_xlim(self.x_range[0], self.x_range[1])
+        if self.y_range:
+            axes.set_ylim(self.y_range[0], self.y_range[1])
+        if self.dimension == 1:
+            width = (self.x[1] - self.x[0]) * 0.8
+            if len(self.x) > 200:
+                # avoid barplot for large files
+                plt.plot(self.x, self.value, **kwargs)
+            else:
+                plt.bar(self.x, self.value, width=width, **kwargs)
+                if self.error is not None:
+                    plt.bar(
+                        self.x,
+                        self.error * 2,
+                        bottom=self.value - self.error,
+                        width=width,
+                        color="black",
+                        alpha=0.4,
+                        **kwargs,
+                    )
+        else:
+            x, y, value = self._spread_2d()
+            axes.pcolormesh(x, y, value, **kwargs)
+            axes.figure.colorbar(axes.collections[0], ax=axes)
+        axes.figure.tight_layout()
+        if show:
+            plt.show()
+        return axes.figure
 
-    Returns:
-    - nbiny (int): Number of bins in the y axis.
-    - nbinz (int): Number of bins in the z axis.
-    - by (numpy.ndarray): Array of bin values for the y axis.
-    - bz (numpy.ndarray): Array of bin values for the z axis.
-    - counts (numpy.ndarray): 2D array of counts for each bin.
-    - xaxis (str): Label for the x axis.
-    - yaxis (str): Label for the y axis.
+    def _spread_2d(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Spread out one-lined data for plotting"""
+        if self.value is None or self.y is None:
+            raise ValueError("missing values")
+        if self.dimension == 2 and self.value.shape[0] == 1:
+            if self.y_range:
+                y = np.array(self.y_range)
+            else:
+                y = np.array([self.y[0] - 0.5, self.y[0] + 0.5])
+            value = np.vstack((self.value, self.value))
+            return self.x, y, value
+        return self.x, self.y, self.value
 
-    If an error occurs during file reading or if the file format is invalid,
-    the function returns zeros for all output parameters.
-    """
-    try:
-        fin = open(fn, "r")
-        print("read correctly")
-    except:
-        print("Could not open file.")
-        return 0
+    def show(self, depth: int = 1, indent: int = 0) -> None:
+        """
+        Pretty print info about the file.
 
-    header_lines = []
-    content_lines = []
-    for line in fin.readlines():
-        if line.startswith("#"):
-            header_lines.append(line.rstrip())
-        elif line.rstrip():
-            content_lines.append(line.rstrip())
+        Parameters:
+            depth: if depth >= 1 is given, print the details aswell.
+        """
+        print("  " * indent + repr(self))
+        if depth >= 1:
+            pad = "  " * (indent + 1)
+            nx = len(self.x)
+            if self.error is not None:
+                err = "with error estimates"
+            else:
+                err = "without error estimates"
+            if self.dimension == 1:
+                print(f"{pad}{nx} points, {err}")
+            elif self.dimension == 2:
+                assert self.y is not None
+                ny = len(self.y)
+                print(f"{pad}{nx} x {ny} points, {err}")
 
-    hline = header_lines[0]
-    if "2D" in hline:
-        ftype = "mon2D"
-    elif "1D" in hline:
-        ftype = "mon1D"
-    else:
-        print("Wrong type of file!")
-        return 0
+    def __repr__(self) -> str:
+        return f"{type(self).__qualname__}('{self.path.name}', {self.dimension}D)"
 
-    nbiny, nbinz = 0, 0
-    xaxis, yaxis = "x", "y"
-    title = fn
-    # parse
-    try:
-        # old format
-        if hline.startswith("#Monitor 2D Intensity"):
-            split1 = hline.split("bins:")
-            nbiny = int(split1[0].split(":")[-1])
-            xaxis = split1[1].strip().split(" ")[0]
-            nbinz = split1[1].strip().split(" ")[-1]
-            yaxis = split1[2]
-        for line in header_lines:
-            if line.startswith("# x-axis"):
-                nbiny, xaxis = get_info(line)
-                continue
-            if line.startswith("# y-axis"):
-                nbinz, yaxis = get_info(line)
-                continue
-        # new format
-        for line in header_lines:
-            xaxis = get_value(line, 'x_label') or xaxis
-            yaxis = get_value(line, 'y_label') or yaxis
-            title = get_value(line, 'title') or title
-            if 'x_range' in line:
-                x_range = get_value(line, 'x_range')
-                x_range = [float(x) for x in x_range.split(",")]
-            if 'y_range' in line:
-                y_range = get_value(line, 'y_range') or None
-                y_range = [float(y) for y in y_range.split(",")]
-    except:
-        print("Error parsing file, no labels will be used.")
-
-    bz = []
-    counts = []
-    if ftype == "mon2D":
-        by = np.fromstring(content_lines[1], dtype=float, sep=" ")
-    for line in content_lines[2:]:
-        z = np.fromstring(line, dtype=float, sep=" ")
-        bz.append(z[0])
-        counts.append(z[1:])
-    if ftype == "mon2D":
-        by = np.array(by)
-        bz = np.array(bz)
-        plot2D(np.array(counts), xaxis, yaxis, x_range, y_range, title)
-
-    elif ftype == "mon1D":
-        counts = np.array(counts)
-        plot1D(bz, counts[:,0], counts[:,1], xaxis, r"Intensity [n/s]", title)
 
 if __name__ == "__main__":
-    read_mfile(sys.argv[1])
+    f = MonitorFile(sys.argv[1])
+    f.plot(show=True)

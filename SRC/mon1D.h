@@ -16,7 +16,7 @@
 #include <math.h>
 #include <iostream>
 
-extern "C" 
+extern "C"
 {
  #include "general.h"
  #include "init.h"
@@ -28,17 +28,17 @@ extern "C"
 
 
 
-class Mon1D 
+class Mon1D
 {
  public:
   McCompID eModule;               // defines the type of module
 
   // input parameters
-  string   fMonitorFilename;      // -O        common part of the output file names 
-  VtMonPar eParX [3];             // -X -Y -Z  parameter to be shown on the x axis 
-  int      nBinsX[3];             // -x -y -z  number of x bins 
-  double   xMin[3];               // -w -f -g  minimum x value 
-  double   xMax[3];               // -W -F -G  maximum x value 
+  string   fMonitorFilename;      // -O        common part of the output file names
+  VtMonPar eParX [3];             // -X -Y -Z  parameter to be shown on the x axis
+  int      nBinsX[3];             // -x -y -z  number of x bins
+  double   xMin[3];               // -w -f -g  minimum x value
+  double   xMax[3];               // -W -F -G  maximum x value
   int      bWeight;               // -p        use either actual probability of trajectories or 1 for all trajectories
   int      exclCounts;            // -e        do not forward neutrons to the pipe that do not contribute to the monitor data
 
@@ -57,7 +57,7 @@ class Mon1D
   MathVector* polAnalysisVector;  // -r -s -t  polarisation analysis vector
 
   // input parameters that are not (yet) implemented
-  // int normalise;                     // normalisation of the histogram by the size of x bins 
+  // int normalise;                     // normalisation of the histogram by the size of x bins
 
   // Variables determined from input parameters or trajectory data
   FILE*       fMonitor[3];           // pointer to output file
@@ -65,15 +65,15 @@ class Mon1D
   long        nBunches;               // number of bunches started
   long        nTrajTot[3];           // total number of trajectories within monitor limits
   double      IntTot  [3];           // total intensity within monitor limits
-  double      xBinSize[3];           // size of x bins 
+  double      xBinSize[3];           // size of x bins
   int         monSwitchedOn[3];      // Switches are activated if parameter 1, 2 or 3 should be stored.
   string      sParName[18];          // text: parameter name
   string      sParUnit[18];          // text: parameter unit
-  MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
+  MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis
 
   // arrays for data storage
   double* dataArray[3];              // here the monitor data is stored
-  double* dataArrayPol[3];           // polarisation 
+  double* dataArrayPol[3];           // polarisation
   double* dataArrayPolWeights[3];    // in case polarisation analysis is desired, here the sum of all weights in a bin is stored
   double* dataArrayError[3];         // standard deviation of the monitor data
   int*    dataArrayCounts[3];        // number of trajectories per channel contributing to count rate

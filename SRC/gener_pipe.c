@@ -29,18 +29,18 @@ void   OwnCleanup    ();
 /*********************************************/
 
 FILE    *pExeVFile=NULL;
-char     cQuot        = ' ',         
-         cNL          = '\n',         
+char     cQuot        = ' ',
+         cNL          = '\n',
          cShort       = 'N',
          sInstr   [FN_LEN+1]= "std_instr.cmd",      // file of the initial instrument
          sFitInfo [FN_LEN+1]= "",            // file containing information about operating system, ... files to copied
-         sSimPar  [FN_LEN+1]= "sim_param.ini",      // file containing a list of parameters to be varied 
+         sSimPar  [FN_LEN+1]= "sim_param.ini",      // file containing a list of parameters to be varied
          sPcoFile [FN_LEN+1]= "Pcomm.dat",          // file of the actual parameter set
 #ifdef VT_WINDOWS
          sExeVFile[FN_LEN+1]= "Simulations.bat",    // output file containing all pipe commands
 #else
          sExeVFile[FN_LEN+1]= "Simulations.sh",     // output file containing all pipe commands
-#endif 
+#endif
          sLogFile [FN_LEN+1]= "Opt.log",
          sPathSl  [FN_LEN+1]= "",
          sExeDirC [FN_LEN+1]= "",
@@ -69,41 +69,41 @@ short    nModNo   [MAX_PAR];         /* MAX_PAR integers, each contains the modu
 
 int main(int argc, char* argv[])
 {
-	short               nModuleNo=0,  // number of executables in the pipe (from file xxx.cmd)
-	       l=0,         nFileNo  =0,  // number of files to be copied 
-	       n=0,         nFitParNo=0,  // number of fit parameters
-	                    nSimParNo=0,  // number of simulation parameters
-	       m=0, mMin=0, 
+  short               nModuleNo=0,  // number of executables in the pipe (from file xxx.cmd)
+         l=0,         nFileNo  =0,  // number of files to be copied
+         n=0,         nFitParNo=0,  // number of fit parameters
+                      nSimParNo=0,  // number of simulation parameters
+         m=0, mMin=0,
               mMax=0, nSimulNo =0,  // number of simulations to perform
-         bPrtCmd;                   // criterion: write standard instrument 
-	double P[MAX_SIM][NMAX];
-	char   sParFct    [KW_LEN+1]="",
-	       sFilename  [FN_LEN+1]="",
+         bPrtCmd;                   // criterion: write standard instrument
+  double P[MAX_SIM][NMAX];
+  char   sParFct    [KW_LEN+1]="",
+         sFilename  [FN_LEN+1]="",
          sNumber    [ 6]="";
 
-	Init   (argc, argv, MCN_OPT_PIPE);
-	OwnInit(argc, argv);
-	InitArrays();
+  Init   (argc, argv, MCN_OPT_PIPE);
+  OwnInit(argc, argv);
+  InitArrays();
 
   // read input files
-	nSimParNo = ReadSimPar(sParFct, &nFileNo);
-	if (nSimParNo < 1)
-		Error("gener_pipe: reading of parameter file ('sim_param.ini') did not yield any variable simulation parameter");
+  nSimParNo = ReadSimPar(sParFct, &nFileNo);
+  if (nSimParNo < 1)
+    Error("gener_pipe: reading of parameter file ('sim_param.ini') did not yield any variable simulation parameter");
 
-	nSimulNo = ReadPData(&nFitParNo, &mMin, &mMax, &bPrtCmd, P, sPcoFile);
-	if (nSimulNo==0)
-	{	fprintf(LogFilePtr,"gener_pipe: parameters cannot be read from file %s\n", sPcoFile);
-		return(-1);
-	}
+  nSimulNo = ReadPData(&nFitParNo, &mMin, &mMax, &bPrtCmd, P, sPcoFile);
+  if (nSimulNo==0)
+  {  fprintf(LogFilePtr,"gener_pipe: parameters cannot be read from file %s\n", sPcoFile);
+    return(-1);
+  }
 
-	nModuleNo = ReadCmdFile(bPrtCmd);
-	if (nModuleNo < 1)
-		Error("gener_pipe: reading of command file ('std_instr.cmd') did not yield any line of executable command (in the pipe)");
+  nModuleNo = ReadCmdFile(bPrtCmd);
+  if (nModuleNo < 1)
+    Error("gener_pipe: reading of command file ('std_instr.cmd') did not yield any line of executable command (in the pipe)");
 
   if (strlen(sExeDirN)==0) strcpy(sExeDirN, sExeDirC);
   if (strlen(sParDirN)==0) strcpy(sParDirN, sParDirC);
-	
-	// general settings
+
+  // general settings
 #ifdef VT_WINDOWS
   strcpy (sPDir, "P:\\");
   fprintf(pExeVFile, "subst V: /d %c", cNL);
@@ -111,21 +111,21 @@ int main(int argc, char* argv[])
   fprintf(pExeVFile, "subst P: /d %c", cNL);
   fprintf(pExeVFile, "subst P: %s %c", sParDirN, cNL);
 #else
-		strcpy (sPDir, "$P/");
+    strcpy (sPDir, "$P/");
     fprintf(pExeVFile, "V=%s %c", sExeDirN, cNL);
     fprintf(pExeVFile, "P=%s %c", sParDirN, cNL);
 #endif
 
-		
-	// delete old files
-	for (l=0; l < nFileNo; l++) 
-	{ ExtendFilename(sFilename, sFile[l], "*");
-	  fprintf(pExeVFile, "%s %s%c", sDel, sFilename, cNL);
+
+  // delete old files
+  for (l=0; l < nFileNo; l++)
+  { ExtendFilename(sFilename, sFile[l], "*");
+    fprintf(pExeVFile, "%s %s%c", sDel, sFilename, cNL);
   }
 
   // write command and additional commands for each parameter set
-	for (m=mMin; m <= mMax; m++)
-	{	
+  for (m=mMin; m <= mMax; m++)
+  {
     if (m==0)
     { fprintf(pExeVFile, "echo P: ");
       for (n=0; n<nFitParNo; n++)
@@ -133,44 +133,44 @@ int main(int argc, char* argv[])
       fprintf(pExeVFile, "\n");
     }
 
-		// create pipe commands and write to batch file
-		if (strcmp(sParFct, "STD")==0 || strcmp(sParFct, "Std")==0 || strcmp(sParFct, "std")==0)
-		{	DetSimParamStd(P, m, nSimParNo, nFitParNo);
-		}
-		else if (strcmp(sParFct, "MTR02")==0)
-		{	DetSimParamMtr(P, m, nSimParNo, nFitParNo,  2);
-		}
-		else
-		{	fprintf(LogFilePtr, "ERROR: gener_pipe: string %s to define function for parameter calculation unknown\n", sParFct);
-		}
-		ChangeParam(-1);
-		WriteCommand(pExeVFile, nModuleNo, FALSE);
+    // create pipe commands and write to batch file
+    if (strcmp(sParFct, "STD")==0 || strcmp(sParFct, "Std")==0 || strcmp(sParFct, "std")==0)
+    {  DetSimParamStd(P, m, nSimParNo, nFitParNo);
+    }
+    else if (strcmp(sParFct, "MTR02")==0)
+    {  DetSimParamMtr(P, m, nSimParNo, nFitParNo,  2);
+    }
+    else
+    {  fprintf(LogFilePtr, "ERROR: gener_pipe: string %s to define function for parameter calculation unknown\n", sParFct);
+    }
+    ChangeParam(-1);
+    WriteCommand(pExeVFile, nModuleNo, FALSE);
 
-		// add commands to copy all files that will be needed for figure of merit
-		for (l=0; l < nFileNo; l++) 
-		{	sprintf(sNumber, "%d", m);
-			ExtendFilename(sFilename, sFile[l], sNumber);
-			fprintf(pExeVFile, "%s %s%s %s%c", sCopy, sPDir, sFile[l], sFilename, cNL);
-		}
+    // add commands to copy all files that will be needed for figure of merit
+    for (l=0; l < nFileNo; l++)
+    {  sprintf(sNumber, "%d", m);
+      ExtendFilename(sFilename, sFile[l], sNumber);
+      fprintf(pExeVFile, "%s %s%s %s%c", sCopy, sPDir, sFile[l], sFilename, cNL);
+    }
 
     // collect and remove pipelogs
  #ifdef VT_WINDOWS
     fprintf(pExeVFile, "%s ", sCopy);
-		for (l=0; l < nModuleNo; l++) 
-		{	
-			if (l > 0) fprintf(pExeVFile, " + ");
-			fprintf(pExeVFile, "%s%d", sLogName, l+1);
-		}
-		fprintf(pExeVFile, " %sSim%d.log%c", sPDir, m, cNL);
+    for (l=0; l < nModuleNo; l++)
+    {
+      if (l > 0) fprintf(pExeVFile, " + ");
+      fprintf(pExeVFile, "%s%d", sLogName, l+1);
+    }
+    fprintf(pExeVFile, " %sSim%d.log%c", sPDir, m, cNL);
 #else
     fprintf(pExeVFile, "%s %s* > %sSim%d.log%c", sType, sLogName, sPDir, m, cNL);
 #endif
     fprintf(pExeVFile, "%s %s*%c", sDel, sLogName, cNL);
-	}
+  }
 
-	OwnCleanup();
+  OwnCleanup();
 
-	return nSimulNo;
+  return nSimulNo;
 }
 
 
@@ -183,88 +183,87 @@ int main(int argc, char* argv[])
 /*                                                              */
 void DetSimParamStd(double P[MAX_SIM][NMAX], short iSim, short nSimParNo, short nFitParNo)
 {
-	short  j=0; 
-	double dParVal[MAX_PAR];
+  short  j=0;
+  double dParVal[MAX_PAR];
 
-	for (j=0; j < nSimParNo; j++)
-		dParVal[j] = P[iSim][j];
+  for (j=0; j < nSimParNo; j++)
+    dParVal[j] = P[iSim][j];
 
-	// set unused simulation parameters to zero
-	for (j=nSimParNo; j < MAX_PAR; j++)
-		dParVal[j] = 0.0;
-	
-	// transform parameters to strings
-	for (j=0; j < nSimParNo; j++)
-		sprintf(sParVal[j], "%le", dParVal[j]);
+  // set unused simulation parameters to zero
+  for (j=nSimParNo; j < MAX_PAR; j++)
+    dParVal[j] = 0.0;
+
+  // transform parameters to strings
+  for (j=0; j < nSimParNo; j++)
+    sprintf(sParVal[j], "%le", dParVal[j]);
 }
 
 void DetSimParamMtr(double P[MAX_SIM][NMAX], short iSim, short nSimParNo, short nFitParNo, short iFirstMPar)
 {
-	short  j=0; 
-	double dParVal[MAX_PAR];
+  short  j=0;
+  double dParVal[MAX_PAR];
 
-	for (j=0; j < iFirstMPar; j++)
-		dParVal[j] = P[iSim][j];
-	for (j=iFirstMPar; j < nSimParNo; j++)
-		dParVal[j] = P[iSim][j]*100.0;
+  for (j=0; j < iFirstMPar; j++)
+    dParVal[j] = P[iSim][j];
+  for (j=iFirstMPar; j < nSimParNo; j++)
+    dParVal[j] = P[iSim][j]*100.0;
 
-	// set unused simulation parameters to zero
-	for (j=nSimParNo; j < MAX_PAR; j++)
-		dParVal[j] = 0.0;
-	
-	// transform parameters to strings
-	for (j=0; j < nSimParNo; j++)
-		sprintf(sParVal[j], "%le", dParVal[j]);
+  // set unused simulation parameters to zero
+  for (j=nSimParNo; j < MAX_PAR; j++)
+    dParVal[j] = 0.0;
+
+  // transform parameters to strings
+  for (j=0; j < nSimParNo; j++)
+    sprintf(sParVal[j], "%le", dParVal[j]);
 }
 
 void OwnInit(int argc, char *argv[])
 {
-	long   i;
-	char * arg;
+  long   i;
+  char * arg;
 
-	for(i=1; i<argc; i++) 
-	{
-		arg = argv[i];
-		if (*arg !='+') 
-		{
-			arg += 2;
-			switch(arg[-1]) 
-			{	
-				case 'f':
-					strcpy(sFitInfo, arg);
-					break;
-				case 's':
-					strcpy(sSimPar, arg);
-					break;
-				case 'P':
-					strcpy(sPcoFile, arg);
-					break;
-				case 'I':
-					strcpy(sInstr, arg);
-					break;
-				case 'L':
-					strcpy(sLogFile, arg);
-					break;
-				case 'S':
-					strcpy(sExeVFile, arg);
-					break;
+  for(i=1; i<argc; i++)
+  {
+    arg = argv[i];
+    if (*arg !='+')
+    {
+      arg += 2;
+      switch(arg[-1])
+      {
+        case 'f':
+          strcpy(sFitInfo, arg);
+          break;
+        case 's':
+          strcpy(sSimPar, arg);
+          break;
+        case 'P':
+          strcpy(sPcoFile, arg);
+          break;
+        case 'I':
+          strcpy(sInstr, arg);
+          break;
+        case 'L':
+          strcpy(sLogFile, arg);
+          break;
+        case 'S':
+          strcpy(sExeVFile, arg);
+          break;
 
-				default:
-					fprintf(LogFilePtr, "gener_pipe: unknown commandline option: %s\n", argv[i]);
-					exit(-1);
-			}
-		}
-	}
+        default:
+          fprintf(LogFilePtr, "gener_pipe: unknown commandline option: %s\n", argv[i]);
+          exit(-1);
+      }
+    }
+  }
   LogFilePtr = fileOpen(sLogFile, "at");
-	pExeVFile  = fileOpen(sExeVFile, "w");
+  pExeVFile  = fileOpen(sExeVFile, "w");
 }
 
 
 void OwnCleanup()
 {
-	if (pExeVFile!=NULL)
-		fclose(pExeVFile);
-	if (LogFilePtr!=NULL) 
-		fclose(LogFilePtr);
+  if (pExeVFile!=NULL)
+    fclose(pExeVFile);
+  if (LogFilePtr!=NULL)
+    fclose(LogFilePtr);
 }
-

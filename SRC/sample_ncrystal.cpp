@@ -19,7 +19,7 @@
 #include "sample.h"
 #include "NCrystal/ncrystal.h"
 
-#define	STRING_BUFFER 50
+#define  STRING_BUFFER 50
 
 
 /******************************/
@@ -27,7 +27,6 @@
 /******************************/
 void   OwnInit(int argc, char *argv[]);                       // Reads input parameters and sets global variables
 void   OwnCleanup();                                          // Does module specific cleanup
-void   ReadFile(char* sFileName);                             // Reads input file for ncrystal          
 void   CalcAndWritePar(SampleType *pSample);                  // Calculates arrays from input parameters and writes to log file
 void   SetGeometry(const char* sColor);                       // Fills the structure stGeometry for visualization
 void   OutputTransform(VectorType Pos, VectorType Dir);       // Co-ordinate transformation to output frame
@@ -42,24 +41,24 @@ void ncrystal_message_handler(const char *message, unsigned msg_class); // handl
 /******************************/
 
 /*  Variables from the GUI input */
-char      *pSmplFileName=NULL;         //      -f        [-]   pointer to the name of the ncrystal sample file  
+char      *pSmplFileName=NULL;         //      -f        [-]   pointer to the name of the ncrystal sample file
 double     Temp=0.0;                   //      -T        [K]  temperature of the sample
 long       Repetition=1;               //      -A        [-]   repetitions (how many trajectories to generate per incoming trajectory)
-VtSmplGeom eGeom=VT_NO_GEOM;           //      -G        [-]   geometry parameter: "cylinder" "hollow-cylinder" "sphere" "rectangular" 
+VtSmplGeom eGeom=VT_NO_GEOM;           //      -G        [-]   geometry parameter: "cylinder" "hollow-cylinder" "sphere" "rectangular"
 VectorType PosSample={0.0,0.0,0.0},    //      -X -Y -Z  [cm]  center position of the sample
-           TranslOut={0.0,0.0,0.0};    //      -x -y -z  [cm]  center position of the output frame 
+           TranslOut={0.0,0.0,0.0};    //      -x -y -z  [cm]  center position of the output frame
 double     AnglSmplHor =0.0,           //      -o       [rad]  horizontal angle of the sample orientation, relative to standard orientation
            AnglSmplVert=0.0,           //      -O       [rad]  vertical angle of the sample orientation, relative to standard orientation
-           Diameter = 0.0,             //      -t        [cm]  thickness or diameter of the sample 
-           Height   = 0.0,             //      -h        [cm]  height of the sample 
+           Diameter = 0.0,             //      -t        [cm]  thickness or diameter of the sample
+           Height   = 0.0,             //      -h        [cm]  height of the sample
            Width    = 0.0,             //      -w        [cm]  width of the sample
            AnglOutHor =0.0,            //      -u       [rad]  horizontal angle of the output frame, relative to input orientation
-           AnglOutVert=0.0;            //      -U       [rad]  vertical angle of the output frame, relative to input orientation   
-long   eGeom_id = 0;                                // -G  0=default; 1=cyl ;2=holcyl; 3=ball; 4=cub 
+           AnglOutVert=0.0;            //      -U       [rad]  vertical angle of the output frame, relative to input orientation
+long   eGeom_id = 0;                                // -G  0=default; 1=cyl ;2=holcyl; 3=ball; 4=cub
 
 /* Variables from the GUI input: Ncrystal variables */
 double d_cutoff=0.0,                   // -d  [Angstroms]   Minimum d-spacing (in Å) to consider in the simulation.
-       Dist=0.0,                       // -D   [cm]    distance of (the center of) the module from entry point of the component 
+       Dist=0.0,                       // -D   [cm]    distance of (the center of) the module from entry point of the component
        mos=0.0,                        // -m  [number]    Crystal mosaicity
        LmbdInit=0.0,                   // -M [Angstroms] Reference wavelenght for incident neutron wavevector calculation
        h_dir1=0.0,                       // -h [number]  Miller index h defining dir1 for ncrystal
@@ -67,7 +66,7 @@ double d_cutoff=0.0,                   // -d  [Angstroms]   Minimum d-spacing (i
        l_dir1=0.0,                       // -l [number]  Miller index l defining dir1 for ncrystal
        x_dir1=0.0,                       // -a [number]  Component x of the unit vector defining dir1 in the ncrystal lab
        y_dir1=0.0,                       // -b [number]  Component y of the unit vector defining dir1 in the ncrystal lab
-       z_dir1=0.0,                       // -c [number]  Component z of the unit vector defining dir1 in the ncrystal lab    
+       z_dir1=0.0,                       // -c [number]  Component z of the unit vector defining dir1 in the ncrystal lab
        h_dir2=0.0,                      // -H [number]  Miller index h defining dir2 for ncrystal
        k_dir2=0.0,                      // -K [number]  Miller index k defining dir2 for ncrystal
        l_dir2=0.0,                      // -L [number]  Miller index l defining dir2 for ncrystal
@@ -78,7 +77,7 @@ double d_cutoff=0.0,                   // -d  [Angstroms]   Minimum d-spacing (i
 /* Variables determined from input parameters or trajectory data */
 SampleType stSample;                   //                      sample geometry
 VectorType DimSample   ={0.0,0.0,0.0}, //                      size of the sample
-           DimSampleHol={0.0,0.0,0.0}, //                      array to use 'IntersectsWithCylinder()' for hollow cylinders  
+           DimSampleHol={0.0,0.0,0.0}, //                      array to use 'IntersectsWithCylinder()' for hollow cylinders
            k_reference ={0.0,0.0,0.0}; //                      initial k-vector
 double     ProbCutoff=0.0;             //                      neutron weight, below which the trajectory is removed
 double     RotMatrixSample [3][3],     //                      rotation matrix to transfer to coordinate system of the sample
@@ -90,12 +89,12 @@ int        n_flipped = 0,              //                      number of neutron
            no_hit=0;                   //                      number of neutrons not hitting the sample
 
 /* Variables specifying sample properties */
-double     AbsorptionC = 0.0,          // calculated    [barns] Absorption cross section 
-           ScatteringT = 0.0,          // calculated    [barns] Total scattering cross section 
+double     AbsorptionC = 0.0,          // calculated    [barns] Absorption cross section
+           ScatteringT = 0.0,          // calculated    [barns] Total scattering cross section
            ScatteringI = 0.0,          // calculated    [barns] Incoherent scattering cross section
-           ScatteringC = 0.0,          // calculated    [barns] Coherent scattering cross section of the sample 
+           ScatteringC = 0.0,          // calculated    [barns] Coherent scattering cross section of the sample
            mu_abs = 1.0,               // calculated    [1/cm] Linear absorption coefficient
-           mu_sca = 1.0,               // calculated    [1/cm] Total linear scattering coefficient 
+           mu_sca = 1.0,               // calculated    [1/cm] Total linear scattering coefficient
            mu_sci = 1.0,               // calculated    [1/cm] Incoherent linear scattering coefficient
            mu_scc = 1.0,               // calculated    [1/cm] Coherent linear scattering cross coefficient
            dirtol = 0.0057;            //               [deg]  Tolerance on dir axis n.2 of the sample
@@ -109,7 +108,7 @@ ncrystal_process_t proc_coh={NULL};       // coherent scattering process definit
 char configString[1012];                            // Buffer to hold the full config string
 double dir_fin[3]= {0.0,0.0,0.0};       // Neutron direction after scattering process
 double  ekin = 0.0,                                 // incident neutron energy calculated from its wavelength
-        xsect = 0.0,                                // neutron cross section calculated by ncrystal 
+        xsect = 0.0,                                // neutron cross section calculated by ncrystal
         wl_fin = 0.0;                               // final neutron energy calculated from its wavelength
 int i_loop = 0;                                     // integer used to filter the first 10 scattering events
 
@@ -122,28 +121,28 @@ double my_randgen(void);
 /******************************/
 int main(int argc, char **argv)
 {
-  Neutron	   InNeutron, OutNeutron;
+  Neutron     InNeutron, OutNeutron;
   long       repet=0,   i=0;
-  double     TOF=0.0,   WL=0.0, Prob=0.0, 
-             PathLength   =0.0, PathLengthHol   =0.0; 
+  double     TOF=0.0,   WL=0.0, Prob=0.0,
+             PathLength   =0.0, PathLengthHol   =0.0;
 
   double tmp_rand = 0.0, sf_probability = 0.0;
- 
+
   // flag used to distinguish between coherent and incoherent S(Q,omega)
-  int inc_flag;  
-  VectorType Pos1f ={0.0,0.0,0.0}, Pos2f=  {0.0,0.0,0.0}, Pos3f={0.0,0.0,0.0}, Pos4f={0.0,0.0,0.0}, 
-             Pos1v ={0.0,0.0,0.0}, Pos2v=  {0.0,0.0,0.0}, Pos3v={0.0,0.0,0.0}, Pos4v={0.0,0.0,0.0},   
+  int inc_flag;
+  VectorType Pos1f ={0.0,0.0,0.0}, Pos2f=  {0.0,0.0,0.0}, Pos3f={0.0,0.0,0.0}, Pos4f={0.0,0.0,0.0},
+             Pos1v ={0.0,0.0,0.0}, Pos2v=  {0.0,0.0,0.0}, Pos3v={0.0,0.0,0.0}, Pos4v={0.0,0.0,0.0},
              propag={0.0,0.0,0.0}, propag1={0.0,0.0,0.0},                              // propagation vectors e.g. from entry to point of scattering to calculate TOF
              Pos   ={0.0,0.0,0.0}, Dir=    {0.0,0.0,0.0}, Pos_final={0.0,0.0,0.0},
              SpinVector;
-  
+
   ncrystal_setrandgen(my_randgen);  // Set the vitess RNG as the random generator for NCrystal
 
   /* Set the custom message handler for ncrystal */
   ncrystal_setmsghandler(ncrystal_message_handler);
   ncrystal_sethaltonerror(0);       // Disable halting on error
   ncrystal_setquietonerror(1);      // Suppress default error messages
-  
+
   // initialisation
   // --------------
   InitNeutron(&OutNeutron);
@@ -157,7 +156,7 @@ int main(int argc, char **argv)
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp     = TRUE;
 
   /* Determines the dependent parameters and write out important parameters */
@@ -170,7 +169,7 @@ int main(int argc, char **argv)
   while (ReadNeutrons() != 0)
   {
     for (i=0; i<NumNeutGot; i++)
-    { 
+    {
       CHECK;
       // Only write out event if EOB line is found, otherwise process trajectory
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
@@ -179,7 +178,7 @@ int main(int argc, char **argv)
       }
       else
       {
-        PathLengthHol = 0.0; 
+        PathLengthHol = 0.0;
         NormVectorX(InputNeutrons[i].Vector);
         CopyNeutron(&InputNeutrons[i], &InNeutron);
 
@@ -193,11 +192,11 @@ int main(int argc, char **argv)
         SubVector(InputNeutrons[i].Position, PosSample) ;
         RotVector(RotMatrixSample, InputNeutrons[i].Position) ;
         RotVector(RotMatrixSample, InputNeutrons[i].Vector) ;
-        
+
         /* gives intersection positions with sample */
         if (eGeom==VT_CYL)
         {
-          if (IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0){ 
+          if (IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0){
           no_hit = no_hit+1;
           goto getlost ;
           }
@@ -205,42 +204,42 @@ int main(int argc, char **argv)
 
         if (eGeom==VT_HOL_CYL)
         {
-          if (IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos4f) == 0) 
+          if (IntersectionWithCylinder(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos4f) == 0)
           {
             no_hit = no_hit+1;
-            goto getlost ; 
+            goto getlost ;
           }
-          else 
+          else
           {
-            if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 0) 
+            if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 0)
               CopyVector(Pos4f, Pos2f);
             if (IntersectionWithCylinder(DimSampleHol, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos2f, Pos3f) == 1)
-            {	double r=MonteCarlo(-1.,1);
+            {  double r=MonteCarlo(-1.,1);
 
               if ((CompareVectors(Pos1f, Pos2f)==1)&&(CompareVectors(Pos3f, Pos4f)==1)) goto getlost;
-        
+
               if ((CompareVectors(Pos1f, Pos2f)==0)&&(CompareVectors(Pos3f, Pos4f)==0))
               {
                 if(r>0.)
-                { 
+                {
                   SubVector(Pos2f, Pos1f);
-                  PathLengthHol = LengthVector(Pos2f); 
-                  CopyVector(Pos3f, Pos1f); CopyVector(Pos4f, Pos2f); 		
+                  PathLengthHol = LengthVector(Pos2f);
+                  CopyVector(Pos3f, Pos1f); CopyVector(Pos4f, Pos2f);
                 }
-                else 
+                else
                 {
                   SubVector(Pos4f, Pos3f);
                   PathLengthHol = 0.;
-                } 
+                }
               }
               if ((CompareVectors(Pos1f, Pos2f)==0)&&(CompareVectors(Pos3f, Pos4f)==1))
               {
-                PathLengthHol = 0.; 
+                PathLengthHol = 0.;
               }
               if((CompareVectors(Pos1f, Pos2f)==1)&&(CompareVectors(Pos3f, Pos4f)==0))
               {
-                CopyVector(Pos3f, Pos1f); CopyVector(Pos4f, Pos2f); 
-                PathLengthHol = 0.; 
+                CopyVector(Pos3f, Pos1f); CopyVector(Pos4f, Pos2f);
+                PathLengthHol = 0.;
               }
             }
           }
@@ -252,7 +251,7 @@ int main(int argc, char **argv)
           if(IntersectionWithRectangular(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0){
             no_hit = no_hit+1;
             goto getlost ;
-          }  
+          }
         }
 
         if (eGeom==VT_SPHERE)
@@ -260,7 +259,7 @@ int main(int argc, char **argv)
           if(IntersectionWithSphere(DimSample, InputNeutrons[i].Position, InputNeutrons[i].Vector, Pos1f, Pos2f) == 0) {
             no_hit = no_hit+1;
             goto getlost ;
-          } 
+          }
         }
 
         for (repet=0;repet<Repetition;repet++)
@@ -271,7 +270,7 @@ int main(int argc, char **argv)
           CopyVector(Pos2f, Pos2v) ;
           CopyVector(Pos3f, Pos3v) ;
           CopyVector(Pos4f, Pos4v) ;
-    
+
           TOF  = InputNeutrons[i].Time ;
           WL   = InputNeutrons[i].Wavelength ;
           Prob = InputNeutrons[i].Probability ;
@@ -279,17 +278,17 @@ int main(int argc, char **argv)
           CopyVector(InputNeutrons[i].Position, Pos) ;
           CopyVector(InputNeutrons[i].Vector, Dir) ;
 
-          /* scattering position and TOF until scattering */	
-          SubVector(Pos2v, Pos1v);					                       // Pos2v: vector from entry to exit of the path through the sample 
-          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));	    // Pos2v now vector from entry into sample to point of scattering
+          /* scattering position and TOF until scattering */
+          SubVector(Pos2v, Pos1v);                                 // Pos2v: vector from entry to exit of the path through the sample
+          MultiplyByScalar(Pos2v, MonteCarlo(0.,1.));      // Pos2v now vector from entry into sample to point of scattering
           PathLength = LengthVector(Pos2v) + PathLengthHol;
-          AddVector(Pos1v, Pos2v);	                               // Pos1v now vector to point of scattering
-    
+          AddVector(Pos1v, Pos2v);                                 // Pos1v now vector to point of scattering
+
           CopyVector(Pos1v, propag);
           SubVector(propag, Pos);
           TOF += LengthVector(propag) / V_FROM_LAMBDA(WL) ;
 
-          CopyVector(Pos1v, Pos) ;						/*scattering position */
+          CopyVector(Pos1v, Pos) ;            /*scattering position */
 
           /* attenuation untill scattering normalized to maximal path */
           Prob *= (double)(1.- exp(-PathLength * mu_abs * WL - PathLength * mu_sca) );
@@ -328,14 +327,14 @@ int main(int argc, char **argv)
             /* attenuation due to incoherent scattering cross section */
             Prob *= (double) (1. - exp(- PathLength * mu_sci) ) ;
           }
-          //* attenuation due to coherent scattering cross section */ 
+          //* attenuation due to coherent scattering cross section */
           else
           {
             Prob *= (double) (1. - exp(- PathLength * mu_scc) );
             n_coh ++;
           }
           //fprintf(LogFilePtr, " Inside the repetition loop 4. \n");
-          /* S(q,w) scattering: new neutron variables*/ 
+          /* S(q,w) scattering: new neutron variables*/
           Prob *= WL ;
           if (inc_flag == 0) {
             if (S_q_w_ncrystal(&WL, &Prob, Dir) == 0) goto getlost2 ;
@@ -348,46 +347,46 @@ int main(int argc, char **argv)
           /* attenuation succeeding scattering */
           if (eGeom==VT_CYL)
           {
-            if(IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) 
-              goto getlost2 ; 
+            if(IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos2v) == 0)
+              goto getlost2 ;
           }
 
           if (eGeom==VT_HOL_CYL)
           {
-    
+
             if (IntersectionWithCylinder(DimSample, Pos, Dir, Pos1v, Pos4v) == 0)
             {
               goto getlost2;
             }
-            else 
+            else
             {
-              if (IntersectionWithCylinder(DimSampleHol, Pos, Dir, Pos2v, Pos3v) == 0) 
+              if (IntersectionWithCylinder(DimSampleHol, Pos, Dir, Pos2v, Pos3v) == 0)
               {
                 CopyVector(Pos4v, Pos2v);
               }
               else
               {
-                VectorType Propag; 
-                CopyVector(Pos2v, Propag); 
+                VectorType Propag;
+                CopyVector(Pos2v, Propag);
                 SubVector(Propag, Pos);
-        
+
                 if (CompareVectors(Pos3v, Pos4v)==0)
                 {
                   if (ScalarProduct(Propag, Dir) > 0.)
-                  { 
+                  {
                     CopyVector(Pos4v, propag1);
                     SubVector(propag1, Pos3v);
-                    PathLengthHol = LengthVector(propag1); 
+                    PathLengthHol = LengthVector(propag1);
                   }
-                  else 
+                  else
                   {
-                    PathLengthHol = 0.; 
+                    PathLengthHol = 0.;
                     CopyVector(Pos3v, Pos1v); CopyVector(Pos4v, Pos2v);
                   }
                 }
-                else 
-                { 
-                  PathLengthHol = 0.; 
+                else
+                {
+                  PathLengthHol = 0.;
                 }
               }
             }
@@ -395,21 +394,21 @@ int main(int argc, char **argv)
 
           if (eGeom==VT_CUBE)
           {
-            if(IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) goto getlost2 ; 
+            if(IntersectionWithRectangular(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) goto getlost2 ;
           }
           if (eGeom==VT_SPHERE)
           {
-            if(IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) goto getlost2 ; 
+            if(IntersectionWithSphere(DimSample, Pos, Dir, Pos1v, Pos2v) == 0) goto getlost2 ;
           }
 
           /* path in the sample after scattering */
           CopyVector(Pos2v, Pos_final) ;
           SubVector(Pos_final, Pos) ;
-          PathLength = LengthVector(Pos_final) + PathLengthHol ;  
+          PathLength = LengthVector(Pos_final) + PathLengthHol ;
 
-          if (PathLengthHol != 0.) 
+          if (PathLengthHol != 0.)
             CopyVector(Pos4v, Pos2v);  /* for hollow cylinder option: set output position to where it crosses the outer cylinder if crossed  */
-  
+
           Prob *= exp(-PathLength * AbsorptionC * WL - PathLength * ScatteringT);
 
           /* Output matters */
@@ -419,7 +418,7 @@ int main(int argc, char **argv)
 
           OutputTransform(Pos2v, Dir) ;
 
-          if (Prob <= ProbCutoff) 
+          if (Prob <= ProbCutoff)
             goto getlost2 ;
 
           /* transmit coordinates which were not changed, the rest overwrite below */
@@ -441,11 +440,11 @@ int main(int argc, char **argv)
 
         /* here continues if neutron gets lost */
       getlost:
-        WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0] - InNeutron.Position[0]); 
+        WriteDIAP(&InNeutron, VT_OUTSIDE, PosSample[0] - InNeutron.Position[0]);
       }
     }
   }
-   
+
   // Finish: write log, geometry and instrument file, free memory
   // ------------------------------------------------------------
   fprintf(LogFilePtr, " Number of spin-flipped neutrons in incoherent scattering        : %d \n", n_flipped);
@@ -459,12 +458,12 @@ int main(int argc, char **argv)
   //SetGeometry(geom);
   //free(geom);
   SetGeometry("white");
-  
+
   /* Do module specific cleanups */
-  OwnCleanup(); 
+  OwnCleanup();
 
  /* Do the general cleanup */
-  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHor, AnglOutVert);	
+  Cleanup(TranslOut[0], TranslOut[1], TranslOut[2], AnglOutHor, AnglOutVert);
 
   return 0;
 }
@@ -481,7 +480,7 @@ void OwnInit(int argc, char *argv[])
   InitRotMatrix(RotMatrixNCrystal);
 
   ProbCutoff=wei_min ;
-  
+
   /* Scan all command line parameters */
   //  abcdefghijklmnopqrstuvwxyz
   //  abcd fgh  klm o   stu wxyz
@@ -489,7 +488,7 @@ void OwnInit(int argc, char *argv[])
   for (i=1; i<argc; i++)
   {
     if (argv[i][0]!='+')
-    { 
+    {
       switch (argv[i][1])
       {
         case 'f':
@@ -601,7 +600,7 @@ void OwnInit(int argc, char *argv[])
             }
           }
           break;
-        
+
         /* Output frame */
         case 'x':
           sscanf(&argv[i][2], "%lf", &TranslOut[0]);
@@ -627,7 +626,7 @@ void OwnInit(int argc, char *argv[])
   }
 
   if (pSmplFileName==NULL)
-    Error("Parameter file name missing") ;  
+    Error("Parameter file name missing") ;
 
   if(Repetition == 0)
     Error("Repetition rate must be > 0 ");
@@ -692,15 +691,15 @@ void  CalcAndWritePar(SampleType* pSample)
 
   if (eGeom==VT_HOL_CYL)
   {
-    DimSample[0] = Diameter;  DimSampleHol[0] = Width; 
-    DimSample[1] = 0.0;       DimSampleHol[1] = 0.0;    
+    DimSample[0] = Diameter;  DimSampleHol[0] = Width;
+    DimSample[1] = 0.0;       DimSampleHol[1] = 0.0;
     DimSample[2] = Height;    DimSampleHol[2] = Height;
   }
   else
   {
     DimSample[0] = Diameter;
-    DimSample[1] = Width;    
-    DimSample[2] = Height;  
+    DimSample[1] = Width;
+    DimSample[2] = Height;
   }
 
   /* converts degs in radian etc. */
@@ -709,7 +708,7 @@ void  CalcAndWritePar(SampleType* pSample)
     AnglOutHor   *= M_PI/180. ;
     AnglOutVert  *= M_PI/180. ;
 
-  if (PosSample[0] < 0.5*DimSample[0] || PosSample[0] < 0.5*DimSample[1] || PosSample[0] < 0.5*DimSample[2]) 
+  if (PosSample[0] < 0.5*DimSample[0] || PosSample[0] < 0.5*DimSample[1] || PosSample[0] < 0.5*DimSample[2])
     Error("Distance to sample smaller than half the sample size in at least one dimension");
 
   FrameGen_ID2Txt(sFrm, eFrame);
@@ -730,7 +729,7 @@ void  CalcAndWritePar(SampleType* pSample)
   fprintf(LogFilePtr, "  offset angles (h,v) : %9.4f %9.4f           deg\n", Degrees(AnglSmplHor), Degrees(AnglSmplVert));
 
   fprintf(LogFilePtr,"repetition         : %ld\n", Repetition) ;
-  if(Repetition > 1) fprintf(LogFilePtr,"\nWarning: Excessive use of repetition rate > 1 can lead to wrong results. Be sure that you have very good statistics\n" 
+  if(Repetition > 1) fprintf(LogFilePtr,"\nWarning: Excessive use of repetition rate > 1 can lead to wrong results. Be sure that you have very good statistics\n"
                                         "\nin wavelength, time, x,y,z and directions just before the sample\n") ;
 
   /* Validate sample file name */
@@ -770,7 +769,7 @@ void  CalcAndWritePar(SampleType* pSample)
           errtype = ncrystal_lasterrortype();
           fprintf(LogFilePtr, "Error creating NCrystal scatter handle for config string:\n%s\n", configString);
           fprintf(LogFilePtr, "Error Type: %s\nError Message: %s\n", errtype ? errtype : "Unknown", errmsg ? errmsg : "No message");
-          ncrystal_clearerror(); // Clear the error state 
+          ncrystal_clearerror(); // Clear the error state
           Error("Vitess simulation ends here. Please check!");
       } else {
           fprintf(LogFilePtr, "Unknown error creating scatter handle for config string:\n%s\n", configString);
@@ -909,30 +908,13 @@ void  CalcAndWritePar(SampleType* pSample)
 
 
 /*******************************************************/
-/** Reads data from input file                        **/
-/*******************************************************/
-void ReadFile(char* sFileName)
-{
-  // opens input file (program exit in case of error)
-  FILE* pFile = OpenInputFile2(sFileName, "file content", "r");
-  //FILE *pFile = fopen(sFileName, "r");
-  
-  if (pFile!=NULL)
-  { 
-    fprintf(LogFilePtr, "Succesfully opened NCrystal library file: %s\n",sFileName);
-    fclose(pFile);
-  }
-  else fprintf(LogFilePtr, "WARNING: Cannot open sample file %s\n",sFileName);
-}
-
-/*******************************************************/
 /** Fills the structure stGeometry for visualization  **/
 /*******************************************************/
 void SetGeometry(const char* sColor)
 {
   /* Geometry data */
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     //snprintf(sVisDescrpt, sizeof(sVisDescrpt), "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
@@ -987,12 +969,12 @@ long S_q_w_ncrystal(double *wl, double *prob, VectorType Dir)
   RotVector(RotMatrixNCrystal, Dir);
   ncrystal_crosssection(proc_coh, ekin, (const double (*)[3]) Dir, &xsect);
   ncrystal_samplescatter(material, ekin, (const double (*)[3]) Dir, &ekin_fin, &dir_fin);
-    
+
   if(ekin_fin){
     wl_fin = ncrystal_ekin2wl (ekin_fin);
     delta_ekin = ekin - ekin_fin;
   }
-    
+
   if (i_loop < 10){
    fprintf(LogFilePtr, "Scattering at energy transfer %f [meV] in direction (%f, %f, %f) gives scattering cross-section %f [barns].\n",
       delta_ekin*1e3, dir_fin[0], dir_fin[1], dir_fin[2], xsect);

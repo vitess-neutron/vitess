@@ -1562,7 +1562,7 @@ int nxs_readParameterFile( const char* fileName, NXS_UnitCell *uc, NXS_AtomInfo 
   FILE* file=NULL;
 
   if (fileName!=NULL && strlen(fileName) > 0)
-  { 
+  {
     file = fopen(fileName, "r");
 
     *uc = nxs_newUnitCell();

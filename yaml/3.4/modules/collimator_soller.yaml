@@ -1,0 +1,59 @@
+collimator_soller:
+  executable: "collimator_soller"
+  label: "collimator_soller"
+  category: "collimator"
+
+  parameters:
+  - name: "bAngleCollim"
+    type: "bool"
+    label: "angular collimation"
+    tooltip: "ON: certain angles will define a collimation channel  OFF: the collimation always refers to the angle 0, i.e. the ideal flight direction along the x-axis"
+    column: 0
+    default: False
+    prefix: "-k"
+
+  - name: "CollimDiv"
+    type: "float"
+    label: "collimator divergence [deg]"
+    tooltip: "Allowed horizontal divergence (FWHM of a triangular shape)"
+    default: 1.0
+    min: 0.0001
+    column: 0
+    prefix: "-d"
+  - name: "TransmPeak"
+    type: "float"
+    label: "peak transmission"
+    tooltip: "Maximal probability for passing through the soller collimator (corresponds to an average loss due to blocking neutrons by the finite size of the soller collimator blades)"
+    default: 0.9
+    min: 0.0001
+    max: 1.0
+    column: 1
+    prefix: "-e"
+
+  - name: "title_AngleCollim"
+    type: "title"
+    label: "Angular collimation"
+  - name: "Distance"
+    type: "float"
+    label: "minimum of angle range [deg]"
+    tooltip: "Minimum of the angular range covered by the radial collimator"
+    default: 10.0
+    min: 0.0
+    column: 0
+    prefix: "-m"
+  - name: "nChannels"
+    type: "int"
+    label: "number of coll. centers"
+    tooltip: "Number of the collimator channels"
+    default: 40
+    min: 1
+    column: 1
+    prefix: "-n"
+  - name: "BladeThickn"
+    type: "float"
+    label: "angle spacing [deg]"
+    tooltip: "Additional angular distance between the collimation centres due to the thickness of the collimator blades"
+    default: 0.1
+    min: 0.0
+    column: 2
+    prefix: "-a"

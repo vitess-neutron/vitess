@@ -1,0 +1,164 @@
+writeout:
+  executable: "writeout"
+  label: "writeout"
+  category: "event_handling"
+
+  parameters:
+  - name: "Title_Output"
+    type: "title"
+    label: "Output file choices"
+  - name: "sOutFile"
+    type: "file"
+    plottable: false
+    editable: false
+    label: "trajectory output file"
+    tooltip: "name of the trajectory output file"
+    default: "events.out"
+    prefix: "-A"
+    required: true
+  - name: "eActivity"
+    label: "writeout activity"
+    tooltip: "yes: output file containing trajectories is written   no: no output file is written   part 2: trajectories are written for a 2nd (or next) instrument part"
+    <<: *VtWriteAct
+    options: ["VT_NO_WRITING", "VT_WRITE_TRAJ", "VT_SPLIT_SIM"]
+    default: "VT_WRITE_TRJ"
+    column: 0
+    prefix: "-a"
+    required: true
+  - name: "bHeader"
+    type: "bool"
+    label: "Header"
+    tooltip: "YES: write header to ASCII file beginning each line with '#'    NO: write only data, no header"
+    default: yes
+    column: 1
+    prefix: "-h"
+    required: false
+
+  - name: "Title_Format"
+    type: "title"
+    label: "File formats"
+  - name: "ePrgFormat"
+    label: "data format"
+    tooltip: "data format of the program"
+    <<: *VtPrgFormat
+    options: ["VT_VITESS_FMT", "VT_MCSTAS_FMT", "VT_MCPL_FMT", "VT_MCNP6_FMT", "VT_SSW_FMT"]
+    default: "VT_VITESS_FMT"
+    column: 0
+    prefix: "-f"
+    required: true
+  - name: "eDataFormat"
+    <<: *VtDataFormat
+    label: "storage format"
+    tooltip: "format of the data to read: 'exponential': scientific format,  'float': floating point  or binary  (MCPL is always binary)"
+    options: ["VT_EXPONENTIAL", "VT_FLOAT", "VT_BINARY"]
+    default: "VT_EXPONENTIAL"
+    column: 1
+    prefix: "-F"
+    required: true
+  - name: "eSepFormat"
+    <<: *VtSeparator
+    label: "separator"
+    tooltip: "separator between columns in the ASCII output file"
+    column: 2
+    options: ["VT_BLANK", "VT_TABULATOR"]
+    default: "VT_BLANK"
+    prefix: "-S"
+    required: false
+
+  - name: "Title_Opt"
+    type: "title"
+    label: "MCNP and SSW options"
+  - name: "IntFact"
+    type: "float"
+    label: "intensity factor"
+    unit: ""
+    tooltip: "The weight of each neutron trajectory is divided by this factor to yield the weight for an MCNP simulation: . Should equal the value in 'read_in'."
+    min: 0.0
+    # TODO min: 1.0e-25, this is a divisor
+    default: 1.0
+    column: 0
+    prefix: "-I"
+    required: false
+  - name: "nSurfaces"
+    type: "int"
+    label: "surface ID"
+    tooltip: "Only for MCNP6: Number written as surface ID to the output file"
+    column: 1
+    default: 0
+    prefix: "-s"
+    required: false
+  - name: "sSimName"
+    type: "string"
+    label: "Simulation name"
+    tooltip: "Only for MCNP6: name of the simulation"
+    column: 2
+    prefix: "-T"
+    required: false
+  - name: "sSswFile"
+    type: "file"
+    plottable: false
+    label: "SSW ref. file"
+    tooltip: "Specifies the name of the SSW reference file to determine the file format"
+    prefix: "-r"
+    required: false
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "iOutColor"
+    type: "int"
+    label: "writeout color"
+    tooltip: "Write only events with a given color. A negative number means any color."
+    column: 0
+    min: -1
+    prefix: "-C"
+    required: false
+  - name: "FilterLambdaMin"
+    type: "float"
+    label: "lambda min"
+    unit: "Ang"
+    tooltip: "minimal wavelength to be taken into account"
+    column: 0
+    prefix: "-l"
+    required: false
+  - name: "FilterLambdaMax"
+    type: "float"
+    label: "lambda max"
+    unit: "Ang"
+    tooltip: "maximal wavelength to be taken into account"
+    column: 1
+    min: 0.0
+    prefix: "-L"
+    required: false
+  - name: "FilterWidthMin"
+    type: "float"
+    label: "y-pos min"
+    unit: "cm"
+    tooltip: "minimal horizontal position to be taken into account"
+    column: 0
+    prefix: "-u"
+    required: false
+  - name: "FilterWidthMax"
+    type: "float"
+    label: "y-pos max"
+    unit: "cm"
+    tooltip: "maximal horizontal position to be taken into account"
+    column: 1
+    prefix: "-U"
+    required: false
+  - name: "FilterHeightMin"
+    type: "float"
+    label: "z-pos min"
+    unit: "cm"
+    tooltip: "minimal vertical position to be taken into account"
+    column: 0
+    prefix: "-v"
+    required: false
+  - name: "FilterHeightMax"
+    type: "float"
+    label: "z-pos max"
+    unit: "cm"
+    tooltip: "maximal vertical position to be taken into account"
+    column: 1
+    prefix: "-V"
+    required: false

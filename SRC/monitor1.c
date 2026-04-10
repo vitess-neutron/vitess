@@ -50,9 +50,9 @@
 void OwnInit      (int argc, char *argv[]);                                  // Reads input parameters and sets global parameters
 void InitArrays   ();
 void OpenFiles    ();                                                        // Opens all monitor files
-void UpdateMon    (int iMon, long iBnch);                                    // Updates monitor output file 
+void UpdateMon    (int iMon, long iBnch);                                    // Updates monitor output file
 void NumerateName (char* sFileLong, char* sFileShort, const short nNumber);  // Building a combined file name of 'sFileShort' and 'sNumber' without changing the extension
-void ChangeName   (char* sFileNew,  char* sFileOld);                         // Putting "new_" in front of the original name                                              
+void ChangeName   (char* sFileNew,  char* sFileOld);                         // Putting "new_" in front of the original name
 
 
 /******************************/
@@ -63,19 +63,19 @@ char  *MonFileName    = NULL,      // -O    [-]   Monitor output file containing
       *RefFileName    = NULL;      // -R    [-]   reference file containing input data to normalize the monitor data
 
 VtMon1Par ePar        = MON_DIV_YZ;// -k    [-]   ID for parameter, as a function of which the intensity is shown
-VtMonNorm eNormalize  = NO_NORM;   // -f    [-]   enum: NO_NORM      : intensities of the neutron trajctories distributed unchanged into channels 
+VtMonNorm eNormalize  = NO_NORM;   // -f    [-]   enum: NO_NORM      : intensities of the neutron trajctories distributed unchanged into channels
                                    //                   NORM_BIN_SIZE: intensities normalized to bin size
                                    //                   NORM_REF_FILE: intensities normalized to reference file
 short  bAllFiles      = FALSE,     // -c    [-]   flag: generates additional files for colour=0, 1, ..., iColour
        bProbWeight    = TRUE,      // -p    [-]   flag: YES: Probability weight   NO: number of trajectories
        bSplitWeight   = TRUE,      // -P    [-]   flag for yz: YES split weight   NO: multiplication by number of detection angles
        bExclusive     = FALSE,     // -e    [-]   flag: YES: only neutrons meeting the monitor conditions are written  NO: all are written
-       iColour        = ANY_COLOR; // -C    [-]   index: for bAllFiles=FALSE: excludes all neutrons with diff. Colour from monitoring , if iColour >= 0 
-                                   //                    for bAllFiles=TRUE : max. colour to which additional monitor files are generated             
-                                 
+       iColour        = ANY_COLOR; // -C    [-]   index: for bAllFiles=FALSE: excludes all neutrons with diff. Colour from monitoring , if iColour >= 0
+                                   //                    for bAllFiles=TRUE : max. colour to which additional monitor files are generated
+
 long   nBins          = 1;         // -n    [-]   number of monitor channels
-                                 
-double MinY           = 0.0,       // -m   [var]  lower bound value of the monitored range 
+
+double MinY           = 0.0,       // -m   [var]  lower bound value of the monitored range
        MaxY           = 1.0,       // -M   [var]  upper bound value of the monitored range
        FiltLambdaMin  =-1.0,       // -l   [Ang]  minimal wavelength to be taken into account
        FiltLambdaMax  = 1.0e10,    // -L   [Ang]  maximal wavelength to be taken into account
@@ -90,23 +90,23 @@ double MinY           = 0.0,       // -m   [var]  lower bound value of the monit
        RotAngStep     = 0.0;       // -s   [deg]  rotation projection angle step
 
 // Variables determined from input parameters or trajectory data
-short  nAddMons       = 0;         //       [-]   number of additional output files (for separate colours) */                
+short  nAddMons       = 0;         //       [-]   number of additional output files (for separate colours) */
 long   nRot           = 1;         //       [-]   number of rot angles for yz
-FILE	*pFileMon       = NULL,      //       [-]   monitor output file
-      *pFileRef       = NULL;      //       [-]   reference file     
+FILE  *pFileMon       = NULL,      //       [-]   monitor output file
+      *pFileRef       = NULL;      //       [-]   reference file
 FILE  *pFileMonC[MAX_COLS]={NULL, NULL, NULL, NULL,NULL, NULL,NULL, NULL};  // Pointer to additional monitor files
 
 // Variables needed in different parts of the program
 double *PosT=NULL,          // limits of bin (minimal and maximal value)
-       *Int=NULL,           // intensity (=count rate) per bin 
+       *Int=NULL,           // intensity (=count rate) per bin
        *Norm=NULL,          // normalisation value for each bin
-       *SD=NULL;            // standard deviation per bin      
-long   *nTrj=NULL;          // number of trajectories per bin  
+       *SD=NULL;            // standard deviation per bin
+long   *nTrj=NULL;          // number of trajectories per bin
 long    nTrjTot=0;          // total number of traj. within binning and eval. time
-double  IntTot=0.0;         // total count rate within binning and eval. time     
+double  IntTot=0.0;         // total count rate within binning and eval. time
 double  IntMax =-1.0e10,    // maximal count rate found in one bin
-        BinSize= 0.0;       // size of each bin          
-long    nBunches= 1;         // number of bunches started 
+        BinSize= 0.0;       // size of each bin
+long    nBunches= 1;         // number of bunches started
 static
 char   sUnit[MAX_KIND+1][ 4]={"", "Ang", "ms", "deg", "deg","cm", "cm", "meV", "deg"},                        // unit and parameter name
        sParN[MAX_KIND+1][11]={"", "lambda", "time", "div_y", "div_z", "pos_y", "pos_z", "energy", "div_rad"}; // of the possible x-axis parameters
@@ -123,12 +123,12 @@ int main(int argc, char *argv[])
   short  iCol=NO_COLOR;      /* colour of the trajectory */
   long   iBin=0,             /* bin number     */
          iBnch=0,            /* current bunch */
-         i=0, 
-         bRegistered=FALSE; 
+         i=0,
+         bRegistered=FALSE;
   double prob=0.0,           /* neutron weight */
-         time; 
-  double Divy=0.0, Divz=0.0, 
-         Div=0.0, 
+         time;
+  double Divy=0.0, Divz=0.0,
+         Div=0.0,
          rotang=0.0;
 
   double TimeMeas=0.0,       /* measuring time     (from simulation.inf, not needed) */
@@ -158,12 +158,12 @@ int main(int argc, char *argv[])
 
   InitArrays();
   ReadSimData(&TimeMeas, &LmbdWant, &Freq, &nTraj, &nBunches);
-  
+
   DECLARE_ABORT;
-  
+
   // loop over trajectories
   // ----------------------
-	while (ReadNeutrons()!= 0)
+  while (ReadNeutrons()!= 0)
   {
     for(i=0; i<NumNeutGot; i++)
     {
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 
       // Update monitor output if EOB line is found
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
-      { 
+      {
         iBnch++;
         UpdateMon(ANY_COLOR, iBnch);
         WriteNeutron(&(InputNeutrons[i]));
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
       else
       {  bRegistered=0;
 
-        if(bProbWeight==1) 
+        if(bProbWeight==1)
           prob = InputNeutrons[i].Probability;
         else
           prob = 1.0;
@@ -211,9 +211,9 @@ int main(int argc, char *argv[])
             break;
 
           case MON_DIV_Y: // monitor div_y
-            if (InputNeutrons[i].Vector[0] >= 0) 
+            if (InputNeutrons[i].Vector[0] >= 0)
               Divy = (double)atan2(InputNeutrons[i].Vector[1],  sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
-	          else 
+            else
               Divy = (double)atan2(InputNeutrons[i].Vector[1], -sqrt(sq(InputNeutrons[i].Vector[0]) + sq(InputNeutrons[i].Vector[2])));
             Divy *= 180.0/M_PI;
             iBin = (int)floor(nBins*(Divy - MinY)/(MaxY-MinY));
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
           case MON_ENERGY: // monitor energy
             iBin=(int)floor((double)nBins*(0.001*ENERGY_FROM_LAMBDA(InputNeutrons[i].Wavelength) - MinY)/(MaxY-MinY));
             break;
-		
+
           case MON_DIV_YZ: // monitor div_yz_angle
             Divy = (double)atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]);
             Divy*=180.0/M_PI;
@@ -248,9 +248,9 @@ int main(int argc, char *argv[])
             if ((InputNeutrons[i].Vector[2]==0.0) && (InputNeutrons[i].Vector[0]==0.0))
               Divz=0.0;
             //x' = x cos f - y sin f
-		
+
             rotang = RotAngMin;
-            do 
+            do
             {
               Div = Divy * cos(-rotang) - Divz * sin(-rotang);
 
@@ -264,11 +264,11 @@ int main(int argc, char *argv[])
                   bRegistered = 1;
                 }
               rotang += RotAngStep;
-            } 
+            }
             while (RotAngStep > 0.0 && rotang <= RotAngMax && RotAngMax > RotAngMin);
             break;
 
-          default: 
+          default:
             fprintf(LogFilePtr,"ERROR: No or unknown value for the monitor parameter given. Input value: %d\n", ePar);
             exit(-1);
         }
@@ -282,12 +282,12 @@ int main(int argc, char *argv[])
             nTrjTot    += 1;
             bRegistered = 1;
             if (nAddMons > 0 && iCol >= 0 && iCol < nAddMons)
-            { 
+            {
               Int [iBin + (iCol+1)*(nBins+1)] += prob;
               nTrj[iBin + (iCol+1)*(nBins+1)] += 1;
             }
           }
-	      }
+        }
 
         /* write out bRegistered neutrons, if 'exclusive counts = yes' is set */
         if ((bExclusive==1) && (bRegistered==1))
@@ -304,15 +304,15 @@ my_exit:
   UpdateMon(ANY_COLOR, nBunches);  // main monitor
 
   // additional monitors
-  if (nAddMons > 0) 
-  { 
+  if (nAddMons > 0)
+  {
     for (jMon=0; jMon<nAddMons; jMon++)
       UpdateMon(jMon, nBunches);
   }
 
-  // TOF monitor 
-  if (ePar==MON_TIME) 
-  { 
+  // TOF monitor
+  if (ePar==MON_TIME)
+  {
     if (Freq > 0.0)
       fprintf(LogFilePtr, "Peak flux: %11.4e n/s \n", 1000*IntMax/BinSize/Freq);
     else
@@ -423,8 +423,8 @@ void OwnInit(int argc, char *argv[])
 
         case 'C':
           iColour = atol(&argv[i][2]);         /*  excludes all neutrons with diff. Colour, if iColour >= 0   */
-          break;  
-                          
+          break;
+
         case 'c':
           bAllFiles = (short)atoi(&argv[i][2]); /*  criterion: generates additional files for colour=0, 1, ..., iColour   */
           break;
@@ -443,28 +443,28 @@ void OwnInit(int argc, char *argv[])
       }
     }
   }
-  
+
   // if all files wanted, treat all colours and regard iColour as max. colour to monitor in separate files
-  if (bAllFiles == TRUE)                    
+  if (bAllFiles == TRUE)
   { nAddMons = mini(MAX_COLS, iColour+1);
     iColour  = ANY_COLOR;
   }
 
-  if (ePar == MON_DIV_YZ && bSplitWeight == 1) 
+  if (ePar == MON_DIV_YZ && bSplitWeight == 1)
   {
     rotang = RotAngMin;
-    do 
+    do
     { rotang += RotAngStep;
       nRot++;
-    } 
+    }
     while (RotAngStep > 0.0 && rotang <= RotAngMax && RotAngMax > RotAngMin);
-  } 
-  else 
+  }
+  else
   {
     nRot = 1;
   }
-  
-  if (bProbWeight != 1) 
+
+  if (bProbWeight != 1)
     bProbWeight = 0;
 
   return;
@@ -494,7 +494,7 @@ void InitArrays()
   {
     PosT[iBin]=MinY+(BinSize*iBin);
     for (jMon=0; jMon<=nAddMons; jMon++)
-    { 
+    {
       Int [iBin+jMon*(nBins+1)]=0.0;
       SD  [iBin+jMon*(nBins+1)]=0.0;
       nTrj[iBin+jMon*(nBins+1)]=0;
@@ -504,15 +504,15 @@ void InitArrays()
     { Norm[iBin] =(MaxY-MinY)/(double)nBins;
     }
     else if (eNormalize==NORM_REF_FILE && ReadLine(pFileRef, sBuffer, sizeof(sBuffer)-1))
-    { 
+    {
       StrgScanLF(sBuffer, &RefValue, 1, 1);
-      Norm[iBin] = RefValue;  
+      Norm[iBin] = RefValue;
     }
     else
     { Norm[iBin] = 1.0;
     }
   }
-  
+
   switch (eNormalize)
   {
     case NORM_BIN_SIZE: fprintf(LogFilePtr, "Norm     : %f\n",  Norm[0]); break;
@@ -533,34 +533,27 @@ void InitArrays()
 void OpenFiles()
 {
   // opens reference file
-  if (RefFileName!=NULL)
-  { 
-    pFileRef = OpenInputFile(RefFileName, FALSE, "rt");
-    if (pFileRef!=NULL)
-    { eNormalize=NORM_REF_FILE;
-    }
-    else
-    {  fprintf(LogFilePtr,"\nERROR: Reference file %s could not be opened\n", RefFileName);
-       exit(-1);
-    }
+  if (RefFileName != NULL) {
+    pFileRef = OpenParameterFile2(RefFileName, "reference data", "rt");
+    eNormalize = NORM_REF_FILE;
   }
 
   // opens main monitor file
   // pFileMon = OpenOutputFile(MonFileName, TRUE, "at");
 
-  /*  opens separate files from colour=0, 1, ..., iColour     
+  /*  opens separate files from colour=0, 1, ..., iColour
   if (nAddMons > 0)
-  { 
-	  for (jMon=0; jMon<nAddMons; jMon++)
-	  { 
+  {
+    for (jMon=0; jMon<nAddMons; jMon++)
+    {
         NumerateName(sNewName, MonFileName, jMon);
         pFileMonC[jMon] = OpenOutputFile(sNewName, FALSE, "at");
         if (pFileMon==NULL)
           fprintf(LogFilePtr,"\nFile %s could not be opened for monitor output\n", sNewName);
-	  } 
+    }
   } */
 
-  return; 
+  return;
 }
 
 
@@ -572,8 +565,8 @@ void UpdateMon(int jMon, long iBnch)
   char   sNewName[CHAR_BUF_SMALL]="";
   double f_norm=1.0;             // ratio of total to processed bunches after treating current bunch
   long   iBin=0,                 // index of bins in x-axix and for main monitor
-         kBin=0;                 // index in array for monitors of individual colors   
-  double xBin=0.0;               // center of the current bin 
+         kBin=0;                 // index in array for monitors of individual colors
+  double xBin=0.0;               // center of the current bin
   FILE*  pFile=NULL;
   int    iColor=jMon;            // color of the trajectories
 
@@ -588,9 +581,9 @@ void UpdateMon(int jMon, long iBnch)
   // ---------------------------
   pFile = OpenOutputFile(sNewName, TRUE, "wt");
 
-  if (pFile != NULL)     
-  { 
-    WriteHeader1DB(pFile, FALSE, "intensity", iColor, iBnch, nBunches, nBins, IntTot, nTrjTot, 
+  if (pFile != NULL)
+  {
+    WriteHeader1DB(pFile, FALSE, "intensity", iColor, iBnch, nBunches, nBins, IntTot, nTrjTot,
                           sParN[ePar], sUnit[ePar], MinY, MaxY);
 
     if (iBnch > 0 && nBunches > 1)
@@ -602,21 +595,21 @@ void UpdateMon(int jMon, long iBnch)
       kBin = iBin + (jMon+1)*(nBins+1);
       xBin = (PosT[iBin]+PosT[iBin+1])/2.0;
 
-      if (nTrj[kBin]!=0 && nRot!=0) 
+      if (nTrj[kBin]!=0 && nRot!=0)
         SD[kBin] = Int[kBin]*sqrt(1./((double)nTrj[kBin]/(double)nRot));
       else
         SD[kBin] = 0.0;
 
       if (Norm[iBin]!=0)
-      { 
-        if (ePar==MON_DIV_YZ) 
+      {
+        if (ePar==MON_DIV_YZ)
           fprintf(pFile, "%10.4f  %12.5e %12.5e  %10.2f\n", xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nTrj[kBin]/(double)nRot);
         else
           fprintf(pFile, "%10.4f  %12.5e %12.5e  %7ld\n",   xBin, f_norm*Int[kBin]/Norm[iBin], f_norm*SD[kBin]/Norm[iBin], nTrj[kBin]);
       }
       else
-      { 
-        if (ePar==MON_DIV_YZ) 
+      {
+        if (ePar==MON_DIV_YZ)
           fprintf(pFile, "%10.4f   0.0000000E+00  0.0000000E+00        0.00\n", xBin);
         else
           fprintf(pFile, "%10.4f   0.0000000E+00  0.0000000E+00        0\n",    xBin);
@@ -642,9 +635,9 @@ void NumerateName(char* sFileLong, char* sFileShort, const short nNumber)
    char sParExt [4],      // extension of file names (with simulation results)
         sParName[CHAR_BUF_SMALL];     // name (without extension) of those files
 
-	strcpy  (sParExt,  sFileShort +strlen(sFileShort)-3);
-	StrgCopy(sParName, sFileShort, strlen(sFileShort)-4);
-	sprintf (sFileLong, "%s%hd.%s", sParName, nNumber, sParExt);
+  strcpy  (sParExt,  sFileShort +strlen(sFileShort)-3);
+  StrgCopy(sParName, sFileShort, strlen(sFileShort)-4);
+  sprintf (sFileLong, "%s%hd.%s", sParName, nNumber, sParExt);
 }
 
 
@@ -658,10 +651,9 @@ void ChangeName(char* sFileNew, char* sFileOld)
   p1= strrchr(sFileOld, '/');
   p2= strrchr(sFileOld, '\\');
   if (p1 > p2)
-		sprintf(sFileNew, "new_%s", p1+1);
+    sprintf(sFileNew, "new_%s", p1+1);
   if (p2 > p1)
-		sprintf(sFileNew, "new_%s", p2+1);
+    sprintf(sFileNew, "new_%s", p2+1);
   if (p1 != p2)
     fprintf(LogFilePtr,"file name changed to %s\n", sFileNew);
 }
-

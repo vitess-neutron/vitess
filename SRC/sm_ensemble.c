@@ -4,18 +4,18 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to     */
 /* the authors.                                                                                  */
 /*                                                                                               */
-/* 0.1  Jul 2002  G. Zsigmond	   initial version                                                 */
-/* 1.0  Sep 2002  G. Zsigmond	   active on both sides                                            */
-/* 1.1  Apr 2003  S. Manoshin	   visualisation included                                          */
-/*              + G. Zsigmond	    and position filter                                            */
-/* 1.2  May 2003  G. Zsigmond	   collision file name as input parameter, coll. output changed,   */
+/* 0.1  Jul 2002  G. Zsigmond     initial version                                                 */
+/* 1.0  Sep 2002  G. Zsigmond     active on both sides                                            */
+/* 1.1  Apr 2003  S. Manoshin     visualisation included                                          */
+/*              + G. Zsigmond      and position filter                                            */
+/* 1.2  May 2003  G. Zsigmond     collision file name as input parameter, coll. output changed,   */
 /*                               quantisation direction incl.                                    */
-/* 1.3  Jun 2003  G. Zsigmond	   included if when closing coll file; softabort included          */
+/* 1.3  Jun 2003  G. Zsigmond     included if when closing coll file; softabort included          */
 /* 1.4  Jan 2004  K. Lieutenant  changes for 'instrument.dat'                                    */
 /* 1.5  Feb 2004  S. Manoshin    Visualise only first 10000 neutrons                             */
 /*                               Choose the output device : screen, file or both                 */
 /*                               New external variable gselec                                    */
-/* 1.6  Apr 2004  G. Zsigmond	   Visualise only first 1000 neutrons, write sm_ensemble.ps        */
+/* 1.6  Apr 2004  G. Zsigmond     Visualise only first 1000 neutrons, write sm_ensemble.ps        */
 /* 1.7  Feb 2008  K. Lieutenant  extension to MAX_MIRR (=13) mirrors                             */
 /* 1.8  Apr 2008  M. Fromme      changeable constant MAX_MIRR                                    */
 /* 1.9  Feb 2010  M. Fromme      helper threads                                                  */
@@ -48,7 +48,7 @@
 
  extern int gselec;                         //   -o    [-]  output device(s) 1: display only  2: file only  3: both   (defined in cpgplot.c)
 #else
- int gselec;                                //   -o    [-]   output devices (display and or file) 
+ int gselec;                                //   -o    [-]   output devices (display and or file)
 #endif
 
 /************************************/
@@ -66,7 +66,7 @@
 /** Prototypes               **/
 /******************************/
 void processNeutron (int i, int thread_i);                                                       // processes 1 neutron trajectory
-                                                                                                 
+
 void OwnInit(int argc, char *argv[]);                                                            // reads input parameters and sets global variables
 void ReadParameterFile(char* sFileName);                                                         // reads the file containing the geometry and properties of the mirrors
 void SetGeometry(char* color);                                                                   // fills the structure stGeometry for visualization
@@ -77,12 +77,12 @@ void UpdateMirrorElementOffset(VectorType edgeVector, VectorType diagonalVector,
 void DetermineAndLogMirrorShape(int i);                                                          // determines true center of the mirror parameters to visualize a mirror
 
 static VINLINE void CartesianToSpherical2(const VectorType Vector, double *Theta, double *Phi);  // converts vector to spherical parameters
-static VINLINE int cmpAreas (const VectorType r1, const VectorType r2, const VectorType rt);     // compares areas defined by vectors 
+static VINLINE int cmpAreas (const VectorType r1, const VectorType r2, const VectorType rt);     // compares areas defined by vectors
 
 int hittriangle(const VectorType r1, const VectorType r2, const VectorType rt);                  // checks if the intersection point is inside a triangle
 int hitwall    (const VectorType r1, const VectorType r2, const VectorType r3,                   // checks if the intersection point is inside a quadrangle
                 const VectorType r4, const VectorType rt);
-static double 
+static double
     CollideWall(const int thread_i, const double WL, const VectorType SpinVector,                // computes the collision point with a wall 'l' and returns distance
                 double *prob, VectorType pos, VectorType dir, VectorType spin, short int l);
 
@@ -93,37 +93,37 @@ static double
 const char *COLLFILEName = "collision.dat"; //   -C    [-]   name of the collision file
 char       *ParameterFileName=NULL;         //   -P    [-]   name of the file containing the geometry and properties of the mirrors
 long        nMaxColl = 0;                   //   -M    [-}   100  maximal number of collisions
-VtAxis      quant_dir=NO_AXIS;              //   -Q    [-]   spin quantization direction 
+VtAxis      quant_dir=NO_AXIS;              //   -Q    [-]   spin quantization direction
 short       bNewFormat=TRUE,                //   -F    [-]   flag: new format for geometry file
             bIncrColor=FALSE;               //   -R    [-]   flag: increase the neutron color by 1 for each mirror reflection
-VtMirrMat   eMirrMaterial=VT_NO_MIRR_MAT;   //   -S    [-]   enum: mirror material 
+VtMirrMat   eMirrMaterial=VT_NO_MIRR_MAT;   //   -S    [-]   enum: mirror material
 VectorType  TranslOutput={0.0,0.0,0.0};     //-r -s -t [cm]  origin of the output frame
 double      OutputAngleHoriz=0.0,           //   -h   [deg]  horizontal orientation of the output frame (in the input frame)
             OutputAngleVert=0.0;            //   -v   [deg]  vertical orientation of the output frame (in the input frame)
-double      Windw=0.0,                      //   -w    [-]    -10.0  lower limit of the visualized range in horizontal direction (usually x-axis) 
-            WindW=0.0,                      //   -W    [-]    200.0  upper limit of the visualized range in horizontal direction (usually x-axis) 
-            Windh=0.0,                      //   -a    [-]    -10.0  lower limit of the visualized range in the second dimension (y- or z-axis) 
-            WindH=0.0,                      //   -A    [-]     10.0  upper limit of the visualized range in the second dimension (y- or z-axis) 
-            wei_min1=0.0;                   //   -b    [-]   minimal neutron weight for visualization 
+double      Windw=0.0,                      //   -w    [-]    -10.0  lower limit of the visualized range in horizontal direction (usually x-axis)
+            WindW=0.0,                      //   -W    [-]    200.0  upper limit of the visualized range in horizontal direction (usually x-axis)
+            Windh=0.0,                      //   -a    [-]    -10.0  lower limit of the visualized range in the second dimension (y- or z-axis)
+            WindH=0.0,                      //   -A    [-]     10.0  upper limit of the visualized range in the second dimension (y- or z-axis)
+            wei_min1=0.0;                   //   -b    [-]   minimal neutron weight for visualization
 short       eVisual=0,                      //   -T    [-]   enum: output type:  0: no output   1: output in collision file   2: plane XOY   3: plane XOZ   4: plane YOZ
             bDispPts=FALSE;                 //   -c    [-]   flag: use points in graphical representation
 int         nMCperNeutron = MAX_MIRR*3;     //   -m    [-]   maximum number of MC choices per trajectory
 
 // Variables determined from input parameters or file data
-FILE       *COLLFILE=NULL;                                //  Pointer to collision file 
-int        useQuantDir=TRUE;                              //  flag: quantization direction defined      
+FILE       *COLLFILE=NULL;                                //  Pointer to collision file
+int        useQuantDir=TRUE;                              //  flag: quantization direction defined
 int        max_mirr=0;                                    //  number of mirrors in the file
 long       NumWrong[MAXWORKER];                           //  number related to a helper thread
 long       number_vis_tr=0;                               //  current number of visualised trajectories, used to limit output
-double	   RotMatrixOut[3][3];                            //  Matrix to rotate to output frame
+double     RotMatrixOut[3][3];                            //  Matrix to rotate to output frame
 
 // Parameters for all mirrors, read from the geometry file or calculated from that
 int        eMirrUse[MAX_MIRR+1];                          //  enum: inactive, active with transmission, active without transmission
-VectorType WallOffset[MAX_MIRR+1],                        //  center of the mirror (read from the geometry file) 
+VectorType WallOffset[MAX_MIRR+1],                        //  center of the mirror (read from the geometry file)
            R1[MAX_MIRR+1], R2[MAX_MIRR+1],                //  the 4 edges of the planes for all mirrors (as read from the geometry file)
-           R3[MAX_MIRR+1], R4[MAX_MIRR+1], 
+           R3[MAX_MIRR+1], R4[MAX_MIRR+1],
            WallOffsetShift[MAX_MIRR+1];                   // true center of the mirror
-double	   WallHoriz[MAX_MIRR+1], WallVert[MAX_MIRR+1],   // hor. and vert. rotation for the correct orientation (read from the geometry file) 
+double     WallHoriz[MAX_MIRR+1], WallVert[MAX_MIRR+1],   // hor. and vert. rotation for the correct orientation (read from the geometry file)
            mrangh[MAX_MIRR+1], mrangv[MAX_MIRR+1],        // uncertainty of the hor. and vert. rotation for the correct orientation (read from the geometry file)
            mValue[MAX_MIRR+1][2],                         // m_cutoff for spin-up and spin-down (read from the new geometry file)
            MirrThick[MAX_MIRR+1],                         // mirror thickness (read from the new geometry file)
@@ -182,12 +182,12 @@ int main(int argc, char **argv)
 
   _eModule = MCN_SM_ENSEMBLE;
 
-	Init(argc,argv, _eModule);
+  Init(argc,argv, _eModule);
   PrintModuleName(_eModule, "2.1a");
   OwnInit(argc, argv);
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
 
   ReadParameterFile(ParameterFileName);
@@ -201,26 +201,26 @@ int main(int argc, char **argv)
   // no helper threads when plotting or writing to file per neutron
   if (eVisual > 0)
     NThreads = 0;
-  
-  for (m=1; m<=max_mirr; m++) 
-  {  
-    SubVector(R1[m], WallOffsetShift[m]); 
-    SubVector(R2[m], WallOffsetShift[m]); 
-    SubVector(R3[m], WallOffsetShift[m]); 
-    SubVector(R4[m], WallOffsetShift[m]); 
+
+  for (m=1; m<=max_mirr; m++)
+  {
+    SubVector(R1[m], WallOffsetShift[m]);
+    SubVector(R2[m], WallOffsetShift[m]);
+    SubVector(R3[m], WallOffsetShift[m]);
+    SubVector(R4[m], WallOffsetShift[m]);
   }
 
   processPipedNeutrons(NThreads, processNeutron, 1, nMCperNeutron);
 
    for (m=1; m<=max_mirr; m++) {
-     AddVector(R1[m], WallOffsetShift[m]); 
-     AddVector(R2[m], WallOffsetShift[m]); 
-     AddVector(R3[m], WallOffsetShift[m]); 
-     AddVector(R4[m], WallOffsetShift[m]); 
+     AddVector(R1[m], WallOffsetShift[m]);
+     AddVector(R2[m], WallOffsetShift[m]);
+     AddVector(R3[m], WallOffsetShift[m]);
+     AddVector(R4[m], WallOffsetShift[m]);
    }
 
-  if (eVisual==1) fclose(COLLFILE);	
-	
+  if (eVisual==1) fclose(COLLFILE);
+
   SetGeometry("green");                       // write geometry data for visualization
   OwnCleanup();
   Cleanup(TranslOutput[0], TranslOutput[1], TranslOutput[2], OutputAngleHoriz, OutputAngleVert);
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 /* Callback routine 'processNeutron' is responsible to process neutron i;                         */
 /* thread_i indicates the tread which is performing, in case of serial execution this is thread 0 */
 /**************************************************************************************************/
-void processNeutron (int i, int thread_i) 
+void processNeutron (int i, int thread_i)
 {
   // Only write out event if EOB line is found, otherwise process trajectory
   if (IsEOB(&(InputNeutrons[i]))==TRUE)
@@ -242,7 +242,7 @@ void processNeutron (int i, int thread_i)
     WriteNeutronParallel(&(InputNeutrons[i]), thread_i);
   }
   else
-  { 
+  {
     VectorType Pos={0.0,0.0,0.0}, Dir={0.0,0.0,0.0}, SpinVector={0.0,0.0,0.0},
                pos[MAX_MIRR+1], dir[MAX_MIRR+1], spin[MAX_MIRR+1];
     double     TOF=0.0, WL=0.0, Prob=0.0, Path0=0.0, Path=0.0,
@@ -281,36 +281,36 @@ void processNeutron (int i, int thread_i)
     if (eVisual) {
       if (eVisual==1)
         fprintf(COLLFILE,
-	        "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
-	        InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
-	        InputNeutrons[i].Debug, InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
-	        Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
+          "     %c%c%07ld %c %5d    %10d  %2d  0     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
+          InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1], InputNeutrons[i].ID.IDNo,
+          InputNeutrons[i].Debug, InputNeutrons[i].Color, i, ((int) SpinVector[quant_dir]),
+          Pos[0], Pos[1], Pos[2], 180./M_PI * atan2(Dir[1],Dir[0]), 180./M_PI * atan2(Dir[2],Dir[0]));
 
   #ifdef VT_GRAPH
       else if (eVisual>=2 && eVisual<=4) {
         cpgsci((int)(InputNeutrons[i].Color));
         if(Prob > wei_min1)
-	  moveIt(Pos);
+    moveIt(Pos);
       }
   #endif
     }
 
     Path = 0;
 
-    for (j=0; j<1000; j++) 
+    for (j=0; j<1000; j++)
     { // loop over at most 1000 collisions
       int im, l;
 
       CHECK;
 
       // determine the collision points with all wall and their distances (stored in PathA[])
-      for (l=1; l<=max_mirr; l++) 
+      for (l=1; l<=max_mirr; l++)
       { // loop over mirrors
         CopyVector(Pos, pos[l]);
         CopyVector(Dir, dir[l]);
         CopyVector(SpinVector, spin[l]);
         prob[l]= Prob;
-        if (m != l) 
+        if (m != l)
           PathA[l] = CollideWall(thread_i, WL, SpinVector, &prob[l], pos[l], dir[l], spin[l], l);
         else
           PathA[l] = 99999;
@@ -323,12 +323,12 @@ void processNeutron (int i, int thread_i)
       /* and propagate to this mirror                                                               */
       /**********************************************************************************************/
 
-      // checks if any distance is < infinity 
+      // checks if any distance is < infinity
       for (im=1; im <= max_mirr; im++)
         if (PathA[im] != 99999.0)
           break;
 
-      if (im > max_mirr) 
+      if (im > max_mirr)
       {
         // all PathA are 99999
         Path = 99999.0;
@@ -336,7 +336,7 @@ void processNeutron (int i, int thread_i)
       }
 
       // propagate neutron to the mirror that it hist
-      for (l=1; l<=max_mirr; l++) 
+      for (l=1; l<=max_mirr; l++)
       { // loop over mirrors
         Neutron myneutron, *n;
         n = &myneutron;
@@ -355,15 +355,15 @@ void processNeutron (int i, int thread_i)
         Prob = prob[l];
         m = l;
         nocol++;
-	  
+
         CopyVector(Pos, n->Position);
         CopyVector(Dir, n->Vector);
         WriteIAP(n, VT_REFLECTED);
         if (bIncrColor) InputNeutrons[i].Color++;
 
-        if (eVisual) 
+        if (eVisual)
         {
-          if (eVisual==1) 
+          if (eVisual==1)
             fprintf(COLLFILE, "     %c%c%07ld %c %5d    %10d  %2d  %d     %12.5f  %12.5f  %12.5f     %12.5f  %12.5f\n",
                               InputNeutrons[i].ID.IDGrp[0], InputNeutrons[i].ID.IDGrp[1],
                               InputNeutrons[i].ID.IDNo, InputNeutrons[i].Debug, InputNeutrons[i].Color, i,
@@ -377,7 +377,7 @@ void processNeutron (int i, int thread_i)
 
         //     fprintf(LogFilePtr, "ID: %d, End position: %f %f %f  Mirror: %d\n", InputNeutrons[i].ID.IDNo, n->Position[0], n->Position[1], n->Position[2], l);
       }                             // end loop over mirrors
-	
+
       if (nocol == nMaxColl)
         break; // leave collsions loop
 
@@ -401,13 +401,13 @@ void processNeutron (int i, int thread_i)
       if (Pos[0] > 0.0) return; // Filter if collision after output YZ plane
 
       TOF -= Pos[0] / fabs(Dir[0]) / V_FROM_LAMBDA(WL);
-      	
+
       CopyVector(Dir, path);
       MultiplyByScalar(path, - Pos[0] / Dir[0]);
       AddVector(Pos, path);
     }
 
-    if (eVisual > 0) 
+    if (eVisual > 0)
     {
       /* transform into input frame to give the exit positions here */
       VectorType posex, direx;
@@ -428,7 +428,7 @@ void processNeutron (int i, int thread_i)
         drawIt(posex);
   #endif
     }
-	
+
     /* transmit coordinates which were not changed, overwrite the rest below */
     { Neutron neutron = InputNeutrons[i];
 
@@ -444,7 +444,8 @@ void processNeutron (int i, int thread_i)
 
       if (eVisual) number_vis_tr++;
 
-      WriteNeutronParallel(&neutron, thread_i);
+      if (neutron.Probability > wei_min)
+        WriteNeutronParallel(&neutron, thread_i);
     }
     if (eVisual==1) fprintf(COLLFILE, "\n");
 
@@ -495,17 +496,17 @@ void OwnInit(int argc, char *argv[])
 
   gselec = 1; /* Activate visualisation device -screen */
 
-  while(argc > 1) 
+  while(argc > 1)
   {
     char *arg = &argv[1][2];
-    switch(argv[1][1]) 
+    switch(argv[1][1])
     {
       case 'C':
         COLLFILEName = arg;
         break;
       case 'P':
         ParameterFileName=arg;
-        break;		
+        break;
 
       case 'Q':
         quant_dir = (VtAxis)atoi(arg);
@@ -548,13 +549,13 @@ void OwnInit(int argc, char *argv[])
         // Visual data
       case 'w':
         sscanf(arg, "%lf", &Windw);
-        break;					
+        break;
       case 'W':
         sscanf(arg, "%lf", &WindW);
         break;
       case 'a':
         sscanf(arg, "%lf", &Windh);
-        break;					
+        break;
       case 'A':
         sscanf(arg, "%lf", &WindH);
         break;
@@ -571,7 +572,7 @@ void OwnInit(int argc, char *argv[])
       case 'o':
         gselec = atoi(arg);
         break;
-										
+
         // Monte Carlo prefetch count for helper threads
       case 'm':
         sscanf(arg, "%d", &nMCperNeutron);
@@ -580,23 +581,23 @@ void OwnInit(int argc, char *argv[])
     argc--;
     argv++;
   }
-	
+
   if (nMCperNeutron == MAX_MIRR*3)
     nMCperNeutron = 3*nMaxColl;
 
-  if (bNewFormat == TRUE && eMirrMaterial == VT_MIRR_OTHER) 
+  if (bNewFormat == TRUE && eMirrMaterial == VT_MIRR_OTHER)
     Error("The new file format cannot be used with 'Other' mirror substrate material");
-  if (bNewFormat == FALSE && (eMirrMaterial==VT_MIRR_SI || eMirrMaterial==VT_MIRR_SAPPH)) 
+  if (bNewFormat == FALSE && (eMirrMaterial==VT_MIRR_SI || eMirrMaterial==VT_MIRR_SAPPH))
   { eMirrMaterial = VT_MIRR_OTHER;
-    Note("The new file format can only work with 'Other' mirror substrate material. Choice ignored");
+    Note("The old file format can only work with 'Other' mirror substrate material. Choice ignored");
   }
 
   if (eVisual==1)
     fprintf(LogFilePtr, "Prints the coordinates of collisions to '%s'.\n", COLLFILEName);
-	
+
 #ifdef VT_GRAPH
   else if (eVisual >= 2 && eVisual <= 4) {
-	
+
     /* initialize pgplot with device GraphDev */
 
     if (gselec == 1)
@@ -629,7 +630,7 @@ void OwnInit(int argc, char *argv[])
     case 4: cpglab("Y, cm","Z, cm","NEUTRON VISUALISATION - PLANE Y0Z"); break;
     }
   }
-#endif	
+#endif
 
 
   OutputAngleHoriz *= M_PI/180.;
@@ -652,17 +653,11 @@ void ReadParameterFile(char* sFileName)
   int   l = 1,
         use_this_mirror=MIRR_INACTIVE;
 
-  FILE* f = OpenInputFile(sFileName, FALSE, "r");
-        
-  if (f==NULL) 
-  {
-    fprintf(LogFilePtr,"\nERROR: Parameter file '%s' not found.\n", sFileName);
-    exit(0);
-  }
+  FILE* f = OpenParameterFile(sFileName, TRUE, "r");
 
-  while (!feof(f)) 
+  while (!feof(f))
   {
-    if (bNewFormat == FALSE) 
+    if (bNewFormat == FALSE)
     {
       R1[l][0] = R2[l][0] = R3[l][0] = R4[l][0] = 0;
       use_this_mirror = ReadParI(f);
@@ -678,8 +673,8 @@ void ReadParameterFile(char* sFileName)
       thetaC[l][1]=ReadParF(f); thetaCSM[l][1]=ReadParF(f); RthetaCSM[l][1]=ReadParF(f);
       mued[l][2]=ReadParF(f); mued[l][3]=ReadParF(f);
       ReadParComment(f);
-      
-      if(use_this_mirror!=MIRR_INACTIVE) 
+
+      if(use_this_mirror!=MIRR_INACTIVE)
       {
         eMirrUse[l] = use_this_mirror;
         fprintf(LogFilePtr, "%c:  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f%10.5f  "
@@ -690,8 +685,8 @@ void ReadParameterFile(char* sFileName)
                             mued[l][0], mued[l][1], thetaC[l][1], thetaCSM[l][1], RthetaCSM[l][1], mued[l][2], mued[l][3]);
         WallHoriz[l] *= M_PI/180.;
         WallVert[l]  *= M_PI/180.;
-        mrangh[l]	 *= M_PI/180.;
-        mrangv[l]	 *= M_PI/180.;
+        mrangh[l]   *= M_PI/180.;
+        mrangv[l]   *= M_PI/180.;
         FillRotMatrixZY(RotMatrixWall[l],  WallVert[l],  WallHoriz[l]);
         EulerToCartesianZY(WallNormal[l], &WallVert[l], &WallHoriz[l]);
         l++;
@@ -700,7 +695,7 @@ void ReadParameterFile(char* sFileName)
           break;
       }
     }
-    else 
+    else
     {
       R1[l][0] = R2[l][0] = R3[l][0] = R4[l][0] = 0;
       use_this_mirror = ReadParI(f);
@@ -713,8 +708,8 @@ void ReadParameterFile(char* sFileName)
       mrangh[l]=ReadParF(f); mrangv[l]=ReadParF(f);
       MirrThick[l] = ReadParF(f); mValue[l][0]=ReadParF(f); mValue[l][1]=ReadParF(f);
       ReadParComment(f);
-            
-      if(use_this_mirror!=MIRR_INACTIVE) 
+
+      if(use_this_mirror!=MIRR_INACTIVE)
       {
         eMirrUse[l] = use_this_mirror;
         fprintf(LogFilePtr, "%c:  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f  %10.5f%10.5f%10.5f  "
@@ -724,8 +719,8 @@ void ReadParameterFile(char* sFileName)
                             mrangh[l], mrangv[l], MirrThick[l], mValue[l][0], mValue[l][1]);
         WallHoriz[l] *= M_PI/180.;
         WallVert[l]  *= M_PI/180.;
-        mrangh[l]	 *= M_PI/180.;
-        mrangv[l]	 *= M_PI/180.;
+        mrangh[l]   *= M_PI/180.;
+        mrangv[l]   *= M_PI/180.;
         FillRotMatrixZY(RotMatrixWall[l],  WallVert[l],  WallHoriz[l]);
         EulerToCartesianZY(WallNormal[l], &WallVert[l], &WallHoriz[l]);
 
@@ -734,10 +729,10 @@ void ReadParameterFile(char* sFileName)
 
         if (mValue[l][0] < 1.0)
           Qc[l][0] *= mValue[l][0];
-	
+
         if (mValue[l][1] < 1.0)
           Qc[l][1] *= mValue[l][1];
-	
+
         thetaC[l][0] = asin(Qc[l][0]/(4*M_PI));
         thetaC[l][1] = asin(Qc[l][1]/(4*M_PI));
 
@@ -745,7 +740,7 @@ void ReadParameterFile(char* sFileName)
         // terminate if we have MAX_MIRR valid mirrors
         if (l > MAX_MIRR)
           break;
-      } 
+      }
     }
     // else this mirror is to be skipped
   }
@@ -769,7 +764,7 @@ void SetGeometry(char* sColor)
   int i;
 
   // Geometry data
-  if (bVisInstr) 
+  if (bVisInstr)
   {
     sprintf(sVisDescrpt, "%s:%s", sModuleName, sColor);
     stGeometry.pDescr  =  sVisDescrpt;
@@ -777,8 +772,8 @@ void SetGeometry(char* sColor)
 
     stGeometry.pRectangle = calloc(max_mirr,   sizeof(VtRectangle));
     stGeometry.pTriangle  = calloc(max_mirr*2, sizeof(VtTriangle));
-   
-    for (i = 1; i <= max_mirr; i++) 
+
+    for (i = 1; i <= max_mirr; i++)
       DetermineAndLogMirrorShape(i);
   }
   return;
@@ -790,8 +785,8 @@ void SetGeometry(char* sColor)
 /******************************************************************************/
 void OwnCleanup()
 {
-	int i,c;
-  
+  int i,c;
+
 #ifdef VT_GRAPH
   if (eVisual >= 2) cpgclos();
 #endif
@@ -814,8 +809,8 @@ void UpdateMirrorElementOffset(VectorType edgeVector, VectorType diagonalVector,
 {
 
   int nComp;
-  
-  for (nComp = 0; nComp < 3; nComp++) 
+
+  for (nComp = 0; nComp < 3; nComp++)
     newOffset[nComp] = edgeVector[nComp] + 0.5*diagonalVector[nComp];
 
   CopyVector(newOffset, WallOffsetShift[nMirror]);
@@ -828,7 +823,7 @@ void UpdateMirrorElementOffset(VectorType edgeVector, VectorType diagonalVector,
 /************************************************************************************/
 void DetermineAndLogMirrorShape(int i)
 {
-	// Initialise all 6 vectors in a quadrangle
+  // Initialise all 6 vectors in a quadrangle
   VectorType v[6];
   VectorType elementCenterOffset;
   VectorType elementCenterOffsetTemp;
@@ -843,35 +838,35 @@ void DetermineAndLogMirrorShape(int i)
       k=0;  // index for edges of a triangle
   int numRightAngles[4];
   int counter = 0;
-  short isRectangle = 1;	
+  short isRectangle = 1;
 
-  CopyVector(R2[i], v[0]);  
+  CopyVector(R2[i], v[0]);
   SubVector(v[0], R1[i]);
 
-  CopyVector(R3[i], v[1]);  
+  CopyVector(R3[i], v[1]);
   SubVector(v[1], R2[i]);
-  
-  CopyVector(R4[i], v[2]);  
+
+  CopyVector(R4[i], v[2]);
   SubVector(v[2], R3[i]);
 
-  CopyVector(R1[i], v[3]);  
+  CopyVector(R1[i], v[3]);
   SubVector(v[3], R4[i]);
 
-  CopyVector(R3[i], v[4]);  
+  CopyVector(R3[i], v[4]);
   SubVector(v[4], R1[i]);
 
-  CopyVector(R4[i], v[5]);  
+  CopyVector(R4[i], v[5]);
   SubVector(v[5], R2[i]);
 
-  //fprintf(LogFilePtr, "%10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n", 
-	//                    R1[i][0], R1[i][1], R1[i][2], R2[i][0], R2[i][1], R2[i][2], R3[i][0], R3[i][1], R3[i][2], R4[i][0], R4[i][1], R4[i][2]);
+  //fprintf(LogFilePtr, "%10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n",
+  //                    R1[i][0], R1[i][1], R1[i][2], R2[i][0], R2[i][1], R2[i][2], R3[i][0], R3[i][1], R3[i][2], R4[i][0], R4[i][1], R4[i][2]);
 
   // Determine the two largest vectors of the mirror element
   // In a rectangle these are the two diagonals
-  for (j = 0; j < 6; j++) 
+  for (j = 0; j < 6; j++)
   {
     double lengthVector = LengthVector(v[j]);
-    if (lengthVector >= largestVector) 
+    if (lengthVector >= largestVector)
     {
       secondLargestVectorIndex = largestVectorIndex;
       largestVectorIndex = j;
@@ -881,12 +876,12 @@ void DetermineAndLogMirrorShape(int i)
       width = lengthVector;
       widthIndex = j;
     }*/
-    if (heightIndex < 0) 
+    if (heightIndex < 0)
     {
       height = lengthVector;
       heightIndex = j;
     }
-    if (lengthVector < height) 
+    if (lengthVector < height)
     {
       height = lengthVector;
       heightIndex = j;
@@ -898,9 +893,9 @@ void DetermineAndLogMirrorShape(int i)
   }
   width = height;
   widthIndex = heightIndex;
-  for (j = 0; j < 6; j++) 
+  for (j = 0; j < 6; j++)
   {
-    if (LengthVector(v[j]) < LengthVector(v[secondLargestVectorIndex]) && LengthVector(v[j]) > width) 
+    if (LengthVector(v[j]) < LengthVector(v[secondLargestVectorIndex]) && LengthVector(v[j]) > width)
     {
       width = LengthVector(v[j]);
       widthIndex = j;
@@ -912,61 +907,61 @@ void DetermineAndLogMirrorShape(int i)
 
   CopyVector(WallOffset[i], elementCenterOffsetTemp);
 
-  switch (largestVectorIndex) 
+  switch (largestVectorIndex)
   {
-    case 0: 
+    case 0:
       UpdateMirrorElementOffset(R1[i], v[0], elementCenterOffset, i);
       break;
-    case 1: 
+    case 1:
       UpdateMirrorElementOffset(R2[i], v[1], elementCenterOffset, i);
-      break;  
-    case 2: 
+      break;
+    case 2:
       UpdateMirrorElementOffset(R3[i], v[2], elementCenterOffset, i);
-      break;  
-    case 3: 
+      break;
+    case 3:
       UpdateMirrorElementOffset(R4[i], v[3], elementCenterOffset, i);
       break;
-    case 4: 
+    case 4:
       UpdateMirrorElementOffset(R1[i], v[4], elementCenterOffset, i);
       break;
-    case 5: 
+    case 5:
       UpdateMirrorElementOffset(R2[i], v[5], elementCenterOffset, i);
       break;
     default:
       fprintf(LogFilePtr, "Offset of mirror element Nr. %d could not be updated! \n", i+1);
       break;
   }
- 
+
   // Determine whether we deal with a rectangle
   // 4 right angles have to be present
-  for (j = 0; j < 4; j++) 
+  for (j = 0; j < 4; j++)
     numRightAngles[j] = 0;
-	
-  for (j = 0; j < 6; j++) 
+
+  for (j = 0; j < 6; j++)
   {
-    int k;	
+    int k;
     if (j == largestVectorIndex || j == secondLargestVectorIndex) continue;
 
-    for (k = j; k < j+6; k++) 
+    for (k = j; k < j+6; k++)
     {
       int kk = k%6;
-      double scalarProd = fabs(ScalarProduct(v[j], v[kk]));	
+      double scalarProd = fabs(ScalarProduct(v[j], v[kk]));
       double angle = acos(scalarProd/(LengthVector(v[j])*LengthVector(v[kk])))*180./M_PI;
       if (kk == largestVectorIndex || kk == secondLargestVectorIndex) continue;
       if (angle > 89.9)  numRightAngles[counter]++;
     }
-    
+
     counter++;
   }
 
-  for (j = 0; j < 4; j++) 
+  for (j = 0; j < 4; j++)
     isRectangle &= (numRightAngles[j] == 2);
-  
+
   // Set the rectangle parameters
-  if (isRectangle) 
+  if (isRectangle)
   {
     VectorType zAxis = {0, 0, 1};
-    double rotationAngle = acos(fabs(ScalarProduct(v[heightIndex], zAxis)/LengthVector(v[heightIndex])));		
+    double rotationAngle = acos(fabs(ScalarProduct(v[heightIndex], zAxis)/LengthVector(v[heightIndex])));
     stGeometry.nRectangles++;
 
     RotBackVector(RotMatrixWall[i], elementCenterOffset);
@@ -986,53 +981,53 @@ void DetermineAndLogMirrorShape(int i)
 
   }
   // Build the quadrangle with tho triangles, if mirror is a triangle, the second one is a line
-  else 
+  else
   {
     VectorType basePoint1, basePoint2, thirdPoint1, thirdPoint2;
-    switch(largestVectorIndex) 
+    switch(largestVectorIndex)
     {
-      case 0: 
+      case 0:
         CopyVector(R1[i], basePoint1);
         CopyVector(R2[i], basePoint2);
         CopyVector(R3[i], thirdPoint1);
         CopyVector(R4[i], thirdPoint2);
         break;
-   
+
       case 1:
         CopyVector(R2[i], basePoint1);
         CopyVector(R3[i], basePoint2);
         CopyVector(R4[i], thirdPoint1);
         CopyVector(R1[i], thirdPoint2);
         break;
-   
-       case 2: 
+
+       case 2:
          CopyVector(R3[i], basePoint1);
          CopyVector(R4[i], basePoint2);
          CopyVector(R1[i], thirdPoint1);
          CopyVector(R2[i], thirdPoint2);
         break;
-     
-      case 3: 
+
+      case 3:
         CopyVector(R4[i], basePoint1);
         CopyVector(R1[i], basePoint2);
         CopyVector(R2[i], thirdPoint1);
         CopyVector(R3[i], thirdPoint2);
         break;
-     
+
       case 4:
         CopyVector(R1[i], basePoint1);
         CopyVector(R3[i], basePoint2);
         CopyVector(R2[i], thirdPoint1);
         CopyVector(R4[i], thirdPoint2);
         break;
-    
-      case 5: 
+
+      case 5:
         CopyVector(R2[i], basePoint1);
         CopyVector(R4[i], basePoint2);
         CopyVector(R1[i], thirdPoint1);
         CopyVector(R3[i], thirdPoint2);
         break;
-        
+
       default:
         fprintf(LogFilePtr, "Something went wrong when preparing mirror Nr. %d for visualization! \n", i+1);
         exit(-1);
@@ -1040,10 +1035,10 @@ void DetermineAndLogMirrorShape(int i)
     }
 
      /* fprintf(LogFilePtr, "Triangle points: %10.5f %10.5f %10.5f   %10.5f %10.5f %10.5f  %10.5f %10.5f% 10.5f   %10.5f %10.5f %10.5f \n",  */
-     /* 	     basePoint1[0], basePoint1[1], basePoint1[2], basePoint2[0], basePoint2[1], basePoint2[2],  */
-     /* 	     thirdPoint1[0], thirdPoint1[1], thirdPoint1[2], thirdPoint2[0], thirdPoint2[1], thirdPoint2[2]); */
+     /*        basePoint1[0], basePoint1[1], basePoint1[2], basePoint2[0], basePoint2[1], basePoint2[2],  */
+     /*        thirdPoint1[0], thirdPoint1[1], thirdPoint1[2], thirdPoint2[0], thirdPoint2[1], thirdPoint2[2]); */
 
-    stGeometry.nTriangles++;    
+    stGeometry.nTriangles++;
     CopyVector(basePoint1, stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
     RotBackVector(RotMatrixWall[i], stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0]);
     AddVector(stGeometry.pTriangle[stGeometry.nTriangles-1].vEdges[0],  WallOffset[i]);
@@ -1159,24 +1154,24 @@ static double CollideWall(const int thread_i, const double WL, const VectorType 
     CopyVector(rt, replacement);
     SubVector(replacement, pos);
 
-    if (ScalarProduct(replacement, dir) < 0.) return 99999;	
+    if (ScalarProduct(replacement, dir) < 0.) return 99999;
   }
 
-  if (bAngSpread) 
+  if (bAngSpread)
   {
     // random angular spread
     double rangh, rangv;
     rangh = mrangh[l] == 0 ? 0 : MonteCarloPar(- mrangh[l]/2., mrangh[l]/2., thread_i);
     rangv = mrangv[l] == 0 ? 0 : MonteCarloPar(- mrangv[l]/2., mrangv[l]/2., thread_i);
     FillRotMatrixZY(RotMatrixRang, rangv, rangh);
-  }	
+  }
 
   /* transform into frame of the wall  */
   SubVector(rt, WallOffset[l]);
   RotVector(RotMatrixWall[l], rt);
   RotVector(RotMatrixWall[l], dir);
 
-  if (bAngSpread) 
+  if (bAngSpread)
   {
     RotVector(RotMatrixRang, rt);
     RotVector(RotMatrixRang, dir);
@@ -1189,124 +1184,124 @@ static double CollideWall(const int thread_i, const double WL, const VectorType 
     //  double alphaQ=0, betaQ=0, Q=0, M2=0, W=0, R0=0.99;
     int index_expon=0, index_mued1=1, index_mued2=2, index_theta=0;
     double d = 0;
-    
+
     // Shift vector according to the new offset of the mirror element
-    SubVector(rt, WallOffsetShift[l]); 
-    
-    if (! hitwall(R1[l], R2[l], R3[l], R4[l], rt)) 
-    {		
-      AddVector(rt, WallOffsetShift[l]); 
-      RotBackVector(RotMatrixWall[l], dir);      
+    SubVector(rt, WallOffsetShift[l]);
+
+    if (! hitwall(R1[l], R2[l], R3[l], R4[l], rt))
+    {
+      AddVector(rt, WallOffsetShift[l]);
+      RotBackVector(RotMatrixWall[l], dir);
       return 99999;
     }
-    
+
     // Now shift back to the correct frame
-    AddVector(rt, WallOffsetShift[l]); 
+    AddVector(rt, WallOffsetShift[l]);
 
     CopyVector(rt, rt2);
-		
+
     the = M_PI_2 - acos(fabs(dir[0]));
 
-    if (SpinVector[quant_dir] == 1. && useQuantDir) 
+    if (useQuantDir && SpinVector[quant_dir] == 1.)
     {/* spin up */
       index_expon=0; index_mued1=0; index_mued2=1; index_theta=0;
-    } 
-    else if (SpinVector[quant_dir] == -1. && useQuantDir) 
+    }
+    else if (useQuantDir && SpinVector[quant_dir] == -1.)
     {/* spin down */
       index_expon=1; index_mued1=2; index_mued2=3; index_theta=1;
-    } 
+    }
     else if (useQuantDir)
     {
       NumWrong[thread_i]++;
       *prob = 0.;
     }
 
-     
-    if (eMirrUse[l] == MIRR_ACT_TRANS) 
+
+    if (eMirrUse[l] == MIRR_ACT_TRANS)
     { // Mirror works in transmission mode
-      if (eMirrMaterial == VT_MIRR_SI) 
+      if (eMirrMaterial == VT_MIRR_SI)
       {
         // Silicon
         double x =  ENERGY_FROM_LAMBDA(WL)/1000.; //Energy in meV
-	
+
         double p0 = 0.835703;
         double p1 = 1.05449;
         double p2 = 0.0418079;
         double p3 = -5.17319e-06;
-        double p4 = -422.076;  
-	
-        if (bNewFormat == FALSE) 
+        double p4 = -422.076;
+
+        if (bNewFormat == FALSE)
           d = (mued[l][index_mued1] + mued[l][index_mued2]) / 0.037; // Calculate the thickness of the mirror element
-        else 
+        else
           d = MirrThick[l];
-	
+
         //Fit valid only between 0.4 A and 25 A
         if (WL < 0.4) x = ENERGY_FROM_LAMBDA(0.4)/1000.;
         else if (WL > 25) x = ENERGY_FROM_LAMBDA(25)/1000.;
-	
+
         // Fit to the Si 295° curve obtained by Freund, NIM A 213 (1983), 495 - 501, used energy as input
         expon[index_expon] = 0.0499*(p0 + p1*sqrt(1./x) + p2*sqrt(x) + p3*pow(x + p4, 2.))*d/ sqrt(sq(sin(the)) - sq(sin(thetaC[l][index_theta] * WL))); // 0.0499: \sigma --> \mu in 1/cm
       }
-      else if (eMirrMaterial == VT_MIRR_SAPPH) 
+      else if (eMirrMaterial == VT_MIRR_SAPPH)
       {
         //Sapphire
         double mu1 = 0.0055;
         double mu2 = -0.005;
         double mu3 = 0.00159;
 
-        if (bNewFormat == FALSE) 
+        if (bNewFormat == FALSE)
           d = mued[l][index_mued1] / mu1; // Calculation of the mirror thickness
-        else 
+        else
           d = MirrThick[l];
-	
+
         expon[index_expon] = (mu1* WL + mu2 + mu3/WL) / sqrt(sq(sin(the)) - sq(sin(thetaC[l][index_theta] * WL)));
       }
-      else 
+      else
       {
         expon[index_expon] = (mued[l][index_mued1] * WL + mued[l][index_mued2]) / sqrt(sq(sin(the)) - sq(sin(thetaC[l][index_theta] * WL)));
       }
     }
-    else 
+    else
     { // Mirror does not transmit, e.g. is a guide wall
       expon[index_expon] = 500.;
     }
 
-    if (the <= thetaC[l][index_theta] * WL) 
+    if (the <= thetaC[l][index_theta] * WL)
     {
-      if (Choice < 0.99) 
+      if (Choice < 0.99)
         dir[0] *= -1.;
-      else 
+      else
         *prob *= (double) exp(- expon[index_expon]);
-    }	
-    else  
-    {	
+    }
+    else
+    {
       if (expon[index_expon] > 500)
         expon[index_expon] = 500;
 
-      if (the > thetaC[l][index_theta] * WL) 
+      if (the > thetaC[l][index_theta] * WL)
       {
         // McStas reflection model:
         // Refl[index_theta] = R0 * 0.5*(1.0-tanh((Q-M2*Qc[l][index_theta])/W)) * (1.0 - alphaQ*(Q-Qc[l][index_theta]) + betaQ*(Q-Qc[l][index_theta])*(Q-Qc[l][index_theta]));
 
-        if (bNewFormat == FALSE) 
+        if (bNewFormat == FALSE)
           mValue[l][index_theta] = thetaCSM[l][index_theta]/thetaC[l][index_theta];
 
         Refl[index_theta] = ReflTypical(QbyRefl(WL, the*180./M_PI), mValue[l][index_theta]);
 
-        //	if (bNewFormat == FALSE) Refl[index_theta] = RthetaCSM[l][index_theta] + (1. - RthetaCSM[l][index_theta])/(thetaCSM[l][index_theta] * WL - thetaC[l][index_theta] * WL)*(thetaCSM[l][index_theta] * WL - the);
+        //  if (bNewFormat == FALSE) Refl[index_theta] = RthetaCSM[l][index_theta] + (1. - RthetaCSM[l][index_theta])/(thetaCSM[l][index_theta] * WL - thetaC[l][index_theta] * WL)*(thetaCSM[l][index_theta] * WL - the);
 
         if (Choice < Refl[index_theta])
           dir[0] *= -1.;
         else
           *prob *= exp(- expon[index_expon]);
       }
-     
+
     }
-    
+
   }
-  
+
   /* transform back into original frame  */
-  if (bAngSpread) 
+  if (bAngSpread)
   {
     RotBackVector(RotMatrixRang, rt);
     RotBackVector(RotMatrixRang, dir);
@@ -1325,4 +1320,3 @@ static double CollideWall(const int thread_i, const double WL, const VectorType 
 
   return path;
 }
-

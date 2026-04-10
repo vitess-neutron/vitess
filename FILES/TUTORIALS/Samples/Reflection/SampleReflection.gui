@@ -215,7 +215,6 @@ gSet separate98 {here}
 gSet separate99 {here}
 gSet ifile_15 {}
 gSet sfile_o_15 {-}
-gSet entryColor {#aedace}
 gSet number_zbins_5 {70}
 gSet number_zbins_6 {100}
 gSet outcol_19direction {1}

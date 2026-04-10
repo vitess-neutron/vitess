@@ -575,7 +575,7 @@ proc openProtfile {{mode a+}} {
   set Protfile ""
   if [catch {open $fn $mode} Protfile] {
     # current directory is not writeable, so use Unix home or C:
-    if {[getSystem] == "unix"} {set fn "~/"} else {set fn "C:/"}
+    if {[getSystem] == "unix"} {set fn "/tmp/"} else {set fn "C:/"}
     append fn $dayname
     if [catch {open $fn $mode} Protfile] {
       showText "!unable to open protocol file"

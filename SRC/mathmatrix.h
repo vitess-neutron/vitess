@@ -40,37 +40,37 @@ class MathMatrix {
 
   MathMatrix& operator += (MathMatrix const & m);
   MathMatrix& operator -= (MathMatrix const & m);
-  
+
 };
 
 
-inline MathMatrix operator + (const MathMatrix& m1, const MathMatrix& m2) 
+inline MathMatrix operator + (const MathMatrix& m1, const MathMatrix& m2)
 {
-  double result[9] = {m1.entries[0][0] + m2.entries[0][0], m1.entries[0][1] + m2.entries[0][1], m1.entries[0][2] + m2.entries[0][2],  
-		      m1.entries[1][0] + m2.entries[1][0], m1.entries[1][1] + m2.entries[1][1], m1.entries[1][2] + m2.entries[1][2],
+  double result[9] = {m1.entries[0][0] + m2.entries[0][0], m1.entries[0][1] + m2.entries[0][1], m1.entries[0][2] + m2.entries[0][2],
+          m1.entries[1][0] + m2.entries[1][0], m1.entries[1][1] + m2.entries[1][1], m1.entries[1][2] + m2.entries[1][2],
                       m1.entries[2][0] + m2.entries[2][0], m1.entries[2][1] + m2.entries[2][1], m1.entries[2][2] + m2.entries[2][2]};
   return MathMatrix(result);
 }
 
-inline MathMatrix& MathMatrix::operator += (MathMatrix const &m) 
+inline MathMatrix& MathMatrix::operator += (MathMatrix const &m)
 {
-  entries[0][0] += m.entries[0][0]; entries[0][1] += m.entries[0][1]; entries[0][2] += m.entries[0][2];  
+  entries[0][0] += m.entries[0][0]; entries[0][1] += m.entries[0][1]; entries[0][2] += m.entries[0][2];
   entries[1][0] += m.entries[1][0]; entries[1][1] += m.entries[1][1]; entries[1][2] += m.entries[1][2];
   entries[2][0] += m.entries[2][0]; entries[2][1] += m.entries[2][1]; entries[2][2] += m.entries[2][2];
   return *this;
 }
 
-inline MathMatrix operator - (const MathMatrix& m1, const MathMatrix& m2) 
+inline MathMatrix operator - (const MathMatrix& m1, const MathMatrix& m2)
 {
-  double result[9] = {m1.entries[0][0] - m2.entries[0][0], m1.entries[0][1] - m2.entries[0][1], m1.entries[0][2] - m2.entries[0][2],  
-		      m1.entries[1][0] - m2.entries[1][0], m1.entries[1][1] - m2.entries[1][1], m1.entries[1][2] - m2.entries[1][2],
+  double result[9] = {m1.entries[0][0] - m2.entries[0][0], m1.entries[0][1] - m2.entries[0][1], m1.entries[0][2] - m2.entries[0][2],
+          m1.entries[1][0] - m2.entries[1][0], m1.entries[1][1] - m2.entries[1][1], m1.entries[1][2] - m2.entries[1][2],
                       m1.entries[2][0] - m2.entries[2][0], m1.entries[2][1] - m2.entries[2][1], m1.entries[2][2] - m2.entries[2][2]};
   return MathMatrix(result);
 }
 
-inline MathMatrix& MathMatrix::operator -= (MathMatrix const &m) 
+inline MathMatrix& MathMatrix::operator -= (MathMatrix const &m)
 {
-  entries[0][0] -= m.entries[0][0]; entries[0][1] -= m.entries[0][1]; entries[0][2] -= m.entries[0][2];  
+  entries[0][0] -= m.entries[0][0]; entries[0][1] -= m.entries[0][1]; entries[0][2] -= m.entries[0][2];
   entries[1][0] -= m.entries[1][0]; entries[1][1] -= m.entries[1][1]; entries[1][2] -= m.entries[1][2];
   entries[2][0] -= m.entries[2][0]; entries[2][1] -= m.entries[2][1]; entries[2][2] -= m.entries[2][2];
   return *this;

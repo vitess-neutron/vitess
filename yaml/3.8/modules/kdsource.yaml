@@ -1,0 +1,27 @@
+kdsource:
+  executable: "kdsource"
+  label: "KDSource"
+  category: "event_handling"
+
+  parameters:
+  - name: "sFile1"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "XML input file"
+    tooltip: "KDSource xml file"
+    prefix: "-A"
+    required: true
+  - name: "nMaxTraj"
+    type: "int"
+    label: "max. trajectories"
+    tooltip: "Maximum number of trajectories that are read. Default: read whole MCPL file"
+    prefix: "-M"
+    required: false
+  - name: "bUseKde"
+    type: bool
+    label: "Perturb trajectories"
+    tooltip: "Whether to use KDE or just read the particles from the MCPL file refered in the xml file"
+    default: true
+    prefix: "-K"
+

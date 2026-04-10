@@ -28,11 +28,11 @@
 /** Definitions, structures, enums **/
 /************************************/
 // #define MAX_ANG        10000   //       maximal number of collimation centers
-#define STD_COLL_DIST     50   // [cm]  virtual radius of the radial collimator for visualization 
-#define STD_COLL_THICK     5   // [cm]  virtual thickness of the radial collimator for visualization 
-#define STD_COLL_HEIGHT   10   // [cm]  virtual height of the collimator for visualization 
-#define STD_COLL_WIDTH    10   // [cm]  virtual width of the collimator for visualization 
-#define STD_COLL_LENGTH   20   // [cm]  virtual length of the collimator for visualization 
+#define STD_COLL_DIST     50   // [cm]  virtual radius of the radial collimator for visualization
+#define STD_COLL_THICK     5   // [cm]  virtual thickness of the radial collimator for visualization
+#define STD_COLL_HEIGHT   10   // [cm]  virtual height of the collimator for visualization
+#define STD_COLL_WIDTH    10   // [cm]  virtual width of the collimator for visualization
+#define STD_COLL_LENGTH   20   // [cm]  virtual length of the collimator for visualization
 #define MAX_CHANNELS      20.0
 
 
@@ -50,12 +50,12 @@ void  SetGeometry(char* sColor);                 // fills the structure stGeomet
 short   bAngColl=FALSE;      // -k         flag: angular collimation
 long    nAngles =1;          // -n         number of collimation channels = Angle grid
 double  PeakTransm=1.0,      // -e         maximal probability for passing through the collimator (considers effectively the blocking due to the width of collimator blades
-	      HorCollDiv=0.0,      // -d  [deg]  allowed divergence FWHM; always with respect to y-direction
-	      AngSpacing=0.0,      // -a  [deg]  angular distance between two collimation centers
-        AngleMin  =0.0;      // -m  [deg]  minimum of angle range 
+        HorCollDiv=0.0,      // -d  [deg]  allowed divergence FWHM; always with respect to y-direction
+        AngSpacing=0.0,      // -a  [deg]  angular distance between two collimation centers
+        AngleMin  =0.0;      // -m  [deg]  minimum of angle range
 
 // Variables determined from input parameters or trajectory data
-double  AngleMax  =0.0;      //     [deg]  maximum of angle range 
+double  AngleMax  =0.0;      //     [deg]  maximum of angle range
 double* Angle;               //     [deg] (pointer to) array of angles of maximal transition
 
 
@@ -64,24 +64,24 @@ double* Angle;               //     [deg] (pointer to) array of angles of maxima
 /******************************/
 int main(int argc, char *argv[])
 {
-	long	  i=0,               //       index of trajectories
+  long    i=0,               //       index of trajectories
           j=0;               //       index of angles
-	short   bTransmit=FALSE;   //       flag: neutron has passed through collimator
-	double  CollimProb=0.0,    //       transmission probability 
+  short   bTransmit=FALSE;   //       flag: neutron has passed through collimator
+  double  CollimProb=0.0,    //       transmission probability
           HorDiv=0.0;        // [deg] horizontal divergence of the neutron trajectory
-	Neutron Output;            //       trajectory written to the output (to be read by the next module)
+  Neutron Output;            //       trajectory written to the output (to be read by the next module)
 
   InitNeutron(&Output);
 
-	// Reading of input data and initilisation
+  // Reading of input data and initilisation
   // ---------------------------------------
   _eModule=MCN_COLL_VIRT;
 
   Init(argc, argv, _eModule);
   if (bAngColl)
-	  print_module_name("Virtual angular Collimator 1.3");
+    print_module_name("Virtual angular Collimator 1.3");
   else
-	  print_module_name("Virtual Soller Collimator 1.3");
+    print_module_name("Virtual Soller Collimator 1.3");
   OwnInit(argc,argv);
 
 
@@ -89,80 +89,80 @@ int main(int argc, char *argv[])
   // allocate memory, initialize, fill array
   // ---------------------------------------
   Angle  = (double*) calloc(nAngles, sizeof(double));
-  for (j=0; j < nAngles; j++) 
+  for (j=0; j < nAngles; j++)
     Angle[j]=0.0;
 
-	if (bAngColl==TRUE && nAngles > 1) // case radial collimator	
-	{ 
+  if (bAngColl==TRUE && nAngles > 1) // case radial collimator
+  {
     Angle[0] = AngleMin;
-		for(j=1; j < nAngles; j++)
-			Angle[j] = Angle[j-1] + 2.0*HorCollDiv + AngSpacing;
-  
+    for(j=1; j < nAngles; j++)
+      Angle[j] = Angle[j-1] + 2.0*HorCollDiv + AngSpacing;
+
     AngleMax = Angle[nAngles - 1];
-	}
-	else // case linear collimator in beamline direction (angle=0.0)
-	{	
-    nAngles  = 1; 
+  }
+  else // case linear collimator in beamline direction (angle=0.0)
+  {
+    nAngles  = 1;
     AngleMax = AngleMin;
 
     if (bVisInstr) bBlowUp = TRUE;
-	}
+  }
 
   bVisInstalled = TRUE;
 
-	DECLARE_ABORT;
+  DECLARE_ABORT;
 
-	// Loop over trajectories
+  // Loop over trajectories
   // ----------------------
-	while (ReadNeutrons()!= 0)
-	{
-		CHECK;
-		for(i=0; i<NumNeutGot; i++)
-		{
-			CHECK;
+  while (ReadNeutrons()!= 0)
+  {
+    CHECK;
+    for(i=0; i<NumNeutGot; i++)
+    {
+      CHECK;
 
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
-			  HorDiv = Degrees(atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]));
+      {
+        HorDiv = Degrees(atan2(InputNeutrons[i].Vector[1],InputNeutrons[i].Vector[0]));
 
-			  bTransmit=FALSE;
+        bTransmit=FALSE;
 
-			  for(j=0;j<nAngles; j++)
-			  {
-				  if (fabs(Angle[j]-HorDiv) < HorCollDiv)
-				  { 	
+        for(j=0;j<nAngles; j++)
+        {
+          if (fabs(Angle[j]-HorDiv) < HorCollDiv)
+          {
             CollimProb = PeakTransm*(1.0 - (fabs(Angle[j]-HorDiv) / HorCollDiv));
-					  bTransmit=TRUE;
-					  break;
-				  }
-			  }
+            bTransmit=TRUE;
+            break;
+          }
+        }
 
-			  if (bTransmit) 
-			  {	
-  			  Output = InputNeutrons[i];
+        if (bTransmit)
+        {
+          Output = InputNeutrons[i];
           Output.Probability *= CollimProb;
           WriteIAP(&Output, VT_PASSED);
-			  }
-			  else 
-			  {	
+        }
+        else
+        {
           WriteIAP(&InputNeutrons[i], VT_ABSORBED);
           continue;
-			  }
+        }
 
-			  WriteNeutron(&Output);
+        WriteNeutron(&Output);
       }
-		}
-	}
+    }
+  }
 
 // Finish: print parameters, write geometry and instrument file, free memory
 // -------------------------------------------------------------------------
 my_exit:
   if (bAngColl)
-    fprintf(LogFilePtr, "Horizontal angular collimation using %ld centers of %6.2f deg FWHM from %6.2f to %6.2f deg \n", 
+    fprintf(LogFilePtr, "Horizontal angular collimation using %ld centers of %6.2f deg FWHM from %6.2f to %6.2f deg \n",
                         nAngles, HorCollDiv, AngleMin, AngleMax);
   else
     fprintf(LogFilePtr, "Soller collimator along the beam axis of %6.2f deg FWHM\n", HorCollDiv);
@@ -171,7 +171,7 @@ my_exit:
 
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
-	return(0);
+  return(0);
 }
 
 
@@ -183,43 +183,43 @@ void OwnInit   (int argc, char *argv[])
 {
   long  i;
 
-	for(i=1; i<argc; i++)
-	{
-		if(argv[i][0]!='+') {
+  for(i=1; i<argc; i++)
+  {
+    if(argv[i][0]!='+') {
 
-			switch(argv[i][1])
-			{
-				case 'k':
-					bAngColl = atol(&argv[i][2]); 	/* bAngColl =1 ==> angular collimation is activated */
-					break;
+      switch(argv[i][1])
+      {
+        case 'k':
+          bAngColl = atol(&argv[i][2]);   /* bAngColl =1 ==> angular collimation is activated */
+          break;
 
-				case 'd':
-					HorCollDiv = atof(&argv[i][2]); /* allowed divergence FWHM[deg]; always with respect to y-direction*/
-					break;
+        case 'd':
+          HorCollDiv = atof(&argv[i][2]); /* allowed divergence FWHM[deg]; always with respect to y-direction*/
+          break;
 
-				case 'e':
-					PeakTransm = atof(&argv[i][2]); /* maximal probability for passing through the collimator (considers effectively the blocking due to width of collimator spacers */
-					break;
+        case 'e':
+          PeakTransm = atof(&argv[i][2]); /* maximal probability for passing through the collimator (considers effectively the blocking due to width of collimator spacers */
+          break;
 
-				case 'm': 
-					AngleMin = atof(&argv[i][2]);   /* minimum of angle range [deg] */
-					break;
+        case 'm':
+          AngleMin = atof(&argv[i][2]);   /* minimum of angle range [deg] */
+          break;
 
-				case 'n': 
-					nAngles = atol(&argv[i][2]);    /* number of collimation channels = Angle grid */
-					break;
+        case 'n':
+          nAngles = atol(&argv[i][2]);    /* number of collimation channels = Angle grid */
+          break;
 
-				case 'a':
-					AngSpacing = atof(&argv[i][2]); /* angular distance between collimation channels, only needed for the case of angular collimation [deg]*/
-					break;
+        case 'a':
+          AngSpacing = atof(&argv[i][2]); /* angular distance between collimation channels, only needed for the case of angular collimation [deg]*/
+          break;
 
-				default:
-				  fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
-				  exit(-1);
-				  break;
-			}
-		}
-	}
+        default:
+          fprintf(LogFilePtr,"ERROR: unknown command option: %s\n",argv[i]);
+          exit(-1);
+          break;
+      }
+    }
+  }
   return;
 }
 
@@ -231,7 +231,7 @@ void OwnInit   (int argc, char *argv[])
 void SetGeometry(char* sColor)
 {
  // Geometry data
-	if (bVisInstr)
+  if (bVisInstr)
   {
     int    j=0, k=0, l=0,          //        indices of collimation centers, blades per collimation center and the combination
            nBlades=4,              //        number of blades per radial collimation center
@@ -247,11 +247,11 @@ void SetGeometry(char* sColor)
     stGeometry.eModule = _eModule;
 
     if (AngleMax > AngleMin)
-    { 
+    {
       nBlades=4;
-      stGeometry.nCylSlices  = 2; 
+      stGeometry.nCylSlices  = 2;
       stGeometry.pCylSlice   = (VtCylSlice*) calloc(stGeometry.nCylSlices, sizeof(VtCylSlice));
-      stGeometry.nRectangles = nBlades*nAngles; 
+      stGeometry.nRectangles = nBlades*nAngles;
       stGeometry.pRectangle  = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
 
       // get direction to the center of the collimator
@@ -259,8 +259,8 @@ void SetGeometry(char* sColor)
       if (rz < 0) rz += 2.*M_PI;
 
       Xi = 0.5*(AngleMax+AngleMin) + rz/M_PI*180.0;
-	      
-      stGeometry.pCylSlice[0].Radius     =  radius-0.5*length; 
+
+      stGeometry.pCylSlice[0].Radius     =  radius-0.5*length;
       stGeometry.pCylSlice[0].Width      = (radius-0.5*length)*(AngleMax-AngleMin)/180.0*M_PI;
       stGeometry.pCylSlice[0].Height     = STD_COLL_HEIGHT;
       stGeometry.pCylSlice[0].vCntr[0]   = 0.0;
@@ -272,7 +272,7 @@ void SetGeometry(char* sColor)
       stGeometry.pCylSlice[0].OpenAngle  = AngleMax-AngleMin;
       stGeometry.pCylSlice[0].Phi        = Xi;
 
-      stGeometry.pCylSlice[1].Radius     =  radius+0.5*length; 
+      stGeometry.pCylSlice[1].Radius     =  radius+0.5*length;
       stGeometry.pCylSlice[1].Width      = (radius+0.5*length)*(AngleMax-AngleMin)/180.0*M_PI;
       stGeometry.pCylSlice[1].Height     = STD_COLL_HEIGHT;
       stGeometry.pCylSlice[1].vCntr[0]   = 0.0;
@@ -285,10 +285,10 @@ void SetGeometry(char* sColor)
       stGeometry.pCylSlice[1].Phi        = Xi;
 
       for (j=0; j < nAngles; j++)
-      { 
+      {
         for (k=0; k < nBlades; k++)
-        { 
-          l = nBlades*j + k; 
+        {
+          l = nBlades*j + k;
           Xi = Angle[j] + rz/M_PI*180.0 + HorCollDiv*(2*k-(nBlades-1))/(nBlades-1);
 
           stGeometry.pRectangle[l].Width     = length;
@@ -305,7 +305,7 @@ void SetGeometry(char* sColor)
     }
     else
     {
-      stGeometry.nHulls      = 1; 
+      stGeometry.nHulls      = 1;
       stGeometry.pHull       = (VtHull*) calloc(stGeometry.nHulls, sizeof(VtHull));
       stGeometry.pHull[0].WidthIn   = STD_COLL_WIDTH;
       stGeometry.pHull[0].WidthOut  = STD_COLL_WIDTH;
@@ -324,10 +324,10 @@ void SetGeometry(char* sColor)
       if (dist < stGeometry.pHull[0].WidthIn/MAX_CHANNELS)
         dist = stGeometry.pHull[0].WidthIn/MAX_CHANNELS;
       nChannels = (int)(Round(stGeometry.pHull[0].WidthIn/dist));
-      stGeometry.nRectangles = nChannels+1; 
+      stGeometry.nRectangles = nChannels+1;
       stGeometry.pRectangle  = (VtRectangle*) calloc(stGeometry.nRectangles, sizeof(VtRectangle));
       for (k=0; k <= nChannels; k++)
-      { 
+      {
         stGeometry.pRectangle[k].Width     = STD_COLL_LENGTH;
         stGeometry.pRectangle[k].Height    = STD_COLL_HEIGHT;
         stGeometry.pRectangle[k].rotAngle  = 0.0;

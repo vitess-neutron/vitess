@@ -191,7 +191,6 @@ gSet sfile_o_10 {-}
 gSet resolutionH_9 {0}
 gSet enter_height_3 {6}
 gSet number_zbins_4 {70}
-gSet entryColor {#aedace}
 gSet number_zbins_5 {100}
 gSet outcol_19direction {1}
 gSet outcol_20direction {1}

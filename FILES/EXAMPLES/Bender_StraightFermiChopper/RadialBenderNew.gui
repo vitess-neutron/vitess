@@ -111,7 +111,6 @@ gSet cap_dt10_gt {}
 gSet instrumentfile {RadialBenderNew}
 gSet outprgf_7 {VITESS}
 gSet enter_height_2 {5}
-gSet entryColor {#aedace}
 gSet x_5 {10}
 gSet nac_dt3_gt {1}
 gSet gravity_ {on}

@@ -1,0 +1,173 @@
+sample_nxs:
+  executable: "sample_nxs"
+  label: "sample_nxs"
+  category: "sample"
+
+  parameters:
+  - name: "sSmplFile"
+    type: "file"
+    plottable: false
+    label: "sample file"
+    tooltip: "File containing parameters of the powder sample (size, poition, orientation) See HelpFile 'sample.html'"
+    prefix: "-S"
+  - name: "sNxsFile"
+    type: "file"
+    plottable: false
+    label: "nxs parameter file"
+    tooltip: "File containing information about the crystal (space group, atomic positions, ...)"
+    prefix: "-s"
+
+  - name: "nRep"
+    type: "int"
+    label: "repetitions"
+    tooltip: "repetitions (number of trajectories generated per incoming trajectory for each structure factor)"
+    min: 1
+    default: 1
+    column: 0
+    prefix: "-A"
+  - name: "iColor"
+    type: "int"
+    label: "colour"
+    tooltip: "colour of the neutrons scattered from the sample"
+    min: -1
+    column: 1
+    prefix: "-c"
+
+  - name: "bIncohScat"
+    type: "bool"
+    label: "incoherent scattering"
+    tooltip: "flag incoherent scattering (YES  NO)"
+    default: no
+    column: 0
+    prefix: "-I"
+  - name: "bTreatAll"
+    type: "bool"
+    label: "treat all neutrons"
+    tooltip: "flag neutrons not hitting the sample are treated"
+    default: no
+    column: 1
+    prefix: "-a"
+  - name: "bOnlyTransm"
+    type: "bool"
+    label: "transmission only"
+    tooltip: "flag shall only transmission (imaging) be treated (YES) or scattering also (NO)"
+    default: no
+    column: 2
+    prefix: "-T"
+
+  - name: "Theta"
+    type: "float"
+    label: "theta [deg]"
+    tooltip: "these angles determine orientation and range in which neutrons are scattered"
+    default: 90.0
+    min: 0.0
+    column: 0
+    prefix: "-D"
+  - name: "DelTheta"
+    type: "float"
+    label: "dtheta (deg]"
+    tooltip: "theta has to be in the range of [0,180] deg"
+    min: 0.0
+    max: 180.0
+    default: 90.0
+    column: 1
+    prefix: "-d"
+  - name: "Phi"
+    type: "float"
+    label: "phi [deg]"
+    min: 0.0
+    max: 360.0
+    default: 180.0
+    tooltip: "phi has to be in the range of   [0,360] deg"
+    column: 2
+    prefix: "-P"
+  - name: "DelPhi"
+    type: "float"
+    label: "dphi [deg]"
+    min: 0.0
+    max: 360.0
+    default: 180.0
+    tooltip: "Example  30 - 170 deg scattering angle to the right, +/- 15 deg in height"
+    column: 0
+    prefix: "-p"
+
+  - name: "Title"
+    type: "title"
+    label: "Sample position and geometry"
+  - name: "SmplPosX"
+    type: "float"
+    label: "x [cm]"
+    tooltip: "center x position of the sample"
+    default: 0.0
+    prefix: "-x"
+    column: 0
+  - name: "SmplPosY"
+    type: "float"
+    label: "y [cm]"
+    tooltip: "center y position of the sample"
+    default: 0.0
+    prefix: "-y"
+    column: 1
+  - name: "SmplPosZ"
+    type: "float"
+    label: "z [cm]"
+    tooltip: "center z position of the sample"
+    default: 0.0
+    prefix: "-z"
+    column: 2
+
+  - name: "eSmplGeom"
+    label: "sample geometry"
+    tooltip: "geometry of the sample: cylinder, sphere, cuboid (=rectangular)"
+    <<: *VtSmplGeom
+    options: ["VT_CYL", "VT_SPHERE", "VT_CUBE"]
+    default: "VT_CYL"
+    prefix: "-G"
+    column: 0
+
+  - name: "SizePar1"
+    type: "float"
+    label: "thickness or diameter [cm]"
+    tooltip: "thickness of cuboid or (outer) diameter of sphere or cylinder"
+    min: 0.0001
+    default: 0.5
+    prefix: "-t"
+    column: 0
+  - name: "Height"
+    type: "float"
+    label: "height [cm]"
+    tooltip: "height of cuboid or cylinder"
+    min: 0.0
+    default: 2.0
+    prefix: "-h"
+    column: 1
+  - name: "Width"
+    type: "float"
+    label: "inner diameter or width [cm]"
+    tooltip: "width of cuboid or inner diameter of a hollow cylinder"
+    min: 0.0
+    default: 0.0
+    prefix: "-w"
+    column: 2
+
+  - name: "SmplDirX"
+    type: "float"
+    label: "x direction [cm]"
+    tooltip: "x-component of the sample orientation"
+    default: 0.0
+    prefix: "-X"
+    column: 0
+  - name: "SmplDirY"
+    type: "float"
+    label: "y direction [cm]"
+    tooltip: "y-component of the sample orientation"
+    default: 0.0
+    prefix: "-Y"
+    column: 1
+  - name: "SmplDirZ"
+    type: "float"
+    label: "z direction [cm]"
+    tooltip: "z-component of the sample orientation"
+    default: 0.0
+    prefix: "-Z"
+    column: 2

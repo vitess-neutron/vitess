@@ -1,0 +1,138 @@
+flipper_coil:
+  executable: "flipper_coil"
+  label: "flipper_coil"
+  category: "flipper"
+
+  parameters:
+  - name: "Title_param"
+    type: "title"
+    label: "Rectangular coil flipper"
+
+  - name: "x"
+    type: "float"
+    label: "position main X [cm]"
+    tooltip: "center position x of the rectangular coil"
+    default: 5
+    column: 0
+    prefix: "-k"
+
+  - name: "y"
+    type: "float"
+    label: "position main Y [cm]"
+    tooltip: "center position y of the rectangular coil"
+    default: 0
+    column: 1
+    prefix: "-l"
+
+  - name: "z"
+    type: "float"
+    label: "position main Z [cm]"
+    tooltip: "center position z of the rectangular coil"
+    default: 0
+    column: 2
+    prefix: "-m"
+
+  - name: "cas"
+    type: "int"
+    label: "orientation of the coil axes"
+    tooltip: "1: Y direction, 2: Z direction"
+    default: 0
+    column: 0
+    prefix: "-y"
+
+  - name: "hof"
+    type: "float"
+    label: "offset horiz. [deg]"
+    tooltip: "rotation angle (first rotation) of the coil axes in horizontal direction"
+    default: 0
+    column: 0
+    prefix: "-i"
+
+  - name: "vof"
+    type: "float"
+    label: "offset vert. [deg]"
+    tooltip: "rotation angle (first rotation) of the coil axes in vertical direction"
+    default: 0
+    column: 1
+    prefix: "-j"
+
+  - name: "dx"
+    type: "float"
+    label: "dimension X [cm]"
+    tooltip: "dimension of the rectangular coil in X direction"
+    default: 10
+    column: 0
+    prefix: "-X"
+
+  - name: "dy"
+    type: "float"
+    label: "dimension Y [cm]"
+    tooltip: "dimension of the rectangular coil in Y direction"
+    default: 10
+    column: 1
+    prefix: "-Y"
+
+  - name: "dz"
+    type: "float"
+    label: "dimension Z [cm]"
+    tooltip: "dimension of the rectangular coil in Z direction"
+    default: 10
+    column: 2
+    prefix: "-V"
+
+  - name: "gf"
+    type: "float"
+    label: "guide field [Gs]"
+    tooltip: "strength of the guide magnetic field which is considered parallel to the beam axes"
+    default: 0.9787
+    column: 0
+    prefix: "-G"
+
+  - name: "cf"
+    type: "float"
+    label: "coil field component [Gs]"
+    tooltip: "strength of the coil magnetic field which is considered parallel to the coil axes"
+    default: 0.9787
+    column: 0
+    prefix: "-H"
+
+  - name: "wt"
+    type: "float"
+    label: "wall thickness [cm]"
+    tooltip: "thickness of the coil wire (wall)"
+    default: 0.2
+    column: 1
+    prefix: "-t"
+    min: 0
+
+  - name: "ns"
+    type: "float"
+    label: "field mesh steps"
+    tooltip: "number of 'boxes' in which the field is devided (max: 100)"
+    default: 10
+    column: 0
+    prefix: "-N"
+
+  - name: "ox"
+    type: "float"
+    label: "output X [cm]"
+    tooltip: "x position of the output frame (in the input frame)"
+    default: 10
+    column: 0
+    prefix: "-p"
+
+  - name: "oy"
+    type: "float"
+    label: "output Y [cm]"
+    tooltip: "y position of the output frame (in the input frame)"
+    default: 0
+    column: 0
+    prefix: "-r"
+
+  - name: "oz"
+    type: "float"
+    label: "output Z [cm]"
+    tooltip: "z position of the output frame (in the input frame)"
+    default: 0
+    column: 0
+    prefix: "-s"

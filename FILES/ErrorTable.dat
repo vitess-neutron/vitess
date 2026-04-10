@@ -1,6 +1,9 @@
 001 W %ld trajector%s initially already behind the component
 002 W %ld trajector%s initially already behind the beginning of the component
 003 W %ld trajector%s have negative integer value
+004 E %ld trajector%s have zero wavelength
+005 E %ld trajector%s have zero velocity
+006 W %ld trajecori%s found with infinite attenuation in the material
 010 E %ld trajector%s found with a wavelength outside the range given in the attenuation file '%s'
 100 E %ld trajector%s found with a wavelength outside the range given in the distribution file '%s'
 101 E %ld trajector%s found with an inital time outside the range given in the distribution file '%s'

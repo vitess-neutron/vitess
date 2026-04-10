@@ -98,7 +98,6 @@ gSet setsimpar1_ {}
 gSet dist_dt3_gt {0}
 gSet cap_dt10_gt {}
 gSet instrumentfile {resonatordrabkin_uniform}
-gSet entryColor {#aedace}
 gSet nac_dt3_gt {1}
 gSet gravity_ {on}
 gSet cph_dt3_gt {}

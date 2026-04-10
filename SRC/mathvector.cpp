@@ -1,6 +1,3 @@
-#ifndef MATHVECTOR_CPP
-#define MATHVECTOR_CPP
-
 #include "mathvector.h"
 
 MathVector::MathVector()
@@ -67,7 +64,7 @@ MathVector MathVector::Rotate(double alphaX, double alphaY, double alphaZ)
 }
 
 
-double MathVector::Mod()
+double MathVector::Mod() const
 {
   return sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
 }
@@ -81,36 +78,36 @@ void MathVector::Norm()
     x[i] /= len;
 }
 
-MathVector MathVector::Unit()
+MathVector MathVector::Unit() const
 {
   double mod = sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
 
   return MathVector(x[0]/mod, x[1]/mod, x[2]/mod);
 }
 
-double MathVector::Phi()
+double MathVector::Phi() const
 {
   return atan2(x[1], x[0]);
 }
 
-double MathVector::Theta()
+double MathVector::Theta() const
 {
   return atan2(x[2], sqrt(x[0]*x[0] + x[1]*x[1]));
 }
 
 
-double MathVector::DivY()
+double MathVector::DivY() const
 {
   return atan2(x[1], x[0]);
 }
 
-double MathVector::DivZ()
+double MathVector::DivZ() const
 {
   return atan2(x[2], x[0]);
 }
 
 
-double MathVector::PhiSc()
+double MathVector::PhiSc() const
 {
   return atan2(x[2], x[1]);
 }
@@ -122,11 +119,9 @@ double MathVector::ThetaSc()
 }
 
 
-void MathVector::Array(double* arr)
+void MathVector::Array(double* arr) const
 {
   arr[0] = x[0];
   arr[1] = x[1];
   arr[2] = x[2];
 }
-
-#endif

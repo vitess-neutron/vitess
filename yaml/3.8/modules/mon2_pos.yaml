@@ -1,0 +1,59 @@
+mon2_pos:
+  executable: "mon2_pos"
+  label: "mon2_pos"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_sMonFile
+    tooltip: "monitor output file containing intensity as a function of y- and z-position"
+    default: "monitor.pos"
+
+  - *monitor_Title_Ranges
+  - name: "MinY"
+    type: "float"
+    label: "min. y-value"
+    unit: "cm"
+    tooltip: "left edge position of the monitored area"
+    default: -5.0
+    column: 0
+    prefix: "-w"
+    required: true
+  - name: "MaxY"
+    type: "float"
+    label: "max. y-value"
+    unit: "cm"
+    tooltip: "right edge position of the monitored area"
+    default: 5.0
+    column: 1
+    prefix: "-W"
+    required: true
+  - *monitor_nBinsY
+
+  - name: "MinZ"
+    type: "float"
+    label: "min. z-value"
+    unit: "cm"
+    tooltip: "bottom position of the monitored area"
+    default: -5.0
+    column: 0
+    prefix: "-h"
+    required: true
+  - name: "MaxZ"
+    type: "float"
+    label: "max. z-value"
+    unit: "cm"
+    tooltip: "top position of the monitored area"
+    default: 5.0
+    column: 1
+    prefix: "-H"
+    required: true
+  - *monitor_nBinsZ
+
+  - *monitor_Title_Opt
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eFormat
+
+  - *monitor_Title_Filter
+  - *monitor_FilterMinLambda
+  - *monitor_FilterMaxLambda

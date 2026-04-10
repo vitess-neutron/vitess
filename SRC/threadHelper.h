@@ -1,6 +1,10 @@
 /* M. Fromme HZB 2010
    parallel execution of a helper threads
 */
+
+#include "defines.h"
+#include <stdio.h>
+
 void   processPipedNeutronsWithOutput(int nthreads, void (*p)(int, int),  void (*po)(), int maxnratio, int maxmc);
 #define processPipedNeutrons(a,b,c,d) processPipedNeutronsWithOutput(a,b,0,c,d)
 

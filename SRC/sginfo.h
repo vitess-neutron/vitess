@@ -5,6 +5,7 @@
 #ifndef SGINFO_H__
 #define SGINFO_H__
 
+#include <stdio.h>
 
 #ifndef SGCLIB_C__
 extern

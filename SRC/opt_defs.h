@@ -21,11 +21,11 @@
 // enumerations
 // ------------
 typedef enum
-{	VT_SYS_NN = 0,
-	VT_WIN_NT = 1,
-	VT_WIN_98 = 2,
-	VT_UNIX   = 3,
-	VT_LINUX  = 4
+{  VT_SYS_NN = 0,
+  VT_WIN_NT = 1,
+  VT_WIN_98 = 2,
+  VT_UNIX   = 3,
+  VT_LINUX  = 4
 }
 VtSystem;
 

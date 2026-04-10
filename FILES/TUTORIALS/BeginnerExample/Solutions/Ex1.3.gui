@@ -197,7 +197,6 @@ gSet separate99 {here}
 gSet sfile_o_10 {}
 gSet ifile_10 {}
 gSet resolutionH_8 {0}
-gSet entryColor {#aedace}
 gSet dspot_10 {}
 gSet number_ybins_7 {100}
 gSet use_8 {monitor only}

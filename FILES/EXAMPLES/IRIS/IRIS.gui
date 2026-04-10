@@ -44,7 +44,6 @@ gSet h_focus_pnt_6 {0}
 gSet h_focus_pnt_7 {0}
 gSet enter_height_2 {6.7}
 gSet enter_height_4 {6.5}
-gSet entryColor {#aedace}
 gSet enter_height_6 {6.5}
 gSet enter_height_7 {6.5}
 gSet keyreflparam_2 {Trajectories passing the guide end (with linefeed)}

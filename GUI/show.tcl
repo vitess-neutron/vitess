@@ -116,48 +116,55 @@ proc checkPlotfile {fname} {
   # xz for files with at least 2 columns of numbers,
   # or "" for insufficient file names/files
 
-  if {[file size $fname] < 100} { return ""}
-
+  if {[file size $fname] <= 10} { return ""}
   if [catch {open $fname r} f] {
     return ""
   }
-  set ismonitor 0
-  if {[gets $f ins] > 0} {
-    if [regexp {^\#Monitor} $ins] {set ismonitor 1}
-  }
 
-  set ftype ""
   while 1 {
-    # check if its a matrix file
-    if [regexp matrix $ins] {
-      set ftype matrix
-    }
-    if [regexp {x  y  z} $ins] {
-      set ftype xyz
-    }
-    if {[gets $f ins] <= 0} break
+    set res [gets $f ins]
+    if {$res < 0} break
+    if {$res == 0} continue
     if {[string range $ins 0 0] != "#"} break
   }
   close $f
 
-  # check if it has more than 16 colums
+  # number of columns indicates format
   eval set ll [list $ins]
-
-  if {[llength $ll] > 16} {
+  set nrows [llength $ll]
+  if {$nrows >= 6} {
     return matrix
+  } elseif {$nrows == 5} {
+    return xyz
+  } elseif {$nrows >= 2} {
+    return xz
   } else {
-    set rc [scan $ins "%f%f%f%f" x y xe ye]
-    if {$rc < 2} {
-      # min. 2 colums of numbers
-      return ""
-    }
+    return ""
   }
-  if {$ftype == ""} {set ftype xz}
-  return $ftype
+}
+
+proc getDataRows {fname {max -1}} {
+  # count the number of non-comment non-whitespace lines in the file, up to max
+  if {[file size $fname] <= 0} { return 0}
+  if [catch {open $fname r} f] {
+    return 0
+  }
+
+  set n 0
+  while {$max < 0 || $n < $max} {
+    set res [gets $f ins]
+    if {$res < 0} break
+    if {$res == 0} continue
+    if {[string range $ins 0 0] == "#"} continue
+    incr n
+  }
+
+  close $f
+  return $n
 }
 
 # show 2d array coded with colors
-proc show2Dfile {fname} {
+proc show2Dfile {fname {ftype matrix}} {
 
   set f [open $fname r]
 
@@ -166,13 +173,13 @@ proc show2Dfile {fname} {
 
   set rows 1
   set a {};      # list of row lists, top to bottom
-  set xl {};	 # x tic values
+  set xl {};     # x tic values
   set yl {};     # y tic values
 
   gets $f ins
 
   # skip header
-  set is_xyz [regexp {Format: xyz} $ins]
+  set is_xyz [expr {$ftype == "xyz"}]
   if [regexp {^# 1D} $ins] {gets $f ins}
   if [regexp {^# 2D} $ins] {gets $f ins}
   if [regexp {^#Monitor} $ins] {gets $f ins}
@@ -189,10 +196,12 @@ proc show2Dfile {fname} {
   if [regexp {^# Within} $ins] {gets $f ins}
   if [regexp {^# Bunches} $ins] {gets $f ins}
   if [regexp {^# Data} $ins] {gets $f ins}
+  if [regexp {^# Data} $ins] {gets $f ins}
+  if {$ins == ""} {gets $f ins}
 
   set ll [eval list $ins]
   if {!$is_xyz &&  [string compare "#x y z" "$ll"]} {
-    set xl $ll;	# first line and first column are tic values
+    set xl $ll; # first line and first column are tic values
     while {[gets $f ins] > 0} {
       incr rows
       set ll [eval list $ins]
@@ -283,8 +292,8 @@ proc show2Dfile {fname} {
     foreach v $row {
       set rc [expr round(($v - $min) * $factor)]
       if {$rc > 0} {
-	$c create rectangle ${x1}c ${y1}c ${x2}c ${y2}c\
-	    -fill [lindex $colist $rc] -outline ""
+        $c create rectangle ${x1}c ${y1}c ${x2}c ${y2}c\
+            -fill [lindex $colist $rc] -outline ""
       }
       set x1 $x2
       set x2 [expr $x1 + $xdelta]
@@ -493,26 +502,63 @@ proc getPlotTemplates {} {
   return $li
 }
 
+proc getPlotApps {} {
+  # replacement for getPlotTemplates
+  # check if apps are available
+  # priorize grplot > python > gnuplot > (templates) > tcl
+  global FoundPlotApps
+  if [info exists FoundPlotApps] {return $FoundPlotApps}
+  if {[getGrplot] != ""} {lappend applist grplot}
+  if [checkMatplotlib] {lappend applist python}
+  if {[getGnuPlotApp] != ""} {lappend applist gnuplot}
+  set applist [concat $applist [getPlotTemplates]]
+  return [set FoundPlotApps [lappend applist tcl]]
+}
+
+proc findExecutable {name} {
+  # find an executable in $PATH
+  set res ""
+  switch [getSystem] {
+    unix {
+      if [catch {exec which $name} res] {set res ""}
+    }
+    windows {
+      if [catch {exec where $name} res] {
+        set res ""
+      } else {
+        set res [file normalize $res]
+      }
+    }
+  }
+  return $res
+}
+
 proc getGnuPlotApp {} {
   # locate the executable gnuplot program
   global FoundGnuplotApp
   if [info exists FoundGnuplotApp] {return $FoundGnuplotApp}
   switch [getSystem] {
     unix {
-      if [catch {exec which gnuplot} res] {set res ""}
-      return [set FoundGnuplotApp $res]
+      return [set FoundGnuplotApp [findExecutable gnuplot]]
     }
     windows {
-      # first look at special places to prevent long startup times
-      set fn [file join C:/ "Program Files" gnuplot bin gnuplot.exe]
-      if [file exists $fn] {return [set FoundGnuplotApp $fn]}
-      # has gnuplot been installed alongside?
-      set fn [file join [globVal SourceDirectory] gnuplot bin gnuplot.exe]
-      if [file exists $fn] {return [set FoundGnuplotApp $fn]}
+      # find bundeled gnuplot
       set fn [file join [globVal SourceDirectory] bin gnuplot.exe]
-      if [file exists $fn] {return [set FoundGnuplotApp $fn]}
-      # at last resort do a search which might take long
-      return [set FoundGnuplotApp [findWindowsFile C:/ D:/ gnuplot.exe]]
+      if [file executable $fn] {return [set FoundGnuplotApp $fn]}
+      set fn [file join [globVal SourceDirectory] gnuplot bin gnuplot.exe]
+      if [file executable $fn] {return [set FoundGnuplotApp $fn]}
+      set fn [file join [file dirname [globVal SourceDirectory]] gnuplot bin gnuplot.exe]
+      if [file executable $fn] {return [set FoundGnuplotApp $fn]}
+      # find in %PATH%
+      set fn [findExecutable gnuplot.exe]
+      if [file executable $fn] {return [set FoundGnuplotApp $fn]}
+      # look at possible installation locations
+      set fn [file join C:/ "Program Files" gnuplot bin gnuplot.exe]
+      if [file executable $fn] {return [set FoundGnuplotApp $fn]}
+      set fn [file join C:/ "Program Files (x86)" gnuplot bin gnuplot.exe]
+      if [file executable $fn] {return [set FoundGnuplotApp $fn]}
+      set fn [file join C:/ gnuplot bin gnuplot.exe]
+      if [file executable $fn] {return [set FoundGnuplotApp $fn]}
     }
     default {return [set FoundGnuplotApp ""]}
   }
@@ -524,22 +570,114 @@ proc getPython {} {
   if [info exists FoundPython] {return $FoundPython}
   switch [getSystem] {
     unix {
-      if [catch {exec which python} res] {set res ""}
+      set res [findExecutable python]
+      if {$res == ""} {
+        # redhat linux
+        set res [findExecutable python3]
+      }
       return [set FoundPython $res]
     }
     windows {
-      # first look at special places to prevent long startup times
-      set fn [file join C:/ "Program Files" python bin python.exe]
-      if [file exists $fn] {return [set FoundPython $fn]}
-      # has python been installed alongside?
-      set fn [file join [globVal SourceDirectory] python bin python.exe]
-      if [file exists $fn] {return [set FoundPython $fn]}
+      # find bundeled python
       set fn [file join [globVal SourceDirectory] bin python.exe]
-      if [file exists $fn] {return [set FoundPython $fn]}
-      # at last resort do a search which might take long
-      return [set FoundPython [findWindowsFile C:/ D:/ python.exe]]
+      if [file executable $fn] {return [set FoundPython $fn]}
+      set fn [file join [globVal SourceDirectory] python python.exe]
+      if [file executable $fn] {return [set FoundPython $fn]}
+      set fn [file join [file dirname [globVal SourceDirectory]] python python.exe]
+      if [file executable $fn] {return [set FoundPython $fn]}
+      # look at possible installation locations
+      catch {
+        set fn [lindex [glob -join [file normalize $::env(HOME)] AppData Local Programs Python * python.exe] end]
+        if [file executable $fn] {return [set FoundPython $fn]}
+      }
+      catch {
+        set fn [lindex [glob -join C:/ "Program Files" Python* python.exe] end]
+        if [file executable $fn] {return [set FoundPython $fn]}
+      }
+      catch {
+        set fn [lindex [glob -join C:/ "Program Files (x86)" Python* python.exe] end]
+        if [file executable $fn] {return [set FoundPython $fn]}
+      }
+      # search %PATH% for pythonw.exe, because python.exe could be a link to the app store
+      set res [findExecutable pythonw.exe]
+      if {$res != ""} {
+        set fn [findExecutable python.exe]
+        if [file executable $fn] {
+          file stat $fn stats
+          if {$stats(size) > 0} {
+            # real executable
+            return [set FoundPython $fn]
+          } else {
+            # WindowsApp alias, use workaround
+            set fn [file join [globVal SourceDirectory] FILES Scripts python.bat]
+            return [set FoundPython $fn]
+          }
+        }
+      }
     }
     default {return [set FoundPython ""]}
+  }
+}
+
+proc checkMatplotlib {} {
+  # return if matplotlib can be used in python
+  global FoundMatplotlib
+  if [info exists FoundMatplotlib] {return $FoundMatplotlib}
+  set python [getPython]
+  if {$python == ""} {return [set FoundMatplotlib 0]}
+  set res [catch {exec $python -c "import matplotlib" -c exit()}]
+  return [set FoundMatplotlib [expr ! $res]]
+}
+
+
+proc getGrplot {} {
+  global FoundGrplot tcl_platform
+  if [info exists FoundGrplot] {return $FoundGrplot}
+  switch [getSystem] {
+    unix {
+      # find bundeled gr
+      set fn [file join [globVal SourceDirectory] bin grplot]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join [globVal SourceDirectory] gr bin grplot]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join [file dirname [globVal SourceDirectory]] gr bin grplot]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      # find installed gr
+      set fn [findExecutable grplot]
+      if {$fn != ""} {return [set FoundGrplot $fn]}
+      set fn [file join /usr gr bin grplot]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join /usr local gr bin grplot]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      if {$tcl_platform(os) == "Darwin"} {
+        set fn [file join [globVal SourceDirectory] gr Applications grplot.app Contents MacOS grplot]
+        if [file executable $fn] {return [set FoundGrplot $fn]}
+        set fn [file join /Applications grplot.app Contents MacOS grplot]
+        if [file executable $fn] {return [set FoundGrplot $fn]}
+        set fn [file join /usr local Applications grplot.app Contents MacOS grplot]
+        if [file executable $fn] {return [set FoundGrplot $fn]}
+      }
+    }
+    windows {
+      # find bundeled gr
+      set fn [file join [globVal SourceDirectory] bin grplot.exe]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join [globVal SourceDirectory] gr bin grplot.exe]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join [file dirname [globVal SourceDirectory]] gr bin grplot.exe]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      # find in %PATH%
+      set fn [findExecutable grplot.exe]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      # look at possible installation locations
+      set fn [file join C:/ "Program Files" gr bin grplot.exe]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join C:/ "Program Files (x86)" gr bin grplot.exe]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+      set fn [file join C:/ gr bin grplot.exe]
+      if [file executable $fn] {return [set FoundGrplot $fn]}
+    }
+    default {return [set FoundGrplot ""]}
   }
 }
 
@@ -590,7 +728,7 @@ proc getPreferredX3DCmd {} {
     unix {
       set ecmd [globVal env(X3DAPP)]
       if {$ecmd == "" && $cmd != ""} {
-	if [catch {exec which $cmd} ecmd] {set ecmd ""}
+        if [catch {exec which $cmd} ecmd] {set ecmd ""}
       }
     }
     windows {
@@ -787,36 +925,82 @@ proc setDefaultPlotApp {{app ""}} {
   set defaultPlotApp $app
   puts "New default plotter is: $defaultPlotApp"
 }
+
+proc getDefaultPlotApp {} {
+  global defaultPlotApp
+  set plotapps [getPlotApps]
+  if {[info exists defaultPlotApp] && $defaultPlotApp in $plotapps} {
+    return $defaultPlotApp
+  } elseif {[llength $plotapps] >= 1} {
+    return [lindex $plotapps 0]
+  }
+  return ""
+}
+
 ###
 ### plotFile
 proc showPlotFile {name {topt 0}} {
   global defaultPlotApp
-
   set ftype [checkPlotfile $name]
-
-  if {$ftype == ""} return
+  if {$ftype == ""} {
+    showText "!Could not determine file type of $name"
+    return
+  }
 
   switch $topt {
-    "" - "-" - 1 {
-      if {"" != $defaultPlotApp} {
-        switch $defaultPlotApp {
-          python {plotWithTemplate $name "python"}
-          gnuplot {if {$ftype == "matrix"} {show2Dfile $name} else {
-            set gcmd [getGnuPlotApp]
-            gnuPlotCmd $gcmd $name $ftype
-            }
-          }
-          grplot {if {$ftype == "matrix"} {plotWithTemplate $name "grplot2D"} else {plotWithTemplate $name "grplot1D"}}
-          tcl {if {$ftype == "matrix"} {show2Dfile $name} else {showXYfile $name}}
-        }
-      } elseif {"" != [set gcmd [getGnuPlotApp]]} {
-        gnuPlotCmd $gcmd $name $ftype
+    "" -
+    "-" -
+    0 -
+    1 {
+      set topt [getDefaultPlotApp]
+    }
+    grplot1D -
+    grplot2D {
+      set topt grplot
+    }
+    gnu1D -
+    gnu2D {
+      set topt gnuplot
+    }
+  }
+
+  switch $topt {
+    grplot {
+      if {$ftype == "matrix"} {
+        catch {exec [getGrplot] $name kind:heatmap use_bins:1 &}
+      } elseif {$ftype == "xyz"} {
+        catch {exec [getGrplot] $name kind:heatmap xyz_file:1 ignore_blank_lines:1 &}
       } else {
-        if {$ftype == "matrix"} {show2Dfile $name} else {showXYfile $name}
+        set nrows [getDataRows $name 200]
+        if {$nrows >= 200} {
+          # avoid barplots of large files
+          catch {exec [getGrplot] $name kind:line x_columns:1 y_columns:2 error_columns:3 &}
+        } else {
+          catch {exec [getGrplot] $name kind:barplot x_columns:1 y_columns:2 error_columns:3 equal_up_and_down_error:1 error_type:absolute error_bar_style:1 &}
+        }
+      }
+    }
+    python {
+      global SourceDirectory
+      set script [file join $SourceDirectory FILES Scripts rshow.py]
+      catch {exec [getPython] $script $name &}
+    }
+    gnuplot {
+      if {$ftype == "matrix"} {
+        showText "Warning: gnuplot cannot plot files in the MATRIX format, falling back to tcl"
+        show2Dfile $name $ftype
+      } else {
+        gnuPlotCmd [getGnuPlotApp] $name $ftype
+      }
+    }
+    tcl {
+      if {$ftype == "matrix" || $ftype == "xyz"} {
+        show2Dfile $name $ftype
+      } else {
+        showXYfile $name
       }
     }
     default {
-      puts "$topt"
       plotWithTemplate $name $topt
     }
   }

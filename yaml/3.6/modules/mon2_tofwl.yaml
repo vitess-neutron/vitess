@@ -1,0 +1,91 @@
+mon2_tofwl:
+  executable: "mon2_tofwl"
+  label: "mon2_tofwl"
+  category: "monitor"
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "monitor file"
+    tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+    default: "tof_wl.dat"
+    prefix: "-O"
+
+  - name: "min_tof"
+    type: "float"
+    label: "minimal tof-value [ms]"
+    tooltip: ""
+    default: 0
+    column: 0
+    prefix: "-w"
+
+  - name: "min_wl"
+    type: "float"
+    label: "minimal wavelength [A]"
+    tooltip: "lower bound of the monitored interval"
+    default: 0.1
+    column: 1
+    prefix: "-m"
+    min: 0
+
+  - name: "max_tof"
+    type: "float"
+    label: "maximal tof-value [ms]"
+    tooltip: ""
+    default: 20
+    column: 0
+    prefix: "-W"
+
+  - name: "max_wl"
+    type: "float"
+    label: "maximal wavelength [A]"
+    tooltip: "upper bound of the monitored interval"
+    default: 10
+    column: 1
+    prefix: "-M"
+    min: 1.0e-6
+
+  - name: "number_ybins"
+    type: "int"
+    label: "number of TOF-bins"
+    tooltip: "number of bins within the TOF range, max. 1000"
+    default: 100
+    column:
+    prefix: "-y"
+    min: 1
+    max: 1000
+
+  - name: "number_zbins"
+    type: "int"
+    label: "number of wavelength-bins"
+    tooltip: "number of bins within the lambda range, max. 1000"
+    default: 100
+    column: 1
+    prefix: "-z"
+    min: 1
+    max: 1000
+
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajectories meeting the monitor conditions are written no: all are written"
+    default: no
+    column: 1
+    prefix: "-e"
+  - name: "eFormat"
+    label: "file format"
+    tooltip: "file format for output: matrix: 2D matrix   xyz: 3 columns x, y, f(x,y);  compact: only 1 line of header, minimal number of digits.  integer: integer numbers rounded from calculated intensity"
+    <<: *VtFormat2D
+    options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+    default: "MATRIX"
+    column: 2
+    prefix: "-F"

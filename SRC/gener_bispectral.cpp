@@ -15,11 +15,9 @@
 #include <vector>
 #include <iostream>
 
-extern "C" 
+extern "C"
 {
 #include "init.h"
-
-  char*  FullInName(const char* filename);            // returns path\name.ext for input directory   located in init.c
 }
 
 using namespace std;
@@ -28,9 +26,9 @@ using namespace std;
 /******************************/
 /** Prototypes               **/
 /******************************/
-double GetDouble(const char* pText);                // Reads double value from stdin  
-string GetString(const char* pText);                // Reads string from stdin  
-void   GetChar(char* pString, const char* pText);   // Reads char string from stdin  
+double GetDouble(const char* pText);                // Reads double value from stdin
+string GetString(const char* pText);                // Reads string from stdin
+void   GetChar(char* pString, const char* pText);   // Reads char string from stdin
 
 
 /******************************/
@@ -57,18 +55,19 @@ int main(int argc, char* argv[])
                   DMirr,                                    // mirror thickness
                   CoatingMirr;                              // coating (m-number)
   vector<string>  Name;                                     // mirr names
-  vector<bool>    TransparentMirr,                          // tag transparent mirror vs. intransparent just reflecting 
+  vector<bool>    TransparentMirr,                          // tag transparent mirror vs. intransparent just reflecting
                   HorPlane;                                 // mirror plane: horizontal or vertertical
   bool            sameAngleMirr=false,                      // if more than one mirror: parallel or not
                   newFileFormat=true;                       // new file format: only m_up, m_down needed
   string          helper,                                   // convert yes-no to bool
-                  simpleShapeMirr;                          // rectangular vs trapezoidal shape 
+                  simpleShapeMirr;                          // rectangular vs trapezoidal shape
   char            fileName[50]="MyBispectralExtraction.dat";
 
   /* output parameters (see sm_ensemble description) */
   vector<double>  Y1, Y2, Y3, Y4, Z1, Z2, Z3, Z4, AngleHV, ThetaCSM, Rcsm, Mud, MuInc;
 
   FILE*   pFile;
+  char sFullName[CHAR_BUF_SMALL];
 
   Init(argc, argv, MCN_TOOL_GEN_EXTR);
 
@@ -89,9 +88,9 @@ int main(int argc, char* argv[])
   printf("- Mirrors with different angles, lengths, centres:                           \n");
   printf("     give all values in same order (e.g. bottom to top)                      \n");
   printf("-----------------------------------------------------------------------------\n\n");
-  
+
   ///////////////////////////////////////////////////////////////////////
-  // read in parameters:  
+  // read in parameters:
   ///////////////////////////////////////////////////////////////////////
   cout<<"Choose file format (new/old): ";
   cin>>helper;
@@ -110,9 +109,9 @@ int main(int argc, char* argv[])
     cout<<"ERROR: Please give number between 0 and "<<MaxNComponents<<": ";
     cin>>Nmirr;
   }
-  
+
   if(Nmirr>0){
-	
+
 
     if(Nmirr>1){
       cout<<"Equidistant mirrors of same length and with same inclination? (y/n): ";
@@ -123,7 +122,7 @@ int main(int argc, char* argv[])
       }
       sameAngleMirr=(helper=="y");
     }
-     
+
     if( sameAngleMirr ){
 
       cout<<"Mirror plane (h,v):";
@@ -142,10 +141,10 @@ int main(int argc, char* argv[])
       }
       if(helper=="yes" || helper=="y")
         TransparentMirr.push_back(true);
-      else 
+      else
         TransparentMirr.push_back(false);
       AngleMirr.push_back( GetDouble("Mirror inclinations w.r.t. x-axis (deg): ") );
-      LengthMirr.push_back( GetDouble("Mirror lengths (cm): ") ); 
+      LengthMirr.push_back( GetDouble("Mirror lengths (cm): ") );
       cout<<"Distance between mirrors (cm): ";
       cin>>DistMirr;
       if( !HorPlane.at(0) )
@@ -175,7 +174,7 @@ int main(int argc, char* argv[])
         Name.push_back( "mirr"+NameIndex );
       }
     }
-    else 
+    else
     {
       for(int i=0; i<Nmirr; i++)
       {
@@ -188,7 +187,7 @@ int main(int argc, char* argv[])
           cin>>helper;
         }
         HorPlane.push_back(helper=="h");
-	
+
         cout<<"Transparent mirror? (yes/no): ";
         cin>>helper;
         while(helper!="yes" && helper!="y" && helper=="no" && helper=="n")
@@ -198,18 +197,18 @@ int main(int argc, char* argv[])
         }
         if(helper=="yes" || helper=="y")
           TransparentMirr.push_back(true);
-        else 
+        else
           TransparentMirr.push_back(false);
 
         AngleMirr.push_back( GetDouble("Mirror inclination w.r.t. x-axis (deg): ") );
         LengthMirr.push_back( GetDouble("Mirror length (cm): ") );
         CenterMirr.push_back( GetDouble("Mirror centre in x (cm): ") );
-        
+
         if( !HorPlane.at(i) )
           CenterYMirr.push_back( GetDouble("Mirror centre in y (cm): ") );
         else
           CenterYMirr.push_back( GetDouble("Mirror centre in z (cm): ") );
-        
+
         double mNumber=GetDouble("Mirror coating (m-number): ");
         while( mNumber>7 || mNumber<1 )
           mNumber=GetDouble("  Please choose m-number between 1 and 7: ") ;
@@ -242,12 +241,12 @@ int main(int argc, char* argv[])
     cout<<"What did you start this tool for?"<<endl;
     return 1;
   }
-  
-  
+
+
   ///////////////////////////////////////////////////////////////////////
-  // sort/calculate parameters:  
+  // sort/calculate parameters:
   ///////////////////////////////////////////////////////////////////////
-   
+
   for(int i=0; i<Nmirr; i++){
     if( !HorPlane.at(i) ){
       Y1.push_back( LengthMirr.at(i)/(2*cos(AngleMirr.at(i)*PI/180)) );
@@ -272,14 +271,14 @@ int main(int argc, char* argv[])
     AngleHV.push_back( 90-AngleMirr.at(i) );
     ThetaCSM.push_back( CoatingMirr.at(i)*ThetaC );
     if(!newFileFormat && TransparentMirr.at(i)==false){
-      Mud.push_back( 100 ); 
+      Mud.push_back( 100 );
       MuInc.push_back( 100 );
     }
     else{
-      Mud.push_back( Mu_Si*DMirr.at(i) ); 
+      Mud.push_back( Mu_Si*DMirr.at(i) );
       MuInc.push_back( MuInc_Si*DMirr.at(i) );
     }
-  
+
     double mNumber=CoatingMirr.at(i)*10;
     if((int)mNumber%10 == 0) //integer
       Rcsm.push_back( Rav[(int)CoatingMirr.at(i)-1] );
@@ -296,14 +295,15 @@ int main(int argc, char* argv[])
 
 
   ///////////////////////////////////////////////////////////////////////
-  // write sm_ensemble input file::  
+  // write sm_ensemble input file::
   ///////////////////////////////////////////////////////////////////////
-  
+
+  TotalPath(sFullName, fileName, "", IN_DIR); /* used only for messages */
   pFile = OpenInputFile(fileName, FALSE, "w");
-  
+
   if (pFile!=NULL){
     fprintf(pFile,"Input file for sm_ensemble, generated with Tool 'Generate Extraction System' v1.1: ");
-    
+
     if(newFileFormat)
       fprintf(pFile,"new file format \n\n on   y1     z1     y2     z2      y3     z3     y4      z4      X      Y      Z   H/deg V/deg  h/deg v/deg  d/cm    m_up    m_down   Name \n");
     else
@@ -319,7 +319,7 @@ int main(int argc, char* argv[])
         else
           fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.2f  0.00  0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
       }
-      else 
+      else
       {
         if(newFileFormat)
           fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00   %3.3f %3.2f  %3.2f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),DMirr.at(i),CoatingMirr.at(i),CoatingMirr.at(i),ctypeName);
@@ -327,21 +327,21 @@ int main(int argc, char* argv[])
           fprintf(pFile, "%d  %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f  0.000  %3.3f  0.00  %3.2f 0.00  0.00    %1.5f %1.5f %1.2f %3.5f %3.5f   %1.5f %1.5f %1.2f %3.5f %3.5f  -- %s -- \n", MirrorUsage, Y1.at(i), Z1.at(i), Y2.at(i), Z2.at(i), Y3.at(i), Z3.at(i), Y4.at(i), Z4.at(i), CenterMirr.at(i), CenterYMirr.at(i),AngleHV.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ThetaC,ThetaCSM.at(i),Rcsm.at(i),Mud.at(i),MuInc.at(i),ctypeName);
       }
     }
-    printf("\nOutput file has been generated: (%s)", FullInName(fileName));
+    printf("\nOutput file has been generated: (%s)", sFullName);
     fclose(pFile);
   }
   else {
-    printf("\nERROR: Output file could not be generated\n(%s)", FullInName(fileName));
+    printf("\nERROR: Output file could not be generated\n(%s)", sFullName);
   }
-  
+
   cout<<"\n Type 'exit' to terminate: "<<endl;
   while (true){
     string c="";
     cin>>c;
-    if (c=="exit") 
-      break; 
+    if (c=="exit")
+      break;
     cout<<"You entered '"<<c<<"', type 'exit' to terminate:"<<endl;
-  } 
+  }
 
   return 1;
 }
@@ -370,10 +370,9 @@ string GetString(const char* pText)
 
   return sValue;
 }
- 
+
 void GetChar(char* pString, const char* pText)
 {
   printf("%s ", pText);
   scanf ("%s", pString);
 }
- 

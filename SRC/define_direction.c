@@ -32,8 +32,8 @@
 /******************************/
 /** Prototypes               **/
 /******************************/
-static int    GetChar (const char* s);  // Reads string from stdin    
-static double GetDbl  (const char* s);  // Reads double value from stdin    
+static int    GetChar (const char* s);  // Reads string from stdin
+static double GetDbl  (const char* s);  // Reads double value from stdin
 
 
 /*********************************/
@@ -53,11 +53,11 @@ int main(int argc, char **argv)
 //  _eModule=MCN_TOOL_DEF_DIR;
 newdef:
   do
-  {	
+  {
     cMode=GetChar("DEFINE DIRECTION \n\n"
                   "1) Converts between direction definitions in VITESS: \n\n"
                   "Cartesian: X = main propagation axis, \n"
-                  "           Y = horizontal axis (left positive), \n" 
+                  "           Y = horizontal axis (left positive), \n"
                   "           Z = vertical axis (upward positive). \n"
                   "Spherical: Theta = Angle with the +X axis,\n"
                   "           Phi   = Angle of the YZ projection with the +Y axis. \n"
@@ -72,7 +72,7 @@ newdef:
                   "Cartesian    [c] \n"
                   "Spherical    [s] \n"
                   "Euler        [e] \n");
-  } 
+  }
   while (cMode!='s' && cMode!='e' && cMode!='c'&& cMode!='q');
 
   if(cMode == 'q') goto fin;
@@ -85,9 +85,9 @@ newdef:
 
     dLength = LengthVector(dir);
     if(dLength==0.){printf("\n\n\n           ERROR! Vector length zero!\n\n\n"); goto newdef;}
-    if(dLength!=1.) 
+    if(dLength!=1.)
     {
-      printf("\nVector length normalized to 1 by %f .\n",dLength) ;	
+      printf("\nVector length normalized to 1 by %f .\n",dLength) ;
       for(i=0;i<3;i++) dir[i] *= 1./dLength ;
       printf("\nCartesian coordinates: \n"
       "X    : %f [-] \n"
@@ -140,25 +140,25 @@ newdef:
     "Z    : %f [-] \n", dir[0], dir[1], dir[2]);
   }
 
-  do 
-  { 
+  do
+  {
     cMode=GetChar("\nNew definition? [d]   Rotation? [r]   Quit? [q]\n");
-  } 
-  while (cMode!='d' && cMode!='r' && cMode!='q');	
+  }
+  while (cMode!='d' && cMode!='r' && cMode!='q');
 
-  if(cMode == 'd') goto newdef; 
-  if(cMode == 'q') goto fin; 
+  if(cMode == 'd') goto newdef;
+  if(cMode == 'q') goto fin;
 
   newrot:;
   do
-  {	
+  {
     cMode=GetChar("\nGive sequence of Euler rotations about X, Y, Z:\n"
     "\nXYZ [1]        YZX [3]        ZXY [5] \n"
     "XZY [2]        YXZ [4]        ZYX [6]\n");
-  } 
+  }
   while (cMode!='1' && cMode!='2' && cMode!='3'&& cMode!='4' && cMode!='5'&& cMode!='6');
 
-	
+
   rotangX = GetDbl("\nGive rotation angle about X axis / deg : ")/DEG2RAD;
   rotangY = GetDbl("Give rotation angle about Y axis / deg : ")/DEG2RAD;
   rotangZ = GetDbl("Give rotation angle about Z axis / deg : ")/DEG2RAD;
@@ -167,12 +167,12 @@ newdef:
   FillRotMatrixY(MY, rotangY) ;
   FillRotMatrixX(MX, rotangX) ;
 
-  if(cMode == '1') {RotVector(MX, dir); 	  RotVector(MY, dir); 	  RotVector(MZ, dir);}
-  if(cMode == '2') {RotVector(MX, dir); 	  RotVector(MZ, dir); 	  RotVector(MY, dir);}
-  if(cMode == '3') {RotVector(MY, dir); 	  RotVector(MZ, dir); 	  RotVector(MX, dir);}
-  if(cMode == '4') {RotVector(MY, dir); 	  RotVector(MX, dir); 	  RotVector(MZ, dir);}
-  if(cMode == '5') {RotVector(MZ, dir); 	  RotVector(MX, dir); 	  RotVector(MY, dir);}
-  if(cMode == '6') {RotVector(MZ, dir); 	  RotVector(MY, dir); 	  RotVector(MX, dir);}
+  if(cMode == '1') {RotVector(MX, dir);           RotVector(MY, dir);           RotVector(MZ, dir);}
+  if(cMode == '2') {RotVector(MX, dir);           RotVector(MZ, dir);           RotVector(MY, dir);}
+  if(cMode == '3') {RotVector(MY, dir);           RotVector(MZ, dir);           RotVector(MX, dir);}
+  if(cMode == '4') {RotVector(MY, dir);           RotVector(MX, dir);           RotVector(MZ, dir);}
+  if(cMode == '5') {RotVector(MZ, dir);           RotVector(MX, dir);           RotVector(MY, dir);}
+  if(cMode == '6') {RotVector(MZ, dir);           RotVector(MY, dir);           RotVector(MX, dir);}
 
 
   /* gives output */
@@ -193,14 +193,14 @@ newdef:
   "Y    : %f [-] \n"
   "Z    : %f [-] \n", dir[0], dir[1], dir[2]);
 
-  do 
+  do
   {
     cMode=GetChar("\nNew definition? [d]   New rotation? [r]   Quit? [q]\n");
-  } 
-  while (cMode!='d' && cMode!='r' && cMode!='q');	
+  }
+  while (cMode!='d' && cMode!='r' && cMode!='q');
 
-  if(cMode == 'd') goto newdef; 
-  if(cMode == 'r') goto newrot; 
+  if(cMode == 'd') goto newdef;
+  if(cMode == 'r') goto newrot;
 
   fin:;
   return 0;
@@ -213,19 +213,17 @@ newdef:
 /**   GetDbl :   Reads double value from stdin        **/
 /*******************************************************/
 static
-int GetChar (const char *s) 
+int GetChar (const char *s)
 {
-  printf(s);
+  printf("%s", s);
   fgets(sBuffer, 128, stdin);
   return sBuffer[0];
 }
 
 static
-double GetDbl (const char *s) 
+double GetDbl (const char *s)
 {
-  printf(s);
-  fgets(sBuffer, 128, stdin);   
+  printf("%s", s);
+  fgets(sBuffer, 128, stdin);
   return atof(sBuffer);
 }
-
-

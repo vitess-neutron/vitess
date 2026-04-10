@@ -1,0 +1,89 @@
+mon2_kdiv:
+  executable: "mon2_kdiv"
+  label: "mon2_kdiv"
+  category: "monitor"
+
+  parameters:
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "monitor file"
+    tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+    default: "kdiv.dat"
+    prefix: "-O"
+
+  - name: "min_ky"
+    type: "float"
+    label: "minimal ky-value"
+    tooltip: ""
+    default: -0.1
+    column: 0
+    prefix: "-w"
+
+  - name: "min_kz"
+    type: "float"
+    label: "minimal kz-value"
+    tooltip: ""
+    default: -0.1
+    column: 1
+    prefix: "-h"
+
+  - name: "max_ky"
+    type: "float"
+    label: "maximal ky-value"
+    tooltip: ""
+    default: 0.1
+    column: 0
+    prefix: "-W"
+
+  - name: "max_kz"
+    type: "float"
+    label: "maximal kz-value"
+    tooltip: ""
+    default: 0.1
+    column: 1
+    prefix: "-H"
+
+  - name: "number_ybins"
+    type: "int"
+    label: "number of y-bins"
+    tooltip: "number of bins within the horizontal range, max. 1000"
+    default: 100
+    min: 1
+    max: 1000
+    column: 0
+    prefix: "-y"
+
+  - name: "number_zbins"
+    type: "int"
+    label: "number of z-bins"
+    tooltip: "number of bins within vertical range, max. 1000"
+    default: 100
+    min: 1
+    max: 1000
+    column: 0
+    prefix: "-z"
+
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 0
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajectories meeting the monitor conditions are written no: all are written"
+    default: no
+    column: 1
+    prefix: "-e"
+  - name: "eFormat"
+    label: "file format"
+    tooltip: "file format for output: matrix: 2D matrix   xyz: 3 columns x, y, f(x,y);  compact: only 1 line of header, minimal number of digits.  integer: integer numbers rounded from calculated intensity"
+    <<: *VtFormat2D
+    options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+    default: "MATRIX"
+    column: 2
+    prefix: "-F"

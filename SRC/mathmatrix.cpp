@@ -37,9 +37,9 @@ MathMatrix::MathMatrix(double array[9])
 
 MathMatrix::MathMatrix(double matrix[3][3])
 {
-  for (int i = 0; i < 3; i++) 
+  for (int i = 0; i < 3; i++)
   {
-    for (int j = 0; j < 3; j++) 
+    for (int j = 0; j < 3; j++)
     {
       entries[i][j] = matrix[i][j];
     }
@@ -107,18 +107,18 @@ MathMatrix::MathMatrix(double alpha, double beta, double gamma, string order)
 
     temp1 = (*tempPointer[0])*(*tempPointer[1])*(*tempPointer[2]);
     *this = temp1;
-    
+
   }
 
 }
 
-MathVector operator * (const MathMatrix& m1, const MathVector& v1) 
+MathVector operator * (const MathMatrix& m1, const MathVector& v1)
 {
 
   double result[3];
-  
+
   for (int i = 0; i < 3; i++) {
-    
+
     result[i] = m1.entries[i][0]*v1.x[0] + m1.entries[i][1]*v1.x[1] + m1.entries[i][2]*v1.x[2];
 
   }
@@ -128,11 +128,11 @@ MathVector operator * (const MathMatrix& m1, const MathVector& v1)
 }
 
 
-MathMatrix operator * (const MathMatrix& m1, const MathMatrix& m2) 
+MathMatrix operator * (const MathMatrix& m1, const MathMatrix& m2)
 {
 
   double result[9];
-  
+
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
 
@@ -145,7 +145,7 @@ MathMatrix operator * (const MathMatrix& m1, const MathMatrix& m2)
 
 }
 
-// Computes a rotation matrix to rotate the coordinate system such that 
+// Computes a rotation matrix to rotate the coordinate system such that
 // the x-axis coincides with the x-component of the vector v
 MathMatrix* MathMatrix::RotMatrixXFromVector(MathVector* v)
 {
@@ -155,7 +155,7 @@ MathMatrix* MathMatrix::RotMatrixXFromVector(MathVector* v)
 
   // MathMatrix* rotMatrixZ = new MathMatrix(0, M_PI_2 - theta, (-1.)*phi, "xyz");
   MathMatrix* rotMatrixX = new MathMatrix(0, theta, -phi, "xyz");
-    
+
   return rotMatrixX;
 }
 
@@ -167,7 +167,7 @@ MathMatrix* MathMatrix::Transpose()
 
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-    
+
       transMatrix->entries[j][i] = entries[i][j];
 
     }
@@ -182,15 +182,15 @@ void MathMatrix::transpose()
   int i,j;
   MathMatrix transMatrix;
 
-  for (int i = 0; i < 3; i++) 
-  { for (int j = 0; j < 3; j++) 
+  for (int i = 0; i < 3; i++)
+  { for (int j = 0; j < 3; j++)
     {
       transMatrix.entries[j][i] = entries[i][j];
     }
   }
 
-  for (int i = 0; i < 3; i++) 
-  { for (int j = 0; j < 3; j++) 
+  for (int i = 0; i < 3; i++)
+  { for (int j = 0; j < 3; j++)
     {
       entries[i][j] = transMatrix.entries[i][j];
     }
@@ -209,9 +209,9 @@ void MathMatrix::transpose()
 
 void MathMatrix::swap(int i, int j)
 {
-  double    Aij=entries[i][j]; 
-  entries[i][j]=entries[j][i]; 
-  entries[j][i]=Aij;  
+  double    Aij=entries[i][j];
+  entries[i][j]=entries[j][i];
+  entries[j][i]=Aij;
 
   return;
 }

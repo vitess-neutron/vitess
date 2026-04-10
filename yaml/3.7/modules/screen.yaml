@@ -1,0 +1,109 @@
+screen:
+  executable: "screen"
+  label: "screen"
+  category: "detector"
+
+  parameters:
+  - name: "OutFile"
+    type: "file"
+    plottable: true
+    label: "monitor file"
+    tooltip: "name of the 2D monitor output file"
+    column: 0
+    default: "screen.pos"
+    prefix: "-O"
+    required: true
+  - name: "eGeom"
+    <<: *VtDetGeom
+    label: "geometry"
+    tooltip: "Geometry of the screen, rectangular or cylindrical (about vertical axis)"
+    column: 0
+    options: ["VT_DET_FLAT", "VT_DET_CYL"]
+    default: "VT_DET_FLAT"
+    prefix: "-G"
+    required: true
+  - name: "eFormat"
+    <<: *VtFormat2D
+    label: "file format"
+    tooltip: "file format for the 2D output: matrix or 'xyz' representation using float or integer values of different length for details see 'Help detector'"
+    column: 1
+    options: ["MATRIX", "XYZ", "MATR_CMPT", "XYZ_CMPT", "MATR_INT"]
+    default: "XYZ"
+    prefix: "-F"
+    required: true
+
+  - name: "Title_Size"
+    type: "title"
+    label: "Screen size"
+  - name: "Height"
+    type: "float"
+    label: "height"
+    unit: "cm"
+    tooltip: "Total height of the screen"
+    column: 0
+    min: 1.0e-6
+    default: 10
+    prefix: "-h"
+    required: true
+  - name: "Width"
+    type: "float"
+    label: "width"
+    unit: "cm"
+    tooltip: "Full width of a flat screen"
+    column: 1
+    min: 0
+    default: 10
+    prefix: "-w"
+    required: false
+  - name: "Distance"
+    type: "float"
+    label: "distance"
+    unit: "cm"
+    tooltip: "Distance from the screen to the origin (0,0,0), i.e. the sample center. In case of a cylindrical screen, this is the cylinder radius."
+    column: 2
+    min: 1.0e-6
+    default: 100
+    prefix: "-D"
+    required: true
+  - name: "MinAngle"
+    type: "float"
+    label: "min. angle"
+    unit: "deg"
+    tooltip: "Lower limit of the angular range covered by a cylindrical screen"
+    column: 0
+    default: -175
+    prefix: "-a"
+    required: false
+  - name: "MaxAngle"
+    type: "float"
+    label: "max. angle"
+    unit: "deg"
+    tooltip: "Upper limit of the angular range covered by a cylindrical screen"
+    column: 1
+    default: 175
+    prefix: "-A"
+    required: false
+
+  - name: "Title_Cells"
+    type: "title"
+    label: "Cell sizes"
+  - name: "nRows"
+    type: "int"
+    label: "number of rows"
+    tooltip: "Number of channels partitioning the screen height = number of vertical bins in the 2D monitor"
+    column: 0
+    min: 1
+    max: 100000
+    default: 1
+    prefix: "-z"
+    required: true
+  - name: "nColumns"
+    type: "int"
+    label: "number of columns"
+    tooltip: "Number of channels partitioning the screen width = number of horizontal bins in the 2D monitor"
+    column: 1
+    min: 1
+    max: 100000
+    default: 1
+    prefix: "-y"
+    required: true

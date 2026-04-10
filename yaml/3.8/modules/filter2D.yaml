@@ -1,0 +1,55 @@
+filter2D:
+  executable: "filter2D"
+  label: "filter2D"
+  category: "filter"
+
+  parameters:
+  - name: "sTabFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "filter table"
+    tooltip: "Name of the file containing the filter matrix. The filter range is divided into a number of channels corresponding to the number of rows (height) and columns (width)"
+    prefix: "-m"
+    required: true
+  - name: "eFilt2D"
+    label: "filter parameter"
+    tooltip: "2D parameter that is filtered (position or divergence)"
+    <<: *VtMon2Par
+    options: ["MON2_POS","MON2_DIV"]
+    default: "MON2_POS"
+    column: 0
+    prefix: "-P"
+    required: true
+
+  - name: "Title_rect"
+    type: "title"
+    label: "the rectangular filter range"
+  - name: "MinY"
+    type: "float"
+    label: "min. y [cm] / [deg]."
+    tooltip: "minimal horizontal filter position"
+    column: 0
+    prefix: "-y"
+    required: true
+  - name: "MaxY"
+    type: "float"
+    label: "max. y [cm] / [deg]."
+    tooltip: "maximal horizontal filter position"
+    column: 1
+    prefix: "-Y"
+    required: true
+  - name: "MinZ"
+    type: "float"
+    label: "min. z [cm] / [deg]."
+    tooltip: "minimal vertical filter position"
+    column: 0
+    prefix: "-z"
+    required: true
+  - name: "MaxZ"
+    type: "float"
+    label: "max. z [cm] / [deg]."
+    tooltip: "maximal vertical filter position"
+    column: 1
+    prefix: "-Z"
+    required: true

@@ -1,0 +1,195 @@
+ma_flat_new:
+  executable: "monochromator"
+  label: "ma_flat_new"
+  category: "monochr_analyser"
+
+  parameters:
+  - name: "option"
+    type: int
+    label: "Type of crystal simulation"
+    tooltip: "1: Crystal_flat, 2: Crystal_focus, 3: Crystal_focus_dat"
+    hidden: true
+    min: 1
+    max: 3
+    default: 1
+    prefix: "-O"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Monochromator Analyser"
+
+  - name: "parfile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "parameter file"
+    default: "crys.par"
+    tooltip: "This files contains parameters describing a crystal element (CE)"
+    prefix: "-P"
+
+  - name: "mode"
+    label: "Geometry"
+    tooltip: "Choose between 'reflection' and 'transmission' geometry of the monochromator."
+    <<: *VtMonoType
+    options: ["REFL_MONO", "TRANSM_MONO"]
+    default: "REFL_MONO"
+    column: 0
+    prefix: "-X"
+
+  - name: "trns"
+    type: "bool"
+    label: "transmission"
+    tooltip: "Select if the neutrons that are not reflected by the crystals shall be treated. Note that in both cases the 'standard frame generation' rotates the co-ordinate to the reflected beam."
+    default: false
+    column: 1
+    prefix: "-B"
+
+  - name: "dist"
+    label: "d-distribution"
+    tooltip: "defines the d-spacing distribution function"
+    <<: *VtDistr
+    options: ["LORENTZIAN", "GAUSSIAN"]
+    default: "LORENTZIAN"
+    column: 2
+    prefix: "-d"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Crystal parameters"
+
+  - name: "shoriz"
+    type: "float"
+    label: "mosaic spread horiz. [deg]"
+    tooltip: "Horizontal fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]"
+    default: 0.8
+    column: 0
+    prefix: "-m"
+    min: 0
+
+  - name: "svert"
+    type: "float"
+    label: "mosaic spread vert. [deg]"
+    tooltip: "Vertical fwhm component of the 2-dimensional Gaussian mosaic distribution [deg]"
+    default: 0.8
+    column: 1
+    prefix: "-M"
+    min: 0
+
+  - name: "dspread"
+    type: "float"
+    label: "d spread"
+    tooltip: "Fwhm of the d-spacing distribution function divided by the lattice parameter under consideration. It is zero for a perfect crystal."
+    default: 0.00005
+    column: 2
+    prefix: "-D"
+    min: 0
+
+  - name: "refl"
+    type: "float"
+    label: "peak reflectivity"
+    tooltip: "(Experimentally determined) peak reflectivity of this monochromator."
+    default: 1
+    column: 0
+    prefix: "-R"
+    min: 1.0e-6
+
+  - name: "Title_param"
+    type: "title"
+    label: "Rotation and Oscillation"
+
+  - name: "mo_move"
+    label: "movement"
+    tooltip: "Type of movement of the monochromator crystal(s)"
+    <<: *VtMonoMove
+    options: ["VT_MONO_FIX", "VT_MONO_ROT", "VT_MONO_PST", "VT_MONO_OSC"]
+    default: "VT_MONO_FIX"
+    column: 0
+    prefix: "-b"
+
+  - name: "mo_rndt"
+    type: "bool"
+    label: "randomize TOF"
+    tooltip: "yes: the time of arrival at the monochromator is defined by a random choice within the period of the monochromator rotation/oscillation, i.e. the real TOF is ignored. Useful for a PST on a continuous source"
+    default: false
+    column: 1
+    prefix: "-K"
+
+  - name: "mo_freq"
+    type: "float"
+    label: "frequency [Hz]"
+    tooltip: "Frequency of the monochromator rotation/oscillation"
+    default: 0
+    column: 0
+    prefix: "-f"
+
+  - name: "mo_phas"
+    type: "float"
+    label: "initial phase [deg]"
+    tooltip: "Phase of the monochromator at t=0 [deg] phase=0 means that the crystal orientations relative to the beam is	defined by the offset of the Bragg reflection"
+    default: 0
+    column: 1
+    prefix: "-p"
+
+  - name: "mo_ampl"
+    type: "float"
+    label: "drive amplitude[cm]"
+    tooltip: "For Doppler drive only: Amplitude of the Doppler drive along the x axis"
+    default: 0
+    column: 2
+    prefix: "-Q"
+
+  - name: "mo_nwnd"
+    type: "float"
+    label: "number of areas"
+    tooltip: "For PST only: number of identical areas, where the monochromator is mounted on the chopper"
+    default: 0
+    column: 0
+    prefix: "-n"
+
+  - name: "mo_wdth"
+    type: "float"
+    label: "area width [deg]"
+    tooltip: "For PST only: angular range of each area, where the monochromator is mounted on the chopper"
+    default: 0
+    column: 1
+    prefix: "-q"
+
+  - name: "mo_rad"
+    type: "float"
+    label: "chopper radius[cm]"
+    tooltip: "For PST only: distance from the chopper axle to the center of the monochromator"
+    default: 0
+    column: 2
+    prefix: "-w"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Attenuation and repetition"
+
+  - name: "mo_scat"
+    type: "float"
+    label: "total scat- tering [1/cm]"
+    tooltip: "macroscopic total scattering cross-section of the crystal [1/cm]"
+    default: 0
+    column: 0
+    prefix: "-c"
+    min: 0
+
+  - name: "mo_abs"
+    type: "float"
+    label: "absorption [1/cm]"
+    tooltip: "macroscopic absorption cross-section of the crystal for 1.798 Ang [1/cm]"
+    default: 0
+    column: 1
+    prefix: "-C"
+    min: 0
+
+  - name: "reprate"
+    type: "int"
+    label: "repetition"
+    tooltip: "If this integer > 1, the trajectory is used multiple times for better statistics."
+    default: 1
+    column: 2
+    prefix: "-A"
+    min: 1
+    max: 1000

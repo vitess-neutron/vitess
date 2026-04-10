@@ -1,0 +1,286 @@
+mirror_elliptical:
+  executable: "mirror_elliptical"
+  label: "mirror_elliptical"
+  category: "mirror"
+
+  parameters:
+  - name: "Title_param"
+    type: "title"
+    label: "Geometry description of the elliptic mirror"
+
+  - name: "fx"
+    type: "float"
+    label: "Semi axis X [cm]"
+    tooltip: "Semi axis X for elliptic mirror"
+    default: 250
+    column: 0
+    prefix: "-a"
+    min: 0
+
+  - name: "fy"
+    type: "float"
+    label: "Semi axis Y [cm]"
+    tooltip: "Semi axis Y for elliptic mirror"
+    default: 50
+    column: 1
+    prefix: "-b"
+    min: 1.0e-6
+
+  - name: "fz"
+    type: "float"
+    label: "Semi axis Z [cm]"
+    tooltip: "Semi axis Z for elliptic mirror"
+    default: 50
+    column: 2
+    prefix: "-c"
+    min: 1.0e-6
+
+  - name: "px"
+    type: "float"
+    label: "Center position main X [cm]"
+    tooltip: "Center position of the elliptic mirror"
+    default: 250
+    column: 0
+    prefix: "-d"
+
+  - name: "py"
+    type: "float"
+    label: "Center position main Y [cm]"
+    tooltip: "Center position of the elliptic mirror"
+    default: 0
+    column: 1
+    prefix: "-e"
+
+  - name: "pz"
+    type: "float"
+    label: "Center position main Z [cm]"
+    tooltip: "Center position of the elliptic mirror"
+    default: 0
+    column: 2
+    prefix: "-k"
+
+  - name: "ang"
+    type: "float"
+    label: "Rotation angle [deg]"
+    tooltip: "Rotate mirror (ONLY) around the center of the ellipsoide"
+    default: 0
+    column: 0
+    prefix: "-Q"
+
+  - name: "ake"
+    type: "int"
+    label: "Rotate around the axis"
+    tooltip: "axis of rotation of the mirror  (0: X  1: Y  2: Z)"
+    min: 0
+    max: 2
+    default: 0
+    column: 0
+    prefix: "-g"
+
+  - name: "Title_param"
+    type: "title"
+    label: "X, Y and Z Limits for the elliptic mirror"
+
+  - name: "pmx"
+    type: "float"
+    label: "X_MIN [cm]"
+    tooltip: "X minimum limitation for the elliptic mirror"
+    default: 100
+    column: 0
+    prefix: "-A"
+
+  - name: "pmz"
+    type: "float"
+    label: "Y_MIN [cm]"
+    tooltip: "Y minimum limitation for the elliptic mirror"
+    default: 20
+    column: 1
+    prefix: "-D"
+
+  - name: "pmt"
+    type: "float"
+    label: "Z_MIN [cm]"
+    tooltip: "Z minimum limitation for the elliptic mirror"
+    default: -30
+    column: 2
+    prefix: "-H"
+
+  - name: "pmy"
+    type: "float"
+    label: "X_MAX [cm]"
+    tooltip: "X maximum limitation for the elliptic mirror"
+    default: 400
+    column: 0
+    prefix: "-C"
+
+  - name: "pmw"
+    type: "float"
+    label: "Y_MAX [cm]"
+    tooltip: "Y maximum limitation for the elliptic mirror"
+    default: 50
+    column: 1
+    prefix: "-E"
+
+  - name: "pmk"
+    type: "float"
+    label: "Z_MAX [cm]"
+    tooltip: "Z maximum limitation for the elliptic mirror"
+    default: 30
+    column: 2
+    prefix: "-K"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Output Plane"
+
+  - name: "ox"
+    type: "float"
+    label: "output X [cm]"
+    tooltip: "position of the output frame (in the input frame)"
+    default: 500
+    column: 0
+    prefix: "-s"
+
+  - name: "oy"
+    type: "float"
+    label: "output Y [cm]"
+    tooltip: "position of the output frame (in the input frame)"
+    default: 0
+    column: 1
+    prefix: "-t"
+
+  - name: "oz"
+    type: "float"
+    label: "output Z [cm]"
+    tooltip: "position of the output frame (in the input frame)"
+    default: 0
+    column: 2
+    prefix: "-w"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Visualisation"
+
+  - name: "visu"
+    type: "bool"
+    label: "Activate visualisation"
+    tooltip: "activate visualisation"
+    default: true
+    column: 0
+    prefix: "-y"
+
+  - name: "visuty"
+    type: "int"
+    label: "Type of visualisation"
+    tooltip: "visualisation plane (0: XZ  1: XY  2: YZ)"
+    min: 0
+    max: 2
+    default: 0
+    column: 1
+    prefix: "-Y"
+
+  - name: "visual"
+    type: "bool"
+    label: "Full visualisation"
+    tooltip: "Visualisation all neutrons paths or only refleted neutrons from mirror"
+    default: false
+    column: 2
+    prefix: "-v"
+
+  - name: "visualty"
+    type: "int"
+    label: "Output device (for Unix only)"
+    tooltip: "for Unix/Linux: device for output (0: xwin  1: ps file)"
+    min: 0
+    max: 1
+    default: 0
+    column: 0
+    prefix: "-l"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Reflectivity for the elliptic mirror"
+
+  - name: "bfp"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "Spin_up reflectivity file"
+    tooltip: "Spin_up file reflectivity"
+    default: "mirr3+.dat"
+    column: 0
+    prefix: "-i"
+
+  - name: "bff"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "Spin_down reflectivity file"
+    tooltip: "Spin_down file reflectivity"
+    default: "mirr3+.dat"
+    column: 0
+    prefix: "-I"
+
+  - name: "surwav"
+    type: "float"
+    label: "surface waviness [deg]"
+    tooltip: "This parameter controls the simulation of surface waviness. This value is the maximal angle of deviation of the surface normal from the ideal normal."
+    default: 0
+    column: 0
+    prefix: "-q"
+    min: 0
+
+  - name: "reflne"
+    type: "bool"
+    label: "Reflected neutrons"
+    tooltip: "If yes is chosen, only reflected neutrons are going later, if no all neutrons are going later"
+    default: false
+    column: 0
+    prefix: "-u"
+
+  - name: "outkey"
+    type: "bool"
+    label: "Ideal reflection"
+    tooltip: "Choose ideal reflection or from reflectivities files"
+    default: true
+    column: 1
+    prefix: "-R"
+
+  - name: "pola"
+    type: "bool"
+    label: "polarisation"
+    tooltip: "yes: split into spin-down and spin-up reflectivity no: spin-up reflectivity for all neutrons"
+    default: true
+    column: 2
+    prefix: "-p"
+
+  - name: "spiqua"
+    type: "int"
+    label: "neutron spin axis"
+    tooltip: "spin quantisation direction: 0: axis X, 1: axis Y, 2: axis Z"
+    min: 0
+    max: 2
+    default: 0
+    column: 0
+    prefix: "-V"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Air Attenuation Tair=293K"
+
+  - name: "himidi"
+    type: "float"
+    label: "Air Himidity [%]"
+    tooltip: "Choose himidity of air"
+    default: 55.0
+    column: 0
+    prefix: "-r"
+    min: 1.0e-6
+
+  - name: "airact"
+    type: "bool"
+    label: "Air Attenuation"
+    tooltip: "Activate or not the air attenuation of neutron beam, T=293K"
+    default: false
+    column: 0
+    prefix: "-z"

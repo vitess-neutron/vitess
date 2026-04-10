@@ -14,7 +14,6 @@ gSet nac_dt7_gt {1}
 gSet wdeterm_gt {average wavelength}
 gSet delay_gt {0.0}
 gSet setsimpar1_ {}
-gSet entryColor {#aedace}
 gSet visuald_3 {x-windows}
 gSet outfilename_ {no_file}
 gSet opc_dt8_gt {1}

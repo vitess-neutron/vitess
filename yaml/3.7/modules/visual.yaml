@@ -1,0 +1,203 @@
+visual:
+  executable: "visual"
+  category: "monitor"
+  parameters:
+  - name: "gselec"
+    type: "mapping"
+    label: "output option"
+    display:
+      DISPLAY: "output to display"
+      FILE: "output to file"
+      BOTH: "output to file and display"
+    commandline:
+      DISPLAY: 1
+      FILE: 2
+      BOTH: 3
+    default: "DISPLAY"
+    prefix: "-o"
+    required: true
+  - name: "visualizetype"
+    type: "mapping"
+    label: "type of visualization"
+    display:
+      CIRCULAR_YZ: "circular YZ visualize"
+      RECTANGLE_YZ: "rectangle YZ visualize"
+      TIME: "visualize time of arrival(wavelength)"
+      WAVELENGTH: "visualize wavelength(time of arrival)"
+    commandline:
+      CIRCULAR_YZ: 1
+      RECTANGLE_YZ: 2
+      TIME: 3
+      WAVELENGTH: 4
+    default: "CIRCULAR_YZ"
+    prefix: "-R"
+    required: true
+  - name: "winradius"
+    type: "float"
+    label: "radius"
+    toltip: "radius of circular window"
+    unit: "cm"
+    column: 0
+    min: 1.0e-25
+    default: 10.0
+    prefix: "-r"
+    required: false
+  - name: "ywincenter"
+    type: "float"
+    label: "center Y"
+    unit: "cm"
+    tooltip: "Y coordinate of the centre of the circle"
+    column: 1
+    default: 0.0
+    prefix: "-y"
+    required: false
+  - name: "zwincenter"
+    type: "float"
+    label: "center Z"
+    unit: "cm"
+    tooltip: "Z coordinate of the centre of the circle"
+    column: 2
+    default: 0.0
+    required: false
+    prefix: "-z"
+  - name: "widthmin"
+    type: "float"
+    label: "left"
+    unit: "cm"
+    tooltip: "left side of rectangular window"
+    column: 0
+    default: -10.0
+    prefix: "-w"
+    required: false
+  - name: "widthmax"
+    type: "float"
+    label: "right"
+    unit: "cm"
+    tooltip: "right side of rectangular window"
+    column: 1
+    default: 10.0
+    prefix: "-W"
+    required: false
+  - name: "heightmin"
+    type: "float"
+    label: "bottom"
+    unit: "cm"
+    tooltip: "bottom of rectangular window"
+    column: 0
+    default: -10.0
+    prefix: "-h"
+    required: false
+  - name: "heightmax"
+    type: "float"
+    label: "top"
+    unit: "cm"
+    tooltip: "top of rectangular window"
+    column: 1
+    default: 10.0
+    prefix: "-H"
+    required: false
+  - name: "keyw"
+    type: "mapping"
+    label: "filter wavelength"
+    tooltip: "filter by wavelength: visualize all wavelengths / visualize wavelength in given range only"
+    display:
+      ALL: "all wavelengths"
+      RANGE: "in wavelength range only"
+    commandline:
+      ALL: 0
+      RANGE: 1
+    default: "ALL"
+    prefix: "-k"
+    required: false
+  - name: "wavemin"
+    type: "float"
+    label: "min wavelength"
+    unit: "Ang"
+    tooltip: "minimal value of wavelength"
+    min: 0.0
+    default: 0.0
+    prefix: "-m"
+    required: false
+  - name: "wavemax"
+    type: "float"
+    label: "max wavelength"
+    unit: "Ang"
+    tooltip: "maximal value of wavelength"
+    min: 0.0
+    default: 1.0e25
+    prefix: "-M"
+    required: false
+  - name: "timemin"
+    type: "float"
+    label: "min ToF"
+    unit: "ms"
+    tooltip: "minimal value of time of flight"
+    min: 0.0
+    default: 0.0
+    prefix: "-t"
+    required: false
+  - name: "timemax"
+    type: "float"
+    label: "max ToF"
+    unit: "ms"
+    tooltip: "maximal value of time of flight"
+    min: 0.0
+    default: 1.0e25
+    prefix: "-T"
+    required: false
+
+  help:
+    brief: "The aim of this module is to visualize the neutron beam DURING simulation. This module does not disturbe the normal processing of the pipe."
+    markdown: |
+      There are four options of visualization:
+      1 - circular beam YZ ,
+      2 - rectangular beam YZ,
+      3 - visualise time of arrival(wavelength),
+      4 - visualise wavelength(time of arrival).
+
+      Visualization during the simulation can be very useful for the understanding of the instrument and the checking of the instrument configuration. The third and fourth types of visualization is useful for study frame overlap effect. For first and second type of visualization you may choose visualization at all wavelenghts (default) or at defined wavelenght range. Further, the module calculates the center position of the neutron beam, and average time of flight for option 1 and 2  of visualization. For options 3 and 4 it only calculates the average time of flight. Only first 10000 trajectories will be printed.
+
+  views:
+    visualizetype:
+      CIRCULAR_YZ:
+        enable:
+          - "winradius"
+          - "ywincenter"
+          - "zwincenter"
+          - "keyw"
+        disable:
+          - "widthmin"
+          - "widthmax"
+          - "heightmax"
+          - "heightmin"
+      RECTANGLE_YZ:
+        enable:
+          - "widthmin"
+          - "widthmax"
+          - "heightmax"
+          - "heightmin"
+          - "keyw"
+        disable:
+          - "winradius"
+          - "ywincenter"
+          - "zwincenter"
+      TIME:
+        disable:
+          - "winradius"
+          - "ywincenter"
+          - "zwincenter"
+          - "widthmin"
+          - "widthmax"
+          - "heightmax"
+          - "heightmin"
+          - "keyw"
+      WAVELENGTH:
+        disable:
+          - "winradius"
+          - "ywincenter"
+          - "zwincenter"
+          - "widthmin"
+          - "widthmax"
+          - "heightmax"
+          - "heightmin"
+          - "keyw"

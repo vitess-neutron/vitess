@@ -15,10 +15,11 @@
 extern "C" {
 #endif
 
-extern char*         sInstrInfIn;    /* instrument file that is read (default 'instrument.inf') */
+extern char*         sInstrInfIn;    /* instrument file that is read    (default 'instrument.inf') */
+extern char*         sInstrInfOut;   /* instrument file that is written (default 'instrument.inf') */
 
 extern McCompID      _eModule;       /* ID of the module                */
-extern double        BlowUp;         /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */  
+extern double        BlowUp;         /* Factor, by which the module length is compressed in the visualization, if bLengthCmpr=TRUE */
 extern long          BufferSize;     /* size of the neutron input and ouput buffer */
 extern Neutron*      InputNeutrons;  /* input neutron Buffer */
 extern Neutron*      OutputNeutrons; /* output neutron buffer */
@@ -57,10 +58,25 @@ extern int           NThreads;       /* number of helper threads for execution, 
 extern double        RotMatrixM[3][3];
 extern double        RotMatrixMX[3][3];
 
-FILE* OpenOutputFile  (const char *sName, short bErrMsg, const char* sMode);              // opens file in the output folder with or without error message
-FILE* OpenInputFile   (const char *sName, short bErrMsg, const char* sMode);              // opens file in the input folder with or without error message
-FILE* OpenInputFile2  (const char *sFilename, const char* sContent, const char* sMode);   // opens file in the input folder with extended error message   
-FILE* OpenPackInpFile (const char *sFilename, const char* sPath, short bErrMsg);          // opens input file from the installation directory
+/* Adds the path of a directory - input, output or install_dir/sPath - to a file name
+   opens the file using parameters 'sMode'
+   and exits with error message if bErrMsg=TRUE     */
+FILE *OpenInputFile(const char *sFilename, short bErrMsg, const char *sMode);
+/* opens file in the input folder with extended error message */
+FILE *OpenInputFile2(const char *sFilename, const char *sContent, const char *sMode);
+/* opens file in the parameter folder with or without error message */
+FILE *OpenParameterFile(const char *sFilename, short bErrMsg, const char *sMode);
+/* opens file in the parameter folder with extended error message */
+FILE *OpenParameterFile2(const char *sFilename, const char *sContent, const char *sMode);
+/* opens file in the output folder with or without error message */
+FILE *OpenOutputFile(const char *sFilename, short bErrMsg, const char *sMode);
+/* opens file in the output folder with extended error message */
+FILE *OpenOutputFile2(const char *sFilename, const char *sContent, const char *sMode);
+/* opens input file from the installation directory */
+FILE *OpenPackInpFile(const char *sFilename, const char *sPath, short bErrMsg);
+
+/* Adds path of the installation directory to a file name */
+void TotalPath        (char* pPath, const char *sFile, const char* sSubDir, VtDirType sel);
 
 void Init             (int argc, char **argv, const McCompID eModule);
 void Cleanup          (double dShiftX, double dShiftY, double dShiftZ,
@@ -93,13 +109,13 @@ void DefineColors     (FILE* pGeomFile);
 void DrawLine         (FILE* pGeomFile, const char* pDescr, VectorType RelPosB,  VectorType RelPosE);
 void DrawRectangle    (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, double rotAngle);
 void DrawTriangle     (FILE* pGeomFile, const char* pDescr, VectorType vEdge1,   VectorType vEdge2, VectorType vEdge3);
-void DrawOpenRect     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height, 
+void DrawOpenRect     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Width, double Height,
                        double InnerWidth, double InnerHeight);
 void DrawCircle       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Radius, double AngleBeg, double AngleEnd);
-void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double rotAngle); 
-void DrawPrism        (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, VectorType vVertices[6], double PrismHeight); 
-void DrawHull         (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, 
-                       double WidthIn,  double WidthOut, double HeightIn, double HeightOut, double rotAngle); 
+void DrawCuboid       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length, double Width, double Height, double rotAngle);
+void DrawPrism        (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, VectorType vVertices[6], double PrismHeight);
+void DrawHull         (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, double Length,
+                       double WidthIn,  double WidthOut, double HeightIn, double HeightOut, double rotAngle);
 void DrawCylinder     (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius);
 void DrawHolCyl       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, VectorType vDir, const double Len, const double Radius, const double InnerRadius);
 void DrawSphere       (FILE* pGeomFile, const char* pDescr, VectorType vAbsCntr, double Radius);
@@ -137,7 +153,7 @@ extern gsl_rng * vit_gsl_rng;
 #ifdef DODEBMACRO
 # if DEBUG
 #  define DEBUG_OUT(...) {fprintf(LogFilePtr, "%s, line %d :", __FILE__, __LINE__); fprintf(LogFilePtr, __VA_ARGS__); fprintf(LogFilePtr, "\n");}
-# else 
+# else
 #  define DEBUG_OUT(...) (void)0
 # endif
 # undef DODEBMACRO

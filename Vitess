@@ -145,6 +145,7 @@ set monospaced $serif
 set GUIDir [file join $SourceDirectory GUI]
 set auto_path [linsert $auto_path 0 $GUIDir]
 ###    use tk_chooseColor to find better colors
+set fgColor black
 set c #f2f2fb
 set bgColor $c
 set labColor $c
@@ -160,7 +161,7 @@ set menuColor $c
 if {$tcl_platform(os) == "Darwin"} {
   set buttonColor #abb3be
   set buttonColorFont black
-  set menuColor black
+  set radioColor $c
 }
 
 set itemlabwidth 16
@@ -191,7 +192,7 @@ if [file exists $VisMerge] {
 }
 
 set MainBitmap [file join $SourceDirectory BITMAPS vitsav.gif]
-set versionNumber "3.7"
+set versionNumber "3.8"
 set defaultPlotApp ""
 ### execute all tcl source files
 set modl {tools check entries help ldstore menu windows

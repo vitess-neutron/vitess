@@ -13,16 +13,16 @@
 /******************************/
 /** Structures and Enums     **/
 /******************************/
-typedef struct 
-{ 
-  SurfaceSecond Surf[5]; 
-} 
-LenseSecond; 
+typedef struct
+{
+  SurfaceSecond Surf[5];
+}
+LenseSecond;
 
 /* 1 surface: first surface of lense 0
    2 surface: second surface of lense 1
    3 surface: cylindrical surface of lense 2
-   4 surface: output plane 3   		*/
+   4 surface: output plane 3       */
 
 
 /******************************/
@@ -35,7 +35,7 @@ double  PathThroughLenseOrder2(Neutron *ThisNeutron, LenseSecond MyLense, double
                                long keygrav, long NeutronLoss, long Attenkey, long CurrentLense,
                                long LenseForOut, long LenseForOutVis, long ServiceInfoK, FILE *COLLFILE, long LenseType);
 
-/* Function for refraction procedure    */    
+/* Function for refraction procedure    */
 double MakeRefract(Neutron *ThisNeutron, LenseSecond MyLense, double Refr, double surfacerough, long sn);
 
 /* Procedure for moving the neutron WITH gravity    */

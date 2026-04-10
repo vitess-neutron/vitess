@@ -6,6 +6,7 @@
 /******************************/
 
 #include "defines.h"
+#include <stdio.h>
 
 #define INDEX(x,y,p) (x*(nbinsY)+y   +  (p+1)*nbinsX*nbinsY )
 
@@ -44,12 +45,12 @@ typedef struct
   int       Mode5;
   int       Mode0;
   double    ProbSum;
-} 
+}
 BINDATA;
 
 static int allocNeutrons = 16; // allocacte ReflCond.neutrons in this chunk size,
                                // choose a number big enough to avoid frequent reallocations
-static int allocText = 1023;   // allocate text buffers for ReflCond.Output in chunks of this size+1 
+static int allocText = 1023;   // allocate text buffers for ReflCond.Output in chunks of this size+1
 
 typedef struct
 {
@@ -91,11 +92,11 @@ typedef struct
   ReflFile **RData;        // use GW_TOP, GW_BOTTOM, GW_LEFT, GW_RIGHT, etc
 }
 GuidePiece;
-  
+
 typedef struct
 {
   double gammaInt[MAX_GAMMA_NUM];     //Intensities of gammas of Ni and Ti
-  double neutronInt;                  //Intensity of the transmitted neutron 
+  double neutronInt;                  //Intensity of the transmitted neutron
 }
 Escaping_MCPL_particles;
 

@@ -1,0 +1,337 @@
+bender:
+  executable: "bender"
+  label: "bender"
+  category: "guide"
+
+  parameters:
+  - name: "Title_param"
+    type: "title"
+    label: "Bender geometry characteristic"
+
+  - name: "enter_height"
+    type: "float"
+    label: "entrance height"
+    unit: "cm"
+    tooltip: "Height of the entrance of the bender"
+    default: 10
+    column: 0
+    prefix: "-h"
+    min: 1.0e-6
+
+  - name: "exit_height"
+    type: "float"
+    label: "exit height"
+    unit: "cm"
+    tooltip: "Height of the exit of the bender"
+    default: 10
+    column: 1
+    prefix: "-H"
+    min: 1.0e-6
+
+  - name: "swidth"
+    type: "float"
+    label: "blade width"
+    unit: "cm"
+    tooltip: "Thickness of the material dividing the bender into channels"
+    default: 0
+    column: 2
+    prefix: "-s"
+    min: 0
+
+  - name: "len_guide"
+    type: "float"
+    label: "length"
+    unit: "cm"
+    tooltip: "Length of the bender"
+    default: 100
+    column: 0
+    prefix: "-l"
+    min: 1.0e-6
+
+  - name: "curvrad"
+    type: "float"
+    label: "radius of curvature"
+    unit: "cm"
+    tooltip: "Radius of curvature of the central bender channel. If zero, plane surfaces are assumed, otherwise they are bent to the left"
+    default: 0
+    column: 1
+    prefix: "-R"
+    min: 0
+
+  - name: "Title_param"
+    type: "title"
+    label: "Reflectivity values for spin up"
+
+  - name: "mLeftUp"
+    type: "float"
+    label: "left plane"
+    unit: ""
+    tooltip: "m-value characterizing the reflectivity for spin-up neutrons of the wall on the left side. It is not used if a reflectivity file is given for these neutrons and the same wall."
+    default: 0
+    column: 0
+    prefix: "-b"
+
+  - name: "mRightUp"
+    type: "float"
+    label: "right plane"
+    unit: ""
+    tooltip: "m-value characterizing the reflectivity for spin-up neutrons of the wall on the right side. It is not used if a reflectivity file is given for these neutrons and the same wall."
+    default: 0
+    column: 1
+    prefix: "-B"
+
+  - name: "mTopUp"
+    type: "float"
+    label: "top/bottom plane"
+    unit: ""
+    tooltip: "m-value characterizing the reflectivity for spin-up neutrons of the top and the bottom wall. It is not used if a reflectivity file is given for these neutrons and the same wall."
+    default: 0
+    column: 2
+    prefix: "-d"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Reflectivity values for spin down"
+
+  - name: "mLeftDo"
+    type: "float"
+    label: "left plane"
+    unit: ""
+    tooltip: "m-value characterizing the reflectivity for spin-down neutrons of the wall on the left side. It is not used if a reflectivity file is given for these neutrons and the same wall."
+    default: 0
+    column: 0
+    prefix: "-e"
+
+  - name: "mRightDo"
+    type: "float"
+    label: "right plane"
+    unit: ""
+    tooltip: "m-value characterizing the reflectivity for spin-down neutrons of the wall on the right side. It is not used if a reflectivity file is given for these neutrons and the same wall."
+    default: 0
+    column: 1
+    prefix: "-E"
+
+  - name: "mTopDo"
+    type: "float"
+    label: "top/bottom plane"
+    unit: ""
+    tooltip: "m-value characterizing the reflectivity for spin-down neutrons of the top and the bottom wall. It is not used if a reflectivity file is given for these neutrons and the same wall."
+    default: 0
+    column: 2
+    prefix: "-f"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Reflectivity files for spin up"
+
+  - name: "lrefl_filename"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "left plane"
+    tooltip: "Reflectivity file for the left plane (where y>0) and spin-up neutrons"
+    default: "mirr0.dat"
+    column: 0
+    prefix: "-i"
+
+  - name: "rrefl_filename"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "right plane"
+    tooltip: "Reflectivity file for the right plane (where y<0) and spin-up neutrons"
+    default: "mirr2linear.dat"
+    column: 0
+    prefix: "-m"
+
+  - name: "tbrefl_filename"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "top/bot. plane"
+    tooltip: "Reflectivity file for the top and bottom plane and spin-up neutrons"
+    default: "mirr0.dat"
+    column: 0
+    prefix: "-k"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Reflectivity files for spin down"
+
+  - name: "dlrefl_filename"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "left plane"
+    tooltip: "Reflectivity file for the left plane (where y>0) and spin-down neutrons"
+    default: "mirr0.dat"
+    column: 0
+    prefix: "-I"
+
+  - name: "drrefl_filename"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "right plane"
+    tooltip: "Reflectivity file for the right plane (where y<0) and spin-down neutrons"
+    default: "mirr0.dat"
+    column: 0
+    prefix: "-M"
+
+  - name: "dtbrefl_filename"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "top/bot. plane"
+    tooltip: "Reflectivity file for the top and bottom plane and spin-down neutrons"
+    default: "mirr0.dat"
+    column: 0
+    prefix: "-K"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Geometrical description of bender"
+
+  - name: "sfile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "surface file"
+    tooltip: "input file describing the bender geometry"
+    default: ""
+    column: 0
+    prefix: "-u"
+
+  - name: "ifile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "information file"
+    tooltip: "output file containing information about the bender geometry"
+    default: ""
+    column: 0
+    prefix: "-A"
+
+  - name: "Title_param"
+    type: "title"
+    label: "Special option"
+
+  - name: "uref"
+    type: "bool"
+    label: "transmitted neutrons"
+    tooltip: "no: ideal absorption between bender channels, yes: unreflected neutrons can pass into the next bender channel, but the intensity is reduced by attenuation by the \"left/right side material\" "
+    default: 1
+    column: 0
+    prefix: "-g"
+
+  - name: "amat"
+    type: "int"
+    label: "channel material"
+    tooltip: "Material through which the neutrons travel inside the bender channels, which causes attenuation of the neutron flux. \"from file\" means data are read from a file specified as \"attenuation file\" "
+    min: 0
+    max: 6
+    default: 6
+    column: 1
+    prefix: "-c"
+
+  - name: "amatl"
+    type: "int"
+    label: "left side material"
+    tooltip: "Material on the left side of the channel. Unreflected neutrons pass into the next channel through this material in the inner (left) side of the channel. \"from file\" means that the data are read from a file specified as \"left side file\""
+    min: 0
+    max: 6
+    default: 1
+    column: 0
+    prefix: "-z"
+
+  - name: "amatr"
+    type: "int"
+    label: "right side material"
+    tooltip: "Material in the right side of the channel. Unreflected neutrons pass into the next channel through this material in the outer (right) side of the channel. \"from file\" means that the data are read from that file specified as \"right side file\""
+    min: 0
+    max: 6
+    default: 1
+    column: 1
+    prefix: "-w"
+
+  - name: "mfile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "attenuation file"
+    tooltip: "File characterizing the attenuation of the bender channel material. The file is used if \"Channel material\" is set to \"from file\""
+    default: ""
+    column: 0
+    prefix: "-C"
+
+  - name: "mfilel"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "left side file"
+    tooltip: "File characterizing the attenuation of the material behind the reflecting surface on the left side of the channel. The file is used if \"left side material\" is set to \"from file\""
+    default: ""
+    column: 0
+    prefix: "-T"
+
+  - name: "mfiler"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "right side file"
+    tooltip: "File characterizing the attenuation of the material behind the reflecting surface on the right side of the channel. The file is used if \"right side material\" is set to \"from file\""
+    default: ""
+    column: 0
+    prefix: "-O"
+
+  - name: "surwav"
+    type: "float"
+    label: "surface waviness"
+    unit: "deg"
+    tooltip: "This parameter controls the simulation of the surface waviness. The given value is the maximal angle of deviation of the surface normal from the correct value."
+    default: 0
+    column: 0
+    prefix: "-r"
+    min: 0
+
+  - name: "visu"
+    type: "bool"
+    label: "visualisation"
+    tooltip: "use of an internal trajectory visualization (in addition to the general instrument and trajectory visualization):  yes or no"
+    default: false
+    column: 0
+    prefix: "-y"
+
+  - name: "visdev"
+    type: "int"
+    label: "visualisation device"
+    tooltip: "output of the internal visualization: display only, file only, or display and file"
+    default: 2
+    column: 1
+    prefix: "-o"
+
+  - name: "pola"
+    type: "bool"
+    label: "polarisation"
+    tooltip: "yes: split into spin-down and spin-up reflectivity   no: spin-up reflectivity for all neutrons"
+    default: false
+    column: 0
+    prefix: "-p"
+
+  - name: "spiqua"
+    type: "bool"
+    label: "neutron spin axis"
+    tooltip: "axis for spin quantisation: X axis, Y axis, or Z axis"
+    min: 0
+    max: 2
+    default: 0
+    column: 1
+    prefix: "-V"
+
+  - name: "geotest"
+    type: "bool"
+    label: "geometry test"
+    tooltip: "activates or deactivates a geometry test of the bender in the beginning of the simulation"
+    default: false
+    column: 0
+    prefix: "-t"

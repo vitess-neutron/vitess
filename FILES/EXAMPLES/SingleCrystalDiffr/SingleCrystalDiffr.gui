@@ -22,7 +22,6 @@ gSet rotang_7 {0.0}
 gSet delay_gt {0.0}
 gSet setsimpar1_ {}
 gSet phimax_7 {-1}
-gSet entryColor {#aedace}
 gSet timevalend_10 {1.e10}
 gSet outfilename_ {no_file}
 gSet opc_dt8_gt {1}

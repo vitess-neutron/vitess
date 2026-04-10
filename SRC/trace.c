@@ -69,7 +69,7 @@ char GetTraceState(TotalID stID)
   long iS;                               // index of the searched ID in the table
 
   if (_nLinesTr > 5000)                // use smart search algorithm for a long list of trajectories
-  {	
+  {
     long   iL = _nLinesTr-1;            // index of the last item in the table of wanted trajectories
                                          // numbers got by conversion from characters in the ID
     double nL = IdNumber(_aTrace[iL]);  // - for the last item in the table of wanted trajectories
@@ -113,4 +113,3 @@ static double IdNumber(TotalID stID)
 
   return g0+g1+gN;
 }
-

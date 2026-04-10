@@ -1,0 +1,112 @@
+chopper_disc:
+  executable: "chopper_disc"
+  label: "chopper_disc"
+  category: "chopper"
+
+  parameters:
+  - name: "wChopWnd"
+    label: "chopper window"
+    tooltip: "chopper window description parameter"
+    max: 10
+    column: 1
+    <<: *chopper_wnd
+  - name: "sParFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "chopper file"
+    tooltip: "File containing geometry and properties of the chopper disc These parameters are only used if they are not given as direct input parameters."
+    prefix: "-C"
+
+  - name: "Rpm"
+    type: "float"
+    label: "speed"
+    unit: "rpm"
+    tooltip: "number of revolutions per minute"
+    column: 0
+    prefix: "-s"
+  - name: "Offset"
+    type: "float"
+    label: "Offset"
+    unit: "deg"
+    tooltip: "orientation of the chopper at t=0"
+    column: 1
+    prefix: "-o"
+  - name: "Distance"
+    type: "float"
+    label: "distance to prev. module"
+    unit: "cm"
+    tooltip: "distance of the chopper from the end of the previous component"
+    column: 2
+    prefix: "-l"
+
+  - name: "eAbsorbMat"
+    label: "absorption"
+    tooltip: "absorbing window material"
+    <<: *VtAbsMat
+    options: ["VT_ABS_IDEAL","VT_ABS_GD","VT_ABS_B10"]
+    default: "VT_ABS_IDEAL"
+    column: 0
+    prefix: "-g"
+  - name: "bRndTof"
+    type: "bool"
+    label: "randomize TOF"
+    tooltip: "yes: the time of arrival at the chopper is defined by a random choice within the period of the chopper disc, i.e. the real TOF is ignored."
+    default: no
+    column: 1
+    prefix: "-r"
+  - name: "bZeroTime"
+    type: "bool"
+    label: "set zero time"
+    tooltip: "yes: the chopper defines the zero time  no: the zero time is defined in the source  (see Help | chopper)"
+    default: no
+    column: 2
+    prefix: "-z"
+
+  - name: "bPass"
+    type: "bool"
+    label: "treat neutrons passing by"
+    tooltip: "yes: neutrons passing outside the chopper disc are treated  no: neutrons passing outside are removed"
+    default: yes
+    column: 2
+    prefix: "-p"
+  - name: "bColor"
+    type: "bool"
+    label: "set colour"
+    tooltip: "yes: colour of the neutrons will be defined by the window that they are passing  no: colour remains unchanged"
+    default: no
+    column: 0
+    prefix: "-c"
+
+  - name: "nWnds"
+    type: "int"
+    label: "number of windows"
+    tooltip: "number of chopper windows"
+    default: 1
+    column: 0
+    prefix: "-N"
+  - name: "Radius"
+    type: "float"
+    label: "radius"
+    unit: "cm"
+    tooltip: "radius of the chopper"
+    default: 35.0
+    column: 0
+    prefix: "-R"
+
+  - name: "VertPos"
+    type: "float"
+    label: "vert. position of axle"
+    unit: "cm"
+    tooltip: "z-component of the centre of the chopper (in the coordinate system of the beamline)"
+    default: -30.0
+    column: 1
+    prefix: "-Z"
+  - name: "HorPos"
+    type: "float"
+    label: "hor. position of axle"
+    unit: "cm"
+    tooltip: "y-component of the centre of the chopper (in the coordinate system of the beamline)"
+    default: 0.0
+    column: 2
+    prefix: "-Y"

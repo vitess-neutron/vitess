@@ -20,7 +20,7 @@
 /************************************/
 /** Definitions, structures, enums **/
 /************************************/
-#define PI       3.1415926535898 
+#define PI       3.1415926535898
 
 
 /******************************/
@@ -28,13 +28,10 @@
 /******************************/
 double Width    (double length);                    // calculates guide width as a function of position
 double Height   (double length);                    // calculates guide height as a function of position
-double GetDouble(const char* pText);                // Reads double value from stdin  
-long   GetLong  (const char* pText);                // Reads long value from stdin  
-short  GetShort (const char* pText);                // Reads short value from stdin  
-void   GetString(char* pString, const char* pText); // Reads string from stdin      
-
-char* FullInstallName (const char* filename, const char* sRelPath); // adds installation directory to file name 
-char* FullInName      (const char* filename);                       // adds parameter directory to file name 
+double GetDouble(const char* pText);                // Reads double value from stdin
+long   GetLong  (const char* pText);                // Reads long value from stdin
+short  GetShort (const char* pText);                // Reads short value from stdin
+void   GetString(char* pString, const char* pText); // Reads string from stdin
 
 
 /*********************************/
@@ -43,8 +40,8 @@ char* FullInName      (const char* filename);                       // adds para
 short  eGuideShapeY, eGuideShapeZ;
 long   nPieces;
 double GuideEntranceHeight, GuideExitHeight, FocusZ, D_Foc1Z,
-	     GuideEntranceWidth,  GuideExitWidth,  FocusY, D_Foc1Y,
-	     piecelength, dTotalLength, X0;
+       GuideEntranceWidth,  GuideExitWidth,  FocusY, D_Foc1Y,
+       piecelength, dTotalLength, X0;
 double GuideMaxWidth, GuideMaxHeight,
        LcntrY, LcntrZ,
        AxisY, AxisZ;
@@ -56,8 +53,7 @@ double GuideMaxWidth, GuideMaxHeight,
 int main(int argc, char* argv[])
 {
   FILE*   pFile;
-  char    sString[9], sFileName[50],
-         *pFullName;
+  char    sString[9], sFileName[50], sFullName[CHAR_BUF_SMALL];
 
   _eModule=MCN_TOOL_GUIDE;
 
@@ -74,7 +70,7 @@ int main(int argc, char* argv[])
   X0           = GetDouble("position of the guide entrance       [m] ");
 
   do
-  {	GuideEntranceWidth  = GetDouble("entrance width                      [cm] ");
+  {  GuideEntranceWidth  = GetDouble("entrance width                      [cm] ");
     GuideExitWidth      = GetDouble("exit width                          [cm] ");
     if (eGuideShapeY==VT_ELLIPTIC)
       FocusY            = GetDouble("distance to focus for hor. dir.     [cm] ");
@@ -87,21 +83,19 @@ int main(int argc, char* argv[])
     dTotalLength = nPieces * piecelength;
 
     /* write to parameter directory or to FILES in install directory */
-    pFullName = FullInName(sFileName);
-    // if (strcmp(pFullName, sFileName)==0)
-    //  	pFullName = FullInstallName(sFileName, "FILES/");
-    pFile = fopen(pFullName, "w"); 
+    TotalPath(sFullName, sFileName, "", OUT_DIR); /* only used for messages */
+    pFile = OpenOutputFile(sFileName, TRUE, "w");
 
-    if (pFile!=NULL) 
+    if (pFile!=NULL)
     {
       double Y,Z;
       int j;
 
       for(j=0; j <= nPieces; j++)
-      {	Y = Width (j*piecelength)/2.0;
+      {  Y = Width (j*piecelength)/2.0;
         Z = Height(j*piecelength)/2.0;
         if (pFile != NULL)
-        {	if (j==0)
+        {  if (j==0)
           { fprintf(pFile, "# length [m]  width [cm]  height [cm] \n");
             fprintf(pFile, "#-------------------------------------\n");
           }
@@ -112,13 +106,13 @@ int main(int argc, char* argv[])
 
       /* Writing to log file */
       printf("\n\nTotal length of guide   : %8.3f  m\n", dTotalLength/100.);
-      fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cm²", GuideEntranceWidth, GuideEntranceHeight);
+      fprintf(LogFilePtr, "Width x Height          : %8.3f  x %7.3f cmÂ²", GuideEntranceWidth, GuideEntranceHeight);
       if (GuideExitWidth != GuideEntranceWidth || GuideExitHeight != GuideEntranceHeight)
-      fprintf(LogFilePtr, " -> %7.3f x %7.3f cm²", GuideExitWidth, GuideExitHeight);
+      fprintf(LogFilePtr, " -> %7.3f x %7.3f cmÂ²", GuideExitWidth, GuideExitHeight);
 
       fprintf(LogFilePtr, "\n\nHorizontal: ");
       switch (eGuideShapeY)
-      {	
+      {
         case VT_ELLIPTIC:
           fprintf(LogFilePtr, "elliptic shape\n");
           fprintf(LogFilePtr, " maximal width  :%8.3f cm  at %8.2f m from entrance\n", GuideMaxWidth, LcntrY/100.);
@@ -140,7 +134,7 @@ int main(int argc, char* argv[])
 
       fprintf(LogFilePtr, "Vertical  : ");
       switch (eGuideShapeZ)
-      {	
+      {
         case VT_ELLIPTIC:
           fprintf(LogFilePtr, "elliptic shape\n");
           fprintf(LogFilePtr, " max. height    :%8.3f cm  at %8.2f m from entrance\n", GuideMaxHeight, LcntrZ/100.);
@@ -157,12 +151,12 @@ int main(int argc, char* argv[])
           else    fprintf(LogFilePtr, "constant height\n");
           break;
       }
-      printf("\nData written to %s\n", pFullName);
-    }  
-    else
-    {	printf("\nERROR: Output file %s could not be generated\n", pFullName);
+      printf("\nData written to %s\n", sFullName);
     }
-  
+    else
+    {  printf("\nERROR: Output file %s could not be generated\n", sFullName);
+    }
+
     printf("\n\n done - another one? (y/n) ");
     scanf ("%s", sString);
     printf("\n\n\n");
@@ -229,7 +223,7 @@ double Width(double dLength)
     default:
       Error("Shape unknown");
   }
-  
+
   return dWidth;
 }
 
@@ -275,7 +269,7 @@ double Height(double dLength)
         Phi_end = acos(L_end/AxisZ);
         GuideMaxHeight = GuideEntranceHeight/sin(Phi_anf);
         D_Foc1Z = LcntrZ - AxisZ/(1.0+eps);
-  
+
         Phi     = acos((dLength - LcntrZ)/AxisZ);
         dHeight = GuideMaxHeight*sin(Phi);
         break;
@@ -297,20 +291,20 @@ double Height(double dLength)
 double GetDouble(const char* pText)
 {
   double dValue;
-  
+
   printf("%s ", pText);
   scanf ("%lf", &dValue);
-  
+
   return dValue;
 }
 
 long GetLong(const char* pText)
 {
   long nValue;
-  
+
   printf("%s ", pText);
   scanf ("%ld", &nValue);
-  
+
   return nValue;
 }
 
@@ -318,10 +312,10 @@ long GetLong(const char* pText)
 short GetShort(const char* pText)
 {
   int nValue;
-  
+
   printf("%s ", pText);
   scanf ("%d", &nValue);
-  
+
   return (short) nValue;
 }
 
@@ -330,4 +324,3 @@ void GetString(char* pString, const char* pText)
   printf("%s ", pText);
   scanf ("%s", pString);
 }
-

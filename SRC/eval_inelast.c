@@ -31,14 +31,14 @@
 /************************************/
 /** Definitions, structures, enums **/
 /************************************/
-#define	STRING_BUFFER 50
-#define	BINS_BUFFER 5000
+#define  STRING_BUFFER 50
+#define  BINS_BUFFER 5000
 
 /*********************************/
 /** Global Variables            **/
 /*********************************/
 // Input parameters
-char	  	*FileNameTOF_up=NULL,            // -E   [-]   output file for the TOF spectrum
+char      *FileNameTOF_up=NULL,            // -E   [-]   output file for the TOF spectrum
           *FileNameEnergy_up=NULL,         // -G   [-]   output file for showing the energy transfer spectrum
           *FileNameTOF_do=NULL,            // -   [-]   output file for the TOF spectrum of spin-flip
           *FileNameEnergy_do=NULL;         // -   [-]   output file for showing the energy transfer spectrum of spin-flip
@@ -46,19 +46,19 @@ char	  	*FileNameTOF_up=NULL,            // -E   [-]   output file for the TOF s
 
 VtInstGeom eGeomOption=VT_NO_I_GEOM;    // -A   [-]   geometry option:   0: direct geometry   1: indirect geometry
 short      bTofCorr= TRUE,              // -t   [-]   criterion: correction to true flight path length from sample to detector:  0: no   1: yes
-           bBoseF  = FALSE,             // -D   [-]   criterion: divide by Bose factor  (not used in Vitess 3)  
+           bBoseF  = FALSE,             // -D   [-]   criterion: divide by Bose factor  (not used in Vitess 3)
            iColor=ANY_COLOR;            // -f   [-]   neutron 'color' to evaluate  -1: all neutrons
 long       nBins=0;                     // -C   [-]   number of bins in TOF and energy spectrum
-          
+
 double     PrimaryFlightPath  =0.0,     // -a  [cm]   Distance from moderator to sample.
            SecondaryFlightPath=0.0,     // -b  [cm]   Distance from sample to detector
-           LambdaRef =0.0,              // -c  [Ang]  reference wavelength 
+           LambdaRef =0.0,              // -c  [Ang]  reference wavelength
            TimeOffset=0.0,              // -d  [ms]   average time of neutrons at start
            MinE  = 0.0,                 // -m  [meV]  minimal energy transfer to be monitored
            MaxE  = 0.0,                 // -M  [meV]  maximal energy transfer to be monitored
            MinTOF=-1.0,                 // -e  [ms]   minimal time of flight to be monitored
            MaxTOF=-1.0,                 // -g  [ms]   maximal time of flight to be monitored
-           SlopeBins  = 0.0,            // -h   [-]   
+           SlopeBins  = 0.0,            // -h   [-]
            Temperature= 0.0,            // -i   [K]   temperature for Bose factor  (not used in Vitess 3)
            AngleCntr  = 0.0,            // -j  [deg]  horizontal angular range that is processed
            AngleRange=180.0;            // -k  [deg]  [AngleCntr - AngleRange, AngleCntr + AngleRange]
@@ -67,26 +67,26 @@ double     PrimaryFlightPath  =0.0,     // -a  [cm]   Distance from moderator to
 long       nTrjTotT[2]   = {0,0},              //      [-]   total number of trajectories within TOF binning
            nTrjTotE[2]   = {0,0},              //      [-]   total number of trajectories within energy binning
            nBunches   = 1,              //      [-]   number of bunches started
-           nTrjT[2][BINS_BUFFER+1],        //      [-]   number of trajectories contributing to count rate in the TOF bins 
-           nTrjE[2][BINS_BUFFER+1];        //      [-]   number of trajectories contributing to count rate in the energy bins 
+           nTrjT[2][BINS_BUFFER+1],        //      [-]   number of trajectories contributing to count rate in the TOF bins
+           nTrjE[2][BINS_BUFFER+1];        //      [-]   number of trajectories contributing to count rate in the energy bins
 double     EnergyRef  =0.0,             //     [meV]  energy and corresponding to reference wavelength
            VelocityRef=0.0,             //    [cm/ms] energy and velocity and corresponding to reference wavelength
            TofRef   =0.0,               //     [ms]   TOF for the reference part, i.e. primary flight path for direct geometry and secondary for indirect geometry
-           TotIntTOF_tot =0.0,               //     [n/s]  total intensity within TOF binning 
+           TotIntTOF_tot =0.0,               //     [n/s]  total intensity within TOF binning
            TotIntE_tot  =0.0,               //     [n/s]  total intensity within E binning
            TotIntTOF[2] = {0.0, 0.0}, //     [n/s]  total intensity for each spin option within TOF binning
            TotIntE[2] = {0.0, 0.0},   //     [n/s]  total intensity for each spin option within E binning
-    
-           t[BINS_BUFFER+1],            //     [ms]   limits of the time channels  (min. and max. value) 
-           e[BINS_BUFFER+1],            //     [meV]  limits of the energy channels  (min. and max. value) 
-           prob_t[2][BINS_BUFFER+1],       //     [n/s]  count rates in the time channels 
-           prob_e[2][BINS_BUFFER+1];       //     [n/s]  count rates in the energy channels  
+
+           t[BINS_BUFFER+1],            //     [ms]   limits of the time channels  (min. and max. value)
+           e[BINS_BUFFER+1],            //     [meV]  limits of the energy channels  (min. and max. value)
+           prob_t[2][BINS_BUFFER+1],       //     [n/s]  count rates in the time channels
+           prob_e[2][BINS_BUFFER+1];       //     [n/s]  count rates in the energy channels
 double     alpha=0.0, beta=0.0;
 char       sPar [2][9]={"TOF", "energy"},//           name of the x-axis parameter
            sUnit[2][6]={"ms", "meV"};    //           unit of the x-axis parameter
 
-VectorType  SpinVector, 
-            spin_up = {0.0,0.0,0.0}, 
+VectorType  SpinVector,
+            spin_up = {0.0,0.0,0.0},
             spin_do = {0.0,0.0,0.0};
 int sndex = 0 ;     // spin index identifier
 int legacy = 0 ;    // identifies the legacy case where only two files were given as input: FileNameEnergy_up and FileNameTOF_up
@@ -94,12 +94,12 @@ int legacy = 0 ;    // identifies the legacy case where only two files were give
 /******************************/
 /** Prototypes               **/
 /******************************/
-double TransformFactor(double DeltaE);    // Transform factor     
+double TransformFactor(double DeltaE);    // Transform factor
 double BoseFactor(double T, double w);    // Bose factor
 void   OwnInit(int argc, char *argv[]);   // Reads input parameters and sets global variables
-void   InitArrays();                      // Allocates memory and initializes evaluation arrays 
-void   OwnCleanup();                      // Closes files   
-void   UpdateMon(long iBnch, long iBunches, char FileNameEnergy_up[256], char FileNameTOF_up[256], int jj);             // Updates evaluation output file 
+void   InitArrays();                      // Allocates memory and initializes evaluation arrays
+void   OwnCleanup();                      // Closes files
+void   UpdateMon(long iBnch, long iBunches, char FileNameEnergy_up[256], char FileNameTOF_up[256], int jj);             // Updates evaluation output file
 
 int spin_index(VectorType Spin, int legacy);
 
@@ -108,8 +108,8 @@ int spin_index(VectorType Spin, int legacy);
 /******************************/
 int main(int argc, char **argv)
 {
-  long   i=0, k=0, 
-         iBnch=0;                // current bunch 
+  long   i=0, k=0,
+         iBnch=0;                // current bunch
   double PathToDetection=0.0,   // real pathlength fro sample to detector for individual trajectory
          TofToDet=0.0,          // TOF til detector - TOF offset
          rotz=0.0, roty=0.0,    // hor. and vertical Euler angles to describe flight direction    [rad]
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
   InitVector(SpinVector);
   PrintModuleName(_eModule, "1.8");
   OwnInit(argc, argv);
- 
+
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
 
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     for(i=0; i < NumNeutGot; i++)
     {
       CHECK;
-	
+
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         iBnch++;
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         CopyVector(InputNeutrons[i].Spin, SpinVector);
         // check color and flight direction
         if (iColor != ANY_COLOR  &&  iColor != InputNeutrons[i].Color) goto no_match;
@@ -159,15 +159,15 @@ int main(int argc, char **argv)
         TofToDet = InputNeutrons[i].Time - TimeOffset;
 
         /* energy transfer corresponding to total flight time to detector */
-        if (eGeomOption == VT_DIRECT_GEOM) 
-        { 
+        if (eGeomOption == VT_DIRECT_GEOM)
+        {
           if (bTofCorr)       // Flight distance correction
             PathToDetection = sqrt(sq(InputNeutrons[i].Position[0]) + sq(InputNeutrons[i].Position[1]) + sq(InputNeutrons[i].Position[2]));
           else
             PathToDetection = SecondaryFlightPath;
           DelE = 0.001*ENERGY_FROM_V(PathToDetection / (TofToDet - TofRef)) - EnergyRef;          // direct geometry
         }
-        else if (eGeomOption == VT_INVERT_GEOM) 
+        else if (eGeomOption == VT_INVERT_GEOM)
         { DelE = EnergyRef - 0.001*ENERGY_FROM_V(PrimaryFlightPath / (TofToDet - TofRef));
         }
         else
@@ -181,23 +181,23 @@ int main(int argc, char **argv)
         for(k=0; k<nBins; k++)
         {
           if( (TofToDet > t[k]) && (TofToDet <= t[k+1]) )
-          { prob_t[sndex][k] += InputNeutrons[i].Probability; 
+          { prob_t[sndex][k] += InputNeutrons[i].Probability;
             TotIntTOF[sndex] += InputNeutrons[i].Probability;
             TotIntTOF_tot += InputNeutrons[i].Probability;
             nTrjT[sndex][k] += 1;
             nTrjTotT[sndex]++;
           }
           if( (DelE > e[k]) && (DelE <= e[k+1]) )
-          { prob_e[sndex][k] += InputNeutrons[i].Probability; // * TransformFactor(DelE) / BoseFactor(Temperature, DelE) ; 
+          { prob_e[sndex][k] += InputNeutrons[i].Probability; // * TransformFactor(DelE) / BoseFactor(Temperature, DelE) ;
             TotIntE[sndex]   += InputNeutrons[i].Probability;
-            TotIntE_tot += InputNeutrons[i].Probability; 
+            TotIntE_tot += InputNeutrons[i].Probability;
             nTrjE[sndex][k] += 1 ;
             nTrjTotE[sndex]++;
           }
         }
 
         /* continues here if neutron is not considered */
-	     no_match: ;
+       no_match: ;
 
         /* writes output binary file */
         WriteNeutron(&(InputNeutrons[i]));
@@ -212,7 +212,7 @@ int main(int argc, char **argv)
   fprintf(LogFilePtr, " Spin down    : %10.6f , %10.6f, %10.6f\n", spin_do[0], spin_do[1], spin_do[2]);
 
   fprintf(LogFilePtr, "\ntotal intensity within TOF and E binning: %11.3e  %11.3e\n", TotIntTOF_tot, TotIntE_tot);
-  
+
   // writes evaluation output
   UpdateMon(iBnch, nBunches, FileNameEnergy_up, FileNameTOF_up,0);
   UpdateMon(iBnch, nBunches, FileNameEnergy_do, FileNameTOF_do,1);
@@ -230,28 +230,28 @@ int main(int argc, char **argv)
 /*******************************************************/
 double TransformFactor(double DeltaE)
 {
-	if(eGeomOption == VT_DIRECT_GEOM) return SecondaryFlightPath * sqrt(EnergyRef) / sq(EnergyRef + DeltaE) ;
-	if(eGeomOption == VT_INVERT_GEOM) return PrimaryFlightPath   / sqrt(EnergyRef) / (EnergyRef - DeltaE) ;
+  if(eGeomOption == VT_DIRECT_GEOM) return SecondaryFlightPath * sqrt(EnergyRef) / sq(EnergyRef + DeltaE) ;
+  if(eGeomOption == VT_INVERT_GEOM) return PrimaryFlightPath   / sqrt(EnergyRef) / (EnergyRef - DeltaE) ;
 
-	else return 0 ;
+  else return 0 ;
 }
 
 
 /*******************************************************/
 /* Bose factor if w in ueV                             */
 /*******************************************************/
-double	BoseFactor(double T, double w)
+double  BoseFactor(double T, double w)
 {
 double betha;
 
-	if(T == 0.) return 1. ;
+  if(T == 0.) return 1. ;
 
-	betha = 11.605 / T ; /* unit 1/meV ! */
+  betha = 11.605 / T ; /* unit 1/meV ! */
 
-	if(w > 0.) return 1 / ((double) exp(betha * w) - 1) +1 ;
-	if(w < 0.) return 1 / ((double) exp(- betha * w) - 1) ;
+  if(w > 0.) return 1 / ((double) exp(betha * w) - 1) +1 ;
+  if(w < 0.) return 1 / ((double) exp(- betha * w) - 1) ;
 
-	else return	0. ;
+  else return  0. ;
 }
 
 
@@ -296,7 +296,7 @@ void OwnInit(int argc, char *argv[])
         FileNameTOF_up = &argv[1][2];
         break;
       case 'G':
-	      FileNameEnergy_up = &argv[1][2];
+        FileNameEnergy_up = &argv[1][2];
         break;
 
       case 'a':
@@ -349,7 +349,7 @@ void OwnInit(int argc, char *argv[])
         break;
 
       case 'T':
-	      FileNameEnergy_do = &argv[1][2];
+        FileNameEnergy_do = &argv[1][2];
         break;
     }
     argc--;
@@ -368,13 +368,13 @@ void OwnInit(int argc, char *argv[])
     legacy = 1;
   }
 
-  if (eGeomOption!=VT_DIRECT_GEOM &&	eGeomOption!=VT_INVERT_GEOM)
+  if (eGeomOption!=VT_DIRECT_GEOM &&  eGeomOption!=VT_INVERT_GEOM)
   {
     fprintf(LogFilePtr,"ERROR: wrong geometry option!\n\n") ;
     exit(0) ;
   }
 
-  if (bBoseF!=FALSE &&	bBoseF!=TRUE)
+  if (bBoseF!=FALSE &&  bBoseF!=TRUE)
   {
     fprintf(LogFilePtr,"ERROR: wrong option for Bose factor!\n\n") ;
     exit(0) ;
@@ -388,7 +388,7 @@ void OwnInit(int argc, char *argv[])
 
   /* computes global reference values */
   if (LambdaRef > 0.0 && PrimaryFlightPath > 0.0 && SecondaryFlightPath > 0.0)
-  { 
+  {
     EnergyRef   = 0.001*ENERGY_FROM_LAMBDA(LambdaRef) ;
     VelocityRef = V_FROM_LAMBDA(LambdaRef) ;
     TOF_total_e = (PrimaryFlightPath + SecondaryFlightPath) / VelocityRef ;
@@ -403,9 +403,9 @@ void OwnInit(int argc, char *argv[])
   }
 
   if (MinTOF >= 0.0 && MaxTOF >=0.0)  // TOF range given,
-  { 
+  {
     if(MinE == 0.0 || MaxE == 0.0)    // but not energy range
-    { 
+    {
       if(eGeomOption == VT_DIRECT_GEOM)  // direct geometry
       {
         MinE = 0.001*ENERGY_FROM_V(SecondaryFlightPath / (MaxTOF - TofRef)) - EnergyRef;
@@ -421,7 +421,7 @@ void OwnInit(int argc, char *argv[])
   else if(MinE != 0.0 && MaxE != 0.0)    // energy range given
   {
     if (MinTOF == -1.0 || MaxE == -1.0)  // but not TOF range
-    { 
+    {
       if(eGeomOption == VT_DIRECT_GEOM)  // direct geometry
       {
         MinTOF = TofRef + SecondaryFlightPath / V_FROM_ENERGY(1000*(EnergyRef + MaxE));
@@ -456,7 +456,7 @@ void OwnInit(int argc, char *argv[])
   if(FileNameTOF_do    != NULL) fprintf(LogFilePtr," TOF spectrum file spin-down  : '%s'\n", FileNameTOF_do) ;
   if(FileNameEnergy_do != NULL) fprintf(LogFilePtr," energy spectrum file spin-down: '%s'\n", FileNameEnergy_do) ;
 
-  
+
   fprintf(LogFilePtr, " number of bins       : %4ld     \n", nBins);
   fprintf(LogFilePtr, " primary flight path  : %9.4f m  \n secondary flight path: %9.4f m \n",           PrimaryFlightPath/100.0, SecondaryFlightPath/100.0);
   fprintf(LogFilePtr, " reference wavelength : %9.4f Ang\n time offset          : %9.4f ms\n",           LambdaRef, TimeOffset);
@@ -464,21 +464,21 @@ void OwnInit(int argc, char *argv[])
 
   if(Temperature == 0.0) bBoseF = FALSE ;
   if(bBoseF == FALSE) Temperature = 0.0 ;
-  // if(bBoseF == FALSE) 	fprintf(LogFilePtr,"\nnot divided by Bose-factor") ;
-  // if(bBoseF == TRUE) 	fprintf(LogFilePtr,"\ndivided by Bose-factor") ;
+  // if(bBoseF == FALSE)   fprintf(LogFilePtr,"\nnot divided by Bose-factor") ;
+  // if(bBoseF == TRUE)   fprintf(LogFilePtr,"\ndivided by Bose-factor") ;
 
   /* calculates alpha, beta coeff. for TOF boundary calculation */
   alpha = 1 / (1 - SlopeBins) ;
   beta = 0. ;
 
-  for (k=0;k<nBins;k++) 
+  for (k=0;k<nBins;k++)
     beta += pow(alpha, k) ;
   beta = (MaxTOF - pow(alpha, nBins) * MinTOF) / beta ;
 
-  fprintf(LogFilePtr,	"computed reference values:\n");
+  fprintf(LogFilePtr,  "computed reference values:\n");
   fprintf(LogFilePtr, " reference energy     : %9.4f meV\n velocity             : %9.4f cm/ms\n", EnergyRef, VelocityRef);
-	fprintf(LogFilePtr,	" effective TOF range  : %9.4f  - %9.4f ms\n"                             , MinTOF, MaxTOF);
-	fprintf(LogFilePtr,	" TOF_total_elast      : %9.4f ms \n TOF_fixed_energy_side: %9.4f ms\n"   , TOF_total_e, TofRef);
+  fprintf(LogFilePtr,  " effective TOF range  : %9.4f  - %9.4f ms\n"                             , MinTOF, MaxTOF);
+  fprintf(LogFilePtr,  " TOF_total_elast      : %9.4f ms \n TOF_fixed_energy_side: %9.4f ms\n"   , TOF_total_e, TofRef);
   fprintf(LogFilePtr, " energy transfer      : %9.4f  - %9.4f meV\n"                            , MinE,   MaxE) ;
 
   AngleCntr  *= M_PI / 180. ;
@@ -496,9 +496,9 @@ void InitArrays()
   long l=0;    // index of spin
 
   /* calculates TOF channel boundaries and init p_TOF*/
-  t[0] = MinTOF ; 
+  t[0] = MinTOF ;
   e[0] = MinE ;
-  prob_t[0][0] = prob_e[0][0] = 0.0; 
+  prob_t[0][0] = prob_e[0][0] = 0.0;
   nTrjT[0][0]  = nTrjE[0][0] = 0;
 
   for(j=1; j<=nBins; j++)
@@ -507,7 +507,7 @@ void InitArrays()
     e[j] = e[j-1] + (MaxE - MinE) / nBins ;
     for (l=0; l<2; l++)
     {
-    prob_t[l][j] = prob_e[l][j] = 0.0; 
+    prob_t[l][j] = prob_e[l][j] = 0.0;
     nTrjT[l][j] = nTrjE[l][j] = 0;
     }
   }
@@ -519,7 +519,7 @@ void InitArrays()
 /*******************************************************/
 void OwnCleanup()
 {
-	return;
+  return;
 }/* End OwnCleanup */
 
 
@@ -529,10 +529,10 @@ void OwnCleanup()
 void UpdateMon(long iBnch, long nBunches, char FileNameEnergy_up [256], char FileNameTOF_up [256], int jj)
 {
   long   iBin=0;                 // index of bins in x-axix and for main monitor
-  double BinCtr=0.0,             // center of the current bin 
+  double BinCtr=0.0,             // center of the current bin
          sigma=0.0,              // standard deviation of the intensity in the bin
          f_norm =1.0;            // ratio of total to processed bunches after treating current bunch
-  FILE	*pFileTOF=NULL,          // pointers to output files
+  FILE  *pFileTOF=NULL,          // pointers to output files
         *pFileEnergy=NULL;
 
   // open files
@@ -541,7 +541,7 @@ void UpdateMon(long iBnch, long nBunches, char FileNameEnergy_up [256], char Fil
   if (FileNameEnergy_up!=NULL)
     pFileEnergy = OpenOutputFile(FileNameEnergy_up, FALSE, "wt");
 
-  // write spectra 
+  // write spectra
   if (pFileTOF != NULL)
   {
     WriteHeader1DB(pFileTOF, TRUE, "intensity", ANY_COLOR, iBnch, nBunches, nBins, TotIntTOF[jj], nTrjTotT[jj],
@@ -553,13 +553,13 @@ void UpdateMon(long iBnch, long nBunches, char FileNameEnergy_up [256], char Fil
       f_norm =1.0;
 
     for (iBin = 0; iBin < nBins; iBin++)
-    {	
+    {
       BinCtr = (t[iBin]+t[iBin+1])/2.0;
 
-      if (nTrjT[jj][iBin]==0) 
+      if (nTrjT[jj][iBin]==0)
         sigma = 0.0;
       else
-        sigma = prob_t[jj][iBin]/sqrt((double)nTrjT[jj][iBin]); 
+        sigma = prob_t[jj][iBin]/sqrt((double)nTrjT[jj][iBin]);
 
       fprintf(pFileTOF,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*prob_t[jj][iBin], f_norm*sigma, nTrjT[jj][iBin]);
     }
@@ -577,13 +577,13 @@ void UpdateMon(long iBnch, long nBunches, char FileNameEnergy_up [256], char Fil
       f_norm =1.0;
 
     for (iBin = 0; iBin < nBins; iBin++)
-    {	
+    {
       BinCtr = (e[iBin]+e[iBin+1])/2.0;
 
-      if (nTrjE[jj][iBin]==0) 
+      if (nTrjE[jj][iBin]==0)
         sigma = 0.0;
       else
-        sigma = prob_e[jj][iBin]/sqrt((double)nTrjE[jj][iBin]); 
+        sigma = prob_e[jj][iBin]/sqrt((double)nTrjE[jj][iBin]);
 
       fprintf(pFileEnergy,"%10.4f  %12.5e %12.5e  %7ld\n", BinCtr,  f_norm*prob_e[jj][iBin], f_norm*sigma, nTrjE[jj][iBin]);
     }

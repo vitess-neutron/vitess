@@ -1,0 +1,13 @@
+bkgdextcurve
+dyninfoutils
+elincscatter
+extd_utils
+factories
+freegas
+interfaces
+lcbragg
+powderbragg
+sab
+sabscatter
+scbragg
+utils

@@ -41,7 +41,6 @@ gSet cap_dt3_gt {}
 gSet fz_5 {10}
 gSet outcol_7lambda {1}
 gSet outcol_7tof {1}
-gSet headerColor {#0b4e66}
 gSet opc_dt9_gt {1}
 gSet npl_gt {}
 gSet dist_dt10_gt {0}
@@ -122,7 +121,6 @@ gSet cap_dt10_gt {}
 gSet instrumentfile {flippergradient}
 gSet number_of_bunches_1 {1}
 gSet chgampl_5 {sinus}
-gSet entryColor {#aedace}
 gSet chgamplgui_5 {linear}
 gSet nac_dt3_gt {1}
 gSet gravity_ {on}
@@ -131,7 +129,6 @@ gSet cph_dt3_gt {}
 gSet ox_5 {10}
 gSet min_wavelength_1 {1}
 gSet cap_dt9_gt {}
-gSet buttonColorFont {white}
 gSet bdia_gt {4.5}
 gSet utrcfunction_1 {}
 gSet dbc_gt {28.0}

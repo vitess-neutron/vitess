@@ -1,0 +1,70 @@
+sesans_field:
+  executable: "sesans_field"
+  label: "sesans_field"
+  category: "magnetic_field"
+
+  parameters:
+  - name: "Title_Field"
+    type: "title"
+    label: "Field range and strength"
+  - name: "sf_bf"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "field range file"
+    tooltip: "Input file giving the range of the magnetic field"
+    default: "field.dat"
+    column: 0
+    prefix: "-P"
+  - name: "sf_mx"
+    type: "float"
+    label: "magnetic field X"
+    unit: "Gs"
+    tooltip: "x component of the magnetic field in Gauss"
+    default: 0
+    column: 0
+    prefix: "-F"
+  - name: "sf_my"
+    type: "float"
+    label: "magnetic field Y"
+    unit: "Gs"
+    tooltip: "y component of the magnetic field in Gauss"
+    default: 0
+    column: 1
+    prefix: "-G"
+  - name: "sf_mz"
+    type: "float"
+    label: "magnetic field Z"
+    unit: "Gs"
+    tooltip: "z component of the magnetic field in Gauss"
+    default: 100
+    column: 2
+    prefix: "-H"
+
+  - name: "Title_Frame"
+    type: "title"
+    label: "Output frame"
+  - name: "sf_ox"
+    type: "float"
+    label: "output X"
+    unit: "cm"
+    tooltip: "x position of the output frame (in the input frame)"
+    default: 50
+    column: 0
+    prefix: "-q"
+  - name: "sf_oy"
+    type: "float"
+    label: "output Y"
+    unit: "cm"
+    tooltip: "y position of the output frame (in the input frame)"
+    default: 0
+    column: 1
+    prefix: "-r"
+  - name: "sf_oz"
+    type: "float"
+    label: "output Z"
+    unit: "cm"
+    tooltip: "z position of the output frame (in the input frame)"
+    default: 0
+    column: 2
+    prefix: "-s"

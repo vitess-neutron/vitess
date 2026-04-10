@@ -1,0 +1,107 @@
+frame:
+  executable: "frame"
+  label: "frame"
+
+  parameters:
+  - name: "Title_1"
+    type: "title"
+    label: "Transformation"
+  - name: "eSequence"
+    <<: *VtTfmnSeq
+    label: "sequence"
+    tooltip: "sequence of Rotation, Translation, and Mirroring"
+    column: 0
+    options: ["VT_RTM","VT_RMT","VT_TRM","VT_TMR","VT_MTR","VT_MRT"]
+    default: "VT_RTM"
+    prefix: "-S"
+    required: true
+
+  - name: "Title_2"
+    type: "title"
+    label: "Rotation"
+  - name: "RotX"
+    type: "float"
+    label: "rot. angle about x axis"
+    unit: "deg"
+    tooltip: "rotation angle about Z FIRST rotation [deg] NOTE: 90deg means X+  rotated on Y+"
+    column: 0
+    default: 0.0
+    prefix: "-A"
+    required: false
+  - name: "RotY"
+    type: "float"
+    label: "rot. angle about y axis"
+    unit: "deg"
+    tooltip: "rotation angle about Y SECOND rotation [deg] NOTE: 90deg means X+ rotated on Z+"
+    column: 1
+    default: 0.0
+    prefix: "-V"
+    required: false
+  - name: "RotZ"
+    type: "float"
+    label: "rot. angle about z axis"
+    unit: "deg"
+    tooltip: "rotation angle about X (beam axis) THIRD rotation [deg] NOTE: 90deg means Y+  rotated on Z+"
+    column: 2
+    default: 0.0
+    prefix: "-H"
+    required: false
+
+  - name: "Title_3"
+    type: "title"
+    label: "Translation"
+  - name: "TranslX"
+    type: "float"
+    label: "x"
+    unit: "cm"
+    tooltip: "x component of translation vector"
+    column: 0
+    default: 0.0
+    prefix: "-x"
+    required: false
+  - name: "TranslY"
+    type: "float"
+    label: "y"
+    unit: "cm"
+    tooltip: "y component of translation vector"
+    column: 1
+    default: 0.0
+    prefix: "-y"
+    required: false
+  - name: "TranslZ"
+    type: "float"
+    label: "z"
+    unit: "cm"
+    tooltip: "z component of translation vector"
+    column: 2
+    default: 0.0
+    prefix: "-z"
+    required: false
+
+  - name: "Title_4"
+    type: "title"
+    label: "Mirror"
+  - name: "bMirrX"
+    type: "bool"
+    label: "mirror at yz plane"
+    tooltip: "mirror x axis (plane yz)"
+    column: 0
+    default: false
+    prefix: "-i"
+    required: false
+  - name: "bMirrY"
+    type: "bool"
+    label: "mirror at xz plane"
+    tooltip: "mirror y axis (plane xz)"
+    column: 1
+    default: false
+    prefix: "-j"
+    required: false
+  - name: "bMirrZ"
+    type: "bool"
+    label: "mirror at xy plane"
+    tooltip: "mirror z axis (plane xy)"
+    column: 2
+    default: false
+    prefix: "-k"
+    required: false

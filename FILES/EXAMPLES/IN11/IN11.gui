@@ -27,7 +27,6 @@ gSet d2_13 {0}
 gSet delay_gt {0.0}
 gSet distance_3 {15}
 gSet setsimpar1_ {test1010A.inf}
-gSet entryColor {#aedace}
 gSet pfile_18 {polariser_SM.par}
 gSet timevalend_10 {1.e10}
 gSet timevalend_14 {1.e10}

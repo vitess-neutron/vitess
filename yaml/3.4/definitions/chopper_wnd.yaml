@@ -1,0 +1,51 @@
+chopper_wnd: &chopper_wnd
+  type: "array"
+  min: 1
+  max: 10
+  label: "chopper_wnd"
+  parameters:
+  - name: "WndPos"
+    type: "float"
+    label: "window position [deg]"
+    tooltip: "angular position of the window center"
+    default: 0.0
+    min: -360.0
+    max: 360.0
+    column: 0
+    prefix: "-p"
+  - name: "WndHeight"
+    type: "float"
+    label: "window height [cm]"
+    tooltip: "window height from the edge of the chopper disk to the bottom of the window "
+    default: 10.0
+    min: 0.0001
+    column: 1
+    prefix: "-h"
+  - name: "WndWidth"
+    type: "float"
+    label: "window width [deg]"
+    tooltip: "angular opening of the chopper window"
+    default: 90.0
+    min: 0.0001
+    max: 360.0
+    column: 2
+    prefix: "-w"
+
+  - name: "LeftDev"
+    type: "float"
+    label: "left side deviation [deg]"
+    tooltip: "Angular deviation of the left window side (see graph in help manual)  a positive value indicates that the window widens"
+    default: 0.0
+    min: -90.0
+    max: 90.0
+    column: 0
+    prefix: "-l"
+  - name: "RightDev"
+    type: "float"
+    label: "right side deviation [deg]"
+    tooltip: "Angular deviation of the right window side (see graph in help manual)  a positive value indicates that the window widens"
+    default: 0.0
+    min: -90.0
+    max: 90.0
+    column: 1
+    prefix: "-r"

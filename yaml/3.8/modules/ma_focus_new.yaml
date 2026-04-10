@@ -1,0 +1,162 @@
+ma_focus_new:
+  executable: "monochromator"
+  label: "ma_focus_new"
+  category: "monochr_analyser"
+
+  parameters:
+  - <<: *mono_option
+    default: 2
+  - *mono_parfile
+  - *mono_mode
+
+  - *mono_trns
+  - *mono_dist
+
+  - *mono_Title_Crystal
+  - *mono_svert
+  - *mono_shoriz
+  - *mono_dspread
+  - *mono_refl
+
+  - *mono_Title_Rotation
+  - *mono_mo_move
+  - *mono_mo_rndt
+  - *mono_mo_freq
+  - *mono_mo_phas
+  - *mono_mo_ampl
+  - *mono_mo_nwnd
+  - *mono_mo_wdth
+  - *mono_mo_rad
+
+  - *mono_Title_Attenuation
+  - *mono_mo_scat
+  - *mono_mo_abs
+  - *mono_reprate
+
+  - *mono_Title_Focusing
+  - <<: *mono_focus_file
+    tooltip: "External focus geometry file to be written"
+
+  - name: "fopt"
+    <<: *VtMonoFocus
+    label: "focusing option"
+    tooltip: "choose the focusing geometry. For details see Help|monochromator"
+    column: 0
+    options: ["NO_FOCUSING", "CONST_LMBD", "SPHERICAL", "VERT_CYL", "DBL_FOC"]
+    default: "NO_FOCUSING"
+    prefix: "-g"
+    required: true
+  - name: "cehnum"
+    type: "int"
+    label: "number of CE horizontal"
+    tooltip: "The number of columns of the crystal element matrix. 1 for 'vert. cylinder'"
+    default: 10
+    column: 0
+    prefix: "-H"
+    min: 1
+    required: true
+  - name: "cevnum"
+    type: "int"
+    label: "number of CE vertical"
+    tooltip: "The number of rows of the crystal element matrix."
+    column: 1
+    min: 1
+    default: 18
+    prefix: "-V"
+    required: true
+  - name: "celnum"
+    type: "int"
+    label: "number of CE layers"
+    tooltip: "The number of crystal layers in a stack (along the incoming beam)"
+    column: 2
+    min: 1
+    default: 1
+    prefix: "-I"
+    required: true
+  - name: "chradius"
+    type: "float"
+    label: "radius hor"
+    unit: "cm"
+    tooltip: "Radius of focusing in horizontal direction for a double focusing monochromator."
+    column: 0
+    min: 0
+    default: 200
+    prefix: "-s"
+    required: true
+  - name: "cradius"
+    type: "float"
+    label: "radius vert"
+    unit: "cm"
+    tooltip: "lambda-focusing: distance from the sample center to the bottom row of the CE-matrix. spherical: radius of the sphere vert. cylinder: radius of the vertical cylinder double focusing: Radius of focusing in vertical direction."
+    column: 1
+    default: 200
+    min: 0
+    prefix: "-r"
+    required: true
+  - name: "cangle"
+    type: "float"
+    label: "angle vert"
+    unit: "deg"
+    tooltip: "Angular offset  of the bottom row of the CE-matrix  relative to the monochromator center. This parameter is not used for 'double focusing', (where a vertically symmetric arrangement is assumed)."
+    column: 2
+    min: -90.0
+    max: 90.0
+    default: 0
+    prefix: "-a"
+    required: true
+  - name: "spclayer"
+    type: "float"
+    label: "spacing of layers"
+    unit: "cm"
+    tooltip: "Only if number of layers > 1: Distance between two sequential crystal layers along the stacking direction (measured from center to center)"
+    column: 0
+    min: 0
+    default: 0.0
+    prefix: "-o"
+    required: true
+  - name: "decllayer"
+    type: "float"
+    label: "max. layer declination"
+    unit: "deg"
+    tooltip: "Only if number of layers > 1: Max. hor. deviation DelZeta of the CE from the mean orientation Zeta. Values for the layers are set in [Zeta-DelZeta, Zeta+DelZeta]"
+    column: 1
+    default: 0.0
+    prefix: "-J"
+    required: true
+  - name: "gaphor"
+    type: "float"
+    label: "gap between columns"
+    unit: "cm"
+    tooltip: "Horizontal distance between columns of crystal elements (in the equatorial plane)"
+    column: 0
+    min: 0
+    default: 0.0
+    prefix: "-h"
+  - name: "gapvert"
+    type: "float"
+    label: "gap between rows"
+    unit: "cm"
+    tooltip: "Vertical distance between rows of crystal elements"
+    column: 1
+    min: 0
+    default: 0.0
+    prefix: "-v"
+    required: true
+  - name: "devhor"
+    type: "float"
+    label: "orient. dev. hor"
+    unit: "deg"
+    tooltip: "Horizontal deviation from exact crystal orientation. Values in [-0.5*deviation,0.5*deviation]"
+    column: 0
+    default: 0.0
+    prefix: "-t"
+    min: 0
+  - name: "devvert"
+    type: "float"
+    label: "orient. dev. vert"
+    unit: "deg"
+    tooltip: "Vertical deviation from exact crystal orientation. Values in [-0.5*deviation,0.5*deviation]"
+    column: 1
+    default: 0.0
+    prefix: "-T"
+    required: true

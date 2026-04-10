@@ -3,7 +3,7 @@
 ##                                                                            ##
 ##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
 ##                                                                            ##
-##  Copyright 2015-2024 NCrystal developers                                   ##
+##  Copyright 2015-2025 NCrystal developers                                   ##
 ##                                                                            ##
 ##  Licensed under the Apache License, Version 2.0 (the "License");           ##
 ##  you may not use this file except in compliance with the License.          ##
@@ -19,18 +19,56 @@
 ##                                                                            ##
 ################################################################################
 
-[build-system]
-requires = [
-    "setuptools>=42",
-    "scikit-build>=0.13",
-    "cmake>=3.18",
-    "numpy",
-    'importlib_metadata; python_version < "3.8"',
-]
-build-backend = "setuptools.build_meta"
+#Quick and dirt monolithic package, combining the ncrystal_core, ncrystal_python
+#and ncrystal_metapkg subdirs into a single ncrystal package.
 
-[tool.cibuildwheel]
-test-command = [
-  "python3 -mNCrystal.test all",
-  "nctool --test",
+[project]
+name = "ncrystal"
+version = "4.2.10"
+requires-python = ">=3.8"
+dependencies = [ 'numpy>=1.22' ]
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+  { name="NCrystal developers (Thomas Kittelmann, Xiao Xiao Cai)" },
 ]
+description = "Package bundling both ncrystal-core and ncrystal-python (for developer usage only)."
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+]
+
+[project.urls]
+"Homepage" = "https://mctools.github.io/ncrystal/"
+"Bug Tracker" = "https://github.com/mctools/ncrystal/issues"
+
+[build-system]
+requires = ["scikit-build-core>=0.10"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+logging.level = "INFO"
+minimum-version = "build-system.requires"
+wheel.packages = ['skbld_autogen/NCrystal','ncrystal_core/skbld_autogen/_ncrystal_core_monolithic']
+#TODO: Issue is that inclusion picks up stray files in repo, and exclude does
+#      not allow us to ignore emacs backup files *~.
+sdist.include = ['ncrystal_core/skbld_autogen/','skbld_autogen/NCrystal/*.py']
+sdist.exclude = [
+              '/ncrystal_python/','/ncrystal_pypluginmgr/','/ncrystal_verify/',
+              '/tests/','/.github/','/.gitignore','/docs/','/data/','/devel/'
+]
+sdist.cmake = true
+wheel.py-api = "py3" # as close to "noarch" as possible (ABI3)
+
+[project.scripts]
+ncrystal-config = "_ncrystal_core_monolithic.info:_ncrystal_config_cli_wrapper"
+nctool = "NCrystal._cli_nctool:main"
+ncrystal_cif2ncmat = "NCrystal._cli_cif2ncmat:main"
+ncrystal_endf2ncmat = "NCrystal._cli_endf2ncmat:main"
+ncrystal_hfg2ncmat = "NCrystal._cli_hfg2ncmat:main"
+ncrystal_mcstasunion = "NCrystal._cli_mcstasunion:main"
+ncrystal_ncmat2cpp = "NCrystal._cli_ncmat2cpp:main"
+ncrystal_ncmat2endf = "NCrystal._cli_ncmat2endf:main"
+ncrystal_ncmat2hkl = "NCrystal._cli_ncmat2hkl:main"
+ncrystal_vdos2ncmat = "NCrystal._cli_vdos2ncmat:main"
+ncrystal_verifyatompos = "NCrystal._cli_verifyatompos:main"

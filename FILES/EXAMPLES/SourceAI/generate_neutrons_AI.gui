@@ -140,7 +140,6 @@ gSet separateW4 {}
 gSet visM1 {source_ai}
 gSet mod98 {--inactive--}
 gSet visM2 {mon1_lambda}
-gSet entryColor {white}
 gSet mod99 {--inactive--}
 gSet visM3 {--inactive--}
 gSet visM4 {--inactive--}
@@ -157,10 +156,8 @@ gSet number_ybins_3 {100}
 gSet filtZMax_2 {}
 gSet gravity_ {on}
 gSet number_bins_2 {100}
-gSet buttonColorFont {black}
 gSet withbin_2 {no}
 gSet visM10 {--inactive--}
-gSet headerColor {#0b4e66}
 gSet visM11 {--inactive--}
 gSet visM12 {--inactive--}
 gSet visM13 {--inactive--}
@@ -183,7 +180,6 @@ gSet visM30 {--inactive--}
 gSet visM29 {--inactive--}
 gSet visM31 {--inactive--}
 gSet visM32 {--inactive--}
-gSet fgColor {black}
 gSet visM33 {--inactive--}
 gSet visM34 {--inactive--}
 gSet separate1 {here}

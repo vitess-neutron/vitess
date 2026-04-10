@@ -16,7 +16,7 @@
 #include <math.h>
 #include <iostream>
 
-extern "C" 
+extern "C"
 {
  #include "general.h"
  #include "init.h"
@@ -27,7 +27,7 @@ extern "C"
 #include "mathmatrix.h"
 
 
-class Mon2D 
+class Mon2D
 {
  public:
   McCompID eModule;   // defines type of module
@@ -59,9 +59,9 @@ class Mon2D
   double     filterVarMin2;    // -U  maximum value of parameter 2, additional filter for the monitor
   double     filterVarMax1;    // -v  minimum value of parameter 1, additional filter for the monitor
   double     filterVarMax2;    // -V  maximum value of parameter 2, additional filter for the monitor
-  
+
   int    analysePol;         // -P  switched on if polarisation analysis desired
-  MathVector* 
+  MathVector*
     polAnalysisVector;       // -r -s -t  polarisation analysis vector
 
   // input parameters that are not (yet) implemented
@@ -69,15 +69,15 @@ class Mon2D
   // int colour;      // if switched on, display only neutrons of specific colour
 
   // Variables determined from input parameters or trajectory data
-  MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis 
+  MathMatrix* polAnalysisRotMatrix;  // rotation matrix for polarisation analysis
 
   FILE*  fMonitor;             // pointer to output file
-                           
-  long   nBunches;              // number of bunches started 
+
+  long   nBunches;              // number of bunches started
   long   nTrajTot;             // total number of trajectories within monitor limits
   double IntTot;               // total intensity within monitor limits
-                           
-  double xBinSize;             // size of x bins 
+
+  double xBinSize;             // size of x bins
   double yBinSize;             // size of y bons
 
   // arrays for data storage

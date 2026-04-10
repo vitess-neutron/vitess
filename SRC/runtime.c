@@ -40,39 +40,39 @@ int main(int argc, char **argv)
   Init(argc, argv, _eModule);
   PrintModuleName(_eModule, "1.1");
   OwnInit(argc, argv);
- 
+
   bVisInstalled = FALSE;
   bBlowUp       = FALSE;
- 
+
   DECLARE_ABORT;
-  
+
   // loop over trajectories
   // ----------------------
   /* Get the neutrons from the file */
   while((ReadNeutrons())!= 0)
   {
-    CHECK;    
-    for(i=0; i<NumNeutGot; i++) 
+    CHECK;
+    for(i=0; i<NumNeutGot; i++)
     {
       CHECK;
 
       WriteNeutron(&(InputNeutrons[i]));
     }
   }
-  
+
   /* Do module specific cleanups */
  my_exit:
   OwnCleanup();
 
   end = time(NULL);
   seconds = ((double)end - (double)start);
-  fprintf(LogFilePtr, 
+  fprintf(LogFilePtr,
          "Seconds   : %12.1f\n"
          "Minutes   : %12.3f\n"
          "Hours     : %12.3f\n"
-         "Days      : %12.3f\n\n", 
+         "Days      : %12.3f\n\n",
          seconds, seconds/60., seconds/3600., seconds/86400.);
-  
+
   /* Do the general cleanup */
   Cleanup(0.0,0.0,0.0, 0.0,0.0);
 
@@ -80,16 +80,16 @@ int main(int argc, char **argv)
 }
 
 
-void  OwnInit(int argc, char *argv[]) 
+void  OwnInit(int argc, char *argv[])
 {
   int i=0;
 
-  for(i=1; i<argc; i++) 
-  { if(argv[i][0]!='+') 
+  for(i=1; i<argc; i++)
+  { if(argv[i][0]!='+')
     { switch(argv[i][1])
-      { 
+      {
       /*case 'A':
-          CaptArea = atof(&argv[i][2]);  
+          CaptArea = atof(&argv[i][2]);
           break;*/
         default:
           fprintf(LogFilePtr,"ERROR: unkown command option: %s\n",argv[i]);
@@ -106,4 +106,3 @@ void OwnCleanup()
 {
   return;
 }
-

@@ -1,0 +1,140 @@
+mon2_z_divz:
+  executable: "mon2_posdiv"
+  label: "mon2_z_divz"
+  category: "monitor"
+
+  parameters:
+  - name: "index_yz"
+    label: "analysis direction"
+    tooltip: "the quantization direction is represented by a vector in cartesian coordinates: Y_AXIS  Z_AXIS"
+    hidden: true
+    <<: *VtAxis
+    options: ["Y_AXIS", "Z_AXIS"]
+    default: "Z_AXIS"
+    prefix: "-q"
+
+  - name: "sMonFile"
+    type: "file"
+    plottable: true
+    editable: false
+    label: "monitor file"
+    tooltip: "The monitor output file contains intensity, its variation and the number of trajectories as a function of the chosen parameter"
+    default: "z_divz.dat"
+    prefix: "-O"
+
+  - name: "min_y"
+    type: "float"
+    label: "minimal z-value [cm]"
+    tooltip: ""
+    default: -10
+    column: 0
+    prefix: "-w"
+
+  - name: "min_z"
+    type: "float"
+    label: "minimal divz-value [deg]"
+    tooltip: ""
+    default: -3
+    column: 1
+    prefix: "-h"
+
+  - name: "max_y"
+    type: "float"
+    label: "maximal z-value [cm]"
+    tooltip: ""
+    default: 10
+    column: 0
+    prefix: "-W"
+
+  - name: "max_z"
+    type: "float"
+    label: "maximal divz-value [deg]"
+    tooltip: ""
+    default: 3
+    column: 1
+    prefix: "-H"
+
+  - name: "number_ybins"
+    type: "int"
+    label: "number of z-bins"
+    tooltip: "number of bins within the vertical position range, max. 1000"
+    default: 100
+    column: 0
+    prefix: "-y"
+    min: 1
+    max: 1000
+
+  - name: "number_zbins"
+    type: "int"
+    label: "number of divz-bins"
+    tooltip: "number of bins within the vertical divergence range, max. 1000"
+    default: 100
+    column: 1
+    prefix: "-z"
+    min: 1
+    max: 1000
+
+  - name: "bProbWeight"
+    type: "bool"
+    label: "probability weight"
+    tooltip: "yes: the beam intensity is monitored  no: the number of trajectories is monitored"
+    default: yes
+    column: 1
+    prefix: "-p"
+  - name: "bExcl"
+    type: "bool"
+    label: "exclusive counts"
+    tooltip: "yes: only trajectories meeting the monitor conditions are written no: all are written"
+    default: no
+    column: 2
+    prefix: "-e"
+  - name: "eFormat"
+    label: "file format"
+    tooltip: "file format for output: matrix: 2D matrix   xyz: 3 columns x, y, f(x,y);  compact: only 1 line of header, minimal number of digits.  integer: integer numbers rounded from calculated intensity"
+    <<: *VtFormat2D
+    options: ["MATRIX","XYZ","MATR_CMPT","XYZ_CMPT","MATR_INT"]
+    default: "MATRIX"
+    column: 0
+    prefix: "-F"
+
+  - name: "Title_Filter"
+    type: "title"
+    label: "Filter selection"
+  - name: "FilterMinLambda"
+    type: "float"
+    label: "lambda min [Ang]"
+    tooltip: "minimal wavelength to be taken into account"
+    default: -1.0
+    column: 0
+    prefix: "-l"
+  - name: "FilterMaxLambda"
+    type: "float"
+    label: "lambda min [Ang]"
+    tooltip: "maximal wavelength to be taken into account"
+    default: -1.0
+    column: 1
+    prefix: "-L"
+  - name: "FilterMinY"
+    type: "float"
+    label: "filter Y pos min [cm]"
+    tooltip: "minimal horizontal position to be taken into account"
+    column: 0
+    prefix: "-u"
+  - name: "FilterMaxY"
+    type: "float"
+    label: "filter Y pos max [cm]"
+    tooltip: "maximal horizontal position to be taken into account"
+    column: 1
+    prefix: "-U"
+  - name: "FilterMinZ"
+    type: "float"
+    label: "filter Z pos min [cm]"
+    tooltip: "minimal vertical position to be taken into account"
+    column: 0
+    prefix: "-v"
+  - name: "FilterMaxZ"
+    type: "float"
+    label: "filter Z pos max [cm]"
+    tooltip: "maximal vertical position to be taken into account"
+    column: 1
+    prefix: "-V"

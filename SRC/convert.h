@@ -86,6 +86,12 @@ EssModVsn ModVsn_Txt2ID(const char* sText);
 void      Trace_ID2Txt(char* sText, const VtTrace eID);
 VtTrace   Trace_Txt2ID(const char* sText);
 
+void         WriteAct_ID2Txt(char* sText, const VtWriteAct eID);
+VtWriteAct   WriteAct_Txt2ID(const char* sText);
+
+void         Sampling_ID2Txt(char* sText, const VtSampling eID);
+VtSampling   Sampling_Txt2ID(const char* sText);
+
 void         PrgFormat_ID2Txt(char* sText, const VtPrgFormat eID);
 VtPrgFormat  PrgFormat_Txt2ID(const char* sText);
 
@@ -106,8 +112,8 @@ VtTfmnSeq   TfmnSeq_Txt2ID(const char* sText);
 void        AbsMat_ID2Txt(char* sText, const VtAbsMat eID);
 VtAbsMat    AbsMat_Txt2ID(const char* sText);
 
-void        WndAbs_ID2Txt(char* sText, const VtWndAbs eID);
-VtWndAbs    WndAbs_Txt2ID(const char* sText);
+void        WndMat_ID2Txt(char* sText, const VtWndMat eID);
+VtWndMat    WndMat_Txt2ID(const char* sText);
 
 void        Oscill_ID2Txt(char* sText, const VtOscill eID);
 VtOscill    Oscill_Txt2ID(const char* sText);
@@ -236,4 +242,3 @@ VtAngleSel AngleSel_Txt2ID(const char* sText);
 #endif
 
 #endif
-

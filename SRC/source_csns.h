@@ -14,4 +14,3 @@ double CsnsTotalFU  (const double dTemp,   const short  eModType, const double d
 double CsnsModFU    (const double dLambda, const double dTime,    const double dPosY,    const double dPosZ);
 
 #endif
-

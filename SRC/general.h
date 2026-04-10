@@ -56,7 +56,7 @@ extern "C" {
 # define Vran() gsl_rng_uniform (vit_gsl_rng)
 #endif
 
-    
+
 #include "defines.h"
 
 /******************************/
@@ -99,7 +99,7 @@ double ReflTypical   (            const double Q, const double m);
 double ReflTypicalT  (char* sTxt, const double Q, const double m, const short bPrint);
 double ReflMirrT     (char* sTxt, const double Q, const double m, const double R0,    const double Rm, const double W, const double Qc, const short bPrint);
 int    ReadRofQ      (FILE* pReflFile,                 double* aQ,          double* aR);
-int    NumDataPtsQ   (const double Q);   
+int    NumDataPtsQ   (const double Q);
 int    NumDataPtsM   (const double m,             const double  Qc,   const double  W);
 void   SetReflData   (double* pReflDat,           const double* aQ,   const double* aR, const int nVals);
 double InterpolM     (const double m,             const double* aM,   const double* aR, const int nVals);
@@ -124,6 +124,8 @@ void   MultiplyByScalar(VectorType Vector, const double Scalar);
 void   InitPlane       (Plane*         pPlane);
 void   InitSurface     (SurfaceSecond* pSurface);
 
+double GetKComponent(const double vec[3], double wavelength, VtAxis axis);
+
 /* Basic matrix operation */
 void   Init3x3Matrix     (double Matrix   [3][3]);
 void   InitRotMatrix     (double RotMatrix[3][3]);
@@ -133,11 +135,16 @@ void   FillRMatrixZY     (double RotMatrix[3][3], const double roty, const doubl
 void   CartesianToEulerZY(VectorType Vector, double *roty,  double *rotz);
 void   EulerToCartesianZY(VectorType Vector, double *roty,  double *rotz);
 
+/* open file 'name' and gives pointer back.
+   in case of an opening error, a message is written to the LogFile */
 FILE*  fileOpen          (const char* sName, const char* sMode);
+/* open file 'name' with content 'content' and gives pointer back
+   in case of an opening error, a message is written to the LogFile */
 FILE*  fileOpen2         (const char* sName, const char* sMode, const char* sContent);
 
 void   Error  (const char *text);
 void   Error2 (const char *text1, const char *text2);
+void   Error2F(const char *text,  const double value);
 void   Warning(const char *text);
 void   Note   (const char *text);
 void   Abort  ();
@@ -155,8 +162,8 @@ void   StrgCopy  (char* sCopy, const char* sOrigin, int nLen);
 void   StrgLShift(char* sStr, int kWidth);
 long   StrgScanLF(const char* sStr, double* pTable, const int nMax, const int nStart);
 
-void   GetActDate(char* sDate, short eDateFmt);      // Gets current date from system  
-void   GetActTime(char* sTime);                      // Gets current time from system  
+void   GetActDate(char* sDate, short eDateFmt);      // Gets current date from system
+void   GetActTime(char* sTime);                      // Gets current time from system
 
 void   ChangeSlash(char* pStr);
 void   AddSlash   (char* pStr);
@@ -164,6 +171,4 @@ void   AddSlash   (char* pStr);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-
 #endif
-

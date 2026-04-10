@@ -1,0 +1,51 @@
+mon1_divz:
+  executable: "monitor1"
+  label: "mon1_divz"
+  category: "monitor"
+
+  parameters:
+  - <<: *monitor_eMonPar
+    default: "MON_DIV_Z"
+  - <<: *monitor_sMonFile
+    tooltip: "monitor output file containing intensity as a function of the vertical deviation from straight neutron flight direction [deg]"
+    default: "monitor.mdz"
+    prefix: "-O"
+  - <<: *monitor_sRefFile
+    tooltip: "Reference input file containing data to normalize the monitored divergence spectrum"
+
+  - *monitor_Title_Range
+  - name: "MinDivZ"
+    type: "float"
+    label: "min. vert. divergence"
+    unit: "deg"
+    tooltip: "lower bound value of the monitored vertical divergence negative values: downwards, positive values: upwards"
+    default: 0.0
+    column: 0
+    prefix: "-m"
+    required: true
+  - name: "MaxDivZ"
+    type: "float"
+    label: "max. vert. divergence"
+    unit: "deg"
+    tooltip: "upper bound value of the monitored vertical divergence negative values: downwards, positive values: upwards"
+    column: 1
+    default: 10.0
+    prefix: "-M"
+    required: true
+  - *monitor_nBins
+
+  - *monitor_Title_Opt
+  - *monitor_iColor
+  - *monitor_bAllFile
+
+  - *monitor_bProbWeight
+  - *monitor_bExcl
+  - *monitor_eMonNorm
+
+  - *monitor_Title_Filter
+  - *monitor_FilterMinLambda
+  - *monitor_FilterMaxLambda
+  - *monitor_FilterMinY
+  - *monitor_FilterMaxY
+  - *monitor_FilterMinZ
+  - *monitor_FilterMaxZ

@@ -7,19 +7,20 @@
 /* The free non-commercial use of these routines is granted providing due credit is given to */
 /* the authors.                                                                              */
 /*                                                                                           */
-/*  Modified by Manoshin Sergey in Jan 2001 for include gravity effect                       */	
+/*  Modified by Manoshin Sergey in Jan 2001 for include gravity effect                       */
 /* Significant revision: multiple circular windows (only) window 05.02.01                    */
 /* Include multi circle windows (<100) possibility  07 Feb 2001                              */
 /*                                                                                           */
-/* 1.00  Feb  2001  S. Manoshin     initial version                                          */	
+/* 1.00  Feb  2001  S. Manoshin     initial version                                          */
 /* 1.01  June 2001  K. Lieutenant   SOFTABORT                                                */
 /* 1.02  Jan  2002  K. Lieutenant   reorganisation, center of beam                           */
 /* 2.00  Jun  2003  S. Manoshin     Add material for window frame                            */
 /* 2.10  Mar  2004  S. Manoshin     Add material for inner part of window                    */
-/* 2.21  Jul  2004  S. Manoshin	    Corrected bug for thick window                           */
+/* 2.21  Jul  2004  S. Manoshin      Corrected bug for thick window                          */
 /* 2.22  Dec  2007  K. Lieutenant   Option to use rectangular windows added                  */
 /* 2.23  Aug  2019  K. Lieutenant   tidy up and visualization                                */
 /* 2.24  Mai  2023  K. Lieutenant   correct use of material IDs                              */
+/* 2.25  Mar  2026  K. Lieutenant   use of improved functions in 'bender_inter_data'         */
 /*********************************************************************************************/
 
 #include "init.h"
@@ -33,7 +34,7 @@
 /** Prototypes               **/
 /******************************/
 void  OwnInit    (int argc, char *argv[]);         // reads input parameters and initializes global variables
-short ReadWndFile();                              
+short ReadWndFile();
 void  EvalInput  ();
 void  SetGeometry(char* sColor, int nHoles);       // fills the structure stGeometry for visualization
 
@@ -42,38 +43,38 @@ void  SetGeometry(char* sColor, int nHoles);       // fills the structure stGeom
 /** Global Variables         **/
 /******************************/
 // Input parameters
-VtMultWndShape 
+VtMultWndShape
           eShape=VT_MWND_AUTO;  // -S  [-]  shape of the windows: defined by input file, circular or rectangular
 char*     CollFileName=NULL;    // -I  [-]  file containing the geometry of the windows
 double    Distance=0.0,         // -D  [vm] distance from origin to the window (along the x-axis)  [cm]
           OuterRadius=100.0;    // -r  [cm] radius of the plate
 char     *sTransFileNameO=NULL; // -C  [-]  file describing the transmission of the window frame material
 double    ThicknessO=0.0;       // -t  [cm] thickness of the window frame material
-VtWndAbs  eMaterialO            // -c  [-]  window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
-	         =VT_WABS_IDEAL;      //                                 4 - Eu,        5 - Silicon,   99 - ideal absorber
+VtWndMat  eMaterialO            // -c  [-]  window frame material: 0 - from file, 1 - gadolinium, 2 - cadmium,  3 - Bor10,
+           =VT_WND_IDEAL;      //                                 4 - Eu,        5 - Silicon,   99 - ideal absorber
 char     *sTransFileNameI=NULL; // -m  [-]  file describing the transmission of the material in the open part of the window
-double    ThicknessI=0.0;       // -T  [cm] thickness of the window pane material     
-                                  
+double    ThicknessI=0.0;       // -T  [cm] thickness of the window pane material
+
 // Variables determined from input parameters, files or trajectory data
-Plane	    Endpoint,             //          Planes through window for zero thickness and
+Plane      Endpoint,             //          Planes through window for zero thickness and
           EndPointO,            //          end of the Outer and end of the Inner wall
-	        EndPointI;            //          Endpoint.D: distance to window along x-axis        [cm]
-VtMultWndShape eWinShape[101];              
+          EndPointI;            //          Endpoint.D: distance to window along x-axis        [cm]
+VtMultWndShape eWinShape[101];
 double    winradius [101],      //          radii of circular windows                              [cm]
           ywincenter[101],      //          y coordinates: centers of windows                      [cm]
           zwincenter[101],      //          z coordinates: centers of windows                      [cm]
           winwidth  [101],      //          widths of rectangular windows                          [cm]
           winheight [101];      //          heights of rectangular windows                         [cm]
-                                            
-FILE  *pTransFileO=NULL;                    
-double WavO[MAX_MU],            //          lambda and µ-values and thickness of the frame material 
-       MuO [MAX_MU];                        
+
+FILE  *pTransFileO=NULL;
+double WavO[MAX_MU],            //          lambda and Âµ-values and thickness of the frame material
+       MuO [MAX_MU];
 long   nValFO=0;                //          number of attenuation values in file (for window frame material)
-                                            
+
 short  bPane=FALSE;             //          flag: window pane material exists
-FILE  *pTransFileI=NULL;                    
-double WavI[MAX_MU],            //          lambda and µ-values and thickness of the inner material 
-       MuI [MAX_MU];                        
+FILE  *pTransFileI=NULL;
+double WavI[MAX_MU],            //          lambda and Âµ-values and thickness of the inner material
+       MuI [MAX_MU];
 long   nValFI=0;                //          number of attenuation values in file (for window pane material)
 
 
@@ -82,18 +83,18 @@ long   nValFI=0;                //          number of attenuation values in file
 /******************************/
 int main(int argc, char *argv[])
 {
-	long	  i, j;
-	long 	  NumberOfHoles;
-	long	  key_abs=0;        // key absorb: 1 - absorption,  0 - transmission
+  long    i, j;
+  long     NumberOfHoles;
+  long    key_abs=0;        // key absorb: 1 - absorption,  0 - transmission
 
-	double  DistSquared=0.0;  // distance from the point of impact to the center of window   
-	double  TimeOF=0.0,       // TOF of neutron from origin to window
+  double  DistSquared=0.0;  // distance from the point of impact to the center of window
+  double  TimeOF=0.0,       // TOF of neutron from origin to window
           TOF3  =0.0;       // TOF of neutron to pass through window material
-	double  NewPositionY=0.0, // neutron position in co-ordinate system  rotated by 'rotang'
-          NewPositionZ=0.0; 
-	double  CenterX=0.0,      // center of beam at window
-          CenterY=0.0, 
-          CenterZ=0.0, 
+  double  NewPositionY=0.0, // neutron position in co-ordinate system  rotated by 'rotang'
+          NewPositionZ=0.0;
+  double  CenterX=0.0,      // center of beam at window
+          CenterY=0.0,
+          CenterZ=0.0,
           SumProb=0.0;
   double  VelocityReal=0.0, // velocity of the current neutron
           N_Wavelength,     // wavelength of the current neutron
@@ -104,20 +105,20 @@ int main(int argc, char *argv[])
 
   InitNeutron(&Output);
 
-  // Initialisation and Parameter Input 
+  // Initialisation and Parameter Input
   // -----------------------------------
   _eModule = MCN_WND_MULT;
-  
+
   Init(argc,argv, _eModule);
-  PrintModuleName(_eModule, "2.24");
+  PrintModuleName(_eModule, "2.25");
   OwnInit(argc, argv);
   MsgInit();
   EvalInput();
 
   bVisInstalled = TRUE;
-  if (bVisInstr) 
+  if (bVisInstr)
     bBlowUp = TRUE;
-		
+
   // Read Input data from window file: Number of lines equals number of holes in multiple window
   // -------------------------------------------------------------------------------------------
   NumberOfHoles = ReadWndFile();
@@ -132,38 +133,38 @@ int main(int argc, char *argv[])
     for(i=0; i<NumNeutGot; i++)
     {
       CHECK
-      
+
       // Only write out event if EOB line is found, otherwise process trajectory
       if (IsEOB(&(InputNeutrons[i]))==TRUE)
       {
         WriteNeutron(&(InputNeutrons[i]));
       }
       else
-      { 
+      {
         // Remove neutrons with wrong direction or wavelength
         // --------------------------------------------------
         if (InputNeutrons[i].Vector[0] <= 0.0) continue;
         if (InputNeutrons[i].Wavelength == 0.0) continue;
-        VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength); 
+        VelocityReal = V_FROM_LAMBDA(InputNeutrons[i].Wavelength);
         if (VelocityReal <= 0.0) continue;
-			
+
         // Write intersection point
         // ------------------------
-			  WriteIAP(&InputNeutrons[i], VT_ENTERED);
-			
-        // 	Move neutron to window with or without gravity effect and calculate Time of Flight (ms)
+        WriteIAP(&InputNeutrons[i], VT_ENTERED);
+
+        //   Move neutron to window with or without gravity effect and calculate Time of Flight (ms)
         // -----------------------------------------------------------------------------
         if (keygrav == 1)
           TimeOF = NeutronPlaneIntersectionGrav(&InputNeutrons[i], Endpoint);
         else
           TimeOF = NeutronPlaneIntersection1(&InputNeutrons[i], Endpoint);
 
-			  // Calculate average position
+        // Calculate average position
         // --------------------------
         InputNeutrons[i].Time += TimeOF;
-        CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0]; 
-        CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1]; 
-        CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2]; 
+        CenterX   += InputNeutrons[i].Probability*InputNeutrons[i].Position[0];
+        CenterY   += InputNeutrons[i].Probability*InputNeutrons[i].Position[1];
+        CenterZ   += InputNeutrons[i].Probability*InputNeutrons[i].Position[2];
         SumProb   += InputNeutrons[i].Probability;
 
         // window test
@@ -171,77 +172,87 @@ int main(int argc, char *argv[])
         NewPositionY = InputNeutrons[i].Position[1];
         NewPositionZ = InputNeutrons[i].Position[2];
         DistSquared = NewPositionY*NewPositionY + NewPositionZ*NewPositionZ;
-	      TOF3 = 0.0;
-				
-        if (DistSquared <= OuterRadius*OuterRadius) 
+        TOF3 = 0.0;
+
+        if (DistSquared <= OuterRadius*OuterRadius)
         {
-	        key_abs = 1;
-		
-          for(j=1; j<=NumberOfHoles; j++) 
+          key_abs = 1;
+
+          for(j=1; j<=NumberOfHoles; j++)
           {
             if (eWinShape[j]==VT_MWND_CIRCLE)
-            {	DistSquared =  (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j]) 
+            {  DistSquared =  (NewPositionY - ywincenter[j])*(NewPositionY - ywincenter[j])
                            + (NewPositionZ - zwincenter[j])*(NewPositionZ - zwincenter[j]);
-              if (DistSquared <= winradius[j]*winradius[j]) 
+              if (DistSquared <= winradius[j]*winradius[j])
                 key_abs = 0;
             }
             else
-            {	if (fabs(NewPositionY - ywincenter[j]) < 0.5*winwidth [j]  && 
-                  fabs(NewPositionZ - zwincenter[j]) < 0.5*winheight[j]    ) 
+            {  if (fabs(NewPositionY - ywincenter[j]) < 0.5*winwidth [j]  &&
+                  fabs(NewPositionZ - zwincenter[j]) < 0.5*winheight[j]    )
                 key_abs = 0;
             }
           }
-		
+
           if (key_abs == 1) // absorbed
           {
-            if (eMaterialO == VT_WABS_IDEAL)
+            if (eMaterialO == VT_WND_IDEAL)
               continue;
-				
+
             if (keygrav == 1)
               TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointO);
             else
               TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointO);
-  			
+
             /* Attenuation during pass of window material */
-            N_Wavelength = InputNeutrons[i].Wavelength;    
-            mu = Interpolation(N_Wavelength, eMaterialO, WavO, MuO, nValFO);
+            N_Wavelength = InputNeutrons[i].Wavelength;
+            mu = Interpol(N_Wavelength, WavO, MuO, nValFO);
             if (mu == -10000.0)
             { // sprintf(sBuffer, "Attenuation coefficient of plate material could not be determined for wavelength %6.3f Ang", N_Wavelength);
-              // Error(sBuffer);
               CountMessageID(WNDO_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+              prob = 0.0;     // ideal absorption assumed outside window for wavelenghts out of given range
             }
-            prob = exp(-mu*TOF3*VelocityReal);	
+            else if (mu == 10000.0)
+            { prob = 0.0;
+            }
+            else
+            { prob = exp(-mu*TOF3*VelocityReal);
+            }
             InputNeutrons[i].Probability *= prob;
-            InputNeutrons[i].Time        += TOF3;	
+            InputNeutrons[i].Time        += TOF3;
           }
-	      }
-		
+        }
+
         if (key_abs == 0) // passed through hole or outside plate
         {
-		      /* case of transmission neutron */
+          /* case of transmission neutron */
           if (keygrav == 1)
             TOF3 = NeutronPlaneIntersectionGrav(&InputNeutrons[i] , EndPointI);
           else
             TOF3 = NeutronPlaneIntersection1(&InputNeutrons[i] , EndPointI);
 
-          if (bPane==TRUE && (DistSquared <= OuterRadius*OuterRadius))				 
+          if (bPane==TRUE && (DistSquared <= OuterRadius*OuterRadius))
           {
-	          /* Attenuation during pass of open window material */
-            N_Wavelength = InputNeutrons[i].Wavelength;    
-            mu = Interpolation(N_Wavelength, VT_WABS_FILE, WavI,MuI, nValFI);
+            /* Attenuation during pass of open window material */
+            N_Wavelength = InputNeutrons[i].Wavelength;
+            mu = Interpol(N_Wavelength, WavI, MuI, nValFI);
             if (mu == -10000.0)
             { // sprintf(sBuffer, "Attenuation coefficient of window pane material could not be determined for wavelength %6.3f Ang", N_Wavelength);
-              // Error(sBuffer);
               CountMessageID(WNDI_L_RANGE_TOO_SMALL, InputNeutrons[i].ID);
+              prob = 1.0;     // ideal transmission assumed inside window for wavelenghts out of given range
             }
-            prob = exp(-mu*TOF3*VelocityReal);	
+            else if (mu == 10000.0)
+            { prob = 0.0;
+            }
+            else
+            { prob = exp(-mu*TOF3*VelocityReal);
+            }
             InputNeutrons[i].Probability *= prob;
-            InputNeutrons[i].Time        += TOF3;	
+            InputNeutrons[i].Time        += TOF3;
           }
-        }    	 
-					
-        InputNeutrons[i].Time += (double)TOF3;							
-        InputNeutrons[i].Position[0] = 0.0;	
+        }
+
+        InputNeutrons[i].Time += (double)TOF3;
+        InputNeutrons[i].Position[0] = 0.0;
         Output = InputNeutrons[i];
         WriteNeutron(&Output);
       }
@@ -253,8 +264,8 @@ int main(int argc, char *argv[])
 /******************************************************************************/
 my_exit:
 
-	fprintf(LogFilePtr,"\n Distance between plane x=0 and window plane  %f cm  \n", fabs(Endpoint.D));
-  
+  fprintf(LogFilePtr,"\n Distance between plane x=0 and window plane  %f cm  \n", fabs(Endpoint.D));
+
   if(keygrav == 1)
     fprintf(LogFilePtr,"Gravity is enabled \n");
   else
@@ -266,8 +277,8 @@ my_exit:
   if (SumProb != 0.0)
   {
     CenterX   = CenterX/SumProb;
-    CenterY   = CenterY/SumProb; 
-    CenterZ   = CenterZ/SumProb; 
+    CenterY   = CenterY/SumProb;
+    CenterZ   = CenterZ/SumProb;
     fprintf(LogFilePtr,"Center of beam at the windows: X = %f cm Y = %f cm Z = %f cm \n\n",CenterX, CenterY, CenterZ );
   }
   else
@@ -279,7 +290,7 @@ my_exit:
   SetGeometry("grey", NumberOfHoles);
 
   Cleanup(Max(ThicknessO, ThicknessI)+Distance, 0.0, 0.0, 0.0, 0.0);
-	
+
   return(0);
 }
 
@@ -289,153 +300,140 @@ my_exit:
 /**************************************************************/
 void  OwnInit   (int argc, char *argv[])
 {
-	int i=0,
+  int i=0,
       eMat=-1;        // key for outer material as saved or read from GUI
 
-	for(i=1; i<argc; i++)
-	{
-		if(argv[i][0]!='+') 
-		{
-			switch(argv[i][1])
-			{
-				case 'I':
-					CollFileName=&argv[i][2];
-					break;
+  for(i=1; i<argc; i++)
+  {
+    if(argv[i][0]!='+')
+    {
+      switch(argv[i][1])
+      {
+        case 'I':
+          CollFileName=&argv[i][2];
+          break;
 
-				case 'D':
-					Distance =  atof(&argv[i][2]);
-					break;
-				case 'r':
-					OuterRadius = atof(&argv[i][2]);
-					break;
-				case 'S':
-					eShape = (VtMultWndShape) atoi(&argv[i][2]);  // Shape of the individual apertures: 0 different,  1: circular, 2: rectangular
-					break;
+        case 'D':
+          Distance =  atof(&argv[i][2]);
+          break;
+        case 'r':
+          OuterRadius = atof(&argv[i][2]);
+          break;
+        case 'S':
+          eShape = (VtMultWndShape) atoi(&argv[i][2]);  // Shape of the individual apertures: 0 different,  1: circular, 2: rectangular
+          break;
 
-				case 'c':
+        case 'c':
           eMat = atoi(&argv[i][2]);      // Material of window frame: 0 - from file, 1 - gadolinium, 2 - cadmium, 3 -Bor10, 4 - Eu, 5 - Silicon, 6 - ideal absorber
           if (eMat==6)
-            eMaterialO = VT_WABS_IDEAL;  // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Interpolation()')
+            eMaterialO = VT_WND_IDEAL;   // inconsistency: value '6' used for vacuum in 'bender' und 'bender_inter_data' (i.e. for 'Attenuation()')
           else                           // and for ideal absorption here, in 'grid' and 'window'
-				    eMaterialO = (VtWndAbs) eMat;
+            eMaterialO = (VtWndMat) eMat;
           break;
-				case 'C':
-					sTransFileNameO=&argv[i][2]; 
-					break;
-				case 'm':
-					sTransFileNameI=&argv[i][2]; 
-					break;
-							
-				case 't':
-					ThicknessO = atof(&argv[i][2]);
-					break;
-				case 'T':
-					ThicknessI = atof(&argv[i][2]);
-					break;
+        case 'C':
+          sTransFileNameO=&argv[i][2];
+          break;
+        case 'm':
+          sTransFileNameI=&argv[i][2];
+          break;
 
-				default:
-					fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
-					exit(-1);
-					break;
-			}
-		}
-	}
-  
+        case 't':
+          ThicknessO = atof(&argv[i][2]);
+          break;
+        case 'T':
+          ThicknessI = atof(&argv[i][2]);
+          break;
+
+        default:
+          fprintf(LogFilePtr,"ERROR: unknown commandline option: %s\n",argv[i]);
+          exit(-1);
+          break;
+      }
+    }
+  }
+
   Endpoint.A =  1.0;
   Endpoint.B =  0.0;
   Endpoint.C =  0.0;
   Endpoint.D = -1.0* Distance;
-	
+
   EndPointI.A =  1.0;
   EndPointI.B =  0.0;
   EndPointI.C =  0.0;
   EndPointI.D = -1.0*(Distance + ThicknessI);
-	
+
   EndPointO.A =  1.0;
   EndPointO.B =  0.0;
   EndPointO.C =  0.0;
-  EndPointO.D = -1.0*(Distance + ThicknessO);	
+  EndPointO.D = -1.0*(Distance + ThicknessO);
 }
-				
-					
+
+
 /*******************************************************/
 /** Reads the structure stGeometry for visualization  **/
 /*******************************************************/
 short ReadWndFile()
 {
-	char  sLine[256];
-	short j, Nholes;            // index over holes and number of holes
-	FILE  *coll_file;
+  char  sLine[256];
+  short j, Nholes;            // index over holes and number of holes
+  FILE  *coll_file;
 
   for(j=0; j<=100; j++)
   {
-    ywincenter[j] = 0.0; 
+    ywincenter[j] = 0.0;
     zwincenter[j] = 0.0;
-    winradius [j] = 0.0; 
-    winwidth  [j] = 0.0; 
-    winheight [j] = 0.0; 
+    winradius [j] = 0.0;
+    winwidth  [j] = 0.0;
+    winheight [j] = 0.0;
     eWinShape [j] = VT_MWND_AUTO;
-  }	
+  }
 
-	if (CollFileName !=NULL)
-	{	if( (coll_file = OpenInputFile(CollFileName, FALSE, "r"))==NULL)
-		{
-			fprintf(LogFilePtr, "ERROR: File %s could not be opened to read window data \n", CollFileName);
-			exit(-1);
-		}
-		else
-		{
-			j=0;
-			while (ReadLine(coll_file, sLine, sizeof(sLine)-1)==TRUE)
-			{	
-				j++;
-				if (eShape==VT_MWND_CIRCLE)
-				{	sscanf(sLine, "%lf %lf %lf",     &ywincenter[j], &zwincenter[j], &winradius[j]);
-					eWinShape[j] = VT_MWND_CIRCLE;
-				}
-				else if (eShape==VT_MWND_SQUARE)
-				{	sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
-					eWinShape[j] = VT_MWND_SQUARE;
-				}
-				else
-				{	sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
-					if (winheight[j] > 0.0)
-					{	eWinShape[j] = VT_MWND_SQUARE;
-					}
-					else
-					{	winradius[j] = winwidth[j];
-						eWinShape[j] = VT_MWND_CIRCLE;
-					}
-				}
-			}
-		}
-		fclose(coll_file);
-	}
-	else
-	{
-		fprintf(LogFilePtr,"\n ERROR: No window file name given \n");
-		exit(-1);
-	}
+  if (CollFileName != NULL) {
+    coll_file = OpenParameterFile2(CollFileName, "window data", "r");
+    j = 0;
+    while (ReadLine(coll_file, sLine, sizeof(sLine) - 1) == TRUE) {
+      j++;
+      if (eShape == VT_MWND_CIRCLE) {
+        sscanf(sLine, "%lf %lf %lf", &ywincenter[j], &zwincenter[j], &winradius[j]);
+        eWinShape[j] = VT_MWND_CIRCLE;
+      } else if (eShape == VT_MWND_SQUARE) {
+        sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
+        eWinShape[j] = VT_MWND_SQUARE;
+      } else {
+        sscanf(sLine, "%lf %lf %lf %lf", &ywincenter[j], &zwincenter[j], &winwidth[j], &winheight[j]);
+        if (winheight[j] > 0.0) {
+          eWinShape[j] = VT_MWND_SQUARE;
+        } else {
+          winradius[j] = winwidth[j];
+          eWinShape[j] = VT_MWND_CIRCLE;
+        }
+      }
+    }
+    fclose(coll_file);
+  } else {
+    fprintf(LogFilePtr,"\n ERROR: No window file name given \n");
+    exit(-1);
+  }
 
-	Nholes = j;
+  Nholes = j;
 
-	fprintf(LogFilePtr,"\n Number of holes: %d", Nholes);
-	fprintf(LogFilePtr,"\n Outer radius of the window: %7.2lf cm", OuterRadius);
+  fprintf(LogFilePtr,"\n Number of holes: %d", Nholes);
+  fprintf(LogFilePtr,"\n Outer radius of the window: %7.2lf cm", OuterRadius);
 
 
-	for(j = 1; j <= Nholes; j++) {
-	  if (eWinShape[j]==VT_MWND_CIRCLE)
-	    fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm radius = %6.2lf cm", 
-		    ywincenter[j], zwincenter[j], winradius[j]);
-	  else 
-	    fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm  winwidth = %6.2lf cm  winheight= %6.2lf cm", 
-		    ywincenter[j], zwincenter[j], winwidth[j], winheight[j]);
-	} 
-	fprintf(LogFilePtr,"\n") ;
+  for(j = 1; j <= Nholes; j++) {
+    if (eWinShape[j]==VT_MWND_CIRCLE)
+      fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm radius = %6.2lf cm",
+        ywincenter[j], zwincenter[j], winradius[j]);
+    else
+      fprintf(LogFilePtr,"\n Collimator data: center Y = %6.2lf cm  Z = %6.2lf cm  winwidth = %6.2lf cm  winheight= %6.2lf cm",
+        ywincenter[j], zwincenter[j], winwidth[j], winheight[j]);
+  }
+  fprintf(LogFilePtr,"\n") ;
 
-	return Nholes;
+  return Nholes;
 }
-	
+
 
 /********************************************************/
 /** Analyses input parameters and prepares attenuation **/
@@ -443,153 +441,140 @@ short ReadWndFile()
 void  EvalInput()
 {
   char sLine[CHAR_BUF_SMALL]="";
-	long i, j,                     // indices of arrays for wavelength and attenuation 
-	     nVal=0;                   // number of wavelength and attenuation values in the array
-  
+  long i, j,                     // indices of arrays for wavelength and attenuation
+       nVal=0;                   // number of wavelength and attenuation values in the array
+
   // Checks
   // ------
-	if (Distance < 0.0)
-	{
-		fprintf(LogFilePtr,"ERROR: Length of space must be >= 0.0 !!!\n");
-		exit(-1);
-	}
-		
-	if (ThicknessO < 0.0)
-	{
-		fprintf(LogFilePtr,"ERROR: Thickness of window < 0.0 !!!");
-		exit(-1);
-	}
+  if (Distance < 0.0)
+  {
+    fprintf(LogFilePtr,"ERROR: Length of space must be >= 0.0 !!!\n");
+    exit(-1);
+  }
 
-	if (ThicknessI < 0.0)
-	{
-		fprintf(LogFilePtr,"ERROR: Thickness of open part of the window < 0.0 !!!");
-		exit(-1);
-	}
-		
-	if (ThicknessO != ThicknessI)
-	{
-		fprintf(LogFilePtr,"WARNING! It is recommended to have outer and inner thickness EQUAL \n");
-	}
-	
-	// Init
+  if (ThicknessO < 0.0)
+  {
+    fprintf(LogFilePtr,"ERROR: Thickness of window < 0.0 !!!");
+    exit(-1);
+  }
+
+  if (ThicknessI < 0.0)
+  {
+    fprintf(LogFilePtr,"ERROR: Thickness of open part of the window < 0.0 !!!");
+    exit(-1);
+  }
+
+  if (ThicknessO != ThicknessI)
+  {
+    fprintf(LogFilePtr,"WARNING! It is recommended to have outer and inner thickness EQUAL \n");
+  }
+
+  // Init
   // ----
-	for(j=0; j<MAX_MU; j++)
-	{	
-		WavO[j] = 0.0;
-		MuO [j] = 0.0;
-		WavI[j] = 0.0;
-		MuI [j] = 0.0;
-	}
-	
-	// Case: zero thickness
+  for(j=0; j<MAX_MU; j++)
+  {
+    WavO[j] = 0.0;
+    MuO [j] = 0.0;
+    WavI[j] = 0.0;
+    MuI [j] = 0.0;
+  }
+
+  // Case: zero thickness
   // --------------------
-	if (ThicknessO == 0.0)
-	{
-		eMaterialO = VT_WABS_IDEAL;
-	}
-	if (ThicknessI == 0.0)
-	{
-		bPane=FALSE;
-	}
-	
-	// output text
+  if (ThicknessO == 0.0)
+  {
+    eMaterialO = VT_WND_IDEAL;
+  }
+  if (ThicknessI == 0.0)
+  {
+    bPane=FALSE;
+  }
+
+  // output text
   // -----------
   fprintf(LogFilePtr,"Window frame material: ");
 
   switch (eMaterialO)
-  { case VT_WABS_FILE :  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
-    case VT_WABS_GD   :  fprintf(LogFilePtr, "Gadolinium \n"); Gadolinium(WavO, MuO, &nVal); break;
-    case VT_WABS_CD   :  fprintf(LogFilePtr, "Cadmium    \n"); Cadmium   (WavO, MuO, &nVal); break;
-    case VT_WABS_B10  :  fprintf(LogFilePtr, "Bor10      \n"); Bor10     (WavO, MuO, &nVal); break;
-    case VT_WABS_EU   :  fprintf(LogFilePtr, "Eu         \n"); Eu        (WavO, MuO, &nVal); break;
-    case VT_WABS_SI   :  fprintf(LogFilePtr, "Silicon    \n"); Silicon   (WavO, MuO, &nVal); break;
-    case VT_WABS_IDEAL:  fprintf(LogFilePtr, "Ideal absorber \n");                           break;
-    default: fprintf(LogFilePtr, "\n"); Error("No valid value for material ID (option -c)");
+  { case VT_WND_FILE :  fprintf(LogFilePtr, "Transmission characteristics read from file %s\n", sTransFileNameO); break;
+    case VT_WND_GD   :  fprintf(LogFilePtr, "Gadolinium \n");    nVal = Gadolinium (WavO, MuO, MAX_MU); break;
+    case VT_WND_CD   :  fprintf(LogFilePtr, "Cadmium    \n");    nVal = Cadmium    (WavO, MuO, MAX_MU); break;
+    case VT_WND_B10  :  fprintf(LogFilePtr, "Bor10      \n");    nVal = Bor10      (WavO, MuO, MAX_MU); break;
+    case VT_WND_EU   :  fprintf(LogFilePtr, "Eu         \n");    nVal = Eu         (WavO, MuO, MAX_MU); break;
+    case VT_WND_SI   :  fprintf(LogFilePtr, "Silicon    \n");    nVal = Silicon    (WavO, MuO, MAX_MU); break;
+    case VT_WND_IDEAL:  fprintf(LogFilePtr, "Ideal absorber\n"); nVal = IdealAbsorp(WavO, MuO);         break;
+    default: fprintf(LogFilePtr, "\n"); Error("No valid material chosen for window frame");
   }
 
   if (ThicknessO > 0)
     fprintf(LogFilePtr,"Thickness of outer material of window %f cm \n", ThicknessO);
   if (ThicknessI > 0)
     fprintf(LogFilePtr,"Thickness of inner material of window %f cm \n", ThicknessI);
-    
+
   // window frame material from file
   // -------------------------------
-  if (eMaterialO == VT_WABS_FILE)
+  if (eMaterialO == VT_WND_FILE)
   {
     // Read transmission file for window frame
     if (sTransFileNameO !=NULL)
     {
-      pTransFileO = OpenInputFile(sTransFileNameO, FALSE, "r");
-      if (pTransFileO!=NULL)  
-      { 
-        i=0;
-        while (ReadLine(pTransFileO, sLine, CHAR_BUF_SMALL-1) > 0) 
-        { i++;
-          sscanf(sLine, "%lf %lf", &WavO[i], &MuO[i]);
-        }
-        nVal  =i;
-        nValFO=nVal;
-        fclose(pTransFileO);
-	    
-        /* check the input data */	    
-        for(i = 1; i <= (nValFO-1); i++)
+      pTransFileO = OpenParameterFile(sTransFileNameO, FALSE, "r");
+      i = 0;
+      while (ReadLine(pTransFileO, sLine, CHAR_BUF_SMALL - 1) > 0)
+      {
+        sscanf(sLine, "%lf %lf", &WavO[i], &MuO[i]);
+        i++;
+      }
+      nVal = i;
+      nValFO = nVal;
+      fclose(pTransFileO);
+
+      /* check the input data */
+      for (i = 0; i < (nValFO - 1); i++) 
+      {
+        if (WavO[i + 1] <= WavO[i]) 
         {
-          if (WavO[i+1] <= WavO[i]) 
-          {
-            fprintf(LogFilePtr,"ERROR: incorrect data in transmission file of the window frame \n");
-            fprintf(LogFilePtr,"The wavelength values (1st column) must be in ascending order!!! \n");
-            exit(-1);
-          }    
+          fprintf(LogFilePtr, "ERROR: incorrect data in transmission file of the window frame \n");
+          fprintf(LogFilePtr, "The wavelength values (1st column) must be in ascending order!!! \n");
+          exit(-1);
         }
       }
-      else
-      { Error("Transmission file could not be opened");
-      }
-    }		
-    else
-    { 
+    } else {
       Error("No file name given describing the transmission of the window frame\n");
     }
-  }	
+  }
 
-  if (eMaterialO >= VT_WABS_FILE && eMaterialO <= VT_WABS_SI) 
+  if (eMaterialO >= VT_WND_FILE && eMaterialO <= VT_WND_SI)
     fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nVal]);
 
   // window pane material from file
   // ------------------------------
-	if (ThicknessI > 0.0 && sTransFileNameI != NULL) 
-	{
-	  fprintf(LogFilePtr,"Material transmission characteristics of window pane read from file:  %s \n", sTransFileNameI);
-	  bPane=TRUE;     /* activate this material */
+  if (ThicknessI > 0.0 && sTransFileNameI != NULL)
+  {
+    fprintf(LogFilePtr,"Material transmission characteristics of window pane read from file:  %s \n", sTransFileNameI);
+    bPane=TRUE;     /* activate this material */
 
-    pTransFileI = OpenInputFile(sTransFileNameI, FALSE, "r");
-    if (pTransFileI!=NULL)  
-    { i=0;
-      while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL-1) > 0) 
-      { i++;
-        sscanf(sLine, "%lf %lf", &WavI[i], &MuI[i]);
-      }
-      nValFI=i;
-      fclose(pTransFileI);
-	
-      /* check the input data */	    
-      for(i = 1; i <= (nValFI-1); i++)
+    pTransFileI = OpenParameterFile(sTransFileNameI, FALSE, "r");
+    i = 0;
+    while (ReadLine(pTransFileI, sLine, CHAR_BUF_SMALL - 1) > 0) 
+    {
+      sscanf(sLine, "%lf %lf", &WavI[i], &MuI[i]);
+      i++;
+    }
+    nValFI = i;
+    fclose(pTransFileI);
+
+    /* check the input data */
+    for (i = 0; i < (nValFI - 1); i++) 
+    {
+      if (WavI[i + 1] <= WavI[i]) 
       {
-        if (WavI[i+1] <= WavI[i]) 
-        {
-          fprintf(LogFilePtr,"ERROR: incorrect data in open transmission file of the window \n");
-          fprintf(LogFilePtr,"The wavelength values (1st column) must be in ascending order!!! \n");
-          exit(-1);
-        }    
+        fprintf(LogFilePtr, "ERROR: incorrect data in open transmission file of the window \n");
+        fprintf(LogFilePtr, "The wavelength values (1st column) must be in ascending order!!! \n");
+        exit(-1);
       }
     }
-    else
-    { Error("Transmission file could not be opened");
-    }
-	    
     fprintf(LogFilePtr, "Usable wavelength range: %6.2f - %6.2f Ang \n", WavI[1], WavI[nValFI]);
-  }	
-  return;
+  }
 }
 
 
@@ -605,13 +590,13 @@ void  SetGeometry(char* sColor, int nHoles)
 
   // Geometry data
   if (bVisInstr)
-  { 
+  {
     sprintf(sVisDescrpt, "   :%s", sColor);
     stGeometry.pDescr  =  sVisDescrpt;
     stGeometry.eModule = _eModule;
-   
+
     for (j=1; j <= nHoles; j++)
-    { 
+    {
       if (eWinShape[j]==VT_MWND_CIRCLE)
       {  nHolesC++;
          InnerRadius = fmax(InnerRadius, sqrt(sq(ywincenter[j]) + sq(zwincenter[j])) + winradius[j]);
@@ -624,7 +609,7 @@ void  SetGeometry(char* sColor, int nHoles)
 
     stGeometry.nHolCyls = nHolesC+1;
     stGeometry.pHolCyl  = calloc(nHolesC+1, sizeof(VtHolCyl));
-    stGeometry.nHulls   = nHolesR; 
+    stGeometry.nHulls   = nHolesR;
     stGeometry.pHull    = calloc(nHolesR,   sizeof(VtHull));
 
     // whole plate
@@ -640,7 +625,7 @@ void  SetGeometry(char* sColor, int nHoles)
     iC++;
 
     for (j=1; j <= nHoles; j++)
-    { 
+    {
       if (eWinShape[j]==VT_MWND_CIRCLE)
       {
         stGeometry.pHolCyl[iC].InnerRadius = BlowUp * winradius[j];

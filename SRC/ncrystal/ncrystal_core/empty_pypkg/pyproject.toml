@@ -1,0 +1,51 @@
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2025 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# A pyproject.toml for injecting an empty ncrystal-core package. In case
+# ncrystal-core is installed in a non-python aware fashion, installing this
+# empty ncrystal-core package can be used to ensure that subsequent pip
+# installations of packages needing ncrystal-core (like plugins for ncrystal)
+# will not cause pip to pull down ncrystal-core from pypi. Of course, this is
+# not bullet-proof, since "pip uninstall ncrystal-core" will only uninstall the
+# empty package, not all of ncrystal-core content.
+
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ncrystal-core"
+version = "4.2.10"
+requires-python = ">=3.8"
+authors = [
+  { name="NCrystal developers (Thomas Kittelmann, Xiao Xiao Cai)" },
+]
+description = "Library for thermal neutron transport in crystals and other materials."
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+]
+
+[project.urls]
+"Homepage" = "https://mctools.github.io/ncrystal/"
+"Bug Tracker" = "https://github.com/mctools/ncrystal/issues"

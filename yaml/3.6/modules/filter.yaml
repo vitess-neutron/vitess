@@ -1,0 +1,97 @@
+filter:
+  executable: "filter"
+  label: "filter"
+  category: "filter"
+  parameters:
+  - name: "eFilterPar1"
+    label: "filter parameter 1"
+    tooltip: "1st parameter that is filtered"
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-I"
+  - name: "MinPar1"
+    type: "float"
+    label: "filter 1 min. value"
+    tooltip: "minimal value of filter parameter 1"
+    column: 1
+    prefix: "-u"
+  - name: "MaxPar1"
+    type: "float"
+    label: "filter 1 max. value"
+    tooltip: "maximal value of filter parameter 1"
+    column: 2
+    prefix: "-U"
+
+  - name: "eFilterPar2"
+    label: "filter parameter 2"
+    tooltip: "2nd parameter that is filtered "
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-J"
+  - name: "MinPar2"
+    type: "float"
+    label: "filter 2 min. value"
+    tooltip: "minimal value of filter parameter 2"
+    column: 1
+    prefix: "-v"
+  - name: "MaxPar2"
+    type: "float"
+    label: "filter 2 max. value"
+    tooltip: "maximal value of filter parameter 2"
+    column: 2
+    prefix: "-V"
+
+  - name: "eFilterPar3"
+    label: "filter parameter 3"
+    tooltip: "3rd parameter that is filtered "
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-K"
+  - name: "MinPar3"
+    type: "float"
+    label: "filter 3 min. value"
+    tooltip: "minimal value of filter parameter 3"
+    column: 1
+    prefix: "-w"
+  - name: "MaxPar3"
+    type: "float"
+    label: "filter 3 max. value"
+    tooltip: "maximal value of filter parameter 3"
+    column: 2
+    prefix: "-W"
+
+  - name: "eFilterPar4"
+    label: "filter parameter 4"
+    tooltip: "4th parameter that is filtered "
+    <<: *VtMonPar
+    options: ["NO_PAR","POS_X","POS_Y","POS_Z","DIV_Y","DIV_Z","LAMBDA","ENERGY","TIME","K_Y","K_Z","POS_R","POS_PHI","POS_THETA","DIR_PHI","DIR_THETA","COL_VERT","COL_HOR","COLOR"]
+    default: "NO_PAR"
+    column: 0
+    prefix: "-L"
+  - name: "MinPar4"
+    type: "float"
+    label: "filter 4 min. value"
+    tooltip: "minimal value of filter parameter 4"
+    column: 1
+    prefix: "-x"
+  - name: "MaxPar4"
+    type: "float"
+    label: "filter 4 max. value"
+    tooltip: "maximal value of filter parameter 4"
+    column: 2
+    prefix: "-X"
+
+  - name: "eFilterCombi"
+    label: "filter combination"
+    tooltip: "If several filters defined, neutrons pass if they fulfill all criteria (AND), at least one (OR) or (1 and 2) or (3 and 4) (AND_OR_AND)"
+    <<: *VtFiltComb
+    options: ["AND_AND_AND", "OR_OR_OR", "AND_OR_AND"]
+    default: "AND_AND_AND"
+    column: 0
+    prefix: "-C"
