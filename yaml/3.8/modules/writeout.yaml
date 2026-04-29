@@ -21,7 +21,7 @@ writeout:
     tooltip: "yes: output file containing trajectories is written   no: no output file is written   part 2: trajectories are written for a 2nd (or next) instrument part"
     <<: *VtWriteAct
     options: ["VT_NO_WRITING", "VT_WRITE_TRAJ", "VT_SPLIT_SIM"]
-    default: "VT_WRITE_TRJ"
+    default: "VT_WRITE_TRAJ"
     column: 0
     prefix: "-a"
     required: true
