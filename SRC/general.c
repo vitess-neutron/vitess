@@ -471,7 +471,7 @@ double ReflInterpol(const double Lambda, const double Angle, const double* Rdata
   double w,         // [deg] angle giving the same Q value as 'Lambda' and 'Angle'
          R=0.0;     //       reflectivity
 
-  w   = 1000 * Degrees(asin(sin(Radians(Angle / Lambda))));
+  w = 1000 * Degrees(asin(sin(Radians(Angle)) / Lambda));
 
 #ifdef FAST_SIM
   iw1 = (long) floor(w+0.5);
