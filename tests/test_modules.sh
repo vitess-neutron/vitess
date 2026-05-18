@@ -12,20 +12,29 @@ main() {
 
 test_directories() {
     FAIL=0
+    FAIL_LIST=""
     for DIR in "$@"; do
         [ -d "${DIR}" ] || continue
         [ "${DIR}" = "." ] && DIR="$(pwd)"
-        check_dir "$(basename "${DIR}")" || FAIL=1
-        run_pipelines "$(basename "${DIR}")" || FAIL=1
+        TEST_FAIL=0
+        check_dir "${DIR}" || TEST_FAIL=1
+        run_pipelines "${DIR}" || TEST_FAIL=1
         if [ -z "${NO_DIFF}" ]; then
-            check_output "$(basename "${DIR}")" || FAIL=1
+            check_output "${DIR}" || TEST_FAIL=1
+        fi
+        if [ "${TEST_FAIL}" -ne 0 ]; then
+            FAIL=1
+            FAIL_LIST="${FAIL_LIST} $(basename "${DIR}")"
         fi
     done
+    if [ ${FAIL} -ne 0 ]; then
+        echo "Failed tests:${FAIL_LIST}"
+    fi
     return ${FAIL}
 }
 
 run_pipelines() {
-    TEST_NAME="$1"
+    TEST_NAME="$(basename "$1")"
     P="${TESTS_DIR}/module_tests/${TEST_NAME}"
     PIPELINE_FAIL=0
     for PIPELINE in "${P}"/*.sh; do
@@ -50,7 +59,7 @@ run_pipelines() {
 }
 
 check_output() {
-    TEST_NAME="$1"
+    TEST_NAME="$(basename "$1")"
     P="${TESTS_DIR}/module_tests/${TEST_NAME}"
     OUTPUT_FAIL=0
     for REF_FILE in "${P}"/*_out-ref.dat; do
@@ -84,7 +93,7 @@ check_script() {
 }
 
 check_dir() {
-    TEST_NAME="$1"
+    TEST_NAME="$(basename "$1")"
     P="${TESTS_DIR}/module_tests/${TEST_NAME}"
     DIR_FAIL=0
     if ! ls "${P}"/*.sh > /dev/null 2>&1; then
