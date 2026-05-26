@@ -72,11 +72,12 @@ int main(int argc, char *argv[])
   int    index_c =0,
          iwl =0,
          idiv=0;
-  long   i=0;
-  double wl  =0.0,   // wavelength
-         div =0.0,   // divergence and
-         prob=0.0,   // weight of a trajectory
-         bintc=0.0;  // total intensity within binning
+  long   i=0,
+         nTrajTot=0;   // Total number of trajectories within monitor limits
+  double wl  =0.0,     // wavelength
+         div =0.0,     // divergence and
+         prob  =0.0,   // weight of a trajectory
+         IntTot=0.0;   // total intensity within binning
   double div_other_direction=0.0;
 
 
@@ -169,8 +170,9 @@ int main(int argc, char *argv[])
         if (((iwl>=0)&&(iwl<nBinsLmd))&&((idiv>=0)&&(idiv<nBinsDiv)))
         {
           nTrajYZ[iwl][idiv]++;
+          nTrajTot++;
           IntYZ  [iwl][idiv]+= prob;
-          bintc             += prob;
+          IntTot            += prob;
           bRegistered = 1;
         }
 
@@ -185,13 +187,13 @@ int main(int argc, char *argv[])
 my_exit:
   // writes and closes monitor file
   if (index_yz==Y_AXIS)
-    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv,
-                             nBinsLmd, "wavelength [Ang]",   wl_min,  wl_max,
-                             nBinsDiv, "y-divergence [deg]", div_min, div_max);
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, IntTot,  nTrajTot,
+                             nBinsLmd, "wavelength [Ang]",    wl_min,  wl_max,
+                             nBinsDiv, "y-divergence [deg]",  div_min, div_max);
   else if (index_yz == Z_AXIS)
-    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv,
-                             nBinsLmd, "wavelength [Ang]",   wl_min,  wl_max,
-                             nBinsDiv, "z-divergence [deg]", div_min, div_max);
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, IntTot,  nTrajTot,
+                             nBinsLmd, "wavelength [Ang]",    wl_min,  wl_max,
+                             nBinsDiv, "z-divergence [deg]",  div_min, div_max);
   else
     Error("Analysis direction does not have a proper value");
 

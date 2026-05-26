@@ -60,9 +60,11 @@ void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets globa
 int main(int argc, char *argv[])
 {
   short  bRegistered=FALSE;
-  int     iY=0, jZ=0;
-  long   i=0;
-  double Divy =0.0,
+  int    iY=0, jZ=0;
+  long   i=0,
+         nTrajTot=0;   // Total number of trajectories within monitor limits
+  double IntTot=0.0,  // Total intensitiy within monitor limits
+         Divy =0.0,
          Divz =0.0,
          DivKy=0.0,
          DivKz=0.0,
@@ -132,8 +134,9 @@ int main(int argc, char *argv[])
         if (((iY>=0)&&(iY<nBinsY))&&((jZ>=0)&&(jZ<nBinsZ)))
         {
           nTrajYZ[iY][jZ]++;
+          nTrajTot++;
           IntYZ  [iY][jZ]+= prob;
-          bintc          += prob;
+          IntTot         += prob;
           bRegistered = 1;
         }
 
@@ -147,7 +150,7 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file
-  WriteHeader2D(fMonitor, format, "Intensity", bProbactiv,
+  WriteHeader2D(fMonitor, format, "Intensity", bProbactiv, IntTot, nTrajTot,
                           nBinsY, "k_y [1/Ang]", DivKyMin, DivKyMax,
                           nBinsZ, "k_z [1/Ang]", DivKzMin, DivKzMax);
   // WriteOutput2D(fMonitor, format,           bProbactiv,  nBinsY, BinPosY,           nBinsZ, BinPosZ,  IntYZ, IntYZError, nTrajYZ);

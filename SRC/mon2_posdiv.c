@@ -69,12 +69,13 @@ void OwnInit(int argc, char *argv[]);   // Reads input parameters and sets globa
 int main(int argc, char *argv[])
 {
   short  bRegistered=FALSE;
-  int     iPos=0, jDiv=0;
-  long   i=0;
-  double pos_=0.0,
-         div_=0.0,
-         bintc=0.0,  // Total intensitiy within monitor limits
-         prob =0.0;  // Intensitiy of a trajectory
+  int    iPos=0, jDiv=0;
+  long   i=0,
+         nTrajTot=0;   // Total number of trajectories within monitor limits
+  double pos_  =0.0,
+         div_  =0.0,
+         IntTot=0.0,  // Total intensitiy within monitor limits
+         prob  =0.0;  // Intensitiy of a trajectory
 
   // reading of input data and initilisation
   // ---------------------------------------
@@ -159,8 +160,9 @@ int main(int argc, char *argv[])
         if (((iPos>=0)&&(iPos<nBinsPos))&&((jDiv>=0)&&(jDiv<nBinsDiv)))
         {
           nTrajYZ[iPos][jDiv]++;
-          IntYZ [iPos][jDiv] += prob ;
-          bintc              += prob;
+          nTrajTot++;
+          IntYZ [iPos][jDiv] += prob;
+          IntTot             += prob;
           bRegistered=1;
         }
 
@@ -186,11 +188,11 @@ my_exit:
 
     // writes and closes monitor file
   if (index_yz==Y_AXIS)
-    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv,
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, IntTot, nTrajTot,
                              nBinsPos, "y [cm]",           pos_min, pos_max,
                              nBinsDiv, "y-divergence/deg", div_min, div_max);
   else if (index_yz == Z_AXIS)
-    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv,
+    WriteHeader2D (fMonitor, format, "Intensity", bProbactiv, IntTot, nTrajTot,
                              nBinsPos, "z [cm]",           pos_min, pos_max,
                              nBinsDiv, "z-divergence/deg", div_min, div_max);
   else
