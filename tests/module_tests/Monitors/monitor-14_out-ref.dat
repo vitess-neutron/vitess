@@ -1,8 +1,12 @@
-# title : 2D Monitor Intensity  (weight):
+# title : 2D Monitor  Intensity  n/s:
 # x_label : TOF [m]
 # y_label : wavelength [Ang]
 # x_range :      0.000,     10.000
 # y_range :      1.000e+00,  1.000e+01
+# Date: 2026-05-24  Time: 15:59:44
+# Total Intensity:  8.099e+10 n/s   Trajectories:      10000
+# Within binning :  8.099e+10 n/s   Trajectories:      10000  (incl. filters and eval. time)
+# Bunches: 1 of 1 written
 
  0.05  1.045  0 0 0
  0.15  1.045  0 0 0
