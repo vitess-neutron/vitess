@@ -19,11 +19,9 @@ proc VScroll {w {u 5}} {
   }
 }
 
-proc wheelEvent { x y delta } {
-
-  # Find out what's the widget we're on
-  set w [winfo containing $x $y]
+proc wheelEvent {w delta} {
   if {$w == ""} return
+  if {$delta == 0} return
 
   set scom ""
   switch [string range $w 0 6] {
@@ -32,7 +30,7 @@ proc wheelEvent { x y delta } {
   }
   if {$scom != ""} {
   	# scroll module windows
-	set u [expr $delta < 0 ? 5 : -5]
+    set u [expr $delta < 0 ? 5 : -5]
     catch { $scom yview scroll $u units }
     return
   }
@@ -53,6 +51,40 @@ proc wheelEvent { x y delta } {
   set cmd "[$scroller cget -command] scroll $u units"
   eval $cmd
 }
+
+bind all <MouseWheel> "+wheelEvent %W %D"
+
+# MacOS touch events
+if {$tcl_version == 9 && $tcl_platform(os) == "Darwin"} {
+  global _touch
+  set _touch 0
+
+  proc touchpadEvent {w delta} {
+    global _touch
+    set THR 10
+    set STEP 1
+
+    # lower half, signed
+    set y [expr $delta & 65535]
+    if {$y & 32768} {
+      set y [expr $y - 65536]
+    }
+
+    set _touch [expr $_touch + $y]
+    if {$_touch >= $THR} {
+      set value [expr ($_touch / $THR) * $STEP]
+      set _touch [expr $_touch % $THR]
+      wheelEvent $w $value
+    } elseif {$_touch <= -$THR} {
+      set value [expr -(-$_touch / $THR) * $STEP]
+      set _touch [expr -(-$_touch % $THR)]
+      wheelEvent $w $value
+    }
+  }
+
+  bind all <TouchpadScroll> "+touchpadEvent %W %D"
+}
+
 
 switch $tcl_platform(platform) {
   unix {
@@ -211,9 +243,6 @@ foreach f $modl {
 unset modl
 
 set ProgressFile [tmpFilename "pgress.txt"]
-
-
-bind all <MouseWheel> "+wheelEvent %X %Y %D"
 
 
 ### start main widget of Xcontrol, reading experiment environment
