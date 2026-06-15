@@ -2,7 +2,7 @@
 
 # Virtual Instrumentation Tool for Neutron Scattering at Pulsed and Continuous Sources
 
-![Version](https://img.shields.io/badge/Current_Version-3.7-green.svg)  ![License: GNU](https://img.shields.io/badge/License-GNU-blue.svg)
+![Version](https://img.shields.io/badge/Current_Version-3.8-green.svg)  ![License: GNU](https://img.shields.io/badge/License-GNU-blue.svg)
 
 Welcome to the GitLab repository of **VITESS** (Virtual Instrumentation Tool for the European Spallation Source).
 
@@ -20,7 +20,7 @@ There are major fixes for some options of the `monochromator` and `bender` modul
 
 ### Download Links
 
-Download the current stable version: [VITESS 3.7](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
+Download the current stable version: [VITESS 3.8](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
 
 Download a snapshot of the development version: [VITESS develop](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package).
 
@@ -30,7 +30,7 @@ Download the and run the installer from the links above.
 
 ### MacOS
 - Install [XQuartz](https://xquartz.org)
-- Download and unpack VITESS: run `curl -L https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/1074589/artifacts/raw/Downloads/Vitess3.7-Darwin-universal.tar.gz | tar xz` in the terminal.
+- Download and unpack VITESS: run `curl -L https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/1178196/artifacts/raw/Downloads/Vitess3.8-Darwin-universal.tar.gz | tar xz` in the terminal.
 - If you used a download link from above, you might get an error message about running unknown code. In that case, run `xattr -c -r vitess3.8/`
 - Run the script `Vitess-MacOS` to start the GUI
 - For older versions (Vitess 3.7 or below): Install Tcl/Tk 8.6, e.g. from homebrew: `brew install tcl-tk@8.6`

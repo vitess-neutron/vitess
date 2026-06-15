@@ -56,10 +56,11 @@ int main(int argc, char *argv[])
   // char   weightTag[2][7] = {"", "weight"};
   short  bRegistered=0;
   int     dy=0, dz=0;
-  long   i=0;
-  double bintc   =0.0,
-         bintcpol=0.0,
-         prob    =0.0;
+  long   i=0,
+         nTrajTot=0;   // Total number of trajectories within monitor limits
+  double IntTot   =0.0,
+         IntTotPol=0.0,
+         prob     =0.0;
   double bposz   [BINSIZE],
          bposy   [BINSIZE],
          binyz   [BINSIZE][BINSIZE],
@@ -122,10 +123,11 @@ int main(int argc, char *argv[])
 
         if (((dy>=0)&&(dy<nbiny))&&((dz>=0)&&(dz<nbinz)))
         {
-          binyzpol[dy][dz] = binyzpol[dy][dz] +  prob * InputNeutrons[i].Spin[0];
-          bintcpol = bintcpol + prob * InputNeutrons[i].Spin[0];
-          binyz[dy][dz] = binyz[dy][dz] +  prob;
-          bintc = bintc + prob;
+          binyzpol[dy][dz]+= prob * InputNeutrons[i].Spin[0];
+          IntTotPol       += prob * InputNeutrons[i].Spin[0];
+          binyz[dy][dz]   += prob;
+          IntTot          += prob;
+          nTrajTot++;
           bRegistered=1;
         }
 
@@ -142,7 +144,7 @@ int main(int argc, char *argv[])
 // ----------------------------------------------------------------------------------------
 my_exit:
   // writes and closes monitor file
-  WriteHeader2D(fMonitor, eFormat, "polarization", bProbactiv,
+  WriteHeader2D(fMonitor, eFormat, "polarization", bProbactiv, IntTot, nTrajTot,
                           nbiny, "pos_y [cm]", widthmin,  widthmax,
                           nbinz, "pos_z [cm]", heightmin, heightmax);
 
@@ -164,8 +166,8 @@ my_exit:
   fprintf(fMonitor, "\n");
   fclose(fMonitor);
 
-  if(bintc != 0.0)
-    fprintf(LogFilePtr, "polarization: %8.5f \n", bintcpol/bintc);
+  if(IntTot != 0.0)
+    fprintf(LogFilePtr, "polarization: %8.5f \n", IntTotPol/IntTot);
 
   // writes to instrument and log file
   Cleanup(0.0,0.0,0.0, 0.0,0.0);

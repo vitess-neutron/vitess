@@ -21,7 +21,7 @@ Name: "{userdesktop}\Vitess3.8"; Filename: "{app}\tcl\bin\wish86t.exe"; IconFile
 [Components]
 Name: "main"; Description: "Vitess"; Types: full compact custom; Flags: fixed
 Name: "tcl"; Description: "Tcl/TK 8.6"; Types: full
-Name: "gr"; Description: "gr 0.73.22"; Types: full
+Name: "gr"; Description: "grplot"; Types: full
 
 [Tasks]
 Name: desktopicon; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Components: main

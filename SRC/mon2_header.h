@@ -17,6 +17,7 @@ void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sType,             
                     double IntMon, long nTrjMon,
                     const char* sPar, const char* sUnit, double Xmin, double Xmax);
 void WriteHeader2D (FILE* fMonitor, VtFormat2D eFormat, const char *sType, short bWeight,              // Writes header for 2D monitor file
+                    double IntMon, long nTrjMon,
                     int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax,
                     int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax);
 void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sType, short bWeight, // Writes header for 2D monitor file incl. number of proc. bunches

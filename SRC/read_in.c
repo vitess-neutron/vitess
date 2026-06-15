@@ -254,6 +254,7 @@ int main(int argc, char **argv)
 void OwnInit(int argc, char *argv[])
 {
   int i=0,m=0;
+  double SumWeight=0.0;
 
   sInstrInfIn = "instr_out.inf";
 
@@ -329,6 +330,13 @@ void OwnInit(int argc, char *argv[])
       }
     }
   }
+
+  // re-normalization
+  SumWeight = 0.0;
+  for (m=0; m < NF_MAX; m++)
+    SumWeight += Weight[m];
+  for (m=0; m < NF_MAX; m++)
+    Weight[m] /= SumWeight;
 
   // open input file(s)
   if (ePrgFormat== VT_MCPL_FMT)

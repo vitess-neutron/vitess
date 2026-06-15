@@ -99,10 +99,15 @@ void WriteHeader1DB(FILE* fMonitor, short bEval, const char *sFctType, short iCo
 }
 
 void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, short bWeight,
+                   double IntMon, long nTrjMon,
                    int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax,
                    int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax)
 {
-  char   sFormat [16]="";             // text describing the 2D output format
+  WriteHeader2DB(fMonitor, FALSE, eFormat, sFctType, bWeight, 1, 1, IntMon, nTrjMon,
+                 nBinsX, sAxisTitleX, Xmin, Xmax,  nBinsY, sAxisTitleY, Ymin, Ymax);
+
+  /*
+char   sFormat [16]="";             // text describing the 2D output format
 
   Format2D_ID2Txt(sFormat, eFormat);  // fills static string 'sFormat'
 
@@ -137,10 +142,12 @@ void WriteHeader2D(FILE* fMonitor, VtFormat2D eFormat, const char *sFctType, sho
   if (eFormat != MATRIX && eFormat != MATR_CMPT && eFormat != MATR_INT) {
     fprintf(fMonitor, "\n");
   }
+ */
 }
 
 
-void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sFctType, short bWeight, long iBnch, long nBnch, double IntMon, long nTrjMon,
+void WriteHeader2DB(FILE* fMonitor, short bEval, VtFormat2D eFormat, const char *sFctType, short bWeight, long iBnch, long nBnch,
+                   double IntMon, long nTrjMon,
                    int nBinsX, const char* sAxisTitleX, double Xmin, double Xmax,
                    int nBinsY, const char* sAxisTitleY, double Ymin, double Ymax)
 {
