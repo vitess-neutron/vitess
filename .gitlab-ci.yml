@@ -1,6 +1,6 @@
 variables:
   VITESS_VERSION: "3.8"
-  GR_VERSION: "0.73.24"
+  GR_VERSION: "latest"
 
 stages:
   - build
@@ -154,7 +154,7 @@ compile-darwin:
     - cd ..
     - mkdir -p ../artifacts-${OS}-${ARCH}
     - tar -xzf tcltk.tgz -C ../artifacts-${OS}-${ARCH}
-    - curl -LOv https://gr-framework.org/downloads/gr-${GR_VERSION}-Darwin-universal.tar.gz
+    - curl -LOvf https://gr-framework.org/downloads/gr-${GR_VERSION}-Darwin-universal.tar.gz
     - tar -xzf gr-${GR_VERSION}-Darwin-universal.tar.gz -C ../artifacts-${OS}-${ARCH}
     - cd ../artifacts-${OS}-${ARCH}/gr
     - rm -rf Applications/gksqt.app Applications/GKSTerm.app
@@ -179,7 +179,7 @@ compile-darwin:
     - cd /c
     - git clone -b vitess${VITESS_VERSION} https://${WINDOWS_DATA_USER}:${WINDOWS_DATA_PASSWORD}@${WINDOWS_DATA_REPO} vitess-data
     - mv vitess-data/tcl /c/
-    - curl -LOv https://gr-framework.org/downloads/gr-${GR_VERSION}-Windows-x86_64-msvc.tar.gz
+    - curl -LOvf https://gr-framework.org/downloads/gr-${GR_VERSION}-Windows-x86_64-msvc.tar.gz
     - tar -xzf gr-${GR_VERSION}-Windows-x86_64-msvc.tar.gz -C /c/
     - cd -
 

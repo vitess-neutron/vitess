@@ -2,7 +2,7 @@
 
 # Virtual Instrumentation Tool for Neutron Scattering at Pulsed and Continuous Sources
 
-![Version](https://img.shields.io/badge/Current_Version-3.7-green.svg)  ![License: GNU](https://img.shields.io/badge/License-GNU-blue.svg)
+![Version](https://img.shields.io/badge/Current_Version-3.8-green.svg)  ![License: GNU](https://img.shields.io/badge/License-GNU-blue.svg)
 
 Welcome to the GitLab repository of **VITESS** (Virtual Instrumentation Tool for the European Spallation Source).
 
@@ -20,7 +20,7 @@ There are major fixes for some options of the `monochromator` and `bender` modul
 
 ### Download Links
 
-Download the current stable version: [VITESS 3.7](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
+Download the current stable version: [VITESS 3.8](https://iffgit.fz-juelich.de/vitess/vitess/-/releases).
 
 Download a snapshot of the development version: [VITESS develop](https://iffgit.fz-juelich.de/vitess/vitess/-/jobs/artifacts/develop/browse?job=package).
 

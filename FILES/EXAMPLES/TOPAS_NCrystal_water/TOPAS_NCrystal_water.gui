@@ -59,6 +59,7 @@ gSet min_y_15 {-1.125}
 gSet series3.141_ {}
 gSet series8.100_ {}
 gSet series2.97_ {}
+gSet dirtol_23 {0.0057}
 gSet series7.93_ {}
 gSet seriest2.76_ {tofile}
 gSet min_y_19 {-1}
@@ -501,6 +502,7 @@ gSet a_9 {8.5}
 gSet series8.162_ {}
 gSet filtDivMin_24 {}
 gSet series1.118_ {tofsp.eva}
+gSet z1_23 {0}
 gSet series10.141_ {}
 gSet series4.57_ {}
 gSet series9.53_ {}
@@ -540,6 +542,7 @@ gSet series4.62_ {}
 gSet series9.57_ {}
 gSet series8.167_ {}
 gSet series1.124_ {tofsp.eva}
+gSet ouy_23 {1}
 gSet nbins_2 {1000}
 gSet series10.146_ {}
 gSet series1.4_ {0.123}
@@ -798,7 +801,7 @@ gSet series1.158_ {tofsp.eva}
 gSet series6.117_ {}
 gSet seriest2.2_ {rot}
 gSet efile_o_26 {}
-gSet modseries_ { 1:m:min_wavelength 1:M:max_wavelength 7:n:rot 9:m:min_time 9:M:max_time 13:n:rot 15:m:min_time 15:M:max_time 17:m:min_w 17:M:max_w 21:c:rwlen 21:m:mine 21:M:maxe  1:d:dirdet 20:R:reff 20:y:filtYMin 20:y:filtYMin 20:y:filtYMin 20:y:filtYMin 20:R:reff 20:R:reff 4:p:prop_stop 5:b:mLeftUp 5:A:ifile 9:p:number_of_gates 20:e:excl_counts 16:X:x 16:X:x 16:X:x 9:z:time_zero 24:j:angdeg 23:v:resolutionV 22:b:p2 22:c:p3 22:a:p1 22:a:p1 22:b:p2 22:d:p4 22:d:p4}
+gSet modseries_ { 1:m:min_wavelength 1:M:max_wavelength 7:n:rot 9:m:min_time 9:M:max_time 13:n:rot 15:m:min_time 15:M:max_time 17:m:min_w 17:M:max_w 21:c:rwlen 21:m:mine 21:M:maxe  1:d:dirdet 20:R:reff 20:y:filtYMin 20:y:filtYMin 20:y:filtYMin 20:y:filtYMin 20:R:reff 20:R:reff 4:p:prop_stop 5:b:mLeftUp 5:A:ifile 9:p:number_of_gates 20:e:excl_counts 16:X:x 16:X:x 16:X:x 9:z:time_zero 24:j:angdeg 23:v:resolutionV 22:b:p2 22:c:p3 22:a:p1 22:a:p1 22:b:p2 22:d:p4 22:d:p4 23:w:wid}
 gSet series10.181_ {}
 gSet series7.4_ {0.153}
 gSet abutlen_2 {}
@@ -931,6 +934,7 @@ gSet series1.20_ {FrmTherm.mod}
 gSet series6.15_ {}
 gSet a_16 {5}
 gSet filtZMax_11 {}
+gSet inx_23 {1}
 gSet series1.181_ {tofsp.eva}
 gSet series6.139_ {}
 gSet series6.140_ {}
@@ -941,11 +945,6 @@ gSet filtZMax_18 {}
 gSet filtZMax_20 {}
 gSet filtZMax_22 {}
 gSet refwave_21 {}
-gSet rA {
-  {}
-  {reff pareditablefile "" {
-    "reference file" "reference file: it contains input data that serve to normalize the monitor data" "" R}}
-}
 gSet filtZMax_24 {}
 gSet series1.182_ {tofsp.eva}
 gSet series6.141_ {}
@@ -979,7 +978,6 @@ gSet va_23 {0}
 gSet series6.23_ {}
 gSet series1.188_ {tofsp.eva}
 gSet series6.147_ {}
-gSet sp {{name radio ESS {"analytical flux\ncalculation for" "flux can be calculated analytically for some sources\ncorresponding input parameters are ignored in this case" "" N} {- ESS HBS} {- ESS HBS}} {power float 2.0 {"source power\n[MW]" "time averaged power of the accelerator in MegaWatt" "" L} gt0 {} 1}}
 gSet series1.28_ {energysp.eva}
 gSet series6.24_ {}
 gSet shape_file_12 {GuideFC1HOR.txt}
@@ -1124,12 +1122,12 @@ gSet seriest1.29_ {21:E}
 gSet seriest1.30_ {21:E}
 gSet series6.46_ {}
 gSet min_time_foc_1 {}
-gSet separate22 {here}
+gSet separate22 {hidden}
 gSet separate23 {here}
-gSet separate24 {here}
+gSet separate24 {hidden}
 gSet series2.1_ {1.155}
-gSet separate25 {here}
-gSet separate26 {here}
+gSet separate25 {hidden}
+gSet separate26 {hidden}
 gSet separate27 {hidden}
 gSet separate28 {hidden}
 gSet series6.171_ {}
@@ -1168,6 +1166,7 @@ gSet vang_5 {0}
 gSet separate47 {here}
 gSet separate48 {here}
 gSet series6.173_ {}
+gSet ouz_23 {0}
 gSet ncol_25 {314}
 gSet separate50 {here}
 gSet separate49 {here}
@@ -1241,7 +1240,7 @@ gSet seriest1.37_ {21:E}
 gSet series6.54_ {}
 gSet treatcolor_19 {}
 gSet separate92 {here}
-gSet instrumentfile {topas_334_a_beamstop_inelastic}
+gSet instrumentfile {TOPAS_NCrystal_water}
 gSet separate93 {here}
 gSet separate94 {here}
 gSet series2.8_ {1.045}
@@ -1310,6 +1309,7 @@ gSet seriest1.48_ {21:E}
 gSet series4.104_ {}
 gSet series6.65_ {}
 gSet refwave_3 {1.798}
+gSet hoff_23 {0}
 gSet refwave_8 {1.798}
 gSet series6.189_ {}
 gSet series6.190_ {}
@@ -1564,16 +1564,16 @@ gSet visM18 {--inactive--}
 gSet visM20 {--inactive--}
 gSet visM19 {--inactive--}
 gSet visM21 {--inactive--}
-gSet visM22 {writeout}
+gSet visM22 {--inactive--}
 gSet series1.99_ {tofsp.eva}
 gSet visM23 {sample_ncrystal}
 gSet seriest1.78_ {21:E}
 gSet series4.134_ {}
 gSet series6.95_ {}
-gSet visM24 {writeout}
+gSet visM24 {--inactive--}
 gSet keyshape_z_12 {from file}
-gSet visM25 {detector}
-gSet visM26 {eval_inelast}
+gSet visM25 {--inactive--}
+gSet visM26 {--inactive--}
 gSet keyshape_z_14 {from file}
 gSet series11.23_ {}
 gSet visM27 {--inactive--}
@@ -1620,7 +1620,6 @@ gSet brefl_filename_7 {}
 gSet series9.101_ {}
 gSet seriest1.86_ {21:E}
 gSet series4.142_ {}
-gSet defaultPlotApp {}
 gSet series11.31_ {}
 gSet series9.102_ {}
 gSet seriest1.87_ {21:E}
@@ -1631,6 +1630,7 @@ gSet seriest1.88_ {21:E}
 gSet series4.144_ {}
 gSet b_16 {2.5}
 gSet series11.33_ {}
+gSet iny_23 {1}
 gSet series9.104_ {}
 gSet seriest1.89_ {21:E}
 gSet seriest1.90_ {21:E}
@@ -2049,6 +2049,7 @@ gSet maxaX_14 {10000}
 gSet series2.109_ {}
 gSet series2.110_ {}
 gSet series11.83_ {}
+gSet y1_23 {0}
 gSet series3.57_ {}
 gSet series11.132_ {}
 gSet series8.53_ {}
@@ -2304,6 +2305,7 @@ gSet series2.140_ {}
 gSet series3.87_ {}
 gSet series11.162_ {}
 gSet series8.83_ {}
+gSet h_shft_1 {0}
 gSet seriest1.159_ {21:E}
 gSet seriest1.160_ {21:E}
 gSet series9.184_ {}
@@ -2394,6 +2396,7 @@ gSet series3.97_ {}
 gSet all_files_20 {no}
 gSet series11.172_ {}
 gSet series8.93_ {}
+gSet inz_23 {1}
 gSet seriest1.169_ {21:E}
 gSet seriest1.170_ {21:E}
 gSet keyreflverbose_7 {no}
@@ -2460,6 +2463,7 @@ gSet seriest1.178_ {21:E}
 gSet series2.159_ {}
 gSet series2.160_ {}
 gSet series7.118_ {}
+gSet v_shft_1 {0}
 gSet series11.182_ {}
 gSet seriest1.179_ {21:E}
 gSet seriest1.180_ {21:E}
@@ -2635,17 +2639,17 @@ gSet separateW58 {}
 gSet separateW59 {}
 gSet separateW60 {}
 gSet separateW61 {}
-gSet separateW62 {}
 gSet series11.198_ {}
-gSet separateW63 {}
-gSet seriest1.196_ {21:E}
+gSet separateW62 {}
 gSet seriest1.206_ {21:E}
+gSet seriest1.196_ {21:E}
+gSet separateW63 {}
 gSet separateW64 {}
 gSet separateW65 {}
-gSet separateW66 {}
 gSet series0.26_ {}
-gSet series2.177_ {}
+gSet separateW66 {}
 gSet series5.22_ {}
+gSet series2.177_ {}
 gSet series7.136_ {}
 gSet separateW67 {}
 gSet separateW68 {}
@@ -2764,6 +2768,7 @@ gSet series5.34_ {}
 gSet series7.148_ {}
 gSet series4.9_ {1.575}
 gSet series0.105_ {}
+gSet staofm_23 {no}
 gSet max_wavelength_1 {1.4}
 gSet series0.39_ {}
 gSet series0.40_ {}
@@ -3098,7 +3103,7 @@ gSet min_z_8 {-4.15}
 gSet series5.115_ {}
 gSet series0.156_ {}
 gSet series10.13_ {}
-gSet number_of_neutrons_1 {1e5}
+gSet number_of_neutrons_1 {1e6}
 gSet series0.91_ {}
 gSet series5.86_ {}
 gSet series5.116_ {}
@@ -3129,6 +3134,7 @@ gSet series5.121_ {}
 gSet series0.162_ {}
 gSet series10.18_ {}
 gSet dist_stop_4 {0}
+gSet voff_23 {0}
 gSet dist_stop_6 {0}
 gSet series0.96_ {}
 gSet series5.92_ {}
@@ -3564,6 +3570,7 @@ gSet seriest2.119_ {tofile}
 gSet series5.185_ {}
 gSet series10.83_ {}
 gSet series3.101_ {}
+gSet x1_23 {50}
 gSet series2.57_ {}
 gSet mcperneut_5 {500}
 gSet series7.53_ {}
@@ -3709,6 +3716,7 @@ gSet series3.118_ {}
 gSet series2.75_ {}
 gSet series7.71_ {}
 gSet seriest2.54_ {tofile}
+gSet oux_23 {1}
 gSet seriest2.138_ {tofile}
 gSet series0.4_ {}
 gSet series3.120_ {}

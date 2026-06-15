@@ -1,0 +1,9 @@
+VITESS 3.8.1 Release Notes
+--------------------------
+
+Small improvements over 3.8:
+- updated grplot
+- read_in: weights from multiple files are now normalized to 1
+- 2D monitors now produce the same headers
+- guide: more accurate reflectivity calculation
+- fixed a bug in geometry output that affected the curved guide
