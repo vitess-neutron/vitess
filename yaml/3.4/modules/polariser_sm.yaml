@@ -59,14 +59,14 @@ polariser_sm:
     tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
     prefix: "-R"
   - name: "FrameOutY"
-    type: "int"
+    type: "float"
     label: "output Y [cm]"
     default: 0
     column: 1
     tooltip: "position of the new origin  (in the co-ordinate of the old origin)"
     prefix: "-E"
   - name: "FrameOutZ"
-    type: "int"
+    type: "float"
     label: "output Z [cm]"
     default: 0
     column: 2

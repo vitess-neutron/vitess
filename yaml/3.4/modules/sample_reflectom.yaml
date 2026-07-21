@@ -197,15 +197,6 @@ sample_reflectom:
   - name: "Title_OutFrame"
     type: "title"
     label: "Output frame"
-  - name: "eOutFrame"
-    label: "frame generation"
-    tooltip: "'user defined frame': output frame defined by the values below 'standard frame generation': puts output direction along the reflected beam"
-    <<: *VtFrameGen
-    options: ["VT_FRAME_USER", "VT_FRAME_STD"]
-    default: "VT_FRAME_STD"
-    column: 0
-    prefix: "-g"
-
   - name: "FrameOutX"
     type: "float"
     label: "out x [cm]"

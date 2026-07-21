@@ -105,8 +105,8 @@ chopper_fermi:
     type: "float"
     label: "phase [deg]"
     tooltip: "Chopper orientation at time = 0"
-    default: 0.0001
-    min: 0.0001
+    default: 0.0
+    min: 0.0
     column: 1
     prefix: "-q"
   - name: "OptLambda"

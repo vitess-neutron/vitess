@@ -78,7 +78,7 @@ sample_inelast:
     type: "float"
     label: "temperature [K]"
     tooltip: "temperature of the sample (only needed if use of the Bose factor is chosen)"
-    min: 0.0001
+    min: 0.0
     column: 1
     prefix: "-T"
   - name: "nRep"
@@ -248,15 +248,6 @@ sample_inelast:
   - name: "Title_frame"
     type: "title"
     label: "Output frame"
-  - name: "eOutFrame"
-    label: "frame generation"
-    tooltip: "'user defined frame': output frame defined by the values below 'standard frame generation': creates output direction using the initial wavevector values (see Help|sample)"
-    <<: *VtFrameGen
-    options: ["VT_FRAME_USER", "VT_FRAME_STD"]
-    default: "VT_FRAME_STD"
-    column: 0
-    prefix: "-g"
-
   - name: "FrameOutX"
     type: "float"
     label: "X' [cm]"

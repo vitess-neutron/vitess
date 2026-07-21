@@ -1096,7 +1096,7 @@ VtSrcName: &VtSrcName
     ISIS: "ISIS"
     SNS: "SNS"
     ESS: "ESS"
-    ANYSOURCE: "ANYSOURCE"
+    ANYSOURCE: "-"
   display:
     FRM2: "FRM2"
     HMI: "HMI"

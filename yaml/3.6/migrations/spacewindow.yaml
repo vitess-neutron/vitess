@@ -1,0 +1,6 @@
+spacewindow:
+  parameters:
+    eMatOut:
+      convert: yaml
+      downgrade:
+        VT_WABS_VAC: VT_WABS_IDEAL

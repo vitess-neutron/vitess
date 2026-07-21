@@ -147,7 +147,7 @@ visual:
     required: false
 
   help:
-    brief: "The aim of this module is to visualize the neutron beam DURING simulation. This module does not disturbe the normal processing of the pipe."
+    summary: "The aim of this module is to visualize the neutron beam DURING simulation. This module does not disturbe the normal processing of the pipe."
     markdown: |
       There are four options of visualization:
       1 - circular beam YZ ,

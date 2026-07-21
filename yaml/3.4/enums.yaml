@@ -372,11 +372,13 @@ VtFrameGen: &VtFrameGen
   type: "enum"
   label: "Frame generation"
   commandline:
-    VT_FRAME_USER: 2
-    VT_FRAME_STD: 1
+    VT_FRAME_USER: 1
+    VT_FRAME_STD: 0
+    VT_NO_FRAME: -1
   display:
-    VT_FRAME_USER: "VT_FRAME_USER"
-    VT_FRAME_STD: "VT_FRAME_STD"
+    VT_FRAME_USER: "user defined frame"
+    VT_FRAME_STD: "standard frame generation"
+    VT_NO_FRAME: "VT_NO_FRAME"
 VtGdeShape: &VtGdeShape
   type: "enum"
   label: "guide shape"
@@ -463,8 +465,8 @@ VtMeasMode: &VtMeasMode
   type: "enum"
   label: "measuring mode (sample_reflectom)"
   commandline:
-    VT_REFERENCE: 1
-    VT_SAMPLE: 0
+    VT_REFERENCE: 2
+    VT_SAMPLE: 1
   display:
     VT_REFERENCE: "flat"
     VT_SAMPLE: "cylindrical"
@@ -586,11 +588,13 @@ VtMonoFocus: &VtMonoFocus
     VERT_CYL: 3
     SPHERICAL: 2
     CONST_LMBD: 1
+    NO_FOCUSING: 0
   display:
     DBL_FOC: "double focussing"
     VERT_CYL: "vert. cylinder"
     SPHERICAL: "sperical"
     CONST_LMBD: "constant lambda"
+    NO_FOCUSING: "NO_FOCUSING"
 VtMonoType: &VtMonoType
   type: "enum"
   label: "monochromator geometry"
@@ -822,7 +826,7 @@ VtSrcName: &VtSrcName
     ISIS: "ISIS"
     SNS: "SNS"
     ESS: "ESS"
-    ANYSOURCE: "ANYSOURCE"
+    ANYSOURCE: "-"
   display:
     FRM2: "FRM2"
     HMI: "HMI"
@@ -833,7 +837,7 @@ VtSrcName: &VtSrcName
     ISIS: "ISIS"
     SNS: "SNS"
     ESS: "ESS"
-    ANYSOURCE: "ANYSOURCE"
+    ANYSOURCE: "-"
 VtSrcType: &VtSrcType
   type: "enum"
   label: "Type of source: (Vitess 3)"

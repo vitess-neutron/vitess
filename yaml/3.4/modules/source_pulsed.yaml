@@ -32,9 +32,9 @@ source_pulsed:
     type: "string"
     label: "simulation name"
     tooltip: "name or ID of the simulation given by the user (only for indexing)"
-    default: ""
     column: 2
     prefix: "-I"
+    required: false
 
   - name: "MinLambda"
     type: "float"
@@ -71,10 +71,9 @@ source_pulsed:
     type: "title"
     label: "Source and moderator parameters"
   - name: "eSrcName"
-    type: "string"
+    <<: *VtSrcName
     label: "source name"
     tooltip: "name of the source, (needed for analytical calculations of source characteristics)"
-
     default: "ANYSOURCE"
     column: 0
     prefix: "-N"

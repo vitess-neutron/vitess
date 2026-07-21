@@ -141,16 +141,16 @@ eval_elast:
     editable: false
     label: "integration file"
     tooltip: "Optional: output file containing integrated intensities (see Help|evaluation) "
-    default: ""
     prefix: "-O"
+    required: false
   - name: "sCtrlFile"
     type: "file"
     plottable: false
     editable: false
     label: "control file"
     tooltip: "Optional: file controlling the output of integrated intensities (only needed for that)"
-    default: ""
     prefix: "-I"
+    required: false
 
   - name: "Title_Filter"
     type: "title"

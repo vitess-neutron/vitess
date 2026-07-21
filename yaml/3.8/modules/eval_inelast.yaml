@@ -29,14 +29,14 @@ eval_inelast:
     tooltip: "Filename for the TOF spectrum datafile of neutrons with spin down"
     default: "tofsp_down.eva"
     prefix: "-H"
-    required: true
+    required: false
   - name: "sFileEDown"
     type: "file"
     label: "energy spectrum file down"
     tooltip: "Filename for the energy spectrum datafile of neutrons with spin down"
     default: "energysp_down.eva"
     prefix: "-T"
-    required: true
+    required: false
 
   - name: "Title_Range"
     type: "title"

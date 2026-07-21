@@ -307,15 +307,6 @@ monochromator:
   - name: "Title_frame"
     type: "title"
     label: "Output frame"
-  - name: "eFrame"
-    label: "frame generation"
-    tooltip: "'user defined frame': output frame defined by the values below 'standard frame generation': creates output direction using the given Bragg angles (see Help|monochromator)"
-    <<: *VtFrameGen
-    options: ["VT_FRAME_USER", "VT_FRAME_STD"]
-    default: "VT_FRAME_STD"
-    column: 0
-    prefix: "-F"
-
   - name: "OutFrameX"
     type: "float"
     label: "X' [cm]"

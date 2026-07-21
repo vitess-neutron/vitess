@@ -79,7 +79,7 @@ sample_inelast:
     type: "float"
     label: "temperature [K]"
     tooltip: "temperature of the sample (only needed if use of the Bose factor is chosen)"
-    min: 0.0001
+    min: 0.0
     column: 1
     prefix: "-T"
   - name: "nRep"

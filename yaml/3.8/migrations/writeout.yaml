@@ -1,0 +1,12 @@
+writeout:
+  parameters:
+    bActive:
+      rename: eActivity
+      convert: yaml
+      upgrade:
+        false: VT_NO_WRITING
+        true: VT_WRITE_TRAJ
+      downgrade:
+        VT_NO_WRITING: false
+        VT_WRITE_TRAJ: true
+        VT_SPLIT_SIM: true
