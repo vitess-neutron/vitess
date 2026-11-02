@@ -773,6 +773,10 @@ void Monochromator::fillRotMatrices(double MonoHor)
 
   double rotH, rotV, RotMatrix[3][3] ;
 
+  // Keep the common rigid-body phase used both for element orientations
+  // and for rotating their reference positions about PosCE0.
+  rotMonoHorCur = MonoHor;
+
   /* computes rotation matrixes corresponding to Bragg angles */
   FillRotMatrixZY(RotMatrixCE0, SrfcVert, SrfcHor+MonoHor) ;
 
@@ -1014,14 +1018,15 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
           iHit=0,jHit=0;  // (expected) index of column and row of CE that is hit
   double  TofCE=UNDEFINED,// flight time from entry to CE surface
           ReflProb=0.0;   // total weight of the reflected neutron trajectories
-  Neutron NeutCE,         // data of the neutron on the CE surface (in the frame of the module)
+  Neutron NeutEntry,      // data of the neutron at the entry point of the CE (in the frame of the module)
+          NeutCE,         // data of the neutron at the sampled reflection point (in the frame of the module)
           NeutRefl,       // data of the reflected neutron         (in the frame of the module)
           NeutTrans,      // data of the transmitted neutron       (in the frame of the module)
           NeutTransOut,   // data of the transmitted neutron       (in the output frame)
           NeutReflOut;    // data of the reflected neutron         (in the output frame)
 
   // init
-  InitNeutron(&NeutCE);
+  InitNeutron(&NeutEntry); InitNeutron(&NeutCE);
   InitNeutron(&NeutRefl);   InitNeutron(&NeutReflOut);
   InitNeutron(&NeutTrans);  InitNeutron(&NeutTransOut);
 
@@ -1047,7 +1052,7 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
     {
       case VT_MONO_FIX:
       case VT_MONO_PST:
-        bHit = selectCE(iHit, jHit, pNeutIn, h);
+        bHit = selectCE(iHit, jHit, TofCE, pNeutIn, h);
         break;
       case VT_MONO_ROT:
         bHit = rotMonoAndSelectCE(iHit, jHit, TofCE, pNeutIn, h);
@@ -1059,8 +1064,12 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
         Error("Unkown type of monochromator movement");
     }
 
-    // propagate neutron to the CE that is hit (or to the y-z-plane through the x position of the central element)
-    propNeutron2CE(&NeutCE, pNeutIn, TofCE);
+    // Propagate to the CE entry point. For a hit, continue to the sampled
+    // internal reflection point before evaluating phase, velocity and Bragg reflection.
+    propNeutron2CE(&NeutEntry, pNeutIn, TofCE);
+    CopyNeutron(&NeutEntry, &NeutCE);
+    if (bHit)
+      propNeutronToReflPoint(&NeutCE, &NeutEntry);
 
     // check if the monochromator is in position
     if (eMonoMove==VT_MONO_PST)
@@ -1077,6 +1086,9 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
       ReflProb = reflectNeutron(&NeutRefl, &NeutCE);
 
       pNeutIn->Probability -= ReflProb;
+      NeutEntry.Probability -= ReflProb;
+      if (pNeutIn->Probability < 0.0) pNeutIn->Probability = 0.0;
+      if (NeutEntry.Probability < 0.0) NeutEntry.Probability = 0.0;
     }
     else  // no CE was found
     {
@@ -1091,7 +1103,7 @@ void Monochromator::processNeutron(Neutron* pNeutIn)
   // transmitted neutron
   if (bTransm==TRUE)
   {
-    transmitNeutron(&NeutTrans, &NeutCE);
+    transmitNeutron(&NeutTrans, &NeutEntry);
     WriteIAP(&NeutTrans, VT_PASSED);
 
     // computes neutron variables in the output frame
@@ -1119,7 +1131,13 @@ void Monochromator::propNeutron2CE(Neutron* pNeutOut, const Neutron* pNeutIn, co
       Tof  = DelX / Vx;
     }
     else
-    { Tof = TofCE;
+    {
+      Tof = TofCE;
+
+      // Fixed, PST and rotating selection return the TOF to the actual
+      // finite-volume entry point.
+      if (eMonoMove == VT_MONO_FIX || eMonoMove == VT_MONO_PST || eMonoMove == VT_MONO_ROT)
+        V0 = V_FROM_LAMBDA(pNeutIn->Wavelength);
     }
 
     // Update total TOF and position
@@ -1133,6 +1151,25 @@ void Monochromator::propNeutron2CE(Neutron* pNeutOut, const Neutron* pNeutIn, co
 
     return;
 }
+
+
+// Continue from the CE entry point to the sampled internal reflection point.
+// Depth is stored in the instantaneous CE frame by the intersection solver.
+void Monochromator::propNeutronToReflPoint(Neutron* pNeutOut, const Neutron* pNeutEntry)
+{
+  VectorType depthModule;
+  const double speed = V_FROM_LAMBDA(pNeutEntry->Wavelength);
+  const double path = LengthVector(Depth);
+
+  CopyNeutron(pNeutEntry, pNeutOut);
+  CopyVector(Depth, depthModule);
+  RotBackVector(RotMatrixCE, depthModule);
+
+  AddVector(pNeutOut->Position, depthModule);
+  if (speed > 0.0)
+    pNeutOut->Time += path / speed;
+}
+
 
 bool Monochromator::checkPstPos(const Neutron* pNeutIn)
 {
@@ -1267,10 +1304,6 @@ double Monochromator::reflectNeutron(Neutron* pNeutRefl, const Neutron* pNeutIn)
       // and the neutron trajectory changes direction after reflection from a mosaic element.
       CopyNeutron(&NeutPlCEM, &NeutReflCEM);
 
-      double braggAngleDev = 0.0;
-      if (d_rnd > 0.0)
-        braggAngleDev = acos(peakWL/(2.0*d_rnd)) - acos(peakWL/(2.0*d_spacing));
-
       VectorType dirInBragg, dirOutBragg;
       CopyVector(NeutPlCEM.Vector, dirInBragg);
       if (eMonoMove == VT_MONO_ROT)
@@ -1285,7 +1318,11 @@ double Monochromator::reflectNeutron(Neutron* pNeutRefl, const Neutron* pNeutIn)
         RotVector(RotMatrixBragg, dirInBragg);
       }
 
-      const double reflW = calcReflProbAndDir(dirOutBragg, dirInBragg, pi2_bragg, braggAngleDev);
+      // The crystal is stationary in NeutPlCEM. Use the same exact mosaic
+      // Bragg solver for fixed and moving monochromators; motion is represented
+      // solely by the transformations into and out of this instantaneous frame.
+      const double reflW =
+        calcReflProbAndDir(dirOutBragg, dirInBragg, pi2_bragg);
       if (reflW <= 0.0)
         continue;
 
@@ -1321,17 +1358,48 @@ double Monochromator::reflectNeutron(Neutron* pNeutRefl, const Neutron* pNeutIn)
           transfCE2In (pNeutRefl, &NeutReflCEM);
       }
 
-      /* makes depth correction to get back to the old frame for Depth != 0 */
-      /* NV corrections here */
-      /* old stuff*/
-      //RotBackVector(RotMatrixCE, Depth);
-      //AddVector(pNeutRefl->Position, Depth);
-            /* end old stuff*/
-      VectorType DepthLab;
-      CopyVector(Depth, DepthLab);
-      RotBackVector(RotMatrixCE, DepthLab);
-      AddVector(pNeutRefl->Position, DepthLab);
-            /* end new stuff*/
+      // Attenuate the weighted reflected trajectory along both material paths:
+      // entry -> reflection point and reflection point -> exit. The rotating
+      // case uses directions in the instantaneous material frame.
+      VectorType posMaterial, dirInMaterial, dirOutMaterial;
+      CopyVector(pNeutIn->Position, posMaterial);
+      SubVector(posMaterial, PosCE);
+      RotVector(RotMatrixCE, posMaterial);
+      if (eMonoMove == VT_MONO_ROT || eMonoMove == VT_MONO_PST)
+      {
+        CopyVector(NeutPlCEM.Vector,   dirInMaterial);
+        CopyVector(NeutReflCEM.Vector, dirOutMaterial);
+      }
+      else
+      {
+        CopyVector(pNeutIn->Vector, dirInMaterial);
+        CopyVector(pNeutRefl->Vector, dirOutMaterial);
+        RotVector(RotMatrixCE, dirInMaterial);
+        RotVector(RotMatrixCE, dirOutMaterial);
+      }
+
+      VectorType dirBack;
+      for (int k = 0; k < 3; k++)
+        dirBack[k] = -dirInMaterial[k];
+
+      const double pathIncident = pathToCEBoundary(posMaterial, dirBack);
+      const double pathExit = pathToCEBoundary(posMaterial, dirOutMaterial);
+      const double previousMaterialPath =
+        Max(PathLenTransSum - PathLenTrans, 0.0);
+      const double muMaterial =
+        mu_scat + mu_abs * NeutPlCEM.Wavelength / 1.798;
+      PathLenRefl = previousMaterialPath + pathIncident + pathExit;
+      const double attenuationIn =
+        exp(-muMaterial * (previousMaterialPath + pathIncident));
+      const double attenuationOut = exp(-muMaterial * pathExit);
+      const double reflectedAtPoint = pNeutRefl->Probability * attenuationIn;
+      NeutReflCEM.Probability *= attenuationIn * attenuationOut;
+      pNeutRefl->Probability  *= attenuationIn * attenuationOut;
+
+      // The transmitted branch loses the part reflected at the internal point,
+      // including incident attenuation but before possible loss on the exit path.
+      if (bTransm == TRUE)
+        TotReflProb += reflectedAtPoint;
 
       if (pNeutRefl->Probability < wei_min)
         continue;
@@ -1359,10 +1427,6 @@ double Monochromator::reflectNeutron(Neutron* pNeutRefl, const Neutron* pNeutIn)
         dbg_logCount[dbg_idx] += 1;
         dbg_logTotal += 1;
       }
-
-      // add reflection probability to total reflection probability
-      if (bTransm == TRUE)
-        TotReflProb += pNeutRefl->Probability;
 
       // trajectory visualization
       if (iRep == 0 && pNeutRefl->Probability > wei_min)
@@ -1407,6 +1471,93 @@ void Monochromator::transmitNeutron(Neutron* pNeutOut, const Neutron* pNeutIn)
 }
 
 
+// Intersect a forward neutron ray with a rectangular CE at its current
+// position and orientation. PathEntry/PathExit are distances [cm] from the
+// neutron's current position; PosEntryCE/PosExitCE are in the CE frame.
+bool Monochromator::intersectCEVolume(double& PathEntry, double& PathExit,
+                                     VectorType PosEntryCE, VectorType PosExitCE,
+                                     const VectorType PosCenter, const VectorType SizeCE,
+                                     double RotToCE[3][3], const Neutron* pNeut)
+{
+  const double eps = 1.0e-12;
+  double tMin = -1.0e300;
+  double tMax =  1.0e300;
+  VectorType pos, dir;
+
+  CopyVector(pNeut->Position, pos);
+  CopyVector(pNeut->Vector, dir);
+  SubVector(pos, PosCenter);
+  RotVector(RotToCE, pos);
+  RotVector(RotToCE, dir);
+
+  for (int k = 0; k < 3; k++)
+  {
+    const double halfSize = 0.5 * SizeCE[k];
+    if (halfSize < 0.0)
+      return false;
+
+    if (fabs(dir[k]) <= eps)
+    {
+      if (pos[k] < -halfSize || pos[k] > halfSize)
+        return false;
+      continue;
+    }
+
+    double t1 = (-halfSize - pos[k]) / dir[k];
+    double t2 = ( halfSize - pos[k]) / dir[k];
+    if (t1 > t2)
+    {
+      const double tmp = t1;
+      t1 = t2;
+      t2 = tmp;
+    }
+
+    if (t1 > tMin) tMin = t1;
+    if (t2 < tMax) tMax = t2;
+    if (tMin > tMax)
+      return false;
+  }
+
+  if (tMax < 0.0)
+    return false;
+
+  PathEntry = Max(tMin, 0.0);
+  PathExit  = tMax;
+  if (PathExit < PathEntry)
+    return false;
+
+  for (int k = 0; k < 3; k++)
+  {
+    PosEntryCE[k] = pos[k] + PathEntry * dir[k];
+    PosExitCE[k]  = pos[k] + PathExit  * dir[k];
+  }
+  return true;
+}
+
+
+// Distance from an internal point to the next CE boundary along DirCEFrame.
+// Both arguments are in the instantaneous CE/material frame.
+double Monochromator::pathToCEBoundary(const VectorType PosCEFrame,
+                                      const VectorType DirCEFrame)
+{
+  const double eps = 1.0e-12;
+  double path = 1.0e300;
+
+  for (int k = 0; k < 3; k++)
+  {
+    if (fabs(DirCEFrame[k]) <= eps)
+      continue;
+
+    const double boundary = (DirCEFrame[k] > 0.0) ? 0.5 * DimCE[k] : -0.5 * DimCE[k];
+    const double candidate = (boundary - PosCEFrame[k]) / DirCEFrame[k];
+    if (candidate >= -eps && candidate < path)
+      path = Max(candidate, 0.0);
+  }
+
+  return (path < 1.0e299) ? path : 0.0;
+}
+
+
 /***********************************************************************
 * Monochromator::selectCE             no movement of the monochromator
 *              ::rotMonoAndSelectCE   rotation about a vertical axis
@@ -1419,6 +1570,7 @@ void Monochromator::transmitNeutron(Neutron* pNeutOut, const Neutron* pNeutIn)
 *      hIn      : index of the CE layer that is tested
 * out: iHit,jHit: indices of the CE that is hit by the neutron
 *                   iHit: column,  jHit: row,  hIn: layer   (0,0,0) is top, left, first to be hit
+*      TofCE       : flight time to the entry point of the intersected CE
 *
 * calculated: PathLenTrans, PathLenTransSum
 * determined: PosCE, RotMatrixCE,
@@ -1426,18 +1578,17 @@ void Monochromator::transmitNeutron(Neutron* pNeutOut, const Neutron* pNeutIn)
 *
 * return: CE hit? true or false
 *************************************************************************/
-bool Monochromator::selectCE(int& iHit, int& jHit, const Neutron* pNeutIn, const int hIn)
+bool Monochromator::selectCE(int& iHit, int& jHit, double& TofCE, const Neutron* pNeutIn, const int hIn)
 {
   bool       bFound = false;
   int        h=0,             // index of the CE element layers
              i=0,             // index of the CE element columns
              j=0,             // index of the CE element rows
              hStart, hEnd;    // first and last layer to be checked
-  VectorType pos, dir;        // position and direction of the neutron in the frame of the CE surface
-  VectorType Pos1, Pos2;      // intersection points with crystal element
+  VectorType Pos1, Pos2;      // entry and exit points in the crystal-element frame
 
   // init
-  // CopyNeutron(pNeutIn, pNeutOut);
+  TofCE = UNDEFINED;
 
   if (hIn == -1) {hStart = 0;   hEnd = NumberCE[0];}
   else           {hStart = hIn; hEnd = hIn + 1;}
@@ -1452,50 +1603,25 @@ bool Monochromator::selectCE(int& iHit, int& jHit, const Neutron* pNeutIn, const
         CopyVectorsToDim(h, i, j, DimCE);
         CopyMatricesToMatrix(h, i, j, RotMatrixCE_F, RotMatrixCE);
 
-        // computes neutron variables in the frame of the CE surface
-        CopyVector(pNeutIn->Position, pos);
-        CopyVector(pNeutIn->Vector, dir);
+        double pathEntry = 0.0, pathExit = 0.0;
 
-        SubVector(pos, PosCE);
-        RotVector(RotMatrixCE, pos);
-        RotVector(RotMatrixCE, dir);
-
-        /* here computes the depth where the neutron meets the reflecting plane,
-           equivalent to a parallel shift of a t=0 CE in the frame of CE */
-        if (IntersectionWithRectangular(DimCE, pos, dir, Pos1, Pos2) == TRUE)
+        // Find the forward entry and exit points of the neutron trajectory
+        // through the complete crystal-element volume.
+        if (intersectCEVolume(pathEntry, pathExit, Pos1, Pos2,
+                              PosCE, DimCE, RotMatrixCE, pNeutIn))
         {
           /* here we have the CE and initialise the values */
           bFound = true;
-          PathLenTrans = DistVector(Pos1, Pos2);
+          PathLenTrans = pathExit - pathEntry;
           PathLenTransSum += PathLenTrans;
 
-          /* Uniform sampling across the CE surface (y,z) */
-          const double xmin = -0.5 * DimCE[0];
-          const double xmax =  0.5 * DimCE[0];
-          const double ymin = -0.5 * DimCE[1];
-          const double ymax =  0.5 * DimCE[1];
-          const double zmin = -0.5 * DimCE[2];
-          const double zmax =  0.5 * DimCE[2];
+          const double speed = V_FROM_LAMBDA(pNeutIn->Wavelength);
+          TofCE = pathEntry / speed;
 
-          /* Build Depth as a DISPLACEMENT from the reference point 'pos'
-            'pos' is the neutron position in the CE frame at the reference CE plane
-            used later in reflectNeutron() (transfIn2CE / transfCE2In pipeline). */
-          Depth[0] = MonteCarlo(xmin, xmax);
-          Depth[1] = MonteCarlo(ymin, ymax);
-          Depth[2] = MonteCarlo(zmin, zmax);
-
-          // 'pos' is now the local position at the sampled point:
-          CopyVector(Depth, pos);
-
-          /*  // path lengths through the crystal
-          if (eMonoMode == REFL_MONO)
-            PathLenRefl = 2.0*(Depth[0]-Pos1[0]) * PathLenTrans/(Pos2[0]-Pos1[0]);  // reflection geometry, approximation, correct only for planes parallel to surface
-          else
-            PathLenRefl = PathLenTrans;                                             // transmission geometry approximation, correct only for planes parallel to surface
-
-          SubVector (pos, Depth);                 // neutron position in the frame of the reflecting surface
-          CopyVector(pos, pNeutInCE->Position);
-          CopyVector(dir, pNeutInCE->Vector);   */
+          const double depthFraction = MonteCarlo(0.0, 1.0);
+          for (int k = 0; k < 3; k++)
+            Depth[k] = depthFraction * (Pos2[k] - Pos1[k]);
+          PathLenRefl = LengthVector(Depth);
 
           /* NOTE: in focusing geometry the Bragg frame and CE frame are coincident*/
           if (eGeomOption != SINGLE_CE)
@@ -1531,151 +1657,129 @@ bool Monochromator::selectCE(int& iHit, int& jHit, const Neutron* pNeutIn, const
 bool Monochromator::rotMonoAndSelectCE(int& iHit, int& jHit, double& ToFCE,
                                        const Neutron* pNeutIn, const int hIn)
 {
-  bool   bHit = false;
-  int    h=0, i=0, j=0,
-         hStart, hEnd,
-         hLast=-1, iLast=-1, jLast=-1;
+  const int maxIterations = 100;
+  const double zeta0 = Zeta0 * M_PI / 180.0;
+  const double speed = V_FROM_LAMBDA(pNeutIn->Wavelength);
+  const double depthFraction = MonteCarlo(0.0, 1.0);
+  int hStart = (hIn == -1) ? 0 : hIn;
+  int hEnd   = (hIn == -1) ? NumberCE[0] : hIn + 1;
+  double planeTof = 0.0;
 
-  double zeta0, zetaN, zetaO,
-         DelZeta,
-         tof = 0.0,
-         ToF0 = pNeutIn->Time;
-
-  // init
-  if (hIn == -1) { hStart = 0;   hEnd = NumberCE[0]; }
-  else           { hStart = hIn; hEnd = hIn + 1;     }
-
-  zeta0 = Zeta0 * M_PI / 180.0;
-
-  // initial time estimation using monochromator center
-  fillRotMatrices(zeta0);
-  checkCE(ToFCE, MathVector(PosCE0), DimCE0, MathMatrix(RotMatrixCE0), pNeutIn);
-
-  zetaN = zeta0 + omega * (ToF0 + ToFCE);   // total TOF
-  rotMonoHorCur = zetaN;
-  fillRotMatrices(zetaN);
-
-  // Ensure Depth is well-defined even if we fail to hit anything
   Depth[0] = Depth[1] = Depth[2] = 0.0;
+  PathLenRefl = 0.0;
+  PathLenTrans = 0.0;
+  ToFCE = UNDEFINED;
 
-  do
+  // Use the central reference plane only as the initial phase estimate.
+  fillRotMatrices(zeta0);
+  checkCE(planeTof, MathVector(PosCE0), DimCE0, MathMatrix(RotMatrixCE0), pNeutIn);
+  double zeta = zeta0 + omega * (pNeutIn->Time + planeTof);
+  double previousZeta = 0.0, previousResidual = 0.0;
+  bool havePreviousResidual = false;
+
+  for (int iteration = 0; iteration < maxIterations; iteration++)
   {
-    zetaO = zetaN;
+    bool found = false;
+    int bestI = -1, bestJ = -1;
+    double bestPathEntry = 0.0, bestPathExit = 0.0;
+    double bestPathRefl = 1.0e300;
+    VectorType bestEntry = {0.0, 0.0, 0.0};
+    VectorType bestExit  = {0.0, 0.0, 0.0};
+    VectorType bestPos   = {0.0, 0.0, 0.0};
+    VectorType bestDim   = {0.0, 0.0, 0.0};
+    double bestRot[3][3];
 
-    // ------------------------------------------------------------
-    // 1) Try if it hits the same element as in the previous step
-    // ------------------------------------------------------------
-    if (iLast >= 0 && jLast >= 0 && hLast >= 0)
+    // Freeze the rigid assembly at the candidate reflection phase, intersect
+    // every complete CE volume, and retain the first volume encountered.
+    fillRotMatrices(zeta);
+    for (int h = hStart; h < hEnd; h++)
     {
-      CopyVectorsToPos    (hLast, iLast, jLast, PosCE);
-      CopyVectorsToDim    (hLast, iLast, jLast, DimCE);
-      CopyMatricesToMatrix(hLast, iLast, jLast, RotMatrixCE_F, RotMatrixCE);
-
-      bHit = checkCE(tof, MathVector(PosCE), DimCE, MathMatrix(RotMatrixCE), pNeutIn);
-
-      if (bHit)
+      for (int i = 0; i < NumberCE[1]; i++)
       {
-        // --- NEW: surface-uniform sampling on CE plane for ROT mode ---
-        if (HitPosCEValid)
+        for (int j = 0; j < NumberCE[2]; j++)
         {
-          const double ymin = -0.5 * DimCE[1];
-          const double ymax =  0.5 * DimCE[1];
-          const double zmin = -0.5 * DimCE[2];
-          const double zmax =  0.5 * DimCE[2];
+          VectorType posCE, dimCE, posEntry, posExit;
+          double rotCE[3][3];
+          double pathEntry = 0.0, pathExit = 0.0;
 
-          const double y_surf = MonteCarlo(ymin, ymax);
-          const double z_surf = MonteCarlo(zmin, zmax);
+          CopyVectorsToPos(h, i, j, posCE);
+          CopyVectorsToDim(h, i, j, dimCE);
+          CopyMatricesToMatrix(h, i, j, RotMatrixCE_F, rotCE);
 
-          // Depth is displacement from actual plane-hit point to sampled surface point (x stays on plane)
-          Depth[0] = 0.0;
-          Depth[1] = y_surf - HitPosCEPlane[1];
-          Depth[2] = z_surf - HitPosCEPlane[2];
-        }
-        else
-        {
-          Depth[0] = Depth[1] = Depth[2] = 0.0;
-        }
+          if (!intersectCEVolume(pathEntry, pathExit, posEntry, posExit,
+                                 posCE, dimCE, rotCE, pNeutIn))
+            continue;
 
-        // update iteration
-        ToFCE = tof;
-        zetaN = zeta0 + omega * (ToF0 + ToFCE);
-        rotMonoHorCur = zetaN;
-        fillRotMatrices(zetaN);
-
-        // also update outputs in case caller uses them even when reusing previous CE
-        iHit = iLast;
-        jHit = jLast;
-        goto check_rot;
-      }
-    }
-
-    // ------------------------------------------------------------
-    // 2) If not, scan elements in the layer(s)
-    // ------------------------------------------------------------
-    if (bHit == false)
-    {
-      for (h = hStart; h < hEnd; h++)
-      {
-        for (i = 0; i < NumberCE[1]; i++)
-        {
-          for (j = 0; j < NumberCE[2]; j++)
+          const double pathRefl = pathEntry + depthFraction * (pathExit - pathEntry);
+          if (!found || pathRefl < bestPathRefl)
           {
-            CopyVectorsToPos    (h, i, j, PosCE);
-            CopyVectorsToDim    (h, i, j, DimCE);
-            CopyMatricesToMatrix(h, i, j, RotMatrixCE_F, RotMatrixCE);
-
-            bHit = checkCE(tof, MathVector(PosCE), DimCE, MathMatrix(RotMatrixCE), pNeutIn);
-
-            if (bHit)
-            {
-              // --- NEW: surface-uniform sampling on CE plane for ROT mode ---
-              if (HitPosCEValid)
-              {
-                const double ymin = -0.5 * DimCE[1];
-                const double ymax =  0.5 * DimCE[1];
-                const double zmin = -0.5 * DimCE[2];
-                const double zmax =  0.5 * DimCE[2];
-
-                const double y_surf = MonteCarlo(ymin, ymax);
-                const double z_surf = MonteCarlo(zmin, zmax);
-
-                Depth[0] = 0.0;
-                Depth[1] = y_surf - HitPosCEPlane[1];
-                Depth[2] = z_surf - HitPosCEPlane[2];
-              }
-              else
-              {
-                Depth[0] = Depth[1] = Depth[2] = 0.0;
-              }
-
-              // bookkeeping
-              iHit  = i;  jHit  = j;
-              iLast = i;  jLast = j;  hLast = h;
-
-              // update iteration
-              ToFCE = tof;
-              zetaN = zeta0 + omega * (ToF0 + ToFCE);
-              rotMonoHorCur = zetaN;
-              fillRotMatrices(zetaN);
-
-              goto check_rot;
-            }
+            found = true;
+            bestI = i; bestJ = j;
+            bestPathEntry = pathEntry;
+            bestPathExit  = pathExit;
+            bestPathRefl  = pathRefl;
+            CopyVector(posEntry, bestEntry);
+            CopyVector(posExit,  bestExit);
+            CopyVector(posCE,    bestPos);
+            CopyVector(dimCE,    bestDim);
+            for (int p = 0; p < 3; p++)
+              for (int q = 0; q < 3; q++)
+                bestRot[p][q] = rotCE[p][q];
           }
         }
       }
     }
 
-  check_rot:
-    DelZeta = fabs(zetaN - zetaO) * 180.0 / M_PI;
+    if (!found || speed <= 0.0)
+      return false;
 
-    // Optional safety brake (prevents hangs if something goes numerically wrong):
-    // static int itCount = 0;
-    // if (++itCount > 100) break;
+    const double zetaNext =
+      zeta0 + omega * (pNeutIn->Time + bestPathRefl / speed);
+    const double residual = zetaNext - zeta;
+    const double deltaZeta = fabs(residual) * 180.0 / M_PI;
 
+    // Publish the geometry from this iteration. At convergence it is the
+    // instantaneous finite-volume solution used by reflection and Doppler.
+    iHit = bestI;
+    jHit = bestJ;
+    CopyVector(bestPos, PosCE);
+    CopyVector(bestDim, DimCE);
+    for (int p = 0; p < 3; p++)
+      for (int q = 0; q < 3; q++)
+        RotMatrixCE[p][q] = bestRot[p][q];
+
+    ToFCE = bestPathEntry / speed;
+    PathLenTrans = bestPathExit - bestPathEntry;
+    for (int k = 0; k < 3; k++)
+      Depth[k] = depthFraction * (bestExit[k] - bestEntry[k]);
+    PathLenRefl = LengthVector(Depth);
+
+    if (deltaZeta <= DelZetaMax)
+    {
+      PathLenTransSum += PathLenTrans;
+      rotMonoHorCur = zeta;
+      return true;
+    }
+
+    // Solve zeta = zetaNext(zeta). A bounded secant step converges even when
+    // direct fixed-point iteration forms a two-cycle as the faces rotate.
+    double step = 0.25 * residual;
+    if (havePreviousResidual && fabs(residual - previousResidual) > 1.0e-12)
+    {
+      const double secantStep =
+        -residual * (zeta - previousZeta) / (residual - previousResidual);
+      if (isfinite(secantStep) && fabs(secantStep) <= 0.25)
+        step = secantStep;
+    }
+    previousZeta = zeta;
+    previousResidual = residual;
+    havePreviousResidual = true;
+    zeta += step;
   }
-  while (bHit && DelZeta > DelZetaMax);
 
-  return bHit;
+  // A marginal ray can alternate between touching and missing a moving edge.
+  // If no self-consistent internal point is found, it is not a physical hit.
+  return false;
 }
 
 
@@ -1790,28 +1894,28 @@ bool Monochromator::oscMonoAndSelectCE(int& iHit, int& jHit, double& ToFCE, cons
 *************************************************************************/
 void Monochromator::transf2RotZ(Neutron* pNeutOut, const Neutron* pNeutIn, const bool bForward)
 {
-  VectorType PosCEChop;
-  double x = 0.0, y = 0.0;
+  VectorType rModule, uCE;
   double vx = 0.0, vy = 0.0, vz = 0.0, vMod = 0.0;
   double v0 = 0.0;
-  double ux = 0.0, uy = 0.0;
   double vlabx = 0.0, vlaby = 0.0, vlabz = 0.0;
-
-  CopyVector(PosCE, PosCEChop);
-  SubVector(PosCEChop, PosCE0);
-  RotVector(RotMatrixCE, PosCEChop);
 
   v0 = V_FROM_LAMBDA(pNeutIn->Wavelength);
 
-  // position (in that same central-CE frame you are using)
-  x = PosCEChop[0] + pNeutIn->Position[0];
-  y = PosCEChop[1] + pNeutIn->Position[1];
+  // Reconstruct the hit position relative to the common rotation axis in
+  // the module frame. pNeutIn->Position is expressed in the current CE frame.
+  CopyVector(pNeutIn->Position, rModule);
+  RotBackVector(RotMatrixCE, rModule);
+  AddVector(rModule, PosCE);
+  SubVector(rModule, PosCE0);
 
-  // omega x r for rotation about z
-  ux = -omega * y;
-  uy =  omega * x;
+  // Rigid-body velocity u = omega x r in the module frame, then express it
+  // in the current CE frame. This remains valid for vertically tilted CEs.
+  uCE[0] = -omega * rModule[1];
+  uCE[1] =  omega * rModule[0];
+  uCE[2] = 0.0;
+  RotVector(RotMatrixCE, uCE);
 
-  // lab velocity
+  // The neutron direction is already expressed in the current CE frame.
   vlabx = v0 * pNeutIn->Vector[0];
   vlaby = v0 * pNeutIn->Vector[1];
   vlabz = v0 * pNeutIn->Vector[2];
@@ -1820,15 +1924,16 @@ void Monochromator::transf2RotZ(Neutron* pNeutOut, const Neutron* pNeutIn, const
   // backward: rotating -> lab : v_lab = v_rot + (omega x r)
   if (bForward)
   {
-    vx = vlabx - ux;
-    vy = vlaby - uy;
+    vx = vlabx - uCE[0];
+    vy = vlaby - uCE[1];
+    vz = vlabz - uCE[2];
   }
   else
   {
-    vx = vlabx + ux;
-    vy = vlaby + uy;
+    vx = vlabx + uCE[0];
+    vy = vlaby + uCE[1];
+    vz = vlabz + uCE[2];
   }
-  vz = vlabz;
 
   vMod = sqrt(sq(vx) + sq(vy) + sq(vz));
   if (vMod <= 0.0) vMod = 1.0;
@@ -1950,10 +2055,8 @@ bool Monochromator::checkCE(double& Time,
   MathVector vUnit = MathVector(1.0, 0.0, 0.0);
   MathMatrix MrotInv = Mrot;
 
-  // default outputs
+  // default output
   Time = 0.0;
-  HitPosCEValid = false;
-  HitPosCEPlane[0] = HitPosCEPlane[1] = HitPosCEPlane[2] = 0.0;
 
   // plane normal in module frame
   MrotInv.transpose();
@@ -1963,7 +2066,7 @@ bool Monochromator::checkCE(double& Time,
   dist = vPosCE * vNmlCE;
 
   // intersect ray with plane
-  if (checkPlaneIntersect(vPos0, vDir0, vNmlCE, dist, t))
+  if (checkPlaneIntersect(vPos0, vDir0, vNmlCE, dist, t) && t >= 0.0)
   {
     // position on the plane in module frame
     vPos = vPos0 + vDir0 * t;
@@ -1971,14 +2074,8 @@ bool Monochromator::checkCE(double& Time,
     // TOF to that plane
     Time = t / V_FROM_LAMBDA(pNeut->Wavelength);
 
-    // convert plane-hit point into CE frame (this is what selectCE-style sampling needs)
+    // Convert the plane-hit point into the CE frame for the footprint check.
     vPosRel = Mrot * (vPos - vPosCE);
-
-    // store it for the caller (CE frame)
-    HitPosCEPlane[0] = vPosRel.x[0];
-    HitPosCEPlane[1] = vPosRel.x[1];
-    HitPosCEPlane[2] = vPosRel.x[2];
-    HitPosCEValid = true;
 
     // inside CE footprint?
     bHit = isNeutInCE(vPosRel, SizeCE);
@@ -2026,86 +2123,107 @@ bool Monochromator::isNeutInCE(MathVector vPosN, const VectorType SizeCE)
 // since the other one gives an angle of the order of the bragg angle.
 double Monochromator::calcReflProbAndDir(VectorType DirOut,
                                         const VectorType DirIn,
-                                        const double pi2_braggAngle,
-                                        const double braggAngleDev)
+                                        const double pi2_braggAngle)
 {
   dbg_lastValid = false;
 
-  // Mosaicity parameters: fRndm is randomized axis, fNorm is "dependent" axis
+  // fRndm is sampled directly. The perpendicular component is then solved
+  // geometrically so that the actual neutron satisfies the Bragg condition.
   const double muRnd  = fRndm[1];
   const double sigRnd = fabs(fRndm[2]);
-  const double ampRnd = fRndm[0];
-
   const double muNrm  = fNorm[1];
   const double sigNrm = fabs(fNorm[2]);
-  const double ampNrm = fNorm[0]; // already includes reflectivity via NormFunction()
-
-  // Rocking-curve width should track mosaic spread (use randomized-axis sigma if available)
-  const double devMaxRef = (maxDeviation > 0.0) ? maxDeviation : 1e-3;
-  double sigDev = (sigRnd > 0.0) ? sigRnd : ((sigNrm > 0.0) ? sigNrm : devMaxRef / 3.0);
-  if (sigDev <= 0.0) sigDev = devMaxRef / 3.0;
-  const double devMaxCut = 4.0 * sigDev;
+  const double ampNrm = fNorm[0];
+  const double cBragg = cos(pi2_braggAngle);
 
   auto clamp = [](double x, double lo, double hi) {
     return (x < lo) ? lo : (x > hi) ? hi : x;
   };
 
-  auto norm3 = [](VectorType v) {
-    const double n = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-    if (n > 0.0) { v[0]/=n; v[1]/=n; v[2]/=n; }
+  auto angleDifference = [](double a, double b) {
+    return atan2(sin(a-b), cos(a-b));
   };
 
   const int maxTries = 80;
   VectorType mosaicVector = {1.0, 0.0, 0.0};
-  double wBest = 0.0;
+  double weight = 0.0;
   bool found = false;
 
-  for (int k=0; k<maxTries; ++k)
+  for (int k = 0; k < maxTries; k++)
   {
-    // 1) randomize mosaic angle in the dominant direction
     const double aRnd = (sigRnd > 0.0) ? DistrGauss(muRnd, sigRnd) : muRnd;
-    // 2) compute the perpendicular mosaic angle that satisfies Bragg
     double aNrm = 0.0;
-    DetermineMosaicAngle(braggAngleDev, aRnd, aNrm);
-
-    // 3) build micro-domain normal (nominal normal is +x)
     double aH = 0.0, aV = 0.0;
-    if (mosRndmDir == 1) { // horizontal randomized, vertical determined
+
+    if (mosRndmDir == 1)
+    {
+      // Horizontal mosaic angle is sampled. Parameterize the unit normal as
+      // n = cos(aV)*(cos(aH),sin(aH),0) + sin(aV)*(0,0,1), then solve
+      // n.DirIn = cos(pi/2-theta_B) for the vertical mosaic angle aV.
       aH = aRnd;
-      aV = aNrm;
-    } else { // vertical randomized, horizontal determined
-      aH = aNrm;
+      const double A = DirIn[0]*cos(aH) + DirIn[1]*sin(aH);
+      const double B = DirIn[2];
+      const double R = hypot(A, B);
+      if (R <= 0.0 || fabs(cBragg) > R + 1e-12)
+        continue;
+
+      const double delta = atan2(B, A);
+      const double offset = acos(clamp(cBragg/R, -1.0, 1.0));
+      const double aV1 = delta + offset;
+      const double aV2 = delta - offset;
+      aV = (fabs(angleDifference(aV1, muNrm)) <= fabs(angleDifference(aV2, muNrm))) ? aV1 : aV2;
+      aNrm = aV;
+
+      mosaicVector[0] = cos(aV)*cos(aH);
+      mosaicVector[1] = cos(aV)*sin(aH);
+      mosaicVector[2] = sin(aV);
+    }
+    else
+    {
+      // Vertical mosaic angle is sampled. With n_z=sin(aV), solve the
+      // Bragg condition for the horizontal mosaic angle aH.
       aV = aRnd;
+      const double cosV = cos(aV);
+      const double A = cosV*DirIn[0];
+      const double B = cosV*DirIn[1];
+      const double rhs = cBragg - sin(aV)*DirIn[2];
+      const double R = hypot(A, B);
+      if (R <= 0.0 || fabs(rhs) > R + 1e-12)
+        continue;
+
+      const double delta = atan2(B, A);
+      const double offset = acos(clamp(rhs/R, -1.0, 1.0));
+      const double aH1 = delta + offset;
+      const double aH2 = delta - offset;
+      aH = (fabs(angleDifference(aH1, muNrm)) <= fabs(angleDifference(aH2, muNrm))) ? aH1 : aH2;
+      aNrm = aH;
+
+      mosaicVector[0] = cosV*cos(aH);
+      mosaicVector[1] = cosV*sin(aH);
+      mosaicVector[2] = sin(aV);
     }
 
-    VectorType nMos = {1.0, tan(aH), tan(aV)};
-    norm3(nMos);
+    const double depDev = angleDifference(aNrm, muNrm);
+    if (sigNrm > 0.0)
+      weight = ampNrm * exp(-depDev*depDev/(2.0*sigNrm*sigNrm));
+    else
+    {
+      if (fabs(depDev) > 1e-10)
+        continue;
+      weight = ampNrm;
+    }
 
-    // 4) validate Bragg deviation against current d-spacing
-    double c = nMos[0]*DirIn[0] + nMos[1]*DirIn[1] + nMos[2]*DirIn[2];
-    c = clamp(c, -1.0, 1.0);
-    const double ang = acos(c);
-    const double dev = ang - pi2_braggAngle;
-    if (fabs(dev) > devMaxCut) continue;
-    // 5) weights: mosaic PDFs along random + dependent axes, and rocking curve vs deviation
-    double wRnd = 1.0, wNrm = 1.0;
-    if (sigRnd > 0.0) wRnd = ampRnd * exp(-(aRnd-muRnd)*(aRnd-muRnd)/(2.0*sigRnd*sigRnd));
-    if (sigNrm > 0.0) wNrm = ampNrm * exp(-(aNrm-muNrm)*(aNrm-muNrm)/(2.0*sigNrm*sigNrm));
-    const double wDev = exp(-(dev*dev)/(2.0*sigDev*sigDev));
-    const double w = wRnd * wNrm * wDev;
-
-    CopyVector(nMos, mosaicVector);
     dbg_lastMosH = aH;
     dbg_lastMosV = aV;
     dbg_lastValid = true;
-    wBest = w;
     found = true;
     break;
   }
 
   if (!found) return 0.0;
 
-  // 6) reflect about this mosaic normal
+  // The randomized-axis Gaussian is already represented by sampling aRnd.
+  // Only the dependent-axis Gaussian is included in the trajectory weight.
   double mosaicMatrix[3][3];
   RotMatrixX(mosaicVector, mosaicMatrix);
 
@@ -2114,7 +2232,7 @@ double Monochromator::calcReflProbAndDir(VectorType DirOut,
   DirOut[0] *= -1.0;
   RotBackVector(mosaicMatrix, DirOut);
 
-  return wBest;
+  return weight;
 }
 
 
@@ -2744,6 +2862,20 @@ void Monochromator::CopyVectorsToPos(int h, int i, int j, double Pos[3])
     Pos[0] = PosCEx_F[h][i][j];
     Pos[1] = PosCEy_F[h][i][j];
     Pos[2] = PosCEz_F[h][i][j];
+
+    if (eMonoMove == VT_MONO_ROT)
+    {
+      // PosCEx/y/z_F hold the immutable reference geometry. Rotate every CE
+      // centre about the common vertical axis through PosCE0, using the same
+      // phase that is applied to its orientation in fillRotMatrices().
+      const double dx = Pos[0] - PosCE0[0];
+      const double dy = Pos[1] - PosCE0[1];
+      const double c  = cos(rotMonoHorCur);
+      const double s  = sin(rotMonoHorCur);
+
+      Pos[0] = PosCE0[0] + c*dx - s*dy;
+      Pos[1] = PosCE0[1] + s*dx + c*dy;
+    }
   }
   else
   {

@@ -91,9 +91,9 @@ class Monochromator{
   std::vector < std::vector<double> >
              RotCEh_F[NUM_LAYERS],     //          [rad]  vectors containing the horizontal orientations of all monochromator elements in the (up to NUM_LAYERS) layers
              RotCEv_F[NUM_LAYERS],     //          [rad]  vectors containing the vertical orientations of all monochromator elements in the layers
-             PosCEx_F[NUM_LAYERS],     //          [cm]   vectors containing the x-position of all monochromator elements in the layers
-             PosCEy_F[NUM_LAYERS],     //          [cm]   vectors containing the y-position of all monochromator elements in the layers
-             PosCEz_F[NUM_LAYERS],     //          [cm]   vectors containing the z-position of all monochromator elements in the layers
+             PosCEx_F[NUM_LAYERS],     //          [cm]   reference x-positions of all monochromator elements (before common rigid rotation)
+             PosCEy_F[NUM_LAYERS],     //          [cm]   reference y-positions of all monochromator elements (before common rigid rotation)
+             PosCEz_F[NUM_LAYERS],     //          [cm]   reference z-positions of all monochromator elements (before common rigid rotation)
              DimCEx_F[NUM_LAYERS],     //          [cm]   vectors containing the thicknesses of all monochromator elements in the layers
              DimCEy_F[NUM_LAYERS],     //          [cm]   vectors containing the widths of all monochromator elements in the layers
              DimCEz_F[NUM_LAYERS],     //          [cm]   vectors containing the heights of all monochromator elements in the layers
@@ -115,7 +115,7 @@ class Monochromator{
              RotMatrixCE0  [3][3],     //                 Matrix to rotate the trajectory into the system of the central crystal element
              RotMatrixBragg[3][3],     //                 Matrix to rotate the trajectory into the system of the reflecting planes
              RotMatrixOut  [3][3];     //                 Matrix to rotate the trajectory into output frame
-  double     PathLenRefl,              //                 Length of the trajectory through the crystal for the reflected beam,
+  double     PathLenRefl,              //                 Total in-crystal path of the reflected beam (incident plus exit),
              PathLenTrans,             //                   the transmitted beam
              PathLenTransSum,          //                   and the sum of all transmissions of the beam
              maxDeviation;             //                 max. angle deviation considered for the reflectivity normalization
@@ -151,10 +151,6 @@ class Monochromator{
   VectorType rDop,                     //  [cm]           position of the Doppler drive at time of impact (in the frame of module)
              vDop;                     // [cm/ms]         speed of the Doppler drive at time of impact (in the frame of module)
 
-  // C-frame hit point on the CE plane
-  VectorType HitPosCEPlane;
-  bool       HitPosCEValid;
-
   // Member functions
   // ----------------
   Monochromator();
@@ -180,7 +176,7 @@ class Monochromator{
   double      reflectNeutron (Neutron* pNeutOut, const Neutron* pNeutIn);   // reflects neutron and writes its data to output stream and trajectory file
   void        transmitNeutron(Neutron* pNeutOut, const Neutron* pNeutIn);
 
-  bool        selectCE          (int& iHit, int& jHit, const Neutron* pNeutIn, const int hIn);
+  bool        selectCE          (int& iHit, int& jHit, double& TofCE, const Neutron* pNeutIn, const int hIn);
   bool        rotMonoAndSelectCE(int& iHit, int& jHit, double& TofCE, const Neutron* pNeutIn, const int hIn);
   bool        oscMonoAndSelectCE(int& iHit, int& jHit, double& TofCE, const Neutron* pNeutIn, const int hIn);
 
@@ -189,8 +185,14 @@ class Monochromator{
   void        transf2DopplX(Neutron* pNeutOut, const Neutron* pNeutIn, const bool bFwd);
   bool        checkCE      (double& Time, const MathVector vPosCE, const VectorType SizeCE, const MathMatrix Mrot, const Neutron* pNeut);
   bool        isNeutInCE   (MathVector vPosN, const VectorType SizeCE);
+  bool        intersectCEVolume(double& PathEntry, double& PathExit,
+                                VectorType PosEntryCE, VectorType PosExitCE,
+                                const VectorType PosCenter, const VectorType SizeCE,
+                                double RotToCE[3][3], const Neutron* pNeut);
+  double      pathToCEBoundary(const VectorType PosCEFrame, const VectorType DirCEFrame);
+  void        propNeutronToReflPoint(Neutron* pNeutOut, const Neutron* pNeutEntry);
 
-  double      calcReflProbAndDir(VectorType DirOut, const VectorType DirIn, const double pi2_braggAngle, const double braggAngleDev);
+  double      calcReflProbAndDir(VectorType DirOut, const VectorType DirIn, const double pi2_braggAngle);
 
   void        crys_geomNoFocus();
   void        crys_geomLambda();
