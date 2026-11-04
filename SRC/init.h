@@ -126,8 +126,8 @@ void  CopyNeutron     (const Neutron* source, Neutron* dest);
 void  InitNeutron     (Neutron* pNeut);
 
 void  SetEOB          (Neutron* pNeut);
-short IsEOB           (Neutron* pNeut);
-short CheckEOB        (Neutron* pNeut);
+short IsEOB           (Neutron const *pNeut);
+short CheckEOB        (Neutron const *pNeut);
 void  SetReset        (ParChange* pChange);
 short IsReset         (const ParChange* pChange);
 

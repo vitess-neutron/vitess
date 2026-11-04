@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme  
+### M. Fromme
 ### June 1999
 
 ###
@@ -73,10 +73,11 @@ proc sizeTextWindow {{bigwin 0} {series 0}} {
     set th $Tth
   }
   set s [$gw.a.t get 1.0 end]
+  set tfont [$gw.a.t cget -font]
   destroy $dw
   if [catch {frame $w -bg $bgColor}] return
   pack $w -side top -fill both -expand yes
-  textWindow $w $th [list $tfontfamily $fontsize $tfonttype] $series
+  textWindow $w $th $tfont $series
   if {$s == ""} return
   $w.a.t insert end "$s\n"
   set LastMarker [$w.a.t index "end - 1 lines"]

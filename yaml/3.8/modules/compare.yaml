@@ -1,0 +1,35 @@
+compare:
+  executable: "compare"
+  label: "compare"
+  category: "event_handling"
+
+  parameters:
+  - name: "sFile"
+    type: "file"
+    plottable: false
+    editable: true
+    label: "ASCII input file"
+    tooltip: "ASCII input file containing reference trajectories"
+    prefix: "-A"
+    required: true
+  - name: "RelError"
+    type: "float"
+    label: "Max relative error"
+    unit: ""
+    tooltip: "Maximum tolerated relative difference to reference file"
+    default: 0.0
+    column: 0
+    prefix: "-r"
+    required: false
+  - name: "AbsError"
+    type: "float"
+    label: "Max absolute error"
+    unit: ""
+    tooltip: "Maximum tolerated ablolute difference to reference file"
+    default: 0.0
+    column: 0
+    prefix: "-a"
+    required: false
+
+  help:
+    summary: "Compare the events in the pipeline one-by one to a reference file."

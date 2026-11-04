@@ -358,7 +358,7 @@ proc generateVitessCommand {mode {serll {}} {sermol {}} {serpal {}}} {
   switch $mode {
     bat {append fc "\ntype P:\\$logtmp* > P:\\result.txt\ndel P:\\$logtmp*"}
     sh  {
-      append fc "\nrm -f \$P/result.txt\ncat \${L}?? >> \$P/result.txt\nrm \${L}*"
+      append fc "\nRES=\$?\nrm -f \$P/result.txt\ncat \${L}?? >> \$P/result.txt\nrm \${L}*\nexit \$RES"
       regsub -all " \\| " $fc " | \\\n" fc
     }
     grd {

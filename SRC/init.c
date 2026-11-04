@@ -1644,7 +1644,7 @@ void WriteInstrData(VectorType Pos)
     fclose(pFile);
   }
 
-  // if the module 'writeout' writes 'instr_out.inf', it also appends a line in 'instrument.inf' 
+  // if the module 'writeout' writes 'instr_out.inf', it also appends a line in 'instrument.inf'
   if (_eModule==MCN_WRITEOUT && strcmp(sInstrInfOut, "instr_out.inf")==0)
   {
     pFile = OpenOutputFile(sInstrInfIn, FALSE, "a");
@@ -1990,7 +1990,7 @@ void  SetEOB(Neutron* pNeut)
   pNeut->Debug='B';
 }
 
-short IsEOB(Neutron* pNeut)
+short IsEOB(Neutron const *pNeut)
 {
   if (pNeut->Debug=='B')
     return TRUE;
@@ -1998,7 +1998,7 @@ short IsEOB(Neutron* pNeut)
     return FALSE;
 }
 
-short CheckEOB(Neutron* pNeut)
+short CheckEOB(Neutron const *pNeut)
 {
   short rc=IsEOB(pNeut);
 

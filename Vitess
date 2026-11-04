@@ -118,8 +118,8 @@ switch $tcl_platform(platform) {
     if {$Browser == ""} {
       puts "no browser found!"
     }
-    set serif Arial
-    set sserif Arial
+    set serif [font actual TkDefaultFont -family]
+    set sserif $serif
 
     regsub ^./ [glob [info script]] "" s
     set i [string last / $s]
@@ -173,7 +173,7 @@ switch $tcl_platform(platform) {
   }
 }
 catch {unset ld place resname s i m}
-set monospaced $serif
+set monospaced [font actual TkFixedFont -family]
 set GUIDir [file join $SourceDirectory GUI]
 set auto_path [linsert $auto_path 0 $GUIDir]
 ###    use tk_chooseColor to find better colors
