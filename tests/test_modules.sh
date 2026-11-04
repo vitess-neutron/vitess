@@ -66,6 +66,16 @@ check_output() {
         [ -r "${REF_FILE}" ] || continue
         OUT_NAME="$(basename "${REF_FILE}" | sed 's/_out-ref.dat/_out.dat/g')"
         OUT_FILE="${P}/${OUT_NAME}"
+        if [ ! -r "${OUT_FILE}" ]; then
+            if grep -q 'compare' "${P}"/*.sh &> /dev/null; then
+                echo "SKIP ${TEST_NAME}/${OUT_NAME}"
+            else
+                echo "FAIL ${TEST_NAME}/${OUT_NAME}"
+                echo "${OUT_NAME} not found"
+                OUTPUT_FAIL=1
+            fi
+            continue
+        fi
         # TODO: ignore certain parts of monitor files
         DIFF="$(diff -u0 -W140 --suppress-common-lines -b -I '^#' "${REF_FILE}" "${OUT_FILE}" 2>&1)"
         if [ $? -eq 0 ]; then
@@ -100,7 +110,7 @@ check_dir() {
         echo "ERROR in ${TEST_NAME}: No pipeline script."
         DIR_FAIL=1
     fi
-    if ! ls "${P}"/*_out-ref.dat > /dev/null 2>&1; then
+    if ! ls "${P}"/*_out-ref.dat &> /dev/null 2>&1 && ! grep -q 'compare' "${P}"/*.sh &> /dev/null; then
         echo "ERROR in ${TEST_NAME}: No reference files."
         DIR_FAIL=1
     fi

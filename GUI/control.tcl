@@ -1,6 +1,6 @@
 ### project Xcontrol
 ### HMI DN
-### M. Fromme  
+### M. Fromme
 ### June 1999
 
 ### main module for experiment control
@@ -780,7 +780,7 @@ proc showBeef {w} {
   pack $Root.l -side left -fill both
   pack $Root.r -side right -fill both -expand yes
 
-  textWindow $Textw $Tth [textFont]
+  textWindow $Textw $Tth [monoFont]
   set Messagew $Textw
 
   set Amf [scrollFrame $Root.r both $amw $ch $sh]; # Actual module frame

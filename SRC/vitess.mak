@@ -23,7 +23,7 @@ CXX = cl.exe
 CCFLAGS = /MT /nologo /W3 /GF /EHsc /wd5105
 CFLAGS = /std:c11 $(CCFLAGS)
 CXXFLAGS = /std:c++17 $(CCFLAGS)
-CPPFLAGS = /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR) /I "$(GSLPATH)"
+CPPFLAGS = /DDO_WIN32 /DCONSOLE /DWIN32 /D "_MBCS" /D_CRT_SECURE_NO_WARNINGS /D_USE_MATH_DEFINES /DVMAJOR=$(VERSION_MAJOR) /DVMINOR=$(VERSION_MINOR) /I "$(GSLPATH)"
 LD = link.exe
 LDFLAGS = /nologo /subsystem:console /incremental:no /opt:ref /opt:icf,5 /libpath:"$(GSLPATH)" /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmt.lib
 LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib msvcrt.lib vitess.lib libgsl.lib
@@ -55,6 +55,7 @@ chopper_fermi_parallel.exe \
 collimator.exe \
 collimator_radial.exe \
 collimator_soller.exe \
+compare.exe \
 define_direction.exe \
 detector.exe \
 direct_view.exe \
@@ -161,7 +162,8 @@ mon2_header.obj \
 trace.obj \
 threadHelper.obj \
 bender_inter_data.obj \
-sswread.obj
+sswread.obj \
+statistics.obj
 !ifndef NOG2
 COMMON = $(COMMON) cpgplot.obj
 !endif

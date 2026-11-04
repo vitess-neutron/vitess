@@ -201,7 +201,7 @@ proc makeModuleSets {} {
       source_long_pulsed source_ESS_LPTS source_ESS_2012 source_HBS source_ai} source}
     {spacewindow {space slit spacewindow spacewindow_multiple grid}
       {spacewindow spacewindow spacewindow spacewindow_multiple grid}}
-    {trajectories {read_in writeout spin_reset kdsource} {writeout writeout spin_reset ""}}
+    {trajectories {read_in writeout spin_reset kdsource compare} {writeout writeout spin_reset ""}}
     {velselect {} velselect}
     {monitor {
       visual
@@ -926,6 +926,14 @@ set spin_resetESET {
 set kdsourceESET {
   {fname pareditablefile "" {"input\nfile 1" "Specifies the name of the ASCII 1st Input file containing trajectories." "" A} r "" 1}
   {maxEv float "" {"max events" "Maximum number of trajectories that are read. If 'No', then the whole file will be read." "" M}}
+}
+
+### Compare
+###
+set compareESET {
+  {fname pareditablefile "reference.dat" {"reference file" "Name of the ASCII input file containing reference events." "" A} r "" 1}
+  {relError float "" {"max rel error" "Maximum tolerated relative difference to reference file" "" r}}
+  {absError float "" {"max abs error" "Maximum tolerated absolute difference to reference file" "" a}}
 }
 
 ### Frame

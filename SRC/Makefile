@@ -96,6 +96,7 @@ chopper_fermi_parallel \
 collimator \
 collimator_radial \
 collimator_soller \
+compare \
 define_direction \
 detector \
 direct_view \
@@ -205,7 +206,8 @@ mcpl.o \
 mon2_header.o \
 trace.o \
 threadHelper.o \
-sswread.o
+sswread.o \
+statistics.o
 ifndef NOG2
 COMMON += cpgplot.o
 endif

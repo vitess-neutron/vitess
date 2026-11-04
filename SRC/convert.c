@@ -141,8 +141,9 @@ void     CompID2Name (char* sCompName, const McCompID eComp)
     case MCN_OPT_MAIN     : strcpy(sCompName, "Opt_Main");          break;
     case MCN_OPT_PIPE     : strcpy(sCompName, "Opt_GenerPipe");     break;
     case MCN_OPT_FOM      : strcpy(sCompName, "Opt_FoM");           break;
-    case MCN_SOURCE_AI   : strcpy(sCompName, "AI_Source");        break;
+    case MCN_SOURCE_AI    : strcpy(sCompName, "AI_Source");         break;
     case MCN_PRISM        : strcpy(sCompName, "Prism");             break;
+    case MCN_COMPARE      : strcpy(sCompName, "Compare");           break;
     default:                strcpy(sCompName, "unknown component");
   }
 }
@@ -1091,7 +1092,7 @@ VtMirrMat   MirrMat_Txt2ID(const char* sText)
   else if (strcmp(sText, "B4C"       )==0                                ) eID=VT_MIRR_B4C;
   else if (strcmp(sText, "from file" )==0                                ) eID=VT_MIRR_FILE ;
   else if (strcmp(sText, "from array")==0                                ) eID=VT_MIRR_ARRAY;
-  else  
+  else
 
   return eID;
 }

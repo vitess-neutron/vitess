@@ -195,7 +195,8 @@ typedef enum
   MCN_OPT_MAIN     = 1200,
   MCN_OPT_FOM      = 1210,
   MCN_OPT_PIPE     = 1220,
-  MCN_SOURCE_AI   = 1230,
+  MCN_SOURCE_AI    = 1230,
+  MCN_COMPARE      = 1240,
 }
 McCompID;
 
